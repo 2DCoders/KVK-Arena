@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kvk.Host", "kvk.Host\kvk.Host.csproj", "{043D92F5-2E06-4667-908D-E1979371E7AB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kvk.Identity", "kvk.Identity\kvk.Identity.csproj", "{113F9A8C-027D-4F67-AF31-E429ED05A816}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kvk.BuildingBlocks", "kvk.BuildingBlocks\kvk.BuildingBlocks.csproj", "{50101812-CF5B-4B6E-940B-AAF90A711792}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{043D92F5-2E06-4667-908D-E1979371E7AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{043D92F5-2E06-4667-908D-E1979371E7AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{043D92F5-2E06-4667-908D-E1979371E7AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{043D92F5-2E06-4667-908D-E1979371E7AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{113F9A8C-027D-4F67-AF31-E429ED05A816}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{113F9A8C-027D-4F67-AF31-E429ED05A816}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{113F9A8C-027D-4F67-AF31-E429ED05A816}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{113F9A8C-027D-4F67-AF31-E429ED05A816}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50101812-CF5B-4B6E-940B-AAF90A711792}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50101812-CF5B-4B6E-940B-AAF90A711792}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50101812-CF5B-4B6E-940B-AAF90A711792}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50101812-CF5B-4B6E-940B-AAF90A711792}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
