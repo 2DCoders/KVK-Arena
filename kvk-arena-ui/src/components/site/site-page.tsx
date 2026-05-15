@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { publicNavigation, type PageContent } from "@/lib/site-content";
+import { type PageContent } from "@/lib/site-content";
+import Navbar from "./navbar";
 
 type SitePageProps = {
   content: PageContent;
@@ -18,34 +19,8 @@ export function SitePage({ content }: SitePageProps) {
         className={`pointer-events-none absolute bottom-0 left-0 h-80 w-80 rounded-full ${content.theme.orb} blur-3xl`}
       />
 
-      <header className={`relative z-10 border-b ${content.theme.border} bg-white/4 backdrop-blur-xl`}>
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-6 py-5 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-          <Link href="/" className="group inline-flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/12 text-sm font-semibold tracking-[0.3em] text-cyan-100 ring-1 ring-white/10 transition-transform duration-300 group-hover:-rotate-3 group-hover:scale-105">
-              KVK
-            </span>
-            <span>
-              <span className="block text-sm uppercase tracking-[0.36em] text-white/55">
-                Arena Network
-              </span>
-              <span className="block text-lg font-semibold text-white">
-                KVK Arena
-              </span>
-            </span>
-          </Link>
-
-          <nav className="flex flex-wrap gap-2 text-sm text-white/75 lg:justify-end">
-            {publicNavigation.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="rounded-full border border-white/8 bg-white/4 px-4 py-2 transition hover:border-white/20 hover:bg-white/10 hover:text-white"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
+      <header className="relative z-10">
+        <Navbar />
       </header>
 
       <main className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col gap-16 px-6 py-10 lg:px-8 lg:py-16">
