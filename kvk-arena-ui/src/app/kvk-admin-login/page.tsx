@@ -1,130 +1,210 @@
+"use client";
+
 import Link from "next/link";
-import { adminLoginBenefits, adminLoginTheme, publicNavigation } from "@/lib/site-content";
+import {
+  FiEye,
+  FiCalendar,
+  FiUsers,
+  FiDollarSign,
+  FiShield,
+  FiHeart,
+} from "react-icons/fi";
 
 export default function AdminLoginPage() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#060b16] text-white">
-      <div
-        className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${adminLoginTheme.accent} opacity-50`}
-      />
-      <div
-        className={`pointer-events-none absolute -left-24 top-10 h-72 w-72 rounded-full ${adminLoginTheme.orb} blur-3xl`}
-      />
-      <div
-        className={`pointer-events-none absolute bottom-0 right-0 h-72 w-72 rounded-full ${adminLoginTheme.orb} blur-3xl`}
-      />
+    <div className="h-screen overflow-hidden bg-[#f5f5f5]">
+      <div className="grid h-screen grid-cols-1 overflow-hidden lg:grid-cols-[585px_1fr]">
+        {/* LEFT PANEL */}
+        <div className="relative hidden h-screen overflow-hidden bg-[#2f64ea] lg:flex flex-col">
+          {/* Decorative Circles */}
+          <div className="absolute -left-28 -top-28 h-[340px] w-[340px] rounded-full bg-white/5" />
+          <div className="absolute bottom-[90px] right-[-90px] h-[340px] w-[340px] rounded-full bg-white/5" />
+          <div className="absolute bottom-[-140px] left-[110px] h-[240px] w-[240px] rounded-full bg-white/5" />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col px-6 py-6 lg:px-8">
-        <header className={`rounded-[1.5rem] border ${adminLoginTheme.border} bg-white/5 px-5 py-4 backdrop-blur-xl`}>
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.4em] text-white/45">Admin access</p>
-              <h1 className="mt-2 text-2xl font-semibold text-white">KVK Arena login</h1>
-            </div>
+          {/* Content */}
+          <div className="relative z-10 flex h-full flex-col">
+            {/* Top Section */}
+            <div className="px-14 pt-12">
+              {/* Logo */}
+              <div className="flex items-center gap-4">
+                <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm">
+                  <FiHeart className="text-[22px] text-white" />
+                </div>
 
-            <nav className="flex flex-wrap gap-2 text-sm text-white/70">
-              {publicNavigation.slice(0, 6).map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="rounded-full border border-white/8 bg-white/5 px-4 py-2 transition hover:border-white/20 hover:bg-white/10 hover:text-white"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-          </div>
-        </header>
+                <div>
+                  <h2 className="text-[18px] font-semibold leading-none text-white">
+                    Dream Labs Smart PP
+                  </h2>
 
-        <main className="grid flex-1 gap-8 py-10 lg:grid-cols-[1fr_0.95fr] lg:items-center lg:py-16">
-          <section className="space-y-6">
-            <div className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm ${adminLoginTheme.chip}`}>
-              <span className="h-2 w-2 rounded-full bg-current" />
-              Protected admin entrypoint
-            </div>
+                  <p className="mt-1 text-[14px] text-white/70">
+                    Medical Management Platform
+                  </p>
+                </div>
+              </div>
 
-            <h2 className="max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-white sm:text-5xl">
-              <span className={`bg-gradient-to-r ${adminLoginTheme.accent} bg-clip-text text-transparent`}>
-                Sign in to manage bookings, services, and future routes.
-              </span>
-            </h2>
+              {/* Heading */}
+              <div className="mt-14">
+                <h1 className="max-w-[360px] text-[42px] font-bold leading-[1.18] tracking-[-1.5px] text-white">
+                  Healthcare
+                  <br />
+                  Management,
+                  <br />
+                  Simplified.
+                </h1>
 
-            <p className="max-w-2xl text-lg leading-8 text-white/70">
-              This login page is intentionally separate from the public marketing pages so the
-              future admin area can grow without changing the public URLs.
-            </p>
-
-            <div className="grid gap-4 sm:grid-cols-3">
-              {adminLoginBenefits.map((benefit) => {
-                const Icon = benefit.icon;
-
-                return (
-                  <article key={benefit.title} className={`rounded-[1.5rem] border ${adminLoginTheme.border} bg-white/5 p-5 backdrop-blur-xl`}>
-                    <div className={`inline-flex rounded-2xl p-3 ${adminLoginTheme.chip}`}>
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <h3 className="mt-4 text-base font-semibold text-white">{benefit.title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-white/62">{benefit.description}</p>
-                  </article>
-                );
-              })}
-            </div>
-          </section>
-
-          <section className={`rounded-[2rem] border ${adminLoginTheme.border} bg-white/6 p-6 shadow-2xl shadow-slate-950/35 backdrop-blur-xl`}>
-            <form className="space-y-5 rounded-[1.6rem] border border-white/8 bg-slate-950/30 p-6">
-              <div>
-                <p className="text-xs uppercase tracking-[0.35em] text-white/45">Admin sign in</p>
-                <h3 className="mt-3 text-2xl font-semibold text-white">Welcome back</h3>
-                <p className="mt-2 text-sm leading-6 text-white/60">
-                  Authentication logic can be connected later. This screen establishes the route,
-                  structure, and visual treatment now.
+                <p className="mt-6 max-w-[400px] text-[15px] leading-[1.7] text-white/75">
+                  A unified platform for patient records,
+                  appointments, billing, and staff — built for
+                  modern medical practices.
                 </p>
               </div>
+            </div>
 
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-white/75">Email</span>
-                <input
-                  type="email"
-                  placeholder="admin@kvkarena.com"
-                  className="w-full rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-white outline-none transition placeholder:text-white/28 focus:border-cyan-300/40 focus:bg-white/10"
+            {/* Divider */}
+            <div className="mt-10 h-px w-full bg-white/20" />
+
+            {/* Features */}
+            <div className="px-14 pt-8">
+              <div className="space-y-5">
+                <FeatureItem
+                  icon={<FiUsers />}
+                  text="Complete patient record management"
                 />
-              </label>
 
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-white/75">Password</span>
-                <input
-                  type="password"
-                  placeholder="Enter password"
-                  className="w-full rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-white outline-none transition placeholder:text-white/28 focus:border-cyan-300/40 focus:bg-white/10"
+                <FeatureItem
+                  icon={<FiCalendar />}
+                  text="Smart appointment scheduling"
                 />
-              </label>
 
-              <div className="flex items-center justify-between text-sm text-white/60">
-                <label className="inline-flex items-center gap-2">
-                  <input type="checkbox" className="rounded border-white/20 bg-transparent" />
-                  Remember me
-                </label>
-                <button type="button" className="font-medium text-cyan-200 transition hover:text-cyan-100">
-                  Forgot password?
-                </button>
+                <FeatureItem
+                  icon={<FiDollarSign />}
+                  text="Billing & invoice automation"
+                />
+
+                <FeatureItem
+                  icon={<FiShield />}
+                  text="Role-based access & security"
+                />
               </div>
+            </div>
 
-              <button
-                type="submit"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-100"
-              >
-                Sign in
-                <span aria-hidden="true">→</span>
-              </button>
-
-              <p className="text-center text-xs leading-5 text-white/45">
-                More admin routes can be added later without changing this public login URL.
+            {/* Footer */}
+            <div className="mt-auto px-14 pb-10">
+              <p className="text-[13px] text-white/45">
+                © 2026 Dream Labs Smart PP. All rights reserved.
               </p>
-            </form>
-          </section>
-        </main>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT PANEL */}
+        <div className="flex h-screen items-center justify-center overflow-hidden px-6 py-6">
+          <div className="w-full max-w-[430px]">
+            {/* Login Card */}
+            <div className="rounded-[24px] border border-[#ececec] bg-white px-9 py-9 shadow-[0_8px_40px_rgba(0,0,0,0.04)]">
+              <h2 className="text-[28px] font-bold tracking-[-0.5px] text-[#1e293b]">
+                Welcome back
+              </h2>
+
+              <p className="mt-2 text-[15px] text-[#94a3b8]">
+                Sign in to access your clinic dashboard
+              </p>
+
+              {/* FORM */}
+              <form className="mt-8">
+                {/* Email */}
+                <div>
+                  <label className="block text-[15px] font-semibold text-[#0f172a]">
+                    Email address
+                  </label>
+
+                  <input
+                    type="email"
+                    placeholder="doctor@clinic.com"
+                    className="mt-3 h-[52px] w-full rounded-xl border border-[#e5e7eb] bg-[#fafafa] px-4 text-[15px] text-[#334155] outline-none transition focus:border-[#2f64ea] focus:ring-4 focus:ring-[#2f64ea]/10"
+                  />
+                </div>
+
+                {/* Password */}
+                <div className="mt-6">
+                  <label className="block text-[15px] font-semibold text-[#0f172a]">
+                    Password
+                  </label>
+
+                  <div className="relative mt-3">
+                    <input
+                      type="password"
+                      placeholder="Enter your password"
+                      className="h-[52px] w-full rounded-xl border border-[#e5e7eb] bg-[#fafafa] px-4 pr-12 text-[15px] text-[#334155] outline-none transition focus:border-[#2f64ea] focus:ring-4 focus:ring-[#2f64ea]/10"
+                    />
+
+                    <button
+                      type="button"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[18px] text-[#64748b]"
+                    >
+                      <FiEye />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Options */}
+                <div className="mt-5 flex items-center justify-between">
+                  <label className="flex items-center gap-2 text-[14px] text-[#64748b]">
+                    <input
+                      type="checkbox"
+                      className="h-[16px] w-[16px] rounded border-[#cbd5e1]"
+                    />
+                    Remember me
+                  </label>
+
+                  <button
+                    type="button"
+                    className="text-[14px] font-medium text-[#2f64ea] hover:underline"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+
+                {/* Sign In */}
+                <button className="mt-6 flex h-[46px] w-full items-center justify-center rounded-xl bg-[#2f64ea] text-[15px] font-semibold text-white transition hover:bg-[#2457d9]">
+                  Sign in
+                </button>
+              </form>
+            </div>
+
+            {/* Register */}
+            <p className="mt-6 text-center text-[15px] text-[#64748b]">
+              New to the system?{" "}
+              <Link
+                href="#"
+                className="font-medium text-[#2f64ea] hover:underline"
+              >
+                Register your clinic
+              </Link>
+            </p>
+          </div>
+        </div>
       </div>
+    </div>
+  );
+}
+
+function FeatureItem({
+  icon,
+  text,
+}: {
+  icon: React.ReactNode;
+  text: string;
+}) {
+  return (
+    <div className="flex items-center gap-4">
+      <div className="flex h-[40px] w-[40px] items-center justify-center rounded-xl bg-white/10 text-[16px] text-white backdrop-blur-sm">
+        {icon}
+      </div>
+
+      <span className="text-[15px] font-medium text-white/95">
+        {text}
+      </span>
     </div>
   );
 }
