@@ -13,7 +13,7 @@ import {
 export default function AdminLoginPage() {
   return (
     <div className="h-screen overflow-hidden bg-[#f5f5f5]">
-      <div className="grid h-screen grid-cols-1 overflow-hidden lg:grid-cols-[585px_1fr]">
+      <div className="grid h-screen grid-cols-1 overflow-hidden lg:grid-cols-[480px_1fr]">
         {/* LEFT PANEL */}
         <div className="relative hidden h-screen overflow-hidden bg-[#2f64ea] lg:flex flex-col">
           {/* Decorative Circles */}
@@ -33,11 +33,11 @@ export default function AdminLoginPage() {
 
                 <div>
                   <h2 className="text-[18px] font-semibold leading-none text-white">
-                    Dream Labs Smart PP
+                    KVK Arena
                   </h2>
 
                   <p className="mt-1 text-[14px] text-white/70">
-                    Medical Management Platform
+                    Admin Panel
                   </p>
                 </div>
               </div>
@@ -45,7 +45,7 @@ export default function AdminLoginPage() {
               {/* Heading */}
               <div className="mt-14">
                 <h1 className="max-w-[360px] text-[42px] font-bold leading-[1.18] tracking-[-1.5px] text-white">
-                  Healthcare
+                  KVK Arena
                   <br />
                   Management,
                   <br />
@@ -53,9 +53,7 @@ export default function AdminLoginPage() {
                 </h1>
 
                 <p className="mt-6 max-w-[400px] text-[15px] leading-[1.7] text-white/75">
-                  A unified platform for patient records,
-                  appointments, billing, and staff — built for
-                  modern medical practices.
+                  A unified platform for managing KVK Arena services, bookings, and members.
                 </p>
               </div>
             </div>
@@ -68,12 +66,12 @@ export default function AdminLoginPage() {
               <div className="space-y-5">
                 <FeatureItem
                   icon={<FiUsers />}
-                  text="Complete patient record management"
+                  text="Complete member record management"
                 />
 
                 <FeatureItem
                   icon={<FiCalendar />}
-                  text="Smart appointment scheduling"
+                  text="Smart booking and scheduling"
                 />
 
                 <FeatureItem
@@ -91,7 +89,7 @@ export default function AdminLoginPage() {
             {/* Footer */}
             <div className="mt-auto px-14 pb-10">
               <p className="text-[13px] text-white/45">
-                © 2026 Dream Labs Smart PP. All rights reserved.
+                © 2026 KVK Arena. All rights reserved.
               </p>
             </div>
           </div>
@@ -107,7 +105,7 @@ export default function AdminLoginPage() {
               </h2>
 
               <p className="mt-2 text-[15px] text-[#94a3b8]">
-                Sign in to access your clinic dashboard
+                Sign in to access your KVK Arena admin dashboard
               </p>
 
               {/* FORM */}
@@ -120,7 +118,7 @@ export default function AdminLoginPage() {
 
                   <input
                     type="email"
-                    placeholder="doctor@clinic.com"
+                    placeholder="admin@kvkarena.com"
                     className="mt-3 h-[52px] w-full rounded-xl border border-[#e5e7eb] bg-[#fafafa] px-4 text-[15px] text-[#334155] outline-none transition focus:border-[#2f64ea] focus:ring-4 focus:ring-[#2f64ea]/10"
                   />
                 </div>
@@ -179,7 +177,7 @@ export default function AdminLoginPage() {
                 href="#"
                 className="font-medium text-[#2f64ea] hover:underline"
               >
-                Register your clinic
+                Register your facility
               </Link>
             </p>
           </div>
