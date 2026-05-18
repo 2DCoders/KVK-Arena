@@ -4,7 +4,7 @@ namespace kvk.Identity.Features;
 
 [ApiController]
 [ApiExplorerSettings(GroupName = "IdentityModule")]
-public abstract class BaseIdentityModuleController
+public abstract class BaseIdentityModuleController : ControllerBase
 {
     protected const string BaseApiPath = "api/identity-m";
 }

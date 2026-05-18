@@ -30,7 +30,7 @@ public class Result
     public string Message { get; set; }
     public string[] Errors { get; set; }
 
-    private Dictionary<string, dynamic> AdditionalData { get; set; }
+    public Dictionary<string, dynamic> AdditionalData { get; set; }
 
     public static Result Success() =>
         new Result(true, "Operation is success", []);

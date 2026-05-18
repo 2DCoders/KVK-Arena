@@ -7,16 +7,10 @@ namespace kvk.Host.Middlewares;
 /// Middleware responsible for extracting tenant ID from JWT claims
 /// and setting the request context before any business logic executes.
 /// 
+/// Phase 1: For development, tenant is hardcoded to 00000000-0000-0000-0000-000000000000.
+/// This middleware validates the token format but doesn't enforce tenant-specific checks.
+/// 
 /// Execution order: Should run EARLY in the middleware pipeline (before routing/authorization).
-/// 
-/// Flow:
-/// 1. Extract Authorization header (Bearer token)
-/// 2. Parse JWT without validation (validation happens in Authorization middleware)
-/// 3. Extract TenantId claim from token
-/// 4. Call ITenantService.SetCurrentTenant() to store in AsyncLocal
-/// 5. Pass request to next middleware
-/// 
-/// If TenantId is missing or invalid, returns 401 Unauthorized without processing further.
 /// </summary>
 public class TenantPermissionMiddleware
 {
@@ -72,7 +66,7 @@ public class TenantPermissionMiddleware
                 return;
             }
 
-            // Extract TenantId from claims
+            // Extract TenantId from claims (Phase 1: informational only, tenant is hardcoded)
             var tenantIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "TenantId")?.Value;
 
             if (string.IsNullOrWhiteSpace(tenantIdClaim))
@@ -92,17 +86,12 @@ public class TenantPermissionMiddleware
                 return;
             }
 
-            if (tenantId == Guid.Empty)
-            {
-                _logger.LogWarning("JWT TenantId claim is empty GUID");
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                await context.Response.WriteAsJsonAsync(new { error = "TenantId cannot be empty" });
-                return;
-            }
-
-            // Set tenant context for this request
+            // Phase 1: Allow hardcoded empty GUID (00000000-0000-0000-0000-000000000000)
+            // In Phase 2, this will be replaced with proper tenant validation
+            
+            // Call SetCurrentTenant - TenantService will ignore and return hardcoded value
             tenantService.SetCurrentTenant(tenantId);
-            _logger.LogInformation("Tenant context set: {TenantId} for request {RequestPath}", tenantId, context.Request.Path);
+            _logger.LogInformation("Token contains TenantId: {TenantId} for request {RequestPath}", tenantId, context.Request.Path);
 
             // Add tenant info to HttpContext items for logging/debugging
             context.Items["TenantId"] = tenantId;

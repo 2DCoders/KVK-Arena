@@ -1,5 +1,7 @@
 using kvk.BuildingBlocks.Auth;
 using kvk.BuildingBlocks.Interfaces;
+using kvk.Identity.Features.Auth;
+using kvk.Identity.Features.Role;
 using kvk.Identity.Persistence;
 using kvk.Identity.Services;
 using Microsoft.EntityFrameworkCore;
@@ -24,5 +26,9 @@ public class IdentityModuleInitializer : IModuleInitializer
             options.UseNpgsql(connectionString));
 
         services.AddScoped<IPermissionAuthorizationService, PermissionAuthorizationService>();
+        services.AddScoped<AuthService>();
+        services.AddScoped<RoleService>();
+        // JWT service from BuildingBlocks - simple dev implementation registered here
+        services.AddSingleton<IJwtService, JwtService>();
     }
 }

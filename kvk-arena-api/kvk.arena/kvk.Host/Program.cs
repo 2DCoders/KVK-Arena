@@ -3,6 +3,7 @@ using kvk.BuildingBlocks.Interfaces;
 using kvk.BuildingBlocks.Services;
 using kvk.Host.Middlewares;
 using Scalar.AspNetCore;
+using kvk.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +14,6 @@ var builder = WebApplication.CreateBuilder(args);
 // Add OpenAPI/Swagger documentation
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
-
 
 // Add core infrastructure services
 builder.Services.AddScoped<ITenantService, TenantService>();
@@ -37,13 +37,9 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader());
 });
 
-// Add controllers
-builder.Services.AddControllers();
-
-// Note: Module-specific DbContexts and services will be registered by module initializers (Phase 2)
-// Example:
-// var identityInitializer = new IdentityModuleInitializer();
-// identityInitializer.RegisterModule(builder.Services, builder.Configuration);
+// Register Identity module (DbContext + services). This enables identity endpoints and JWT support.
+var identityInitializer = new IdentityModuleInitializer();
+identityInitializer.RegisterModule(builder.Services, builder.Configuration);
 
 var app = builder.Build();
 
@@ -61,7 +57,14 @@ app.UseMiddleware<TenantPermissionMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    
+}
+
+app.UseHttpsRedirection();
+app.UseCors();
+app.MapControllers();
+
+if (app.Environment.IsDevelopment())
+{
     // Scalar - Modern API documentation (default at /scalar/v1)
     app.MapScalarApiReference(options =>
     {
@@ -72,9 +75,6 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
-app.UseCors();
-app.MapControllers();
 
 // Log startup information
 var logger = app.Services.GetRequiredService<ILogger<Program>>();

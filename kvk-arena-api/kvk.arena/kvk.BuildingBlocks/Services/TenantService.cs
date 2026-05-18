@@ -4,40 +4,38 @@ namespace kvk.BuildingBlocks.Services;
 
 /// <summary>
 /// Manages tenant context for the current request scope.
-/// Stores tenant ID in AsyncLocal so it's available to all async operations.
-/// AsyncLocal ensures the tenant context flows through async/await chains.
-/// Thread-safe and request-scoped via DI container.
+/// Phase 1: Always returns hardcoded tenant ID (00000000-0000-0000-0000-000000000000).
+/// This will be replaced with dynamic tenant resolution in Phase 2.
 /// </summary>
 public class TenantService : ITenantService
 {
-    private static readonly AsyncLocal<Guid> TenantIdContext = new();
+    // Phase 1 hardcoded tenant ID
+    private static readonly Guid HardcodedTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
 
     /// <summary>
     /// Gets the current tenant ID for this request.
-    /// Returns Guid.Empty if no tenant context is set.
+    /// Phase 1: Always returns the hardcoded tenant ID.
     /// </summary>
     public Guid GetCurrentTenantId()
     {
-        return TenantIdContext.Value;
+        return HardcodedTenantId;
     }
 
     /// <summary>
     /// Sets the tenant ID for this request scope.
-    /// Throws ArgumentException if tenantId is Guid.Empty.
+    /// Phase 1: Ignored - tenant is always the hardcoded value.
     /// </summary>
     public void SetCurrentTenant(Guid tenantId)
     {
-        if (tenantId == Guid.Empty)
-            throw new ArgumentException("Tenant ID cannot be empty");
-
-        TenantIdContext.Value = tenantId;
+        // Phase 1: tenant is always hardcoded, ignore calls to this method
     }
 
     /// <summary>
     /// Clears the tenant context (typically called for cleanup).
+    /// Phase 1: No-op since tenant is always hardcoded.
     /// </summary>
     public void ClearCurrentTenant()
     {
-        TenantIdContext.Value = Guid.Empty;
+        // Phase 1: no-op
     }
 }

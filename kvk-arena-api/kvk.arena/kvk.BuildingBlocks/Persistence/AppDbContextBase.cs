@@ -95,6 +95,7 @@ public abstract class AppDbContextBase : DbContext
     public override int SaveChanges()
     {
         var tenantId = _tenantService.GetCurrentTenantId();
+        // Phase 1: Allow empty GUID (00000000-0000-0000-0000-000000000000) as hardcoded tenant
         if (tenantId == Guid.Empty)
         {
             _logger.LogWarning("SaveChanges called without tenant context");
@@ -114,6 +115,7 @@ public abstract class AppDbContextBase : DbContext
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         var tenantId = _tenantService.GetCurrentTenantId();
+        // Phase 1: Allow empty GUID (00000000-0000-0000-0000-000000000000) as hardcoded tenant
         if (tenantId == Guid.Empty)
         {
             _logger.LogWarning("SaveChangesAsync called without tenant context");
