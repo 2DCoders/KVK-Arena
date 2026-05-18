@@ -30,7 +30,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Auth\" />
         <Folder Include="Enums\" />
     </ItemGroup>
 

@@ -768,7 +768,7 @@ public class Result<T>
 
 The following are **explicitly deferred** to Phase 2+ and will be documented in separate architectural addenda:
 
-- [ ] **RBAC Implementation** → RBAC.MD
+- [ ] **RBAC Implementation** → BackendDocs/Identity/RBACSTAFF.MD
 - [ ] **External Service Integration** → EXTERNAL_SERVICES.MD
 - [ ] **Cross-Module Reporting** → REPORTING.MD
 - [ ] **DevOps & Deployment** → DEPLOYMENT.MD

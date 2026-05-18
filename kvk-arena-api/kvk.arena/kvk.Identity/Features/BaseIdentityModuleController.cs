@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace kvk.Identity;
+namespace kvk.Identity.Features;
 
 [ApiController]
 [ApiExplorerSettings(GroupName = "IdentityModule")]

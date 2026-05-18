@@ -1,26 +1,11 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace kvk.BuildingBlocks.Common;
 
 /// <summary>
-/// Base entity for all domain models in KVK Arena.
-/// Enforces multi-tenancy (TenantId) and audit tracking (CreatedAt, CreatedBy, LastModifiedAt, LastModifiedBy).
-/// Hard deletes only (no soft deletes).
-/// Replaces separate BaseEntity class - this is the single merged entity base.
+/// Extension of BaseEntity that adds audit tracking fields.
+/// Use this for entities that need created/modified tracking.
 /// </summary>
-public class AuditableEntity
+public class AuditableEntity : BaseEntity
 {
-    /// <summary>
-    /// Primary key.
-    /// </summary>
-    [Key]
-    public Guid Id { get; set; }
-
-    /// <summary>
-    /// Tenant identifier. Enforces data isolation across tenants.
-    /// All queries automatically filtered by TenantId via EF Core global query filters.
-    /// </summary>
-    public Guid TenantId { get; set; }
 
     /// <summary>
     /// UTC timestamp when entity was created.

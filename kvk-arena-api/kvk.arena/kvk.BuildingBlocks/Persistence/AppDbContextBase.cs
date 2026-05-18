@@ -34,19 +34,19 @@ public abstract class AppDbContextBase : DbContext
 
     /// <summary>
     /// Configures model relationships, constraints, and global query filters.
-    /// Automatically discovers and applies HasQueryFilter for all AuditableEntity types.
+    /// Automatically discovers and applies HasQueryFilter for all BaseEntity types.
     /// Also configures indexes for tenant-based queries.
     /// </summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // Get all entity types that inherit from AuditableEntity
+        // Get all entity types that inherit from BaseEntity
         var auditableEntities = modelBuilder.Model.GetEntityTypes()
-            .Where(t => typeof(AuditableEntity).IsAssignableFrom(t.ClrType))
+            .Where(t => typeof(BaseEntity).IsAssignableFrom(t.ClrType))
             .ToList();
 
-        // Apply global query filter for tenant isolation to all AuditableEntity types
+        // Apply global query filter for tenant isolation to all BaseEntity types
         foreach (var entityType in auditableEntities)
         {
             var method = GetType()
@@ -62,22 +62,25 @@ public abstract class AppDbContextBase : DbContext
         {
             // Index on TenantId for basic filtering
             modelBuilder.Entity(entityType.ClrType)
-                .HasIndex(nameof(AuditableEntity.TenantId))
+                .HasIndex(nameof(BaseEntity.TenantId))
                 .HasDatabaseName($"IX_{entityType.ClrType.Name}_TenantId");
 
-            // Composite index on (TenantId, CreatedAt) for timeline queries
-            modelBuilder.Entity(entityType.ClrType)
-                .HasIndex(new[] { nameof(AuditableEntity.TenantId), nameof(AuditableEntity.CreatedAt) })
-                .HasDatabaseName($"IX_{entityType.ClrType.Name}_TenantId_CreatedAt");
+            // Composite audit index only for auditable entities
+            if (typeof(AuditableEntity).IsAssignableFrom(entityType.ClrType))
+            {
+                modelBuilder.Entity(entityType.ClrType)
+                    .HasIndex(new[] { nameof(BaseEntity.TenantId), nameof(AuditableEntity.CreatedAt) })
+                    .HasDatabaseName($"IX_{entityType.ClrType.Name}_TenantId_CreatedAt");
+            }
         }
     }
 
     /// <summary>
     /// Generic method to apply global query filter for tenant isolation.
     /// Ensures all queries automatically include: WHERE TenantId == {currentTenantId}
-    /// This is called during OnModelCreating for each AuditableEntity type.
+    /// This is called during OnModelCreating for each BaseEntity type.
     /// </summary>
-    private void ApplyTenantFilter<T>(ModelBuilder modelBuilder) where T : AuditableEntity
+    private void ApplyTenantFilter<T>(ModelBuilder modelBuilder) where T : BaseEntity
     {
         modelBuilder.Entity<T>()
             .HasQueryFilter(e => e.TenantId == _tenantService.GetCurrentTenantId());
@@ -132,20 +135,36 @@ public abstract class AppDbContextBase : DbContext
         var now = DateTime.UtcNow;
         var currentUserId = GetCurrentUserId();
 
-        var entries = ChangeTracker.Entries<AuditableEntity>();
+        var baseEntries = ChangeTracker.Entries<BaseEntity>();
 
-        foreach (var entry in entries)
+        foreach (var entry in baseEntries)
+        {
+            if (entry.State == EntityState.Added)
+            {
+                entry.Entity.TenantId = tenantId;
+                _logger.LogInformation(
+                    "Entity created: {EntityType}, Id: {Id}, TenantId: {TenantId}",
+                    entry.Entity.GetType().Name, entry.Entity.Id, tenantId);
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                entry.Property(nameof(BaseEntity.TenantId)).IsModified = false;
+            }
+        }
+
+        var auditEntries = ChangeTracker.Entries<AuditableEntity>();
+
+        foreach (var entry in auditEntries)
         {
             switch (entry.State)
             {
                 case EntityState.Added:
-                    entry.Entity.TenantId = tenantId;
                     entry.Entity.CreatedAt = now;
                     entry.Entity.CreatedBy = currentUserId;
                     entry.Entity.LastModifiedAt = now;
                     _logger.LogInformation(
-                        "Entity created: {EntityType}, Id: {Id}, TenantId: {TenantId}, CreatedBy: {CreatedBy}",
-                        entry.Entity.GetType().Name, entry.Entity.Id, tenantId, currentUserId);
+                        "Auditable entity created: {EntityType}, Id: {Id}, CreatedBy: {CreatedBy}",
+                        entry.Entity.GetType().Name, entry.Entity.Id, currentUserId);
                     break;
 
                 case EntityState.Modified:
