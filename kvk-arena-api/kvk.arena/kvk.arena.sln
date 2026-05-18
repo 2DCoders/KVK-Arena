@@ -6,6 +6,20 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kvk.Identity", "kvk.Identit
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kvk.BuildingBlocks", "kvk.BuildingBlocks\kvk.BuildingBlocks.csproj", "{50101812-CF5B-4B6E-940B-AAF90A711792}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BackendDocs", "BackendDocs", "{35CD8FC9-BA5F-44BB-84F7-D9CE550579BB}"
+	ProjectSection(SolutionItems) = preProject
+		README.MD = README.MD
+		IMPLEMENTATION.MD = IMPLEMENTATION.MD
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Identity", "Identity", "{D0EDC8E2-38DF-4C22-B0EE-A3F6B49C30BA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{6D1F2665-4BC9-4F22-873A-A849BD54059C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildingBlocks", "BuildingBlocks", "{648BDDAB-E912-4DB5-81BA-5A6B41486ACB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kvk.ModuleIntegrator", "kvk.ModuleIntegrator\kvk.ModuleIntegrator.csproj", "{4F51A5CF-8B43-4AEB-9629-824A88C93907}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +38,15 @@ Global
 		{50101812-CF5B-4B6E-940B-AAF90A711792}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{50101812-CF5B-4B6E-940B-AAF90A711792}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{50101812-CF5B-4B6E-940B-AAF90A711792}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F51A5CF-8B43-4AEB-9629-824A88C93907}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F51A5CF-8B43-4AEB-9629-824A88C93907}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F51A5CF-8B43-4AEB-9629-824A88C93907}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F51A5CF-8B43-4AEB-9629-824A88C93907}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D0EDC8E2-38DF-4C22-B0EE-A3F6B49C30BA} = {35CD8FC9-BA5F-44BB-84F7-D9CE550579BB}
+		{113F9A8C-027D-4F67-AF31-E429ED05A816} = {6D1F2665-4BC9-4F22-873A-A849BD54059C}
+		{50101812-CF5B-4B6E-940B-AAF90A711792} = {648BDDAB-E912-4DB5-81BA-5A6B41486ACB}
+		{4F51A5CF-8B43-4AEB-9629-824A88C93907} = {648BDDAB-E912-4DB5-81BA-5A6B41486ACB}
 	EndGlobalSection
 EndGlobal

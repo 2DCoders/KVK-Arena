@@ -7,7 +7,19 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <!-- OpenAPI & Swagger -->
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1"/>
+        <PackageReference Include="Scalar.AspNetCore" Version="1.2.54"/>
+        
+        <!-- JWT Authentication -->
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0"/>
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.0.3"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Project References -->
+        <ProjectReference Include="..\kvk.BuildingBlocks\kvk.BuildingBlocks.csproj" />
+        <ProjectReference Include="..\kvk.Identity\kvk.Identity.csproj" />
     </ItemGroup>
 
 </Project>
