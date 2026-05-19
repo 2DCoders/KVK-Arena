@@ -21,13 +21,13 @@
     <ItemGroup>
         <!-- Project References -->
         <ProjectReference Include="..\kvk.BuildingBlocks\kvk.BuildingBlocks.csproj" />
+        <ProjectReference Include="..\kvk.ModuleIntegrator\kvk.ModuleIntegrator.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <Folder Include="Common\" />
         <Folder Include="Enums\" />
         <Folder Include="Interfaces\" />
-        <Folder Include="Services\" />
     </ItemGroup>
 
 </Project>

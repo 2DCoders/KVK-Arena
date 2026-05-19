@@ -10,8 +10,6 @@
       <Folder Include="Features\" />
       <Folder Include="Interfaces\" />
       <Folder Include="Persistence\Configuration\" />
-      <Folder Include="Persistence\DesignTime\" />
-      <Folder Include="Services\" />
     </ItemGroup>
 
     <ItemGroup>

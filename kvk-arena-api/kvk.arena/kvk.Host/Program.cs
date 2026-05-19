@@ -4,6 +4,7 @@ using kvk.BuildingBlocks.Services;
 using kvk.Host.Middlewares;
 using Scalar.AspNetCore;
 using kvk.Identity;
+using kvk.Gym;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +41,10 @@ builder.Services.AddCors(options =>
 // Register Identity module (DbContext + services). This enables identity endpoints and JWT support.
 var identityInitializer = new IdentityModuleInitializer();
 identityInitializer.RegisterModule(builder.Services, builder.Configuration);
+
+// Register Gym module so its integrator event handlers are available in DI.
+var gymInitializer = new GymModuleInitializer();
+gymInitializer.RegisterModule(builder.Services, builder.Configuration);
 
 var app = builder.Build();
 
@@ -99,4 +104,3 @@ else
 {
     app.Run();
 }
-

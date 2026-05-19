@@ -26,7 +26,7 @@ public class AuthService
     /// <summary>
     /// Register a new staff member.
     /// </summary>
-    public async Task<Result> RegisterAsync(AuthRegisterRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> RegisterAsync(AuthRegisterRequest? request, CancellationToken cancellationToken = default)
     {
         if (request == null)
             return Result.Failure("Request cannot be null");
@@ -50,8 +50,8 @@ public class AuthService
         {
             var staff = new Staff
             {
-                FirstName = request.FirstName ?? string.Empty,
-                LastName = request.LastName ?? string.Empty,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
                 UserName = request.UserName,
                 Email = request.Email,
                 PasswordHash = HashPassword(request.Password),
@@ -107,6 +107,15 @@ public class AuthService
             // Get user permissions
             var permissions = (await _permissionService.GetUserPermissions(staff.Id, cancellationToken)).ToArray();
 
+            // Get accessible modules for the staff member
+            var modules = await _db.Set<Domain.StaffModule>()
+                .AsNoTracking()
+                .Where(sm => sm.StaffId == staff.Id && sm.IsActive)
+                .OrderBy(sm => sm.ModuleName)
+                .Select(sm => sm.ModuleName)
+                .Distinct()
+                .ToArrayAsync(cancellationToken);
+
             // Generate JWT token
             var token = _jwtService.GenerateToken(staff.Id, permissions);
 
@@ -115,6 +124,7 @@ public class AuthService
                 UserId = staff.Id,
                 Token = token,
                 Permissions = permissions,
+                Modules = modules,
                 Email = staff.Email,
                 UserName = staff.UserName,
                 FirstName = staff.FirstName,
@@ -164,7 +174,6 @@ public class AuthService
     // ---- Password hashing helpers (PBKDF2) ----
     private static string HashPassword(string password)
     {
-        if (password == null) password = string.Empty;
         using var rng = RandomNumberGenerator.Create();
         var salt = new byte[16];
         rng.GetBytes(salt);
@@ -188,7 +197,7 @@ public class AuthService
             Buffer.BlockCopy(bytes, 1, salt, 0, 16);
             var storedHash = new byte[32];
             Buffer.BlockCopy(bytes, 1 + 16, storedHash, 0, 32);
-            var computed = Rfc2898DeriveBytes.Pbkdf2(password ?? string.Empty, salt, 100_000, HashAlgorithmName.SHA256, 32);
+            var computed = Rfc2898DeriveBytes.Pbkdf2(password, salt, 100_000, HashAlgorithmName.SHA256, 32);
             return CryptographicOperations.FixedTimeEquals(computed, storedHash);
         }
         catch

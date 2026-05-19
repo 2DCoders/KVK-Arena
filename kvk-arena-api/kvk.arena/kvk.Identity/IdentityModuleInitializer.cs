@@ -1,6 +1,7 @@
 using kvk.BuildingBlocks.Auth;
 using kvk.BuildingBlocks.Interfaces;
 using kvk.Identity.Features.Auth;
+using kvk.Identity.Features.StaffModule;
 using kvk.Identity.Features.Role;
 using kvk.Identity.Persistence;
 using kvk.Identity.Services;
@@ -28,6 +29,10 @@ public class IdentityModuleInitializer : IModuleInitializer
         services.AddScoped<IPermissionAuthorizationService, PermissionAuthorizationService>();
         services.AddScoped<AuthService>();
         services.AddScoped<RoleService>();
+        services.AddScoped<StaffModuleService>();
+        // Module integrator client to publish integration events (building-blocks contract)
+        services.AddScoped<IModuleIntegratorClient, ModuleIntegrator.ModuleIntegratorClient>();
+        services.AddScoped<IdentitySeeder>();
         // JWT service from BuildingBlocks - simple dev implementation registered here
         services.AddSingleton<IJwtService, JwtService>();
     }

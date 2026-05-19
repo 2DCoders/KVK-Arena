@@ -28,6 +28,8 @@ public class IdentityApplicationDbContext : AppDbContextBase
 
     public DbSet<StaffRole> StaffRoles => Set<StaffRole>();
 
+    public DbSet<StaffModule> StaffModules => Set<StaffModule>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Ensure Identity module tables are created in the "identity" schema.
@@ -43,6 +45,7 @@ public class IdentityApplicationDbContext : AppDbContextBase
         modelBuilder.ApplyConfiguration(new Configuration.ApplicationPermissionConfiguration());
         modelBuilder.ApplyConfiguration(new Configuration.RolePermissionConfiguration());
         modelBuilder.ApplyConfiguration(new Configuration.StaffRoleConfiguration());
+        modelBuilder.ApplyConfiguration(new Configuration.StaffModuleConfiguration());
     }
     
 }
