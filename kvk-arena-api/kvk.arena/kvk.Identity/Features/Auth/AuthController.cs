@@ -17,7 +17,7 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Register a new staff member.
     /// </summary>
-    [HttpPost("client/register")]
+    [HttpPost("staff/register")]
     public async Task<IActionResult> Register([FromBody] AuthRegisterRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _authService.RegisterAsync(request, cancellationToken);
@@ -34,7 +34,7 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Authenticate staff member and return token + permissions.
     /// </summary>
-    [HttpPost("client/login")]
+    [HttpPost("staff/login")]
     public async Task<IActionResult> Login([FromBody] AuthLoginRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _authService.LoginAsync(request, cancellationToken);

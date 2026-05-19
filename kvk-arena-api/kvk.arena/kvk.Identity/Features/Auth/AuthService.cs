@@ -87,8 +87,8 @@ public class AuthService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        if (string.IsNullOrWhiteSpace(request.Email))
-            throw new ArgumentNullException(nameof(request.Email));
+        if (string.IsNullOrWhiteSpace(request.Username))
+            throw new ArgumentNullException(nameof(request.Username));
 
         if (string.IsNullOrWhiteSpace(request.Password))
             throw new ArgumentNullException(nameof(request.Password));
@@ -96,13 +96,13 @@ public class AuthService
         try
         {
             var staff = await _db.Set<Staff>()
-                .SingleOrDefaultAsync(s => s.Email == request.Email, cancellationToken);
+                .SingleOrDefaultAsync(s => s.UserName == request.Username, cancellationToken);
 
             if (staff == null)
-                throw new Exception("Invalid email or password");
+                throw new Exception("Invalid username or password");
 
             if (!VerifyPassword(request.Password, staff.PasswordHash))
-                throw new Exception("Invalid email or password");
+                throw new Exception("Invalid username or password");
 
             // Get user permissions
             var permissions = (await _permissionService.GetUserPermissions(staff.Id, cancellationToken)).ToArray();
