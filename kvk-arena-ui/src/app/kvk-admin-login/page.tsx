@@ -8,6 +8,7 @@ import {
   FiDollarSign,
   FiShield,
   FiHeart,
+  FiUser,
 } from "react-icons/fi";
 
 export default function AdminLoginPage() {
@@ -27,8 +28,8 @@ export default function AdminLoginPage() {
             <div className="px-14 pt-12">
               {/* Logo */}
               <div className="flex items-center gap-4">
-                <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm">
-                  <FiHeart className="text-[22px] text-white" />
+                <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
+                  <FiUser className="text-[22px] text-white" />
                 </div>
 
                 <div>
@@ -44,15 +45,13 @@ export default function AdminLoginPage() {
 
               {/* Heading */}
               <div className="mt-14">
-                <h1 className="max-w-[360px] text-[42px] font-bold leading-[1.18] tracking-[-1.5px] text-white">
-                  KVK Arena
-                  <br />
-                  Management,
+                <h1 className="max-w-[360px] text-[30px] font-bold leading-[1.18] tracking-[-1.5px] text-white">
+                  KVK Arena Management,
                   <br />
                   Simplified.
                 </h1>
 
-                <p className="mt-6 max-w-[400px] text-[15px] leading-[1.7] text-white/75">
+                <p className="mt-6 max-w-[400px] text-[14px] leading-[1.7] text-white/75">
                   A unified platform for managing KVK Arena services, bookings, and members.
                 </p>
               </div>
@@ -97,35 +96,35 @@ export default function AdminLoginPage() {
 
         {/* RIGHT PANEL */}
         <div className="flex h-screen items-center justify-center overflow-hidden px-6 py-6">
-          <div className="w-full max-w-[430px]">
+          <div className="w-full max-w-[400px]">
             {/* Login Card */}
             <div className="rounded-[24px] border border-[#ececec] bg-white px-9 py-9 shadow-[0_8px_40px_rgba(0,0,0,0.04)]">
-              <h2 className="text-[28px] font-bold tracking-[-0.5px] text-[#1e293b]">
+              <h2 className="text-[24px] font-bold tracking-[-0.5px] text-[#1e293b]">
                 Welcome back
               </h2>
 
-              <p className="mt-2 text-[15px] text-[#94a3b8]">
-                Sign in to access your KVK Arena admin dashboard
+              <p className="mt-2 text-[13px] text-[#94a3b8]">
+                Sign in to access KVK Arena management tools.
               </p>
 
               {/* FORM */}
               <form className="mt-8">
                 {/* Email */}
                 <div>
-                  <label className="block text-[15px] font-semibold text-[#0f172a]">
+                  <label className="block text-[14px] text-[#0f172a]">
                     Email address
                   </label>
 
                   <input
                     type="email"
                     placeholder="admin@kvkarena.com"
-                    className="mt-3 h-[52px] w-full rounded-xl border border-[#e5e7eb] bg-[#fafafa] px-4 text-[15px] text-[#334155] outline-none transition focus:border-[#2f64ea] focus:ring-4 focus:ring-[#2f64ea]/10"
+                    className="mt-3 h-[42px] w-full rounded-md border border-[#e5e7eb] bg-[#fafafa] px-4 text-[15px] text-[#334155] outline-none transition focus:border-[#2f64ea] focus:ring-4 focus:ring-[#2f64ea]/10"
                   />
                 </div>
 
                 {/* Password */}
                 <div className="mt-6">
-                  <label className="block text-[15px] font-semibold text-[#0f172a]">
+                  <label className="block text-[14px] text-[#0f172a]">
                     Password
                   </label>
 
@@ -133,7 +132,7 @@ export default function AdminLoginPage() {
                     <input
                       type="password"
                       placeholder="Enter your password"
-                      className="h-[52px] w-full rounded-xl border border-[#e5e7eb] bg-[#fafafa] px-4 pr-12 text-[15px] text-[#334155] outline-none transition focus:border-[#2f64ea] focus:ring-4 focus:ring-[#2f64ea]/10"
+                      className="h-[42px] w-full rounded-md border border-[#e5e7eb] bg-[#fafafa] px-4 pr-12 text-[15px] text-[#334155] outline-none transition focus:border-[#2f64ea] focus:ring-4 focus:ring-[#2f64ea]/10"
                     />
 
                     <button
@@ -148,38 +147,23 @@ export default function AdminLoginPage() {
                 {/* Options */}
                 <div className="mt-5 flex items-center justify-between">
                   <label className="flex items-center gap-2 text-[14px] text-[#64748b]">
-                    <input
-                      type="checkbox"
-                      className="h-[16px] w-[16px] rounded border-[#cbd5e1]"
-                    />
-                    Remember me
+                    
                   </label>
 
                   <button
                     type="button"
-                    className="text-[14px] font-medium text-[#2f64ea] hover:underline"
+                    className="text-[12px] font-medium text-[#2f64ea] hover:underline"
                   >
                     Forgot password?
                   </button>
                 </div>
 
                 {/* Sign In */}
-                <button className="mt-6 flex h-[46px] w-full items-center justify-center rounded-xl bg-[#2f64ea] text-[15px] font-semibold text-white transition hover:bg-[#2457d9]">
+                <button className="mt-6 flex h-[40px] w-full items-center justify-center rounded-md bg-[#2f64ea] text-[15px] font-semibold text-white transition hover:bg-[#2457d9]">
                   Sign in
                 </button>
               </form>
             </div>
-
-            {/* Register */}
-            <p className="mt-6 text-center text-[15px] text-[#64748b]">
-              New to the system?{" "}
-              <Link
-                href="#"
-                className="font-medium text-[#2f64ea] hover:underline"
-              >
-                Register your facility
-              </Link>
-            </p>
           </div>
         </div>
       </div>
