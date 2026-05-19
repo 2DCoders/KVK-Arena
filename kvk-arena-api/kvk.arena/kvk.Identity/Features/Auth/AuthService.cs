@@ -118,8 +118,7 @@ public class AuthService
                 Email = staff.Email,
                 UserName = staff.UserName,
                 FirstName = staff.FirstName,
-                LastName = staff.LastName,
-                    PhoneNumber = staff.Phone
+                LastName = staff.LastName
             };
 
             return response;
