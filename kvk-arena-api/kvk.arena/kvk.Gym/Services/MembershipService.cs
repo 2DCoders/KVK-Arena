@@ -125,6 +125,11 @@ public class MembershipService : IMembershipService
             {
                 Id = m.Id,
                 MembershipNumber = m.MembershipNumber,
+                FirstName = m.FirstName,
+                LastName = m.LastName,
+                Email = m.Email,
+                PhoneNumber = m.Phone,
+                DateOfBirth = m.DateOfBirth.ToString("dd/MM/yyyy"),
                 MembershipStatus = m.MembershipStatus.ToString(),
                 MembershipPlan = m.MembershipPlan.ToString(),
                 IdentityUserId = m.IdentityUserId
