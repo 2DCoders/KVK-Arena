@@ -1,6 +1,6 @@
 namespace kvk.Gym.Enums;
 
-public enum MembershipType
+public enum MembershipPlan
 {
     Monthly = 1,
     Quarterly = 2,

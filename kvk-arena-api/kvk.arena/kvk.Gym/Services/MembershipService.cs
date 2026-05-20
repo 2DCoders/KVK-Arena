@@ -32,6 +32,8 @@ public class MembershipService : IMembershipService
                 Status = "Active",
                 DateOfBirth = request.DateOfBirth,
                 MemberType = request.MemberType,
+                // persist requested membership plan (default handled by DTO)
+                MembershipPlan = request.MembershipPlan,
                 Gender = request.Gender,
                 DeviceFingerprintId1 = request.DeviceFingerprintId1,
                 DeviceFingerprintId2 = request.DeviceFingerprintId2,
@@ -53,6 +55,7 @@ public class MembershipService : IMembershipService
                 Id = member.Id,
                 MembershipNumber = member.MembershipNumber,
                 MembershipStatus = member.MembershipStatus.ToString(),
+                MembershipPlan = member.MembershipPlan.ToString(),
                 IdentityUserId = member.IdentityUserId
             };
 
@@ -98,6 +101,7 @@ public class MembershipService : IMembershipService
                 Id = member.Id,
                 MembershipNumber = member.MembershipNumber,
                 MembershipStatus = member.MembershipStatus.ToString(),
+                MembershipPlan = member.MembershipPlan.ToString(),
                 IdentityUserId = member.IdentityUserId
             };
 
@@ -128,6 +132,7 @@ public class MembershipService : IMembershipService
                 Id = member.Id,
                 MembershipNumber = member.MembershipNumber,
                 MembershipStatus = member.MembershipStatus.ToString(),
+                MembershipPlan = member.MembershipPlan.ToString(),
                 IdentityUserId = member.IdentityUserId
             };
 
@@ -155,6 +160,7 @@ public class MembershipService : IMembershipService
                 existing.LastName = fullName?.Split(' ').Skip(1).FirstOrDefault() ?? existing.LastName;
                 existing.MemberType = kvk.Gym.Enums.MemberType.Staff;
                 existing.MembershipStatus = kvk.Gym.Enums.MembershipStatus.Active;
+                existing.MembershipPlan = kvk.Gym.Enums.MembershipPlan.Monthly;
                 await _db.SaveChangesAsync(cancellationToken);
 
                 return Result.Success("Staff membership updated");
@@ -171,6 +177,7 @@ public class MembershipService : IMembershipService
                 Status = "Active",
                 MemberType = kvk.Gym.Enums.MemberType.Staff,
                 MembershipStatus = kvk.Gym.Enums.MembershipStatus.Active,
+                MembershipPlan = kvk.Gym.Enums.MembershipPlan.Monthly,
                 MembershipNumber = MembershipNumberFormatter.Format("Staff", DateTime.UtcNow.Year)
             };
 

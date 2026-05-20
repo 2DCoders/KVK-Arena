@@ -18,6 +18,8 @@ public class Membership : User
 
     public MembershipStatus MembershipStatus { get; set; } = MembershipStatus.Inactive;
     
+    public MembershipPlan MembershipPlan { get; set; } = MembershipPlan.Monthly;
+    
     public required string MembershipNumber { get; set; }
     // Display-only formatted string. Use MembershipNumberFormatter in BuildingBlocks to create a compatible value.
     
