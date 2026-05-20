@@ -113,6 +113,32 @@ public class MembershipService : IMembershipService
         }
     }
 
+    public async Task<List<MembershipResponse>> GetAllMembersAsync(CancellationToken cancellationToken = default)
+    {  
+        try
+        {
+            var memberships = await _db.Memberships
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+            
+            var response = memberships.Select(m => new MembershipResponse
+            {
+                Id = m.Id,
+                MembershipNumber = m.MembershipNumber,
+                MembershipStatus = m.MembershipStatus.ToString(),
+                MembershipPlan = m.MembershipPlan.ToString(),
+                IdentityUserId = m.IdentityUserId
+            }).ToList();
+            
+            return response;
+            
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Failed to fetch members: {ex.Message}");
+        }
+    }
+
     public async Task<Result> GetMemberAsync(Guid memberId, CancellationToken cancellationToken = default)
     {
         if (memberId == Guid.Empty)

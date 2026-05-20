@@ -35,6 +35,14 @@ public class MembershipsController : ControllerBase
 
         return Ok(result);
     }
+    
+    [HttpGet]
+    public async Task<IActionResult> Get(CancellationToken cancellationToken = default)
+    {
+        // For simplicity, this example does not implement pagination or filtering
+        var result = await _service.GetAllMembersAsync(cancellationToken);
+        return Ok(result);
+    }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken = default)
