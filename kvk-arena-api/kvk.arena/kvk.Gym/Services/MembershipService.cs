@@ -2,6 +2,7 @@ using kvk.BuildingBlocks.Common;
 using kvk.Gym.Domain;
 using Microsoft.EntityFrameworkCore;
 using kvk.Gym.Features.Memberships;
+using System.Security.Cryptography;
 
 namespace kvk.Gym.Services;
 
@@ -21,6 +22,33 @@ public class MembershipService : IMembershipService
 
         try
         {
+            MembershipPlan? plan = null;
+
+            if (request.MemberType == kvk.Gym.Enums.MemberType.Client)
+            {
+                if (!request.MembershipPlanId.HasValue || request.MembershipPlanId == Guid.Empty)
+                    return Result.Failure("Membership plan is required for clients");
+
+                plan = await _db.MembershipPlans
+                    .SingleOrDefaultAsync(p => p.Id == request.MembershipPlanId, cancellationToken);
+
+                if (plan == null)
+                    return Result.Failure("Membership plan not found");
+
+                if (plan.IsActive != kvk.Gym.Enums.ActiveStatus.Active)
+                    return Result.Failure("Membership plan is inactive");
+            }
+            else if (request.MembershipPlanId.HasValue && request.MembershipPlanId != Guid.Empty)
+            {
+                plan = await _db.MembershipPlans
+                    .SingleOrDefaultAsync(p => p.Id == request.MembershipPlanId, cancellationToken);
+
+                if (plan == null)
+                    return Result.Failure("Membership plan not found");
+            }
+
+            var memberToken = await GetNextMembershipTokenAsync(request.MemberType.ToString(), DateTime.UtcNow.Year, cancellationToken);
+
             var member = new Membership
             {
                 FirstName = request.FirstName,
@@ -32,13 +60,13 @@ public class MembershipService : IMembershipService
                 Status = "Active",
                 DateOfBirth = request.DateOfBirth,
                 MemberType = request.MemberType,
-                // persist requested membership plan (default handled by DTO)
-                MembershipPlan = request.MembershipPlan,
+                MembershipPlanId = plan?.Id,
                 Gender = request.Gender,
                 DeviceFingerprintId1 = request.DeviceFingerprintId1,
                 DeviceFingerprintId2 = request.DeviceFingerprintId2,
+                Otp = GenerateOtp(),
                 // Display-only membership number must be set in initializer to satisfy required property rules
-                MembershipNumber = MembershipNumberFormatter.Format(request.MemberType.ToString(), DateTime.UtcNow.Year)
+                MembershipNumber = MembershipNumberFormatter.Format(request.MemberType.ToString(), DateTime.UtcNow.Year, memberToken)
             };
 
             // If both fingerprints null -> Inactive
@@ -50,12 +78,33 @@ public class MembershipService : IMembershipService
             _db.Memberships.Add(member);
             await _db.SaveChangesAsync(cancellationToken);
 
+            if (member.MemberType == kvk.Gym.Enums.MemberType.Client && plan != null)
+            {
+                var startDate = DateTime.UtcNow;
+
+                var payment = new MemberPayment
+                {
+                    MembershipId = member.Id,
+                    Amount = plan.Price,
+                    PaymentType = kvk.Gym.Enums.PaymentType.Cash,
+                    PaymentStatus = kvk.Gym.Enums.PaymentStatus.Pending,
+                    MemberShipStartDate = startDate,
+                    MemberShipEndDate = startDate.AddDays(plan.DurationInDays)
+                };
+
+                _db.MemberPayments.Add(payment);
+                await _db.SaveChangesAsync(cancellationToken);
+            }
+
             var response = new MembershipResponse
             {
                 Id = member.Id,
                 MembershipNumber = member.MembershipNumber,
                 MembershipStatus = member.MembershipStatus.ToString(),
-                MembershipPlan = member.MembershipPlan.ToString(),
+                MembershipPlanId = plan?.Id,
+                MembershipPlanTitle = plan?.Title,
+                MembershipPlanPrice = plan?.Price,
+                MembershipPlanDurationInDays = plan?.DurationInDays,
                 IdentityUserId = member.IdentityUserId
             };
 
@@ -74,7 +123,9 @@ public class MembershipService : IMembershipService
 
         try
         {
-            var member = await _db.Memberships.SingleOrDefaultAsync(m => m.Id == memberId, cancellationToken);
+            var member = await _db.Memberships
+                .Include(m => m.MembershipPlan)
+                .SingleOrDefaultAsync(m => m.Id == memberId, cancellationToken);
             if (member == null)
                 return Result.Failure("Member not found");
 
@@ -101,7 +152,10 @@ public class MembershipService : IMembershipService
                 Id = member.Id,
                 MembershipNumber = member.MembershipNumber,
                 MembershipStatus = member.MembershipStatus.ToString(),
-                MembershipPlan = member.MembershipPlan.ToString(),
+                MembershipPlanId = member.MembershipPlanId,
+                MembershipPlanTitle = member.MembershipPlan?.Title,
+                MembershipPlanPrice = member.MembershipPlan?.Price,
+                MembershipPlanDurationInDays = member.MembershipPlan?.DurationInDays,
                 IdentityUserId = member.IdentityUserId
             };
 
@@ -119,6 +173,7 @@ public class MembershipService : IMembershipService
         {
             var memberships = await _db.Memberships
                 .AsNoTracking()
+                .Include(m => m.MembershipPlan)
                 .ToListAsync(cancellationToken);
             
             var response = memberships.Select(m => new MembershipResponse
@@ -128,11 +183,14 @@ public class MembershipService : IMembershipService
                 FirstName = m.FirstName,
                 LastName = m.LastName,
                 Email = m.Email,
-                PhoneNumber = m.Phone,
+                PhoneNumber = m.Phone ?? string.Empty,
                 DateOfBirth = m.DateOfBirth.ToString("dd/MM/yyyy"),
                 Gender = m.Gender,
                 MembershipStatus = m.MembershipStatus.ToString(),
-                MembershipPlan = m.MembershipPlan.ToString(),
+                MembershipPlanId = m.MembershipPlanId,
+                MembershipPlanTitle = m.MembershipPlan?.Title,
+                MembershipPlanPrice = m.MembershipPlan?.Price,
+                MembershipPlanDurationInDays = m.MembershipPlan?.DurationInDays,
                 IdentityUserId = m.IdentityUserId
             }).ToList();
             
@@ -154,6 +212,7 @@ public class MembershipService : IMembershipService
         {
             var member = await _db.Memberships
                 .AsNoTracking()
+                .Include(m => m.MembershipPlan)
                 .SingleOrDefaultAsync(m => m.Id == memberId, cancellationToken);
 
             if (member == null)
@@ -164,7 +223,10 @@ public class MembershipService : IMembershipService
                 Id = member.Id,
                 MembershipNumber = member.MembershipNumber,
                 MembershipStatus = member.MembershipStatus.ToString(),
-                MembershipPlan = member.MembershipPlan.ToString(),
+                MembershipPlanId = member.MembershipPlanId,
+                MembershipPlanTitle = member.MembershipPlan?.Title,
+                MembershipPlanPrice = member.MembershipPlan?.Price,
+                MembershipPlanDurationInDays = member.MembershipPlan?.DurationInDays,
                 IdentityUserId = member.IdentityUserId
             };
 
@@ -192,11 +254,13 @@ public class MembershipService : IMembershipService
                 existing.LastName = fullName?.Split(' ').Skip(1).FirstOrDefault() ?? existing.LastName;
                 existing.MemberType = kvk.Gym.Enums.MemberType.Staff;
                 existing.MembershipStatus = kvk.Gym.Enums.MembershipStatus.Active;
-                existing.MembershipPlan = kvk.Gym.Enums.MembershipPlan.Monthly;
+                existing.MembershipPlanId = null;
                 await _db.SaveChangesAsync(cancellationToken);
 
                 return Result.Success("Staff membership updated");
             }
+
+            var memberToken = await GetNextMembershipTokenAsync("Staff", DateTime.UtcNow.Year, cancellationToken);
 
             var member = new Membership
             {
@@ -209,8 +273,8 @@ public class MembershipService : IMembershipService
                 Status = "Active",
                 MemberType = kvk.Gym.Enums.MemberType.Staff,
                 MembershipStatus = kvk.Gym.Enums.MembershipStatus.Active,
-                MembershipPlan = kvk.Gym.Enums.MembershipPlan.Monthly,
-                MembershipNumber = MembershipNumberFormatter.Format("Staff", DateTime.UtcNow.Year)
+                MembershipPlanId = null,
+                MembershipNumber = MembershipNumberFormatter.Format("Staff", DateTime.UtcNow.Year, memberToken)
             };
 
             _db.Memberships.Add(member);
@@ -223,7 +287,43 @@ public class MembershipService : IMembershipService
             return Result.Failure($"Failed to ensure staff membership: {ex.Message}");
         }
     }
+
+    private static int GenerateOtp()
+    {
+        return RandomNumberGenerator.GetInt32(1000, 10000);
+    }
+
+    private async Task<string> GetNextMembershipTokenAsync(string memberTypeName, int year, CancellationToken cancellationToken)
+    {
+        var prefix = GetMembershipPrefix(memberTypeName);
+        var yearPrefix = $"{prefix}-{year}";
+
+        var latestNumber = await _db.Memberships
+            .AsNoTracking()
+            .Where(m => m.MembershipNumber.StartsWith(yearPrefix))
+            .OrderByDescending(m => m.MembershipNumber)
+            .Select(m => m.MembershipNumber)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (string.IsNullOrWhiteSpace(latestNumber))
+            return "0001";
+
+        var tokenPart = latestNumber.Substring(latestNumber.Length - 4);
+        if (!int.TryParse(tokenPart, out var lastToken))
+            return "0001";
+
+        var nextToken = lastToken + 1;
+        return nextToken.ToString("D4");
+    }
+
+    private static string GetMembershipPrefix(string memberTypeName)
+    {
+        return memberTypeName?.ToLowerInvariant() switch
+        {
+            "client" => "GYM-MEM",
+            "trainer" => "GYM-TRA",
+            "staff" => "GYM-STA",
+            _ => "GYM-UNK"
+        };
+    }
 }
-
-
-

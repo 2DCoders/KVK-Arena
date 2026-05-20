@@ -12,6 +12,7 @@ public class GymDbContext : DbContext
     public DbSet<Membership> Memberships { get; set; } = null!;
     public DbSet<MemberAttendance> MemberAttendances { get; set; } = null!;
     public DbSet<MemberPayment> MemberPayments { get; set; } = null!;
+    public DbSet<MembershipPlan> MembershipPlans { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -31,5 +32,10 @@ public class GymDbContext : DbContext
         modelBuilder.Entity<Membership>()
             .HasIndex(m => m.IdentityUserId)
             .HasDatabaseName("IX_Membership_IdentityUserId");
+
+        modelBuilder.Entity<Membership>()
+            .HasOne(m => m.MembershipPlan)
+            .WithMany()
+            .HasForeignKey(m => m.MembershipPlanId);
     }
 }

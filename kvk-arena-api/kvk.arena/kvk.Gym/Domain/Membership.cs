@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using kvk.BuildingBlocks.Common;
 using kvk.Gym.Enums;
 
@@ -18,10 +19,14 @@ public class Membership : User
 
     public MembershipStatus MembershipStatus { get; set; } = MembershipStatus.Inactive;
     
-    public MembershipPlan MembershipPlan { get; set; } = MembershipPlan.Monthly;
+    public Guid? MembershipPlanId { get; set; }
+    public MembershipPlan? MembershipPlan { get; set; }
     
     public required string MembershipNumber { get; set; }
     // Display-only formatted string. Use MembershipNumberFormatter in BuildingBlocks to create a compatible value.
+    
+    [MaxLength(4)]
+    public int Otp { get; set; }
     
     // Device-provided fingerprint identifiers (no raw templates stored)
     public string? DeviceFingerprintId1 { get; set; }

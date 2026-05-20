@@ -14,6 +14,9 @@ public class MembershipResponse
     
     public Gender Gender { get; set; }
     public string MembershipStatus { get; set; } = string.Empty;
-    public string MembershipPlan { get; set; } = string.Empty;
+    public Guid? MembershipPlanId { get; set; }
+    public string? MembershipPlanTitle { get; set; }
+    public decimal? MembershipPlanPrice { get; set; }
+    public int? MembershipPlanDurationInDays { get; set; }
     public string? IdentityUserId { get; set; }
 }

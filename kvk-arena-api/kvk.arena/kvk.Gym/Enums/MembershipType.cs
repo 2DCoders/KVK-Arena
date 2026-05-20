@@ -1,13 +1,5 @@
 namespace kvk.Gym.Enums;
 
-public enum MembershipPlan
-{
-    Monthly = 1,
-    Quarterly = 2,
-    Annual = 3,
-    DayPass = 4
-}
-
 
 public enum MembershipStatus
 {
@@ -47,4 +39,10 @@ public enum MemberType
     Client = 1,
     Trainer = 2,
     Staff = 3
+}
+
+public enum ActiveStatus
+{
+    Active = 1,
+    Inactive = 2
 }
