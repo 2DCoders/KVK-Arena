@@ -130,6 +130,7 @@ public class MembershipService : IMembershipService
                 Email = m.Email,
                 PhoneNumber = m.Phone,
                 DateOfBirth = m.DateOfBirth.ToString("dd/MM/yyyy"),
+                Gender = m.Gender,
                 MembershipStatus = m.MembershipStatus.ToString(),
                 MembershipPlan = m.MembershipPlan.ToString(),
                 IdentityUserId = m.IdentityUserId

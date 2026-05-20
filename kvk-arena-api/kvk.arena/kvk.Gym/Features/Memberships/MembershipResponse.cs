@@ -1,3 +1,5 @@
+using kvk.Gym.Enums;
+
 namespace kvk.Gym.Features.Memberships;
 
 public class MembershipResponse
@@ -9,6 +11,8 @@ public class MembershipResponse
     public string Email { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
     public string DateOfBirth { get; set; } = string.Empty;
+    
+    public Gender Gender { get; set; }
     public string MembershipStatus { get; set; } = string.Empty;
     public string MembershipPlan { get; set; } = string.Empty;
     public string? IdentityUserId { get; set; }
