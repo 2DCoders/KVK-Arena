@@ -1,5 +1,6 @@
 using kvk.BuildingBlocks.Common;
 using kvk.Gym.Domain;
+using kvk.Gym.Enums;
 using Microsoft.EntityFrameworkCore;
 using kvk.Gym.Features.Payments;
 
@@ -27,22 +28,42 @@ public class PaymentService : IPaymentService
 
             if (member.MemberType != kvk.Gym.Enums.MemberType.Client)
                 return Result.Failure("Payments are only applicable to clients");
+            
+            var memberPayment  = await _db.MemberPayments
+                .Where(p => p.MembershipId == memberId)
+                .FirstOrDefaultAsync(cancellationToken);
 
-            var payment = new MemberPayment
+            if (memberPayment == null)
             {
-                MembershipId = member.Id,
-                Amount = request.Amount,
-                PaymentType = request.PaymentType,
-                PaymentStatus = request.PaymentStatus,
-                MemberShipStartDate = request.StartDate,
-                MemberShipEndDate = request.EndDate,
-                TransactionReference = request.TransactionReference
-            };
+                var payment = new MemberPayment
+                {
+                    MembershipId = member.Id,
+                    Amount = request.Amount,
+                    PaymentType = request.PaymentType,
+                    PaymentStatus = request.PaymentStatus,
+                    MemberShipStartDate = request.StartDate,
+                    MemberShipEndDate = request.EndDate,
+                    TransactionReference = request.TransactionReference
+                };
 
-            _db.MemberPayments.Add(payment);
+                _db.MemberPayments.Add(payment);
+            }
+            else
+            {
+                var membershipPlan = await _db.MembershipPlans.FirstOrDefaultAsync(mp => mp.Id == member.MembershipPlanId, cancellationToken);
+                
+                memberPayment.PaymentStatus = PaymentStatus.Paid;
+                memberPayment.MemberShipStartDate = memberPayment.MemberShipEndDate;
+                memberPayment.MemberShipEndDate = memberPayment.MemberShipStartDate?.AddDays(membershipPlan?.DurationInDays ?? 30);
+                memberPayment.TransactionReference = request.TransactionReference;
+                memberPayment.MemberShipRenewalDate = DateTime.Now;
+                
+                _db.MemberPayments.Update(memberPayment);
+            }
+
             await _db.SaveChangesAsync(cancellationToken);
 
-            return Result.Success("Payment recorded").WithData("paymentId", payment.Id);
+            return Result.Success("Payment recorded");
         }
         catch (Exception ex)
         {
