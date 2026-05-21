@@ -3,6 +3,7 @@ using kvk.Gym.Domain;
 using Microsoft.EntityFrameworkCore;
 using kvk.Gym.Features.Memberships;
 using System.Security.Cryptography;
+using kvk.BuildingBlocks.Constants;
 using kvk.BuildingBlocks.Interfaces;
 
 namespace kvk.Gym.Services;

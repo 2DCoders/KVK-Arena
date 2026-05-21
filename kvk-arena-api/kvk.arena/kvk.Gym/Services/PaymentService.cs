@@ -1,4 +1,6 @@
 using kvk.BuildingBlocks.Common;
+using kvk.BuildingBlocks.Constants;
+using kvk.BuildingBlocks.Interfaces;
 using kvk.Gym.Domain;
 using kvk.Gym.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -9,10 +11,12 @@ namespace kvk.Gym.Services;
 public class PaymentService : IPaymentService
 {
     private readonly GymDbContext _db;
+    private readonly ISmsService _smsService;
 
-    public PaymentService(GymDbContext db)
+    public PaymentService(GymDbContext db,ISmsService smsService)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
+        _smsService = smsService;
     }
 
     public async Task<Result> CreatePaymentAsync(Guid memberId, CreatePaymentRequest request, CancellationToken cancellationToken = default)
@@ -62,6 +66,8 @@ public class PaymentService : IPaymentService
                 _db.MemberPayments.Update(memberPayment);
             }
 
+           await _smsService.SendSingleMessageAsync(member.Phone!
+               ,MessageList.PaymentReceivedMessage(member.FirstName,request.Amount) , cancellationToken);
             await _db.SaveChangesAsync(cancellationToken);
 
             return Result.Success("Payment recorded");
