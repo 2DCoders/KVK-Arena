@@ -28,7 +28,6 @@ public class SmsService : ISmsService
             new KeyValuePair<string, string>("sender_id", _configuration["Sms:SenderId"]!),
             new KeyValuePair<string, string>("contact", phoneNumber),
             new KeyValuePair<string, string>("message", message),
-            // Add any other required parameters for the SMS API
         });
 
         var response = await httpClient.PostAsync(SmsApiUrl, requestContent, cancellationToken);
