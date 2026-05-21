@@ -37,5 +37,10 @@ public class GymDbContext : DbContext
             .HasOne(m => m.MembershipPlan)
             .WithMany()
             .HasForeignKey(m => m.MembershipPlanId);
+        
+        //email should be unique
+        modelBuilder.Entity<Membership>()
+            .HasIndex(m => m.Email)
+            .IsUnique();
     }
 }

@@ -13,13 +13,14 @@ public class PaymentService : IPaymentService
     private readonly GymDbContext _db;
     private readonly ISmsService _smsService;
 
-    public PaymentService(GymDbContext db,ISmsService smsService)
+    public PaymentService(GymDbContext db, ISmsService smsService)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
         _smsService = smsService;
     }
 
-    public async Task<Result> CreatePaymentAsync(Guid memberId, CreatePaymentRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> CreatePaymentAsync(Guid memberId, CreatePaymentRequest request,
+        CancellationToken cancellationToken = default)
     {
         if (memberId == Guid.Empty)
             return Result.Failure("Member id cannot be empty");
@@ -29,8 +30,8 @@ public class PaymentService : IPaymentService
             var member = await _db.Memberships.SingleOrDefaultAsync(m => m.Id == memberId, cancellationToken);
             if (member == null)
                 return Result.Failure("Member not found");
-            
-            var memberPayment  = await _db.MemberPayments
+
+            var memberPayment = await _db.MemberPayments
                 .Where(p => p.MembershipId == memberId)
                 .FirstOrDefaultAsync(cancellationToken);
 
@@ -51,23 +52,26 @@ public class PaymentService : IPaymentService
             }
             else
             {
-                var membershipPlan = await _db.MembershipPlans.FirstOrDefaultAsync(mp => mp.Id == member.MembershipPlanId, cancellationToken);
+                var membershipPlan =
+                    await _db.MembershipPlans.FirstOrDefaultAsync(mp => mp.Id == member.MembershipPlanId,
+                        cancellationToken);
 
                 if (request.StartDate == null)
                 {
                     memberPayment.MemberShipStartDate = memberPayment.MemberShipEndDate;
-                    memberPayment.MemberShipEndDate = memberPayment.MemberShipStartDate?.AddDays(membershipPlan?.DurationInDays ?? 30);
+                    memberPayment.MemberShipEndDate =
+                        memberPayment.MemberShipStartDate?.AddDays(membershipPlan?.DurationInDays ?? 30);
                     memberPayment.MemberShipRenewalDate = DateTime.UtcNow;
                 }
-                
+
                 memberPayment.PaymentStatus = PaymentStatus.Paid;
                 memberPayment.TransactionReference = request.TransactionReference;
-                
+
                 _db.MemberPayments.Update(memberPayment);
             }
 
-           await _smsService.SendSingleMessageAsync(member.Phone!
-               ,MessageList.PaymentReceivedMessage(member.FirstName,request.Amount) , cancellationToken);
+            await _smsService.SendSingleMessageAsync(member.Phone!
+                , MessageList.PaymentReceivedMessage(member.FirstName, request.Amount), cancellationToken);
             await _db.SaveChangesAsync(cancellationToken);
 
             return Result.Success("Payment recorded");
@@ -78,5 +82,3 @@ public class PaymentService : IPaymentService
         }
     }
 }
-
-
