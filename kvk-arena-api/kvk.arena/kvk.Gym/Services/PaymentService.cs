@@ -25,9 +25,6 @@ public class PaymentService : IPaymentService
             var member = await _db.Memberships.SingleOrDefaultAsync(m => m.Id == memberId, cancellationToken);
             if (member == null)
                 return Result.Failure("Member not found");
-
-            if (member.MemberType != kvk.Gym.Enums.MemberType.Client)
-                return Result.Failure("Payments are only applicable to clients");
             
             var memberPayment  = await _db.MemberPayments
                 .Where(p => p.MembershipId == memberId)
