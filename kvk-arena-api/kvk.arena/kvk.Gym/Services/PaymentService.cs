@@ -51,12 +51,16 @@ public class PaymentService : IPaymentService
             else
             {
                 var membershipPlan = await _db.MembershipPlans.FirstOrDefaultAsync(mp => mp.Id == member.MembershipPlanId, cancellationToken);
+
+                if (request.StartDate == null)
+                {
+                    memberPayment.MemberShipStartDate = memberPayment.MemberShipEndDate;
+                    memberPayment.MemberShipEndDate = memberPayment.MemberShipStartDate?.AddDays(membershipPlan?.DurationInDays ?? 30);
+                    memberPayment.MemberShipRenewalDate = DateTime.UtcNow;
+                }
                 
                 memberPayment.PaymentStatus = PaymentStatus.Paid;
-                memberPayment.MemberShipStartDate = memberPayment.MemberShipEndDate;
-                memberPayment.MemberShipEndDate = memberPayment.MemberShipStartDate?.AddDays(membershipPlan?.DurationInDays ?? 30);
                 memberPayment.TransactionReference = request.TransactionReference;
-                memberPayment.MemberShipRenewalDate = DateTime.UtcNow;
                 
                 _db.MemberPayments.Update(memberPayment);
             }
