@@ -82,7 +82,7 @@ public class MembershipService : IMembershipService
             _db.Memberships.Add(member);
             await _db.SaveChangesAsync(cancellationToken);
 
-            if (member.MemberType == kvk.Gym.Enums.MemberType.Client && plan != null)
+            if (member.MemberType != kvk.Gym.Enums.MemberType.Staff && plan != null)
             {
                 var startDate = DateTime.UtcNow;
 
