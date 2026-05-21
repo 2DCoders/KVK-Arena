@@ -22,6 +22,7 @@ public class GymModuleInitializer : IModuleInitializer
         services.AddScoped<IMembershipService, MembershipService>();
         services.AddScoped<IAttendanceService, AttendanceService>();
         services.AddScoped<IPaymentService, PaymentService>();
+        services.AddScoped<IMembershipPlanService, MembershipPlanService>();
         // Register integrator event handlers (building-blocks contract)
         services.AddScoped<IStaffAssignedToModuleEventHandler, EventHandlers.StaffAssignedToModuleEventHandler>();
     }
