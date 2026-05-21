@@ -218,16 +218,32 @@ public class MembershipService : IMembershipService
             if (member == null)
                 return Result.Failure("Member not found");
 
+            var latestPayment = await _db.MemberPayments
+                .AsNoTracking()
+                .Where(p => p.MembershipId == memberId)
+                .OrderByDescending(p => p.CreatedAt)
+                .FirstOrDefaultAsync(cancellationToken);
+
             var response = new MembershipResponse
             {
                 Id = member.Id,
                 MembershipNumber = member.MembershipNumber,
+                FirstName = member.FirstName,
+                LastName = member.LastName,
+                Email = member.Email,
+                PhoneNumber = member.Phone ?? string.Empty,
+                DateOfBirth = member.DateOfBirth.ToString("dd/MM/yyyy"),
+                Gender = member.Gender,
                 MembershipStatus = member.MembershipStatus.ToString(),
                 MembershipPlanId = member.MembershipPlanId,
                 MembershipPlanTitle = member.MembershipPlan?.Title,
                 MembershipPlanPrice = member.MembershipPlan?.Price,
+                MembershipStartDate = latestPayment?.MemberShipStartDate,
+                MembershipEndDate = latestPayment?.MemberShipEndDate,
+                PaymentStatus = latestPayment?.PaymentStatus ?? kvk.Gym.Enums.PaymentStatus.Pending,
                 MembershipPlanDurationInDays = member.MembershipPlan?.DurationInDays,
-                IdentityUserId = member.IdentityUserId
+                IdentityUserId = member.IdentityUserId,
+                IsSavedFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) || !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2)
             };
 
             return Result.Success().WithData("response", response);
