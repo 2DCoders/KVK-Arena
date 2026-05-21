@@ -56,7 +56,7 @@ public class PaymentService : IPaymentService
                 memberPayment.MemberShipStartDate = memberPayment.MemberShipEndDate;
                 memberPayment.MemberShipEndDate = memberPayment.MemberShipStartDate?.AddDays(membershipPlan?.DurationInDays ?? 30);
                 memberPayment.TransactionReference = request.TransactionReference;
-                memberPayment.MemberShipRenewalDate = DateTime.Now;
+                memberPayment.MemberShipRenewalDate = DateTime.UtcNow;
                 
                 _db.MemberPayments.Update(memberPayment);
             }
