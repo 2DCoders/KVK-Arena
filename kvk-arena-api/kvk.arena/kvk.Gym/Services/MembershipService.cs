@@ -51,9 +51,9 @@ public class MembershipService : IMembershipService
                     return Result.Failure("Membership plan not found");
             }
             
-            var existingMember = await _db.Memberships
-                .AnyAsync(m => m.Email == request.Email, cancellationToken);
-            if (existingMember)                return Result.Failure("A member with the provided email already exists");
+            // var existingMember = await _db.Memberships
+            //     .AnyAsync(m => m.Email == request.Email, cancellationToken);
+            // if (existingMember)                return Result.Failure("A member with the provided email already exists");
 
             var memberToken = await GetNextMembershipTokenAsync(request.MemberType.ToString(), DateTime.UtcNow.Year, cancellationToken);
 
