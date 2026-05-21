@@ -18,6 +18,7 @@ builder.Services.AddControllers();
 
 // Add core infrastructure services
 builder.Services.AddScoped<ITenantService, TenantService>();
+builder.Services.AddScoped<ISmsService, SmsService>();
 builder.Services.AddHttpContextAccessor();
 
 // Add logging

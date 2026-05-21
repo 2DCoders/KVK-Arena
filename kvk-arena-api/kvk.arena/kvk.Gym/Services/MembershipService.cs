@@ -3,16 +3,19 @@ using kvk.Gym.Domain;
 using Microsoft.EntityFrameworkCore;
 using kvk.Gym.Features.Memberships;
 using System.Security.Cryptography;
+using kvk.BuildingBlocks.Interfaces;
 
 namespace kvk.Gym.Services;
 
 public class MembershipService : IMembershipService
 {
     private readonly GymDbContext _db;
+    private readonly ISmsService _smsService;
 
-    public MembershipService(GymDbContext db)
+    public MembershipService(GymDbContext db,ISmsService smsService)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
+        _smsService = smsService;
     }
 
     public async Task<Result> CreateMemberAsync(CreateMembershipRequest request, CancellationToken cancellationToken = default)
@@ -98,6 +101,9 @@ public class MembershipService : IMembershipService
 
                 _db.MemberPayments.Add(payment);
                 await _db.SaveChangesAsync(cancellationToken);
+                
+              await _smsService.SendSingleMessageAsync(member.Phone!,MessageList
+                  .GetWelcomeMessage(member.FirstName,member.MembershipNumber), cancellationToken);
             }
 
             var response = new MembershipResponse
@@ -111,6 +117,8 @@ public class MembershipService : IMembershipService
                 MembershipPlanDurationInDays = plan?.DurationInDays,
                 IdentityUserId = member.IdentityUserId
             };
+         
+         
 
             return Result.Success("Member created").WithData("response", response);
         }
