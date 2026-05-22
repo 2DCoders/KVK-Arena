@@ -21,6 +21,7 @@ public class GymDbContext : AppDbContextBase
     public DbSet<Membership> Memberships { get; set; } = null!;
     public DbSet<MemberAttendance> MemberAttendances { get; set; } = null!;
     public DbSet<MemberPayment> MemberPayments { get; set; } = null!;
+    public DbSet<PaymentRecord> PaymentRecords { get; set; } = null!;
     public DbSet<MembershipPlan> MembershipPlans { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -51,5 +52,15 @@ public class GymDbContext : AppDbContextBase
         modelBuilder.Entity<Membership>()
             .HasIndex(m => m.Email)
             .IsUnique();
+
+        modelBuilder.Entity<PaymentRecord>()
+            .HasIndex(p => p.MembershipId)
+            .HasDatabaseName("IX_PaymentRecord_MembershipId");
+
+        modelBuilder.Entity<PaymentRecord>()
+            .HasOne(p => p.Membership)
+            .WithMany()
+            .HasForeignKey(p => p.MembershipId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

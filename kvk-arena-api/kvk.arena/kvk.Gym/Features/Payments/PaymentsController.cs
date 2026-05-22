@@ -26,6 +26,27 @@ public class PaymentsController : ControllerBase
         return CreatedAtAction(null, result);
     }
     
-    
+    [HttpGet]
+    public async Task<IActionResult> GetByMember(Guid memberId, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.GetPaymentsByMembershipIdAsync(memberId, cancellationToken);
+
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    // GET /api/gym/payments?from=2026-01-01&to=2026-01-31
+    [HttpGet("/api/gym/payments")]
+    public async Task<IActionResult> GetByDateRange([FromQuery] DateTime? from, [FromQuery] DateTime? to, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.GetPaymentsByDateRangeAsync(from, to, cancellationToken);
+
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
 }
 
