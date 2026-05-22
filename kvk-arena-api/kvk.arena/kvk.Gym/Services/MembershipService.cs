@@ -420,6 +420,7 @@ public class MembershipService : IMembershipService
                 latestPayment.MemberShipStartDate = startDate;
                 latestPayment.MemberShipRenewalDate = renewalDate;
                 latestPayment.MemberShipEndDate = endDate;
+                latestPayment.PaymentStatus = kvk.Gym.Enums.PaymentStatus.Paid;
 
                 payment = latestPayment;
             }
@@ -431,7 +432,7 @@ public class MembershipService : IMembershipService
                     MembershipId = member.Id,
                     Amount = plan.Price,
                     PaymentType = request.PaymentType,
-                    PaymentStatus = kvk.Gym.Enums.PaymentStatus.Pending,
+                    PaymentStatus = kvk.Gym.Enums.PaymentStatus.Paid,
                     MemberShipStartDate = startDate,
                     MemberShipRenewalDate = renewalDate,
                     MemberShipEndDate = endDate
