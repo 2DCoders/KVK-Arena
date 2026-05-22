@@ -402,7 +402,7 @@ public class MembershipService : IMembershipService
 
             // Determine start/end/renewal dates for the new plan
             var startDate = DateTime.UtcNow;
-            var renewalDate = startDate.AddDays(plan.DurationInDays);
+            var renewalDate = DateTime.UtcNow;
             var endDate = startDate.AddDays(plan.DurationInDays);
 
             // Try to update the latest payment if it's pending — keep history otherwise by creating a new payment
