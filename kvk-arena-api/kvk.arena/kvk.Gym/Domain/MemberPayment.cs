@@ -10,6 +10,9 @@ public class MemberPayment : AuditableEntity
     /// </summary>
     public Guid MembershipId { get; set; }
 
+    // Navigation property for easier joins when querying payments
+    public Membership? Membership { get; set; }
+
     public decimal Amount { get; set; }
 
     public PaymentType PaymentType { get; set; }

@@ -13,13 +13,14 @@ public class MembershipService : IMembershipService
     private readonly GymDbContext _db;
     private readonly ISmsService _smsService;
 
-    public MembershipService(GymDbContext db,ISmsService smsService)
+    public MembershipService(GymDbContext db, ISmsService smsService)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
         _smsService = smsService;
     }
 
-    public async Task<Result> CreateMemberAsync(CreateMembershipRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> CreateMemberAsync(CreateMembershipRequest request,
+        CancellationToken cancellationToken = default)
     {
         if (request == null)
             return Result.Failure("Request cannot be null");
@@ -50,12 +51,13 @@ public class MembershipService : IMembershipService
                 if (plan == null)
                     return Result.Failure("Membership plan not found");
             }
-            
+
             // var existingMember = await _db.Memberships
             //     .AnyAsync(m => m.Email == request.Email, cancellationToken);
             // if (existingMember)                return Result.Failure("A member with the provided email already exists");
 
-            var memberToken = await GetNextMembershipTokenAsync(request.MemberType.ToString(), DateTime.UtcNow.Year, cancellationToken);
+            var memberToken = await GetNextMembershipTokenAsync(request.MemberType.ToString(), DateTime.UtcNow.Year,
+                cancellationToken);
 
             var member = new Membership
             {
@@ -73,11 +75,13 @@ public class MembershipService : IMembershipService
                 DeviceFingerprintId1 = request.DeviceFingerprintId1,
                 DeviceFingerprintId2 = request.DeviceFingerprintId2,
                 Otp = GenerateOtp(),
-                MembershipNumber = MembershipNumberFormatter.Format(request.MemberType.ToString(), DateTime.UtcNow.Year, memberToken)
+                MembershipNumber =
+                    MembershipNumberFormatter.Format(request.MemberType.ToString(), DateTime.UtcNow.Year, memberToken)
             };
 
             // If both fingerprints null -> Inactive
-            if (string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) && string.IsNullOrWhiteSpace(member.DeviceFingerprintId2))
+            if (string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) &&
+                string.IsNullOrWhiteSpace(member.DeviceFingerprintId2))
                 member.MembershipStatus = kvk.Gym.Enums.MembershipStatus.Inactive;
             else
                 member.MembershipStatus = kvk.Gym.Enums.MembershipStatus.Active;
@@ -101,9 +105,9 @@ public class MembershipService : IMembershipService
 
                 _db.MemberPayments.Add(payment);
                 await _db.SaveChangesAsync(cancellationToken);
-                
-              await _smsService.SendSingleMessageAsync(member.Phone!,MessageList
-                  .GetWelcomeMessage(member.FirstName,member.MembershipNumber), cancellationToken);
+
+                await _smsService.SendSingleMessageAsync(member.Phone!, MessageList
+                    .GetWelcomeMessage(member.FirstName, member.MembershipNumber), cancellationToken);
             }
 
             var response = new MembershipResponse
@@ -117,8 +121,7 @@ public class MembershipService : IMembershipService
                 MembershipPlanDurationInDays = plan?.DurationInDays,
                 IdentityUserId = member.IdentityUserId
             };
-         
-         
+
 
             return Result.Success("Member created").WithData("response", response);
         }
@@ -128,7 +131,8 @@ public class MembershipService : IMembershipService
         }
     }
 
-    public async Task<Result> UpdateFingerprintsAsync(Guid memberId, UpdateFingerprintsRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> UpdateFingerprintsAsync(Guid memberId, UpdateFingerprintsRequest request,
+        CancellationToken cancellationToken = default)
     {
         if (memberId == Guid.Empty)
             return Result.Failure("Member id cannot be empty");
@@ -149,7 +153,8 @@ public class MembershipService : IMembershipService
             // activation rule: trainers/staff can be activated immediately; clients are activated when fingerprints present
             if (member.MemberType == kvk.Gym.Enums.MemberType.Client)
             {
-                if (!string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) || !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2))
+                if (!string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
+                    !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2))
                     member.MembershipStatus = kvk.Gym.Enums.MembershipStatus.Active;
             }
             else
@@ -180,14 +185,14 @@ public class MembershipService : IMembershipService
     }
 
     public async Task<List<MembershipResponse>> GetAllMembersAsync(CancellationToken cancellationToken = default)
-    {  
+    {
         try
         {
             var memberships = await _db.Memberships
                 .AsNoTracking()
                 .Include(m => m.MembershipPlan)
                 .ToListAsync(cancellationToken);
-            
+
             var response = memberships.Select(m => new MembershipResponse
             {
                 Id = m.Id,
@@ -205,9 +210,8 @@ public class MembershipService : IMembershipService
                 MembershipPlanDurationInDays = m.MembershipPlan?.DurationInDays,
                 IdentityUserId = m.IdentityUserId
             }).ToList();
-            
+
             return response;
-            
         }
         catch (Exception ex)
         {
@@ -255,7 +259,8 @@ public class MembershipService : IMembershipService
                 PaymentStatus = latestPayment?.PaymentStatus ?? kvk.Gym.Enums.PaymentStatus.Pending,
                 MembershipPlanDurationInDays = member.MembershipPlan?.DurationInDays,
                 IdentityUserId = member.IdentityUserId,
-                IsSavedFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) || !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2)
+                IsSavedFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
+                                      !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2)
             };
 
             return Result.Success().WithData("response", response);
@@ -266,14 +271,16 @@ public class MembershipService : IMembershipService
         }
     }
 
-    public async Task<Result> EnsureMembershipForStaffAsync(string identityUserId, string email, string fullName, CancellationToken cancellationToken = default)
+    public async Task<Result> EnsureMembershipForStaffAsync(string identityUserId, string email, string fullName,
+        CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(identityUserId))
             return Result.Failure("identityUserId is required");
 
         try
         {
-            var existing = await _db.Memberships.SingleOrDefaultAsync(m => m.IdentityUserId == identityUserId, cancellationToken);
+            var existing =
+                await _db.Memberships.SingleOrDefaultAsync(m => m.IdentityUserId == identityUserId, cancellationToken);
             if (existing != null)
             {
                 // update basic info
@@ -316,7 +323,8 @@ public class MembershipService : IMembershipService
         }
     }
 
-    public async Task<Result> EditMemberAsync(Guid memberId, EditMembershipRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> EditMemberAsync(Guid memberId, EditMembershipRequest request,
+        CancellationToken cancellationToken = default)
     {
         if (memberId == Guid.Empty)
             return Result.Failure("Member id cannot be empty");
@@ -363,7 +371,8 @@ public class MembershipService : IMembershipService
                 MembershipPlanPrice = member.MembershipPlan?.Price,
                 MembershipPlanDurationInDays = member.MembershipPlan?.DurationInDays,
                 IdentityUserId = member.IdentityUserId,
-                IsSavedFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) || !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2)
+                IsSavedFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
+                                      !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2)
             };
 
             return Result.Success("Member updated").WithData("response", response);
@@ -374,7 +383,8 @@ public class MembershipService : IMembershipService
         }
     }
 
-    public async Task<Result> UpgradeMembershipPlanAsync(Guid memberId, UpgradeMembershipPlanRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> UpgradeMembershipPlanAsync(Guid memberId, UpgradeMembershipPlanRequest request,
+        CancellationToken cancellationToken = default)
     {
         if (memberId == Guid.Empty)
             return Result.Failure("Member id cannot be empty");
@@ -390,7 +400,8 @@ public class MembershipService : IMembershipService
             if (member == null)
                 return Result.Failure("Member not found");
 
-            var plan = await _db.MembershipPlans.SingleOrDefaultAsync(p => p.Id == request.MembershipPlanId, cancellationToken);
+            var plan = await _db.MembershipPlans.SingleOrDefaultAsync(p => p.Id == request.MembershipPlanId,
+                cancellationToken);
             if (plan == null)
                 return Result.Failure("Membership plan not found");
 
@@ -443,19 +454,11 @@ public class MembershipService : IMembershipService
 
             await _db.SaveChangesAsync(cancellationToken);
 
-            // send SMS notification if phone is available
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(member.Phone))
-                {
-                    var message = MessageList.GetPlanUpgradedMessage(member.FirstName, plan.Title, payment.MemberShipStartDate, payment.MemberShipEndDate);
-                    await _smsService.SendSingleMessageAsync(member.Phone, message, cancellationToken);
-                }
-            }
-            catch
-            {
-                // SMS failure should not block the main operation; swallow exceptions silently or log if logger available
-            }
+
+            var message = MessageList.GetPlanUpgradedMessage(member.FirstName, plan.Title, payment.MemberShipStartDate,
+                payment.MemberShipEndDate);
+            await _smsService.SendSingleMessageAsync(member.Phone!, message, cancellationToken);
+
 
             // prepare response including the new payment dates
             var response = new MembershipResponse
@@ -477,7 +480,8 @@ public class MembershipService : IMembershipService
                 PaymentStatus = payment.PaymentStatus,
                 MembershipPlanDurationInDays = plan.DurationInDays,
                 IdentityUserId = member.IdentityUserId,
-                IsSavedFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) || !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2)
+                IsSavedFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
+                                      !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2)
             };
 
             return Result.Success("Membership plan upgraded").WithData("response", response);
@@ -493,7 +497,8 @@ public class MembershipService : IMembershipService
         return RandomNumberGenerator.GetInt32(1000, 10000);
     }
 
-    private async Task<string> GetNextMembershipTokenAsync(string memberTypeName, int year, CancellationToken cancellationToken)
+    private async Task<string> GetNextMembershipTokenAsync(string memberTypeName, int year,
+        CancellationToken cancellationToken)
     {
         var prefix = GetMembershipPrefix(memberTypeName);
         var yearPrefix = $"{prefix}-{year}";
