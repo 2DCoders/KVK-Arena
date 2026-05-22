@@ -138,10 +138,10 @@ public class PaymentService : IPaymentService
         }
     }
 
-    public async Task<Result> GetPaymentsByMembershipIdAsync(Guid memberId, CancellationToken cancellationToken = default)
+    public async Task<List<PaymentResponse>> GetPaymentsByMembershipIdAsync(Guid memberId, CancellationToken cancellationToken = default)
     {
         if (memberId == Guid.Empty)
-            return Result.Failure("Member id cannot be empty");
+             throw new ArgumentException("Member id cannot be empty", nameof(memberId));
 
         try
         {
@@ -168,15 +168,15 @@ public class PaymentService : IPaymentService
                 })
                 .ToListAsync(cancellationToken);
 
-            return Result.Success().WithData("response", payments);
+            return payments;
         }
         catch (Exception ex)
         {
-            return Result.Failure($"Failed to fetch payments: {ex.Message}");
+            throw new Exception($"Failed to fetch payments by membership id: {ex.Message}");
         }
     }
 
-    public async Task<Result> GetPaymentsByDateRangeAsync(DateTime? from, DateTime? to, CancellationToken cancellationToken = default)
+    public async Task<List<PaymentResponse>> GetPaymentsByDateRangeAsync(DateTime? from, DateTime? to, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -207,11 +207,11 @@ public class PaymentService : IPaymentService
                 })
                 .ToListAsync(cancellationToken);
 
-            return Result.Success().WithData("response", payments);
+            return payments;
         }
         catch (Exception ex)
         {
-            return Result.Failure($"Failed to fetch payments by date range: {ex.Message}");
+            throw new Exception($"Failed to fetch payments by date range: {ex.Message}");
         }
     }
 }
