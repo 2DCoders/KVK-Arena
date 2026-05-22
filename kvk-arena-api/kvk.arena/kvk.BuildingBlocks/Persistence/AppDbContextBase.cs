@@ -101,6 +101,14 @@ public abstract class AppDbContextBase : DbContext
         return base.SaveChanges();
     }
 
+    // Ensure overload that accepts 'acceptAllChangesOnSuccess' also applies audit trail.
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        var tenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+        ApplyAuditTrail(tenantId);
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
     /// <summary>
     /// Override SaveChangesAsync to automatically capture audit information (async version).
     /// - Sets CreatedAt, CreatedBy for new entities
@@ -115,6 +123,14 @@ public abstract class AppDbContextBase : DbContext
 
         ApplyAuditTrail(tenantId);
         return await base.SaveChangesAsync(cancellationToken);
+    }
+
+    // Ensure overload with 'acceptAllChangesOnSuccess' is intercepted as well.
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        var tenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+        ApplyAuditTrail(tenantId);
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
     /// <summary>

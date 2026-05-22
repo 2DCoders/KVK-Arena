@@ -1,11 +1,20 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http;
+using kvk.BuildingBlocks.Interfaces;
+using kvk.BuildingBlocks.Persistence;
 using kvk.Gym.Domain;
 
 namespace kvk.Gym;
 
-public class GymDbContext : DbContext
+public class GymDbContext : AppDbContextBase
 {
-    public GymDbContext(DbContextOptions<GymDbContext> options) : base(options)
+    public GymDbContext(
+        DbContextOptions<GymDbContext> options,
+        ITenantService tenantService,
+        ILogger<AppDbContextBase> logger,
+        IHttpContextAccessor? httpContextAccessor = null)
+        : base(options, tenantService, logger, httpContextAccessor)
     {
     }
 

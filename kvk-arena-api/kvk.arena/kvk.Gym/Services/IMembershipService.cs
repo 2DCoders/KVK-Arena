@@ -7,6 +7,8 @@ public interface IMembershipService
 {
     Task<Result> CreateMemberAsync(CreateMembershipRequest request, CancellationToken cancellationToken = default);
     Task<Result> UpdateFingerprintsAsync(Guid memberId, UpdateFingerprintsRequest request, CancellationToken cancellationToken = default);
+    Task<Result> EditMemberAsync(Guid memberId, EditMembershipRequest request, CancellationToken cancellationToken = default);
+    Task<Result> UpgradeMembershipPlanAsync(Guid memberId, UpgradeMembershipPlanRequest request, CancellationToken cancellationToken = default);
     
     Task<List<MembershipResponse>> GetAllMembersAsync(CancellationToken cancellationToken = default);
     

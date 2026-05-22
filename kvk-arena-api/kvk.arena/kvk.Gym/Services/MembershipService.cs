@@ -73,7 +73,6 @@ public class MembershipService : IMembershipService
                 DeviceFingerprintId1 = request.DeviceFingerprintId1,
                 DeviceFingerprintId2 = request.DeviceFingerprintId2,
                 Otp = GenerateOtp(),
-                // Display-only membership number must be set in initializer to satisfy required property rules
                 MembershipNumber = MembershipNumberFormatter.Format(request.MemberType.ToString(), DateTime.UtcNow.Year, memberToken)
             };
 
@@ -314,6 +313,163 @@ public class MembershipService : IMembershipService
         catch (Exception ex)
         {
             return Result.Failure($"Failed to ensure staff membership: {ex.Message}");
+        }
+    }
+
+    public async Task<Result> EditMemberAsync(Guid memberId, EditMembershipRequest request, CancellationToken cancellationToken = default)
+    {
+        if (memberId == Guid.Empty)
+            return Result.Failure("Member id cannot be empty");
+
+        if (request == null)
+            return Result.Failure("Request cannot be null");
+
+        try
+        {
+            var member = await _db.Memberships
+                .Include(m => m.MembershipPlan)
+                .SingleOrDefaultAsync(m => m.Id == memberId, cancellationToken);
+            if (member == null)
+                return Result.Failure("Member not found");
+
+            if (!string.IsNullOrWhiteSpace(request.FirstName))
+                member.FirstName = request.FirstName;
+            if (!string.IsNullOrWhiteSpace(request.LastName))
+                member.LastName = request.LastName;
+            if (!string.IsNullOrWhiteSpace(request.Email))
+                member.Email = request.Email;
+            if (!string.IsNullOrWhiteSpace(request.Phone))
+                member.Phone = request.Phone;
+            if (request.DateOfBirth.HasValue)
+                member.DateOfBirth = request.DateOfBirth.Value;
+            if (request.Gender.HasValue)
+                member.Gender = request.Gender.Value;
+
+            await _db.SaveChangesAsync(cancellationToken);
+
+            var response = new MembershipResponse
+            {
+                Id = member.Id,
+                MembershipNumber = member.MembershipNumber,
+                FirstName = member.FirstName,
+                LastName = member.LastName,
+                Email = member.Email,
+                PhoneNumber = member.Phone ?? string.Empty,
+                DateOfBirth = member.DateOfBirth.ToString("dd/MM/yyyy"),
+                Gender = member.Gender,
+                MembershipStatus = member.MembershipStatus.ToString(),
+                MembershipPlanId = member.MembershipPlanId,
+                MembershipPlanTitle = member.MembershipPlan?.Title,
+                MembershipPlanPrice = member.MembershipPlan?.Price,
+                MembershipPlanDurationInDays = member.MembershipPlan?.DurationInDays,
+                IdentityUserId = member.IdentityUserId,
+                IsSavedFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) || !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2)
+            };
+
+            return Result.Success("Member updated").WithData("response", response);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure($"Failed to update member: {ex.Message}");
+        }
+    }
+
+    public async Task<Result> UpgradeMembershipPlanAsync(Guid memberId, UpgradeMembershipPlanRequest request, CancellationToken cancellationToken = default)
+    {
+        if (memberId == Guid.Empty)
+            return Result.Failure("Member id cannot be empty");
+
+        if (request == null || request.MembershipPlanId == Guid.Empty)
+            return Result.Failure("MembershipPlanId is required");
+
+        try
+        {
+            var member = await _db.Memberships
+                .Include(m => m.MembershipPlan)
+                .SingleOrDefaultAsync(m => m.Id == memberId, cancellationToken);
+            if (member == null)
+                return Result.Failure("Member not found");
+
+            var plan = await _db.MembershipPlans.SingleOrDefaultAsync(p => p.Id == request.MembershipPlanId, cancellationToken);
+            if (plan == null)
+                return Result.Failure("Membership plan not found");
+
+            if (plan.IsActive != kvk.Gym.Enums.ActiveStatus.Active)
+                return Result.Failure("Membership plan is inactive");
+
+            // Update membership plan on the member
+            member.MembershipPlanId = plan.Id;
+
+            // Determine start/end/renewal dates for the new plan
+            var startDate = DateTime.UtcNow;
+            var renewalDate = startDate.AddDays(plan.DurationInDays);
+            var endDate = startDate.AddDays(plan.DurationInDays);
+
+            // Try to update the latest payment if it's pending — keep history otherwise by creating a new payment
+            var latestPayment = await _db.MemberPayments
+                .Where(p => p.MembershipId == member.Id)
+                .OrderByDescending(p => p.CreatedAt)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            MemberPayment payment;
+            if (latestPayment != null && latestPayment.PaymentStatus == kvk.Gym.Enums.PaymentStatus.Pending)
+            {
+                // update existing pending payment to reflect new plan amount and dates
+                latestPayment.Amount = plan.Price;
+                latestPayment.PaymentType = request.PaymentType;
+                latestPayment.MemberShipStartDate = startDate;
+                latestPayment.MemberShipRenewalDate = renewalDate;
+                latestPayment.MemberShipEndDate = endDate;
+
+                payment = latestPayment;
+            }
+            else
+            {
+                // create a new payment record for the upgrade
+                payment = new MemberPayment
+                {
+                    MembershipId = member.Id,
+                    Amount = plan.Price,
+                    PaymentType = request.PaymentType,
+                    PaymentStatus = kvk.Gym.Enums.PaymentStatus.Pending,
+                    MemberShipStartDate = startDate,
+                    MemberShipRenewalDate = renewalDate,
+                    MemberShipEndDate = endDate
+                };
+
+                _db.MemberPayments.Add(payment);
+            }
+
+            await _db.SaveChangesAsync(cancellationToken);
+
+            // prepare response including the new payment dates
+            var response = new MembershipResponse
+            {
+                Id = member.Id,
+                MembershipNumber = member.MembershipNumber,
+                FirstName = member.FirstName,
+                LastName = member.LastName,
+                Email = member.Email,
+                PhoneNumber = member.Phone ?? string.Empty,
+                DateOfBirth = member.DateOfBirth.ToString("dd/MM/yyyy"),
+                Gender = member.Gender,
+                MembershipStatus = member.MembershipStatus.ToString(),
+                MembershipPlanId = member.MembershipPlanId,
+                MembershipPlanTitle = plan.Title,
+                MembershipPlanPrice = plan.Price,
+                MembershipStartDate = payment.MemberShipStartDate,
+                MembershipEndDate = payment.MemberShipEndDate,
+                PaymentStatus = payment.PaymentStatus,
+                MembershipPlanDurationInDays = plan.DurationInDays,
+                IdentityUserId = member.IdentityUserId,
+                IsSavedFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) || !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2)
+            };
+
+            return Result.Success("Membership plan upgraded").WithData("response", response);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure($"Failed to upgrade membership plan: {ex.Message}");
         }
     }
 

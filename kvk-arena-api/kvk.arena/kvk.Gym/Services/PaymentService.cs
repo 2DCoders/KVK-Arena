@@ -69,6 +69,19 @@ public class PaymentService : IPaymentService
 
                 _db.MemberPayments.Update(memberPayment);
             }
+            
+            var conn = _db.Database.GetDbConnection();
+            await conn.OpenAsync(cancellationToken);
+            // Refresh the materialized view to ensure analytics are up-to-date.
+            using (var refreshCmd = conn.CreateCommand())
+            {
+                refreshCmd.CommandText = @"REFRESH MATERIALIZED VIEW gym.""MemberFinancialAnalyticsDaily"";";
+                // Execute refresh (may take time depending on data size)
+                await refreshCmd.ExecuteNonQueryAsync(cancellationToken);
+            }
+
+            
+            
 
             await _smsService.SendSingleMessageAsync(member.Phone!
                 , MessageList.PaymentReceivedMessage(member.FirstName, request.Amount), cancellationToken);

@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using kvk.BuildingBlocks.Common;
 using kvk.Gym.Services;
-using kvk.Gym.Features.Memberships;
 
 namespace kvk.Gym.Features.Memberships;
 
@@ -30,6 +28,26 @@ public class MembershipsController : ControllerBase
     public async Task<IActionResult> UpdateFingerprints(Guid id, [FromBody] UpdateFingerprintsRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.UpdateFingerprintsAsync(id, request, cancellationToken);
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Edit(Guid id, [FromBody] EditMembershipRequest request, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.EditMemberAsync(id, request, cancellationToken);
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("{id:guid}/upgrade")]
+    public async Task<IActionResult> Upgrade(Guid id, [FromBody] UpgradeMembershipPlanRequest request, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.UpgradeMembershipPlanAsync(id, request, cancellationToken);
         if (!result.Succeeded)
             return BadRequest(result);
 

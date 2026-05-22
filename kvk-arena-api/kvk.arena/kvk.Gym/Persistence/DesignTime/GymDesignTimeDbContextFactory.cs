@@ -2,7 +2,11 @@ using System;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Logging.Abstractions;
+using kvk.BuildingBlocks.Interfaces;
 using System.Text.Json;
+using kvk.BuildingBlocks.Persistence;
+using Microsoft.Extensions.Logging;
 
 namespace kvk.Gym.Persistence.DesignTime
 {
@@ -56,8 +60,21 @@ namespace kvk.Gym.Persistence.DesignTime
 
             optionsBuilder.UseNpgsql(connectionString, b => b.MigrationsAssembly("kvk.Gym"));
 
-            return new GymDbContext(optionsBuilder.Options);
+            // Provide minimal services required by GymDbContext constructor at design-time.
+            var tenantService = new DesignTimeTenantService();
+            var logger = Microsoft.Extensions.Logging.Abstractions.NullLogger<kvk.BuildingBlocks.Persistence.AppDbContextBase>.Instance;
+
+            return new GymDbContext(optionsBuilder.Options, tenantService, logger, null);
         }
+    }
+
+    // Minimal ITenantService implementation for design-time tooling.
+    internal class DesignTimeTenantService : ITenantService
+    {
+        private Guid _tenant = Guid.Parse("00000000-0000-0000-0000-000000000001");
+        public Guid GetCurrentTenantId() => _tenant;
+        public void SetCurrentTenant(Guid tenantId) => _tenant = tenantId;
+        public void ClearCurrentTenant() => _tenant = Guid.Empty;
     }
 }
 
