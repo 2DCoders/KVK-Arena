@@ -21,6 +21,7 @@
         <ProjectReference Include="..\kvk.BuildingBlocks\kvk.BuildingBlocks.csproj" />
         <ProjectReference Include="..\kvk.Gym\kvk.Gym.csproj" />
         <ProjectReference Include="..\kvk.Identity\kvk.Identity.csproj" />
+        <ProjectReference Include="..\kvk.Financial\kvk.Financial.csproj" />
     </ItemGroup>
 
 </Project>

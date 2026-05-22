@@ -83,7 +83,7 @@ public abstract class AppDbContextBase : DbContext
     private void ApplyTenantFilter<T>(ModelBuilder modelBuilder) where T : BaseEntity
     {
         modelBuilder.Entity<T>()
-            .HasQueryFilter(e => e.TenantId == _tenantService.GetCurrentTenantId());
+            .HasQueryFilter(e => e.TenantId == Guid.Parse("00000000-0000-0000-0000-000000000001"));
     }
 
     /// <summary>
@@ -94,13 +94,8 @@ public abstract class AppDbContextBase : DbContext
     /// </summary>
     public override int SaveChanges()
     {
-        var tenantId = _tenantService.GetCurrentTenantId();
+        var tenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
         // Phase 1: Allow empty GUID (00000000-0000-0000-0000-000000000000) as hardcoded tenant
-        if (tenantId == Guid.Empty)
-        {
-            _logger.LogWarning("SaveChanges called without tenant context");
-            throw new InvalidOperationException("Tenant context is required for database operations");
-        }
 
         ApplyAuditTrail(tenantId);
         return base.SaveChanges();
@@ -114,13 +109,9 @@ public abstract class AppDbContextBase : DbContext
     /// </summary>
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        var tenantId = _tenantService.GetCurrentTenantId();
+        var tenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
         // Phase 1: Allow empty GUID (00000000-0000-0000-0000-000000000000) as hardcoded tenant
-        if (tenantId == Guid.Empty)
-        {
-            _logger.LogWarning("SaveChangesAsync called without tenant context");
-            throw new InvalidOperationException("Tenant context is required for database operations");
-        }
+   
 
         ApplyAuditTrail(tenantId);
         return await base.SaveChangesAsync(cancellationToken);

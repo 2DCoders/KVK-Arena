@@ -5,6 +5,7 @@ using kvk.Host.Middlewares;
 using Scalar.AspNetCore;
 using kvk.Identity;
 using kvk.Gym;
+using kvk.Financial;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,9 +44,13 @@ builder.Services.AddCors(options =>
 var identityInitializer = new IdentityModuleInitializer();
 identityInitializer.RegisterModule(builder.Services, builder.Configuration);
 
-// Register Gym module so its integrator event handlers are available in DI.
-var gymInitializer = new GymModuleInitializer();
-gymInitializer.RegisterModule(builder.Services, builder.Configuration);
+        // Register Gym module so its integrator event handlers are available in DI.
+        var gymInitializer = new GymModuleInitializer();
+        gymInitializer.RegisterModule(builder.Services, builder.Configuration);
+
+        // Register Financial module (analytics/services)
+        var financialInitializer = new FinancialModuleInitializer();
+        financialInitializer.RegisterModule(builder.Services, builder.Configuration);
 
 var app = builder.Build();
 
