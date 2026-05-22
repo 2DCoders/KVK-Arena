@@ -12,4 +12,11 @@ public static class MessageList
       return $"Dear {firstName}, your payment of {amount} has been received. Thank you for being a valued member of our gym!";
    }
 
+   public static string GetPlanUpgradedMessage(string firstName, string planTitle, DateTime? startDate, DateTime? endDate)
+   {
+      var start = startDate.HasValue ? startDate.Value.ToString("dd/MM/yyyy") : "N/A";
+      var end = endDate.HasValue ? endDate.Value.ToString("dd/MM/yyyy") : "N/A";
+      return $"Dear {firstName}, your membership has been upgraded to {planTitle}. Valid from {start} to {end}. Thank you for being with KVK Arena.";
+   }
+
 }

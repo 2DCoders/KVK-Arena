@@ -442,6 +442,20 @@ public class MembershipService : IMembershipService
 
             await _db.SaveChangesAsync(cancellationToken);
 
+            // send SMS notification if phone is available
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(member.Phone))
+                {
+                    var message = MessageList.GetPlanUpgradedMessage(member.FirstName, plan.Title, payment.MemberShipStartDate, payment.MemberShipEndDate);
+                    await _smsService.SendSingleMessageAsync(member.Phone, message, cancellationToken);
+                }
+            }
+            catch
+            {
+                // SMS failure should not block the main operation; swallow exceptions silently or log if logger available
+            }
+
             // prepare response including the new payment dates
             var response = new MembershipResponse
             {
