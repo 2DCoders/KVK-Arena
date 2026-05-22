@@ -64,6 +64,7 @@ public class PaymentService : IPaymentService
                     memberPayment.MemberShipRenewalDate = DateTime.UtcNow;
                 }
 
+                memberPayment.PaymentType = request.PaymentType;
                 memberPayment.PaymentStatus = PaymentStatus.Paid;
                 memberPayment.TransactionReference = request.TransactionReference;
 
