@@ -193,6 +193,7 @@ public class MembershipService : IMembershipService
                 .AsNoTracking()
                 .Where(m => !m.IsDeleted)
                 .Include(m => m.MembershipPlan)
+                .Include(m => m.MemberPayments) // include payments so projection can access them
                 .ToListAsync(cancellationToken);
 
             var response = memberships.Select(m => new MembershipResponse
@@ -205,6 +206,10 @@ public class MembershipService : IMembershipService
                 PhoneNumber = m.Phone ?? string.Empty,
                 DateOfBirth = m.DateOfBirth.ToString("dd/MM/yyyy"),
                 Gender = m.Gender,
+                PaymentStatus = m.MemberPayments
+                    .OrderByDescending(p => p.CreatedAt)
+                    .Select(p => p.PaymentStatus)
+                    .FirstOrDefault(),
                 MembershipStatus = m.MembershipStatus.ToString(),
                 MembershipPlanId = m.MembershipPlanId,
                 MembershipPlanTitle = m.MembershipPlan?.Title,
