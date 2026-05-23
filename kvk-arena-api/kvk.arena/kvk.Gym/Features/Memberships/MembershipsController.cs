@@ -1,6 +1,6 @@
+using kvk.BuildingBlocks.Services;
 using Microsoft.AspNetCore.Mvc;
-using kvk.Gym.Services;
-
+using kvk.Gym.Interfaces;
 namespace kvk.Gym.Features.Memberships;
 
 [ApiController]
@@ -70,6 +70,26 @@ public class MembershipsController : ControllerBase
             return NotFound(result);
 
         return Ok(result);
+    }
+
+    [HttpPost("{id:guid}/soft-delete")]
+    public async Task<IActionResult> SoftDelete(Guid id, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.SoftDeleteMemberAsync(id, cancellationToken);
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> PermanentlyDelete(Guid id, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.PermanentlyDeleteMemberAsync(id, cancellationToken);
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return NoContent();
     }
 }
 

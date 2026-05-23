@@ -1,5 +1,6 @@
 using kvk.BuildingBlocks.Interfaces;
 using kvk.Gym.Services;
+using kvk.Gym.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;

@@ -62,5 +62,27 @@ public class GymDbContext : AppDbContextBase
             .WithMany()
             .HasForeignKey(p => p.MembershipId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Configure MemberPayment -> Membership with cascade delete so removing a Membership removes related payments.
+        modelBuilder.Entity<MemberPayment>()
+            .HasIndex(p => p.MembershipId)
+            .HasDatabaseName("IX_MemberPayment_MembershipId");
+
+        modelBuilder.Entity<MemberPayment>()
+            .HasOne(p => p.Membership)
+            .WithMany(m => m.MemberPayments)
+            .HasForeignKey(p => p.MembershipId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Configure MemberAttendance -> Membership with cascade delete so removing a Membership removes related attendances.
+        modelBuilder.Entity<MemberAttendance>()
+            .HasIndex(a => a.MembershipId)
+            .HasDatabaseName("IX_MemberAttendance_MembershipId");
+
+        modelBuilder.Entity<MemberAttendance>()
+            .HasOne(a => a.Membership)
+            .WithMany(m => m.MemberAttendances)
+            .HasForeignKey(a => a.MembershipId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

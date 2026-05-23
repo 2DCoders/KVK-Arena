@@ -32,4 +32,20 @@ public class Membership : User
     public string? DeviceFingerprintId1 { get; set; }
     
     public string? DeviceFingerprintId2 { get; set; }
+
+    // Soft-delete support
+    /// <summary>
+    /// Marks a membership as soft-deleted. Soft-deleted records should be excluded from normal queries.
+    /// </summary>
+    public bool IsDeleted { get; set; }
+
+    /// <summary>
+    /// Timestamp indicating when the membership was soft-deleted. Null when not deleted.
+    /// </summary>
+    public DateTime? DeletedAt { get; set; }
+
+    // Navigation collections for cascade-delete configuration
+    public ICollection<MemberPayment> MemberPayments { get; set; } = new List<MemberPayment>();
+
+    public ICollection<MemberAttendance> MemberAttendances { get; set; } = new List<MemberAttendance>();
 }

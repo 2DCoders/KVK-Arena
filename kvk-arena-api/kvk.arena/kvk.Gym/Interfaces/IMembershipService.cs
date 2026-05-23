@@ -1,7 +1,7 @@
 using kvk.BuildingBlocks.Common;
 using kvk.Gym.Features.Memberships;
 
-namespace kvk.Gym.Services;
+namespace kvk.Gym.Interfaces;
 
 public interface IMembershipService
 {
@@ -13,5 +13,11 @@ public interface IMembershipService
     Task<List<MembershipResponse>> GetAllMembersAsync(CancellationToken cancellationToken = default);
     
     Task<Result> GetMemberAsync(Guid memberId, CancellationToken cancellationToken = default);
+    
+    // Soft delete a member (marks IsDeleted = true)
+    Task<Result> SoftDeleteMemberAsync(Guid memberId, CancellationToken cancellationToken = default);
+
+    // Permanently delete a member. Allowed only for members that meet configured criteria.
+    Task<Result> PermanentlyDeleteMemberAsync(Guid memberId, CancellationToken cancellationToken = default);
     Task<Result> EnsureMembershipForStaffAsync(string identityUserId, string email, string fullName, CancellationToken cancellationToken = default);
 }

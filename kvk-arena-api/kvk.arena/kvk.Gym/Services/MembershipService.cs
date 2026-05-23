@@ -2,6 +2,7 @@ using kvk.BuildingBlocks.Common;
 using kvk.Gym.Domain;
 using Microsoft.EntityFrameworkCore;
 using kvk.Gym.Features.Memberships;
+using kvk.Gym.Interfaces;
 using System.Security.Cryptography;
 using kvk.BuildingBlocks.Constants;
 using kvk.BuildingBlocks.Interfaces;
@@ -141,7 +142,7 @@ public class MembershipService : IMembershipService
         {
             var member = await _db.Memberships
                 .Include(m => m.MembershipPlan)
-                .SingleOrDefaultAsync(m => m.Id == memberId, cancellationToken);
+                .SingleOrDefaultAsync(m => m.Id == memberId && !m.IsDeleted, cancellationToken);
             if (member == null)
                 return Result.Failure("Member not found");
 
@@ -190,6 +191,7 @@ public class MembershipService : IMembershipService
         {
             var memberships = await _db.Memberships
                 .AsNoTracking()
+                .Where(m => !m.IsDeleted)
                 .Include(m => m.MembershipPlan)
                 .ToListAsync(cancellationToken);
 
@@ -229,7 +231,7 @@ public class MembershipService : IMembershipService
             var member = await _db.Memberships
                 .AsNoTracking()
                 .Include(m => m.MembershipPlan)
-                .SingleOrDefaultAsync(m => m.Id == memberId, cancellationToken);
+                .SingleOrDefaultAsync(m => m.Id == memberId && !m.IsDeleted, cancellationToken);
 
             if (member == null)
                 return Result.Failure("Member not found");
@@ -280,7 +282,7 @@ public class MembershipService : IMembershipService
         try
         {
             var existing =
-                await _db.Memberships.SingleOrDefaultAsync(m => m.IdentityUserId == identityUserId, cancellationToken);
+                await _db.Memberships.SingleOrDefaultAsync(m => m.IdentityUserId == identityUserId && !m.IsDeleted, cancellationToken);
             if (existing != null)
             {
                 // update basic info
@@ -336,7 +338,7 @@ public class MembershipService : IMembershipService
         {
             var member = await _db.Memberships
                 .Include(m => m.MembershipPlan)
-                .SingleOrDefaultAsync(m => m.Id == memberId, cancellationToken);
+                .SingleOrDefaultAsync(m => m.Id == memberId && !m.IsDeleted, cancellationToken);
             if (member == null)
                 return Result.Failure("Member not found");
 
@@ -396,7 +398,7 @@ public class MembershipService : IMembershipService
         {
             var member = await _db.Memberships
                 .Include(m => m.MembershipPlan)
-                .SingleOrDefaultAsync(m => m.Id == memberId, cancellationToken);
+                .SingleOrDefaultAsync(m => m.Id == memberId && !m.IsDeleted, cancellationToken);
             if (member == null)
                 return Result.Failure("Member not found");
 
@@ -495,6 +497,69 @@ public class MembershipService : IMembershipService
     private static int GenerateOtp()
     {
         return RandomNumberGenerator.GetInt32(1000, 10000);
+    }
+
+    public async Task<Result> SoftDeleteMemberAsync(Guid memberId, CancellationToken cancellationToken = default)
+    {
+        if (memberId == Guid.Empty)
+            return Result.Failure("Member id cannot be empty");
+
+        try
+        {
+            var member = await _db.Memberships
+                .SingleOrDefaultAsync(m => m.Id == memberId && !m.IsDeleted, cancellationToken);
+
+            if (member == null)
+                return Result.Failure("Member not found");
+
+            member.IsDeleted = true;
+            member.DeletedAt = DateTime.UtcNow;
+
+            await _db.SaveChangesAsync(cancellationToken);
+
+            return Result.Success("Member soft-deleted");
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure($"Failed to soft-delete member: {ex.Message}");
+        }
+    }
+
+    public async Task<Result> PermanentlyDeleteMemberAsync(Guid memberId, CancellationToken cancellationToken = default)
+    {
+        if (memberId == Guid.Empty)
+            return Result.Failure("Member id cannot be empty");
+
+        try
+        {
+            var member = await _db.Memberships
+                .SingleOrDefaultAsync(m => m.Id == memberId && !m.IsDeleted, cancellationToken);
+
+            if (member == null)
+                return Result.Failure("Member not found");
+
+            // Business rule: permanent delete only allowed when there is at least one pending payment
+            // AND there are no saved fingerprints on the member.
+            var hasPendingPayment = await _db.MemberPayments
+                .AnyAsync(p => p.MembershipId == memberId && p.PaymentStatus == kvk.Gym.Enums.PaymentStatus.Pending, cancellationToken);
+
+            var hasFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
+                                  !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2);
+
+            if (!hasPendingPayment || hasFingerprints)
+                return Result.Failure("Permanent delete is allowed only for members with pending payments and no saved fingerprints");
+
+            // With cascade delete configured for MemberPayments and MemberAttendances, removing the membership
+            // will delete related payments and attendances automatically.
+            _db.Memberships.Remove(member);
+            await _db.SaveChangesAsync(cancellationToken);
+
+            return Result.Success("Member permanently deleted");
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure($"Failed to permanently delete member: {ex.Message}");
+        }
     }
 
     private async Task<string> GetNextMembershipTokenAsync(string memberTypeName, int year,

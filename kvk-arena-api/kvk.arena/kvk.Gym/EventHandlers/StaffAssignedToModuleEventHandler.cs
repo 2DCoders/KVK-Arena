@@ -5,9 +5,9 @@ namespace kvk.Gym.EventHandlers;
 
 public class StaffAssignedToModuleEventHandler : IStaffAssignedToModuleEventHandler
 {
-    private readonly kvk.Gym.Services.IMembershipService _membershipService;
+    private readonly kvk.Gym.Interfaces.IMembershipService _membershipService;
 
-    public StaffAssignedToModuleEventHandler(kvk.Gym.Services.IMembershipService membershipService)
+    public StaffAssignedToModuleEventHandler(kvk.Gym.Interfaces.IMembershipService membershipService)
     {
         _membershipService = membershipService ?? throw new ArgumentNullException(nameof(membershipService));
     }

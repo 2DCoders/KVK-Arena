@@ -171,6 +171,52 @@ public class AuthService
         }
     }
 
+    /// <summary>
+    /// Change password for a staff member. Accepts either UserId or UserName (UserId takes precedence).
+    /// </summary>
+    public async Task<Result> ChangePasswordAsync(ChangePasswordRequest? request, CancellationToken cancellationToken = default)
+    {
+        if (request == null)
+            return Result.Failure("Request cannot be null");
+
+        if (string.IsNullOrWhiteSpace(request.CurrentPassword))
+            return Result.Failure("Current password is required");
+
+        if (string.IsNullOrWhiteSpace(request.NewPassword))
+            return Result.Failure("New password is required");
+
+        try
+        {
+            Staff? staff = null;
+            if (request.UserId != Guid.Empty)
+            {
+                staff = await _db.Set<Staff>()
+                    .SingleOrDefaultAsync(s => s.Id == request.UserId, cancellationToken);
+            }
+            else if (!string.IsNullOrWhiteSpace(request.UserName))
+            {
+                staff = await _db.Set<Staff>()
+                    .SingleOrDefaultAsync(s => s.UserName == request.UserName, cancellationToken);
+            }
+
+            if (staff == null)
+                return Result.Failure("Staff member not found");
+
+            if (!VerifyPassword(request.CurrentPassword, staff.PasswordHash))
+                return Result.Failure("Current password is incorrect");
+
+            staff.PasswordHash = HashPassword(request.NewPassword);
+            _db.Set<Staff>().Update(staff);
+            await _db.SaveChangesAsync(cancellationToken);
+
+            return Result.Success("Password changed successfully");
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure($"Failed to change password: {ex.Message}");
+        }
+    }
+
     // ---- Password hashing helpers (PBKDF2) ----
     private static string HashPassword(string password)
     {
