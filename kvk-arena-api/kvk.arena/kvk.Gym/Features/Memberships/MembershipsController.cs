@@ -1,4 +1,3 @@
-using kvk.BuildingBlocks.Services;
 using Microsoft.AspNetCore.Mvc;
 using kvk.Gym.Interfaces;
 namespace kvk.Gym.Features.Memberships;
