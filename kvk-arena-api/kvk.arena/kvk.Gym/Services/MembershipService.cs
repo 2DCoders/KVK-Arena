@@ -210,7 +210,8 @@ public class MembershipService : IMembershipService
                 MembershipPlanTitle = m.MembershipPlan?.Title,
                 MembershipPlanPrice = m.MembershipPlan?.Price,
                 MembershipPlanDurationInDays = m.MembershipPlan?.DurationInDays,
-                IdentityUserId = m.IdentityUserId
+                IdentityUserId = m.IdentityUserId,
+                IsDeleted = m.IsDeleted
             }).ToList();
 
             return response;

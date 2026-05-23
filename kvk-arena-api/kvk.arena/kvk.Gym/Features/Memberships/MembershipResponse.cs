@@ -23,4 +23,6 @@ public class MembershipResponse
     public int? MembershipPlanDurationInDays { get; set; }
     public string? IdentityUserId { get; set; }
     public bool IsSavedFingerprints  { get; set; }
+    
+    public bool IsDeleted { get; set; }
 }
