@@ -64,24 +64,24 @@ export default function Hero() {
       <div className="absolute -left-20 top-16 h-56 w-56 rounded-full bg-[#296BE1]/20 blur-3xl" />
       <div className="absolute -right-20 bottom-4 h-64 w-64 rounded-full bg-[#296BE1]/15 blur-3xl" />
 
-      <div className="relative mt-5 z-10 mx-auto grid max-w-7xl items-center gap-12 px-4 lg:grid-cols-[1fr_1.05fr] lg:px-8">
-        <div className="hero-fade-up max-w-3xl">
+      <div className="relative mt-5 z-10 mx-auto flex max-w-7xl flex-col items-center gap-8 px-4 lg:px-8 text-center">
+        <div className="hero-fade-up max-w-4xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-[#296BE1]/25 bg-[#296BE1]/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#296BE1] shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
             KVK Arena Lifestyle Hub
           </div>
 
-          <h1 className="mt-6 text-5xl font-black leading-[0.94] tracking-[-0.045em] text-slate-950 sm:text-6xl lg:text-7xl">
+          <h1 className="mt-6 text-5xl font-black leading-[0.9] tracking-[-0.035em] text-slate-950 sm:text-6xl lg:text-7xl xl:text-8xl">
             One arena for
             <span className="block bg-gradient-to-r from-[#296BE1] via-slate-900 to-[#296BE1] bg-clip-text text-transparent">
-              movement, care, play.
+              movement, play, care.
             </span>
           </h1>
 
-          <p className="mt-6 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
+          <p className="mt-6 mx-auto max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
             Explore four connected experiences in a modern light-space design: Gym, Carwash, Badminton Court, and Gaming Centre. Book faster, move easier, and keep your day flowing in one place.
           </p>
 
-          <div className="mt-9 flex flex-col gap-4 sm:flex-row">
+          <div className="mt-9 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <button className="inline-flex items-center justify-center rounded-full bg-[#296BE1] px-8 py-4 text-sm font-semibold text-white shadow-[0_16px_36px_rgba(41,107,225,0.35)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1f58be]">
               Plan Your Visit
             </button>
@@ -103,8 +103,8 @@ export default function Hero() {
           </div>
         </div>
 
-        <div className="hero-fade-up-delay relative">
-          <div className="rounded-[2rem] border border-white p-1 shadow-[0_24px_80px_rgba(15,23,42,0.14)] backdrop-blur-xl sm:p-6">
+        <div className="hero-fade-up-delay relative mt-6 translate-y-6 sm:translate-y-10">
+          <div className="rounded-[2rem] border border-white p-1 shadow-[0_24px_80px_rgba(15,23,42,0.14)] backdrop-blur-xl sm:p-4">
             {/* <div className="mb-4 flex items-center justify-between rounded-2xl bg-[#296BE1]/8 px-4 py-3">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#296BE1]">Featured Zones</p>
               <p className="text-xs font-medium text-slate-500">Gym • Carwash • Court • Gaming</p>
@@ -120,7 +120,7 @@ export default function Hero() {
                 <img
                   src={heroImage}
                   alt={`${activeService.title} preview`}
-                  className="h-[320px] w-full object-cover sm:h-[360px]"
+                  className="h-[340px] w-full object-cover object-bottom sm:h-[380px] lg:h-[420px]"
                 />
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/78 via-slate-900/26 to-transparent" />
                 <div className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#296BE1] sm:left-4 sm:top-4">
