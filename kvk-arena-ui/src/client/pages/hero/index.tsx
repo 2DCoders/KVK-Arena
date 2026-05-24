@@ -1,47 +1,5 @@
-import type { CSSProperties } from "react";
 
-import { Car, Dumbbell, Gamepad2, Medal } from "lucide-react";
 
-const backgroundIcons = [
-  {
-    title: "Gym",
-    className: "left-[6%] top-[16%] h-14 w-14 sm:h-16 sm:w-16",
-    delay: "0ms",
-    floatDuration: "8.5s",
-    spinDuration: "18s",
-    children: <Dumbbell className="h-7 w-7 text-[#296BE1]" aria-hidden="true" strokeWidth={1.9} />,
-  },
-  {
-    title: "Carwash",
-    className: "right-[7%] top-[22%] h-16 w-16 sm:h-20 sm:w-20",
-    delay: "500ms",
-    floatDuration: "9.5s",
-    spinDuration: "22s",
-    children: <Car className="h-8 w-8 text-[#296BE1]" aria-hidden="true" strokeWidth={1.9} />,
-  },
-  {
-    title: "Badminton Court",
-    className: "left-[12%] bottom-[20%] h-15 w-15 sm:h-18 sm:w-18",
-    delay: "900ms",
-    floatDuration: "10.5s",
-    spinDuration: "25s",
-    children: <Medal className="h-8 w-8 text-[#296BE1]" aria-hidden="true" strokeWidth={1.9} />,
-  },
-  {
-    title: "Gaming Centre",
-    className: "right-[13%] bottom-[16%] h-14 w-14 sm:h-16 sm:w-16",
-    delay: "1300ms",
-    floatDuration: "8.8s",
-    spinDuration: "19s",
-    children: <Gamepad2 className="h-7 w-7 text-[#296BE1]" aria-hidden="true" strokeWidth={1.9} />,
-  },
-];
-
-const stats = [
-  { value: "4", label: "Core experiences" },
-  { value: "7 days", label: "Open weekly" },
-  { value: "1 app", label: "One booking flow" },
-];
 
 export default function Hero() {
 
