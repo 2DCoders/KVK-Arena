@@ -64,7 +64,7 @@ export default function Hero() {
       <div className="absolute -left-20 top-16 h-56 w-56 rounded-full bg-[#296BE1]/20 blur-3xl" />
       <div className="absolute -right-20 bottom-4 h-64 w-64 rounded-full bg-[#296BE1]/15 blur-3xl" />
 
-      <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-12 px-4 lg:grid-cols-[1fr_1.05fr] lg:px-8">
+      <div className="relative mt-5 z-10 mx-auto grid max-w-7xl items-center gap-12 px-4 lg:grid-cols-[1fr_1.05fr] lg:px-8">
         <div className="hero-fade-up max-w-3xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-[#296BE1]/25 bg-[#296BE1]/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#296BE1] shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
             KVK Arena Lifestyle Hub
@@ -104,13 +104,13 @@ export default function Hero() {
         </div>
 
         <div className="hero-fade-up-delay relative">
-          <div className="rounded-[2rem] border border-white bg-white/90 p-5 shadow-[0_24px_80px_rgba(15,23,42,0.14)] backdrop-blur-xl sm:p-6">
-            <div className="mb-4 flex items-center justify-between rounded-2xl bg-[#296BE1]/8 px-4 py-3">
+          <div className="rounded-[2rem] border border-white p-1 shadow-[0_24px_80px_rgba(15,23,42,0.14)] backdrop-blur-xl sm:p-6">
+            {/* <div className="mb-4 flex items-center justify-between rounded-2xl bg-[#296BE1]/8 px-4 py-3">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#296BE1]">Featured Zones</p>
               <p className="text-xs font-medium text-slate-500">Gym • Carwash • Court • Gaming</p>
-            </div>
+            </div> */}
 
-            <div className="rounded-2xl border border-[#296BE1]/15 bg-white p-2 sm:p-2.5">
+            <div className="rounded-2xl border border-[#296BE1]/15 bg-white p-1 sm:p-2.5">
               <article
                 key={activeService.title}
                 className="hero-slide-card group relative overflow-hidden rounded-2xl border border-[#296BE1]/20 bg-white"

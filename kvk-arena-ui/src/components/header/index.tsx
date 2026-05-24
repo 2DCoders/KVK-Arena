@@ -6,7 +6,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="w-full border-b border-gray-200 bg-white shadow-sm fixed top-0 left-0 z-50">
+    <header className="fixed left-0 top-0 z-50 w-full border-b border-white/40 bg-white/70 shadow-[0_8px_30px_rgba(15,23,42,0.08)] backdrop-blur-xl">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 lg:px-8">
         
         {/* Left Menu - Desktop */}
@@ -25,7 +25,7 @@ export default function Header() {
             </div>
 
             {/* Dropdown */}
-            <div className="invisible absolute left-0 top-8 z-50 w-48 rounded-xl border border-gray-100 bg-white p-2 opacity-0 shadow-lg transition-all duration-200 group-hover:visible group-hover:opacity-100">
+            <div className="invisible absolute left-0 top-8 z-50 w-48 rounded-xl border border-white/60 bg-white/85 p-2 opacity-0 shadow-[0_14px_30px_rgba(15,23,42,0.12)] backdrop-blur-xl transition-all duration-200 group-hover:visible group-hover:opacity-100">
               <a
                 href="#"
                 className="block rounded-lg px-4 py-2 text-sm hover:bg-gray-100"
@@ -97,13 +97,13 @@ export default function Header() {
       <div
         className={`fixed inset-0 z-50 transition-all duration-300 ${
           mobileMenuOpen
-            ? "visible bg-black/40 opacity-100"
+            ? "visible bg-slate-950/30 backdrop-blur-[2px] opacity-100"
             : "invisible opacity-0"
         }`}
       >
         {/* Sidebar */}
         <div
-          className={`absolute right-0 top-0 h-full w-[280px] bg-white p-6 shadow-2xl transition-transform duration-300 ${
+          className={`absolute right-0 top-0 h-full w-[280px] border-l border-white/40 bg-white/80 p-6 shadow-2xl backdrop-blur-2xl transition-transform duration-300 ${
             mobileMenuOpen ? "translate-x-0" : "translate-x-full"
           }`}
         >
