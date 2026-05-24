@@ -80,6 +80,17 @@ public class MembershipsController : ControllerBase
 
         return NoContent();
     }
+    
+    [HttpPost("{id:guid}/reverse-soft-delete")]
+    public async Task<IActionResult> ReverseSoftDelete(Guid id, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.ReverseSoftDeleteMemberAsync(id, cancellationToken);
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return NoContent();
+    }
+    
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> PermanentlyDelete(Guid id, CancellationToken cancellationToken = default)

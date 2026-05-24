@@ -530,6 +530,34 @@ public class MembershipService : IMembershipService
             return Result.Failure($"Failed to soft-delete member: {ex.Message}");
         }
     }
+    
+    
+    public async Task<Result> ReverseSoftDeleteMemberAsync(Guid memberId, CancellationToken cancellationToken = default)
+    {
+        if (memberId == Guid.Empty)
+            return Result.Failure("Member id cannot be empty");
+
+        try
+        {
+            var member = await _db.Memberships
+                .SingleOrDefaultAsync(m => m.Id == memberId && m.IsDeleted, cancellationToken);
+
+            if (member == null)
+                return Result.Failure("Member not found");
+
+            member.IsDeleted = false;
+            member.DeletedAt = DateTime.UtcNow;
+
+            await _db.SaveChangesAsync(cancellationToken);
+
+            return Result.Success("Reversed Member soft-deleted");
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure($"Failed to Reverse soft-delete member: {ex.Message}");
+        }
+    }
+    
 
     public async Task<Result> PermanentlyDeleteMemberAsync(Guid memberId, CancellationToken cancellationToken = default)
     {
