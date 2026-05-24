@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 
-import heroImage from "@/assets/hero/gym-hero.png";
 
 const services = [
   {
@@ -32,31 +31,6 @@ const stats = [
 ];
 
 export default function Hero() {
-  const [activeSlide, setActiveSlide] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-
-  const totalSlides = services.length;
-  const activeService = services[activeSlide];
-
-  const goToPrevious = () => {
-    setActiveSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
-  };
-
-  const goToNext = () => {
-    setActiveSlide((prev) => (prev + 1) % totalSlides);
-  };
-
-  useEffect(() => {
-    if (isPaused) {
-      return;
-    }
-
-    const interval = window.setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % totalSlides);
-    }, 4200);
-
-    return () => window.clearInterval(interval);
-  }, [isPaused, totalSlides]);
 
   return (
     <section className="relative overflow-hidden bg-[#fefcf8] py-16 sm:py-20 lg:py-24">
@@ -66,9 +40,7 @@ export default function Hero() {
 
       <div className="relative mt-5 z-10 mx-auto flex max-w-7xl flex-col items-center gap-8 px-4 lg:px-8 text-center">
         <div className="hero-fade-up max-w-4xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#296BE1]/25 bg-[#296BE1]/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#296BE1] shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-            KVK Arena Lifestyle Hub
-          </div>
+          
 
           <h1 className="mt-6 text-5xl font-black leading-[0.9] tracking-[-0.035em] text-slate-950 sm:text-6xl lg:text-7xl xl:text-8xl">
             One arena for
@@ -102,75 +74,8 @@ export default function Hero() {
             ))}
           </div>
         </div>
-
-        <div className="hero-fade-up-delay relative mt-6 translate-y-6 sm:translate-y-10">
-          <div className="rounded-[2rem] border border-white p-1 shadow-[0_24px_80px_rgba(15,23,42,0.14)] backdrop-blur-xl sm:p-4">
-            {/* <div className="mb-4 flex items-center justify-between rounded-2xl bg-[#296BE1]/8 px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#296BE1]">Featured Zones</p>
-              <p className="text-xs font-medium text-slate-500">Gym • Carwash • Court • Gaming</p>
-            </div> */}
-
-            <div className="rounded-2xl border border-[#296BE1]/15 bg-white p-1 sm:p-2.5">
-              <article
-                key={activeService.title}
-                className="hero-slide-card group relative overflow-hidden rounded-2xl border border-[#296BE1]/20 bg-white"
-                onMouseEnter={() => setIsPaused(true)}
-                onMouseLeave={() => setIsPaused(false)}
-              >
-                <img
-                  src={heroImage}
-                  alt={`${activeService.title} preview`}
-                  className="h-[340px] w-full object-cover object-bottom sm:h-[380px] lg:h-[420px]"
-                />
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/78 via-slate-900/26 to-transparent" />
-                <div className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#296BE1] sm:left-4 sm:top-4">
-                  {activeService.subtitle}
-                </div>
-                <div className="absolute inset-x-0 bottom-0 p-4 text-white sm:p-5">
-                  <h3 className="text-2xl font-black tracking-[-0.02em] sm:text-3xl">{activeService.title}</h3>
-                  <p className="mt-2 max-w-[90%] text-sm leading-6 text-white/85 sm:text-base sm:leading-7">{activeService.description}</p>
-                </div>
-              </article>
-
-              <div className="mt-4 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  {services.map((service, index) => (
-                    <button
-                      key={service.title}
-                      type="button"
-                      onClick={() => setActiveSlide(index)}
-                      aria-label={`Go to ${service.title}`}
-                      aria-pressed={activeSlide === index}
-                      className={`h-2.5 rounded-full transition-all duration-300 ${
-                        activeSlide === index ? "w-8 bg-[#296BE1]" : "w-2.5 bg-slate-300 hover:bg-slate-400"
-                      }`}
-                    />
-                  ))}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={goToPrevious}
-                    aria-label="Previous featured zone"
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#296BE1]/35 text-[#296BE1] transition duration-200 hover:bg-[#296BE1]/10"
-                  >
-                    ←
-                  </button>
-                  <button
-                    type="button"
-                    onClick={goToNext}
-                    aria-label="Next featured zone"
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#296BE1] text-white transition duration-200 hover:bg-[#1f58be]"
-                  >
-                    →
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
+
 
       <style>{`
         .hero-fade-up {
