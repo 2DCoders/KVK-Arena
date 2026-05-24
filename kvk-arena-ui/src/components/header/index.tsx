@@ -79,7 +79,7 @@ export default function Header() {
 
         {/* Right Button - Desktop */}
         <div className="hidden lg:block">
-          <button className="rounded-xl border border-gray-300 px-7 py-2.5 text-sm font-semibold text-black transition hover:border-blue-600 hover:text-blue-600 cursor-pointer">
+          <button className="rounded-full border border-gray-300 px-7 py-2.5 text-sm font-semibold text-black transition hover:border-blue-600 hover:text-blue-600 cursor-pointer">
             Sign In
           </button>
         </div>

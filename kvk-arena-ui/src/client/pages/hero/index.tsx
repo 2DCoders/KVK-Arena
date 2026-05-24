@@ -1,26 +1,39 @@
-import { useEffect, useState } from "react";
+import type { CSSProperties } from "react";
 
+import { Car, Dumbbell, Gamepad2, Medal } from "lucide-react";
 
-const services = [
+const backgroundIcons = [
   {
     title: "Gym",
-    subtitle: "Strength and functional training",
-    description: "Coach-led sessions, recovery corners, and a premium workout floor.",
+    className: "left-[6%] top-[16%] h-14 w-14 sm:h-16 sm:w-16",
+    delay: "0ms",
+    floatDuration: "8.5s",
+    spinDuration: "18s",
+    children: <Dumbbell className="h-7 w-7 text-[#296BE1]" aria-hidden="true" strokeWidth={1.9} />,
   },
   {
     title: "Carwash",
-    subtitle: "Fast and detailed vehicle care",
-    description: "Drop in before training and collect your ride spotless after your session.",
+    className: "right-[7%] top-[22%] h-16 w-16 sm:h-20 sm:w-20",
+    delay: "500ms",
+    floatDuration: "9.5s",
+    spinDuration: "22s",
+    children: <Car className="h-8 w-8 text-[#296BE1]" aria-hidden="true" strokeWidth={1.9} />,
   },
   {
     title: "Badminton Court",
-    subtitle: "Professional indoor courts",
-    description: "Book singles or doubles slots with smooth surfaces and bright lighting.",
+    className: "left-[12%] bottom-[20%] h-15 w-15 sm:h-18 sm:w-18",
+    delay: "900ms",
+    floatDuration: "10.5s",
+    spinDuration: "25s",
+    children: <Medal className="h-8 w-8 text-[#296BE1]" aria-hidden="true" strokeWidth={1.9} />,
   },
   {
     title: "Gaming Centre",
-    subtitle: "Console and esports lounge",
-    description: "Compete, unwind, and host game nights with high-speed connectivity.",
+    className: "right-[13%] bottom-[16%] h-14 w-14 sm:h-16 sm:w-16",
+    delay: "1300ms",
+    floatDuration: "8.8s",
+    spinDuration: "19s",
+    children: <Gamepad2 className="h-7 w-7 text-[#296BE1]" aria-hidden="true" strokeWidth={1.9} />,
   },
 ];
 
@@ -37,8 +50,26 @@ export default function Hero() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_12%,rgba(41,107,225,0.18),transparent_36%),radial-gradient(circle_at_90%_8%,rgba(41,107,225,0.14),transparent_34%),linear-gradient(180deg,#fffdf9_0%,#f5f9ff_42%,#fffdf9_100%)]" />
       <div className="absolute -left-20 top-16 h-56 w-56 rounded-full bg-[#296BE1]/20 blur-3xl" />
       <div className="absolute -right-20 bottom-4 h-64 w-64 rounded-full bg-[#296BE1]/15 blur-3xl" />
+      <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden">
+        {backgroundIcons.map((icon) => (
+          <div
+            key={icon.title}
+            className={`hero-floating-icon absolute ${icon.className} rounded-full border border-white/70 bg-white/55 text-[#296BE1] shadow-[0_12px_30px_rgba(15,23,42,0.08)] backdrop-blur-md`}
+            style={{
+              animationDelay: icon.delay,
+              ["--hero-float-duration" as string]: icon.floatDuration,
+              ["--hero-spin-duration" as string]: icon.spinDuration,
+            } as CSSProperties}
+          >
+            <span className="hero-orbit-ring absolute inset-[-22px] rounded-full border border-[#296BE1]/10" />
+            <span className="hero-orbit-dot hero-orbit-dot-a absolute left-1/2 top-[-6px] h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-yellow-300 shadow-[0_0_0_4px_rgba(253,224,71,0.18)]" />
+            <span className="hero-orbit-dot hero-orbit-dot-b absolute right-[-5px] top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-[#296BE1]/70 shadow-[0_0_0_4px_rgba(41,107,225,0.12)]" />
+            {icon.children}
+          </div>
+        ))}
+      </div>
 
-      <div className="relative mt-5 z-10 mx-auto flex max-w-7xl flex-col items-center gap-8 px-4 lg:px-8 text-center">
+      <div className="relative z-10 mx-auto mt-5 flex max-w-7xl flex-col items-center gap-8 px-4 text-center lg:px-8">
         <div className="hero-fade-up max-w-4xl">
           
 
@@ -54,11 +85,11 @@ export default function Hero() {
           </p>
 
           <div className="mt-9 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <button className="inline-flex items-center justify-center rounded-full bg-[#296BE1] px-8 py-4 text-sm font-semibold text-white shadow-[0_16px_36px_rgba(41,107,225,0.35)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1f58be]">
-              Plan Your Visit
+            <button className="inline-flex cursor-pointer items-center justify-center rounded-full bg-[#296BE1] px-8 py-4 text-sm font-semibold text-white shadow-[0_16px_36px_rgba(41,107,225,0.35)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1f58be]">
+              Sign Up Now
             </button>
-            <button className="inline-flex items-center justify-center rounded-full border border-[#296BE1]/35 bg-white px-8 py-4 text-sm font-semibold text-[#296BE1] shadow-[0_10px_24px_rgba(15,23,42,0.07)] transition duration-300 hover:-translate-y-0.5 hover:border-[#296BE1] hover:bg-[#296BE1]/5">
-              View Facilities
+            <button className="inline-flex cursor-pointer items-center justify-center rounded-full border border-[#296BE1]/35 bg-white px-8 py-4 text-sm font-semibold text-[#296BE1] shadow-[0_10px_24px_rgba(15,23,42,0.07)] transition duration-300 hover:-translate-y-0.5 hover:border-[#296BE1] hover:bg-[#296BE1]/5">
+              Sign In
             </button>
           </div>
 
@@ -82,6 +113,27 @@ export default function Hero() {
           opacity: 0;
           transform: translateY(26px);
           animation: hero-fade-up 700ms ease forwards;
+        }
+
+        .hero-floating-icon {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0.85;
+          animation: hero-float var(--hero-float-duration, 7s) ease-in-out infinite,
+            hero-spin var(--hero-spin-duration, 20s) linear infinite;
+        }
+
+        .hero-orbit-ring {
+          animation: hero-orbit var(--hero-spin-duration, 20s) linear infinite reverse;
+        }
+
+        .hero-orbit-dot {
+          animation: hero-pulse 2.8s ease-in-out infinite;
+        }
+
+        .hero-orbit-dot-b {
+          animation-delay: 1.2s;
         }
 
         .hero-fade-up-delay {
@@ -125,10 +177,56 @@ export default function Hero() {
           }
         }
 
+        @keyframes hero-float {
+          0%,
+          100% {
+            transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+          }
+          50% {
+            transform: translateY(-16px) translateX(8px) rotate(8deg) scale(1.04);
+          }
+        }
+
+        @keyframes hero-spin {
+          0% {
+            transform: rotate(0deg) scale(1);
+          }
+          50% {
+            transform: rotate(180deg) scale(1.02);
+          }
+          100% {
+            transform: rotate(360deg) scale(1);
+          }
+        }
+
+        @keyframes hero-orbit {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+
+        @keyframes hero-pulse {
+          0%,
+          100% {
+            transform: scale(0.92);
+            opacity: 0.72;
+          }
+          50% {
+            transform: scale(1.12);
+            opacity: 1;
+          }
+        }
+
         @media (prefers-reduced-motion: reduce) {
           .hero-fade-up,
           .hero-fade-up-delay,
-          .hero-slide-card {
+          .hero-slide-card,
+          .hero-floating-icon,
+          .hero-orbit-ring,
+          .hero-orbit-dot {
             animation: none;
             opacity: 1;
             transform: none;
