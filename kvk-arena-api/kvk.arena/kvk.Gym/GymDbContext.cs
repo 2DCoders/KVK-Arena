@@ -23,6 +23,7 @@ public class GymDbContext : AppDbContextBase
     public DbSet<MemberPayment> MemberPayments { get; set; } = null!;
     public DbSet<PaymentRecord> PaymentRecords { get; set; } = null!;
     public DbSet<MembershipPlan> MembershipPlans { get; set; } = null!;
+    public DbSet<DayEndRecord> DayEnds { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -84,5 +85,12 @@ public class GymDbContext : AppDbContextBase
             .WithMany(m => m.MemberAttendances)
             .HasForeignKey(a => a.MembershipId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // DayEnd records for gym cash reconciliation
+        modelBuilder.Entity<DayEndRecord>(eb =>
+        {
+            eb.HasIndex(d => d.CurrentDate).HasDatabaseName("IX_DayEnd_CurrentDate");
+            eb.Property(d => d.Remark).IsRequired();
+        });
     }
 }
