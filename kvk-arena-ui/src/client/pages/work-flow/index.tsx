@@ -1,4 +1,5 @@
 import { Dumbbell, Truck, Gamepad, Feather, ShoppingBag } from "lucide-react"
+import bg from "@/assets/flow_bg.jpg"
 
 const features = [
     {
@@ -61,9 +62,14 @@ const features = [
 export default function WorkFlow() {
     return (
         <>
-        <section className="relative overflow-hidden bg-[#020817] py-20 lg:py-28">
+        <section className="relative overflow-hidden py-20 lg:py-28">
+            <div
+                aria-hidden="true"
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
+                style={{ backgroundImage: `url(${bg})` }}
+            />
+            <div aria-hidden="true" className="absolute inset-0 bg-black/78" />
             {/* Background Glow */}
-            <div className="absolute left-1/2 top-0 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-[140px]" />
 
             <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
@@ -106,14 +112,14 @@ export default function WorkFlow() {
                                     </div>
 
                                     {/* Icon */}
-                                    <div className="relative mx-auto mb-8 flex h-28 w-28 items-center justify-center">
+                                    <div className="relative mx-auto mb-8 flex h-20 w-20 items-center justify-center">
 
                                         {/* Outer Ring */}
                                         <div className="absolute inset-0 rounded-full border border-white/10" />
 
                                         {/* Orbiting Glow Dot */}
                                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                            <div className="relative h-28 w-28">
+                                            <div className="relative h-20 w-20">
                                                 <div className="absolute inset-0 animate-orbit">
                                                     <div className={`absolute -top-1 left-1/2 -translate-x-1/2 h-3 w-3 rounded-full ${f.dot} blur-[1px] animate-glow`} />
                                                 </div>
@@ -122,7 +128,7 @@ export default function WorkFlow() {
 
                                         {/* Icon Box */}
                                         <div
-                                            className={`relative flex h-20 w-20 items-center justify-center rounded-[24px] bg-gradient-to-br ${f.color} text-4xl text-white ${f.glow} transition-transform duration-500 group-hover:scale-110`}
+                                            className={`relative flex h-12 w-12 items-center justify-center rounded-[24px] bg-gradient-to-br ${f.color} text-4xl text-white ${f.glow} transition-transform duration-500 group-hover:scale-110`}
                                         >
                                             <Icon size={28} className="text-white" />
                                         </div>
