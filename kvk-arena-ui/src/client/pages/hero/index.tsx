@@ -1,23 +1,26 @@
-import hero_bg from "@/assets/hero/hero_bg.jpg";
+import hero_bg from "@/assets/hero/hero_bg1.png";
 
 export default function Hero() {
-
   return (
-    <section className="relative overflow-hidden bg-[#fefcf8] py-16 sm:py-20 lg:py-24">
-      
+    <section className="relative isolate overflow-hidden py-16 sm:py-20 lg:py-24">
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-80 rounded-lg"
+        style={{ backgroundImage: `url(${hero_bg})` }}
+      />
+      <div aria-hidden="true" className="absolute inset-0 rounded-lg bg-slate-950/25" />
+      <div aria-hidden="true" className="absolute inset-0 rounded-lg bg-linear-to-b from-slate-950/80 via-slate-950/65 to-slate-950/85" />
 
       <div className="relative z-10 mx-auto mt-5 flex max-w-7xl flex-col items-center gap-8 px-4 text-center lg:px-8">
         <div className="hero-fade-up max-w-4xl">
-          
-
-          <h1 className="mt-6 text-5xl font-black leading-[0.9] tracking-[-0.035em] text-slate-950 sm:text-6xl lg:text-7xl xl:text-8xl">
+          <h1 className="mt-6 text-5xl font-black leading-[0.9] tracking-[-0.035em] text-white sm:text-6xl lg:text-7xl xl:text-8xl">
             One arena for
-            <span className="block bg-linear-to-r from-[#296BE1] via-slate-900 to-[#296BE1] bg-clip-text text-transparent">
+            <span className="block bg-linear-to-r from-[#8FC0FF] via-white to-[#8FC0FF] bg-clip-text text-transparent">
               movement, play, care.
             </span>
           </h1>
 
-          <p className="mt-6 mx-auto max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
+          <p className="mt-6 mx-auto max-w-2xl text-base leading-8 text-slate-200 sm:text-lg">
             Explore four connected experiences in a modern light-space design: Gym, Carwash, Badminton Court, and Gaming Centre. Book faster, move easier, and keep your day flowing in one place.
           </p>
 
@@ -25,68 +28,18 @@ export default function Hero() {
             <button className="inline-flex cursor-pointer items-center justify-center rounded-full bg-[#296BE1] px-8 py-4 text-sm font-semibold text-white shadow-[0_16px_36px_rgba(41,107,225,0.35)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1f58be]">
               Sign Up Now
             </button>
-            <button className="inline-flex cursor-pointer items-center justify-center rounded-full border border-[#296BE1]/35 bg-white px-8 py-4 text-sm font-semibold text-[#296BE1] shadow-[0_10px_24px_rgba(15,23,42,0.07)] transition duration-300 hover:-translate-y-0.5 hover:border-[#296BE1] hover:bg-[#296BE1]/5">
+            <button className="inline-flex cursor-pointer items-center justify-center rounded-full border border-white/35 bg-white/10 px-8 py-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(15,23,42,0.16)] backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:border-white/55 hover:bg-white/16">
               Sign In
             </button>
           </div>
-
-          <div className="hero-slide-card mt-12 overflow-hidden rounded-4xl border border-slate-200 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
-            <img
-              src={hero_bg}
-              alt="KVK Arena hero visual"
-              className="h-full w-full object-cover"
-            />
-          </div>
-          
         </div>
       </div>
-
 
       <style>{`
         .hero-fade-up {
           opacity: 0;
           transform: translateY(26px);
           animation: hero-fade-up 700ms ease forwards;
-        }
-
-        .hero-floating-icon {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          opacity: 0.85;
-          animation: hero-float var(--hero-float-duration, 7s) ease-in-out infinite,
-            hero-spin var(--hero-spin-duration, 20s) linear infinite;
-        }
-
-        .hero-orbit-ring {
-          animation: hero-orbit var(--hero-spin-duration, 20s) linear infinite reverse;
-        }
-
-        .hero-orbit-dot {
-          animation: hero-pulse 2.8s ease-in-out infinite;
-        }
-
-        .hero-orbit-dot-b {
-          animation-delay: 1.2s;
-        }
-
-        .hero-fade-up-delay {
-          opacity: 0;
-          transform: translateY(26px);
-          animation: hero-fade-up 760ms ease forwards;
-          animation-delay: 140ms;
-        }
-
-        .hero-slide-card {
-          opacity: 0;
-          transform: translateY(20px) scale(0.985);
-          animation: hero-service-enter 620ms ease forwards;
-          transition: transform 280ms ease, box-shadow 280ms ease;
-        }
-
-        .hero-slide-card:hover {
-          transform: translateY(-6px);
-          box-shadow: 0 18px 36px rgba(41, 107, 225, 0.24);
         }
 
         @keyframes hero-fade-up {
@@ -100,76 +53,11 @@ export default function Hero() {
           }
         }
 
-        @keyframes hero-service-enter {
-          0% {
-            opacity: 0;
-            transform: translateY(20px) scale(0.985);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-
-        @keyframes hero-float {
-          0%,
-          100% {
-            transform: translateY(0) translateX(0) rotate(0deg) scale(1);
-          }
-          50% {
-            transform: translateY(-16px) translateX(8px) rotate(8deg) scale(1.04);
-          }
-        }
-
-        @keyframes hero-spin {
-          0% {
-            transform: rotate(0deg) scale(1);
-          }
-          50% {
-            transform: rotate(180deg) scale(1.02);
-          }
-          100% {
-            transform: rotate(360deg) scale(1);
-          }
-        }
-
-        @keyframes hero-orbit {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-
-        @keyframes hero-pulse {
-          0%,
-          100% {
-            transform: scale(0.92);
-            opacity: 0.72;
-          }
-          50% {
-            transform: scale(1.12);
-            opacity: 1;
-          }
-        }
-
         @media (prefers-reduced-motion: reduce) {
-          .hero-fade-up,
-          .hero-fade-up-delay,
-          .hero-slide-card,
-          .hero-floating-icon,
-          .hero-orbit-ring,
-          .hero-orbit-dot {
+          .hero-fade-up {
             animation: none;
             opacity: 1;
             transform: none;
-          }
-        }
-
-        @media (max-width: 640px) {
-          .hero-slide-card img {
-            height: 280px;
           }
         }
       `}</style>
