@@ -1,4 +1,4 @@
-import { Dumbbell, Truck, Gamepad, Feather, ShoppingBag } from "lucide-react"
+import { Dumbbell, Truck, Gamepad, Feather, ShoppingBag, SproutIcon, PlayIcon, SportShoe } from "lucide-react"
 import bg from "@/assets/flow_bg.jpg"
 
 const features = [
@@ -40,7 +40,7 @@ const features = [
         title: "Badminton Court",
         subtitle: "Indoor Courts",
         desc: "Book courts for training or friendly matches with ease.",
-        icon: Feather,
+        icon: SportShoe,
         color: "from-yellow-400 to-orange-500",
         glow: "shadow-[0_0_40px_rgba(251,191,36,0.45)]",
         dot: "bg-yellow-300",
