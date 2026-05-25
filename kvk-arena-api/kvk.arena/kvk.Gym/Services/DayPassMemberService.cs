@@ -158,9 +158,13 @@ public class DayPassMemberService : IDayPassMemberService
     {
         try
         {
+            var today = DateTime.UtcNow.Date;
+            var tomorrow = today.AddDays(1);
+
             var list = await _db.DayPassMembers
                 .AsNoTracking()
                 .Include(d => d.MembershipPlan)
+                .Where(d => d.Date >= today && d.Date < tomorrow)
                 .OrderByDescending(d => d.Date)
                 .ToListAsync(cancellationToken);
 
