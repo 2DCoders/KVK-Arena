@@ -2,6 +2,7 @@ import Main from "@/client/layouts/main";
 import Hero from "../hero";
 import BrandsSlider from "../brands-slider";
 import Services from "../services";
+import WorkFlow from "../work-flow";
 
 function WhatsappIcon() {
     return (
@@ -79,6 +80,7 @@ export default function Home() {
             <Hero />
             <BrandsSlider />
             <Services />
+            <WorkFlow />
         </Main>
     )
 }
