@@ -1,13 +1,9 @@
-
-
+import hero_bg from "@/assets/hero/hero_bg.jpg";
 
 export default function Hero() {
 
   return (
     <section className="relative overflow-hidden bg-[#fefcf8] py-16 sm:py-20 lg:py-24">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_12%,rgba(41,107,225,0.18),transparent_36%),radial-gradient(circle_at_90%_8%,rgba(41,107,225,0.14),transparent_34%),linear-gradient(180deg,#fffdf9_0%,#f5f9ff_42%,#fffdf9_100%)]" />
-      <div className="absolute -left-20 top-16 h-56 w-56 rounded-full bg-[#296BE1]/20 blur-3xl" />
-      <div className="absolute -right-20 bottom-4 h-64 w-64 rounded-full bg-[#296BE1]/15 blur-3xl" />
       
 
       <div className="relative z-10 mx-auto mt-5 flex max-w-7xl flex-col items-center gap-8 px-4 text-center lg:px-8">
@@ -16,7 +12,7 @@ export default function Hero() {
 
           <h1 className="mt-6 text-5xl font-black leading-[0.9] tracking-[-0.035em] text-slate-950 sm:text-6xl lg:text-7xl xl:text-8xl">
             One arena for
-            <span className="block bg-gradient-to-r from-[#296BE1] via-slate-900 to-[#296BE1] bg-clip-text text-transparent">
+            <span className="block bg-linear-to-r from-[#296BE1] via-slate-900 to-[#296BE1] bg-clip-text text-transparent">
               movement, play, care.
             </span>
           </h1>
@@ -33,7 +29,14 @@ export default function Hero() {
               Sign In
             </button>
           </div>
-          
+
+          <div className="hero-slide-card mt-12 overflow-hidden rounded-4xl border border-slate-200 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
+            <img
+              src={hero_bg}
+              alt="KVK Arena hero visual"
+              className="h-full w-full object-cover"
+            />
+          </div>
           
         </div>
       </div>
