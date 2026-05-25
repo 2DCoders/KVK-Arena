@@ -105,6 +105,25 @@ public class MembershipService : IMembershipService
                 };
 
                 _db.MemberPayments.Add(payment);
+
+                // Also create an immutable payment record for analytics/audit
+                var record = new PaymentRecord
+                {
+                    MembershipId = member.Id,
+                    MemberPaymentId = null,
+                    Amount = payment.Amount,
+                    PaymentType = payment.PaymentType,
+                    PaymentStatus = payment.PaymentStatus,
+                    MemberShipStartDate = payment.MemberShipStartDate,
+                    MemberShipEndDate = payment.MemberShipEndDate,
+                    TransactionReference = payment.TransactionReference,
+                    MembershipNumber = member.MembershipNumber,
+                    MembershipPlanId = plan?.Id,
+                    MembershipPlanTitle = plan?.Title
+                };
+
+                _db.PaymentRecords.Add(record);
+
                 await _db.SaveChangesAsync(cancellationToken);
 
                 await _smsService.SendSingleMessageAsync(member.Phone!, MessageList
@@ -462,6 +481,32 @@ public class MembershipService : IMembershipService
 
             await _db.SaveChangesAsync(cancellationToken);
 
+            // Record the payment action in the immutable PaymentRecords table
+            try
+            {
+                var record = new PaymentRecord
+                {
+                    MembershipId = member.Id,
+                    MemberPaymentId = payment.Id,
+                    Amount = payment.Amount,
+                    PaymentType = payment.PaymentType,
+                    PaymentStatus = payment.PaymentStatus,
+                    MemberShipStartDate = payment.MemberShipStartDate,
+                    MemberShipEndDate = payment.MemberShipEndDate,
+                    MemberShipRenewalDate = payment.MemberShipRenewalDate,
+                    TransactionReference = payment.TransactionReference,
+                    MembershipNumber = member.MembershipNumber,
+                    MembershipPlanId = member.MembershipPlanId,
+                    MembershipPlanTitle = plan.Title
+                };
+
+                _db.PaymentRecords.Add(record);
+                await _db.SaveChangesAsync(cancellationToken);
+            }
+            catch
+            {
+                // Non-fatal: if recording fails, do not block the upgrade flow
+            }
 
             var message = MessageList.GetPlanUpgradedMessage(member.FirstName, plan.Title, payment.MemberShipStartDate,
                 payment.MemberShipEndDate);

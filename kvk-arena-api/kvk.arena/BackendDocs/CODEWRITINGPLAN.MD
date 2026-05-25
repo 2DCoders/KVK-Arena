@@ -63,6 +63,9 @@ Typical controller handling:
 - `CreatedAtAction(...)` for create endpoints when response contains an id
 - `Ok(result)` for successful reads/updates/deletes
 
+Note:
+- For read-only GET endpoints where the module requires direct DTO responses, return the DTO/list directly instead of wrapping in `Result`.
+
 ## Validation and Error Handling Style
 Follow the style already used in `AuthService` and `RoleService`:
 - Null/empty checks first (early returns)
@@ -263,4 +266,3 @@ Use plural route segments for resource collections (`roles`, `staff`, `permissio
 ---
 
 Last updated: 2026-05-19
-

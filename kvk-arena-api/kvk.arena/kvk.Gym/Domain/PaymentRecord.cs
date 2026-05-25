@@ -13,9 +13,9 @@ public class PaymentRecord : AuditableEntity
 
     public decimal Amount { get; set; }
 
-    public kvk.Gym.Enums.PaymentType PaymentType { get; set; }
+    public Enums.PaymentType PaymentType { get; set; }
 
-    public kvk.Gym.Enums.PaymentStatus PaymentStatus { get; set; }
+    public Enums.PaymentStatus PaymentStatus { get; set; }
 
     public DateTime? MemberShipStartDate { get; set; }
     public DateTime? MemberShipRenewalDate { get; set; }

@@ -23,12 +23,13 @@ public class GymDbContext : AppDbContextBase
     public DbSet<MemberPayment> MemberPayments { get; set; } = null!;
     public DbSet<PaymentRecord> PaymentRecords { get; set; } = null!;
     public DbSet<MembershipPlan> MembershipPlans { get; set; } = null!;
+    public DbSet<DayPassMember> DayPassMembers { get; set; } = null!;
     public DbSet<DayEndRecord> DayEnds { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("gym");
-        
+
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<Membership>()
@@ -48,7 +49,7 @@ public class GymDbContext : AppDbContextBase
             .HasOne(m => m.MembershipPlan)
             .WithMany()
             .HasForeignKey(m => m.MembershipPlanId);
-        
+
         //email should be unique
         modelBuilder.Entity<Membership>()
             .HasIndex(m => m.Email)
@@ -87,6 +88,14 @@ public class GymDbContext : AppDbContextBase
             .OnDelete(DeleteBehavior.Cascade);
 
         // DayEnd records for gym cash reconciliation
+        modelBuilder.Entity<DayPassMember>(eb =>
+        {
+            eb.HasIndex(d => d.TemporaryMembershipNumber).HasDatabaseName("IX_DayPass_TempMembershipNumber");
+            eb.HasOne(d => d.MembershipPlan)
+                .WithMany()
+                .HasForeignKey(d => d.MembershipPlanId);
+        });
+
         modelBuilder.Entity<DayEndRecord>(eb =>
         {
             eb.HasIndex(d => d.CurrentDate).HasDatabaseName("IX_DayEnd_CurrentDate");

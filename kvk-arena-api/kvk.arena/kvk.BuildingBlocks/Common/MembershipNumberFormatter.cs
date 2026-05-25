@@ -13,6 +13,7 @@ public static class MembershipNumberFormatter
             "client" => "GYM-MEM",
             "trainer" => "GYM-TRA",
             "staff" => "GYM-STA",
+            "tempMember" => "GYM-TMP",
             _ => "GYM-UNK"
         };
 
