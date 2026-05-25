@@ -2,7 +2,7 @@ import hero_bg from "@/assets/hero/hero_bg2.png";
 
 export default function Hero() {
   return (
-    <section className="relative isolate overflow-hidden py-16 sm:py-20 lg:py-24">
+    <section className="relative isolate overflow-hidden py-16 sm:py-20 lg:py-38">
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-100 rounded-lg"
@@ -13,9 +13,9 @@ export default function Hero() {
 
       <div className="relative z-10 mx-auto mt-5 flex max-w-7xl flex-col items-center gap-8 px-4 text-center lg:px-8 mb-5">
         <div className="hero-fade-up max-w-4xl">
-          <h1 className="mt-6 mb-5 text-5xl font-black leading-[1.2] tracking-[-0.035em] text-white sm:text-6xl lg:text-7xl xl:text-7xl">
+          <h1 className="mt-6 mb-5 text-5xl font-black leading-[1.2] tracking-[-0.035em] block bg-linear-to-r from-[#2d86fc] via-[#CFEFFF] to-[#8FC0FF] bg-clip-text text-transparent sm:text-6xl lg:text-7xl xl:text-7xl">
             One arena for
-            <span className="block bg-linear-to-r from-[#8FC0FF] via-white to-[#8FC0FF] bg-clip-text text-transparent">
+            <span className="block bg-linear-to-r from-[#2d86fc] via-[#CFEFFF] to-[#8FC0FF] bg-clip-text text-transparent">
               movement, play, care.
             </span>
           </h1>
