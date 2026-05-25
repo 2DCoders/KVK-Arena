@@ -16,7 +16,7 @@ const brands = [
 
 export default function BrandsSlider() {
   return (
-    <div className="w-full overflow-hidden py-10 bg-white">
+    <div className="w-full overflow-hidden py-10 bg-white/5">
       <div className="relative flex w-max animate-marquee gap-25">
         {[...brands, ...brands].map((brand, index) => (
           <div
