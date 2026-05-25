@@ -1,19 +1,19 @@
-import hero_bg from "@/assets/hero/hero_bg1.png";
+import hero_bg from "@/assets/hero/hero_bg2.png";
 
 export default function Hero() {
   return (
     <section className="relative isolate overflow-hidden py-16 sm:py-20 lg:py-24">
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-80 rounded-lg"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-100 rounded-lg"
         style={{ backgroundImage: `url(${hero_bg})` }}
       />
-      <div aria-hidden="true" className="absolute inset-0 rounded-lg bg-slate-950/25" />
-      <div aria-hidden="true" className="absolute inset-0 rounded-lg bg-linear-to-b from-slate-950/80 via-slate-950/65 to-slate-950/85" />
+      {/* <div aria-hidden="true" className="absolute inset-0 rounded-lg bg-slate-950/20" /> */}
+      <div aria-hidden="true" className="absolute inset-0 rounded-lg bg-linear-to-b from-slate-950/30 via-slate-950/65 to-slate-950/85" />
 
-      <div className="relative z-10 mx-auto mt-5 flex max-w-7xl flex-col items-center gap-8 px-4 text-center lg:px-8">
+      <div className="relative z-10 mx-auto mt-5 flex max-w-7xl flex-col items-center gap-8 px-4 text-center lg:px-8 mb-5">
         <div className="hero-fade-up max-w-4xl">
-          <h1 className="mt-6 text-5xl font-black leading-[0.9] tracking-[-0.035em] text-white sm:text-6xl lg:text-7xl xl:text-8xl">
+          <h1 className="mt-6 mb-5 text-5xl font-black leading-[1.2] tracking-[-0.035em] text-white sm:text-6xl lg:text-7xl xl:text-7xl">
             One arena for
             <span className="block bg-linear-to-r from-[#8FC0FF] via-white to-[#8FC0FF] bg-clip-text text-transparent">
               movement, play, care.
