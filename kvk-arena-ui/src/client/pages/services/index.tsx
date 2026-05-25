@@ -1,3 +1,5 @@
+import { useState } from "react"
+
 import gym from "@/assets/gym.png"
 import carwash from "@/assets/carwash.jpeg"
 import badminton from "@/assets/badminton.jpg"
@@ -6,54 +8,58 @@ import gaming from "@/assets/pool.jpg"
 const services = [
     {
         id: 1,
-        title: "AI Automation",
-        tag: "AI Solutions",
-        desc: "Automate workflows and decision-making engines to speed operations.",
+        title: "Gym",
+        tag: "Fitness",
+        category: "gym",
+        desc: "Modern training space for strength, cardio, and active recovery.",
         img: gym,
     },
     {
         id: 2,
-        title: "AI Agents Development",
-        tag: "All Solutions",
-        desc: "Custom agents for data, reporting and integrations.",
+        title: "Car Wash",
+        tag: "Cleaning",
+        category: "carwash",
+        desc: "Professional wash and shine services to keep vehicles spotless.",
         img: carwash,
     },
     {
         id: 3,
-        title: "AI Consulting & Strategy",
-        tag: "All Solutions",
-        desc: "Workshops and roadmaps to adopt AI responsibly.",
+        title: "Badminton Court",
+        tag: "Sport",
+        category: "badminton",
+        desc: "Fast-paced indoor court booking for training and friendly matches.",
         img: badminton,
     },
     {
         id: 4,
-        title: "AI MVP Development",
-        tag: "Development",
-        desc: "Rapid prototypes to validate product-market fit.",
+        title: "Gaming Centre",
+        tag: "Entertainment",
+        category: "gaming",
+        desc: "Relax and play in a dedicated gaming zone with a premium setup.",
         img: gaming,
-    },
-    {
-        id: 5,
-        title: "Dedicated AI Teams",
-        tag: "All Solutions",
-        desc: "Scale with engineers and product-led squads.",
-        img: gym,
-    },
-    {
-        id: 6,
-        title: "AI Quality & Monitoring",
-        tag: "All Solutions",
-        desc: "Observability and assurance for model-driven systems.",
-        img: carwash,
-    },
+    }
+]
+
+const tabs = [
+    { key: "all", label: "All Services" },
+    { key: "gym", label: "Gym" },
+    { key: "carwash", label: "Car Wash" },
+    { key: "badminton", label: "Badminton" },
+    { key: "gaming", label: "Gaming" },
 ]
 
 export default function Services() {
+    const [activeTab, setActiveTab] = useState("all")
+
+    const visibleServices = activeTab === "all"
+        ? services
+        : services.filter((service) => service.category === activeTab)
+
     return (
-        <section className="py-16 lg:py-24 bg-white/5">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <section className="relative overflow-hidden bg-white/5 py-10 lg:py-16">
+            <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="mx-auto max-w-3xl text-center">
-                    <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl bg-linear-to-r from-[#000000] via-[#2d86fc] to-[#000000] bg-clip-text text-transparent">
+                    <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl bg-linear-to-r from-[#000000] via-[#2d86fc] to-[#2d86fc] bg-clip-text text-transparent">
                         Our Core Services
                     </h2>
                     <p className="mt-4 text-base text-slate-500">
@@ -61,43 +67,77 @@ export default function Services() {
                     </p>
                 </div>
 
-                <div className="mt-8 flex flex-col items-center justify-between gap-4 sm:flex-row">
-                    <div className="flex items-center gap-3">
-                        <button className="rounded-md border border-slate-200/10 bg-white/6 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10">View All</button>
-                        <div className="hidden sm:flex items-center gap-2">
-                            <button className="rounded-md bg-[#296BE1] px-4 py-2 text-sm font-semibold text-white shadow-[0_8px_24px_rgba(41,107,225,0.16)]">All Solutions</button>
-                            <button className="rounded-md border border-white/20 bg-white/6 px-4 py-2 text-sm font-medium text-white">Development</button>
-                        </div>
-                    </div>
-                    <div className="mt-2 sm:mt-0">
-                        <input aria-label="search services" placeholder="Search services" className="w-full max-w-sm rounded-full bg-white/6 px-4 py-2 text-sm text-slate-200 placeholder:text-slate-400 focus:outline-none" />
+                <div className="mt-8 flex flex-col items-center justify-between gap-4 lg:flex-row">
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab("all")}
+                        className="rounded-full border border-slate-200 bg-white px-5 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
+                    >
+                        View All
+                    </button>
+
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                        {tabs.map((tab) => {
+                            const isActive = activeTab === tab.key
+
+                            return (
+                                <button
+                                    key={tab.key}
+                                    type="button"
+                                    onClick={() => setActiveTab(tab.key)}
+                                    className={`rounded-full px-4 py-2 text-sm font-semibold transition ${isActive
+                                        ? "bg-[#296BE1] text-white shadow-[0_10px_30px_rgba(41,107,225,0.28)]"
+                                        : "border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 hover:text-slate-900"
+                                        }`}
+                                >
+                                    {tab.label}
+                                </button>
+                            )
+                        })}
                     </div>
                 </div>
 
-                <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {services.map((s, idx) => (
-                        <article key={s.id} className={`relative overflow-hidden rounded-2xl border border-white/6 bg-gradient-to-b from-white/3 to-white/2 shadow-lg transition-transform hover:-translate-y-1`}>
-                            <div className="absolute inset-0">
-                                <img src={s.img} alt={s.title} className="h-full w-full object-cover opacity-90" />
-                                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60" />
-                            </div>
+                <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {visibleServices.map((service) => (
+                        <article
+                            key={service.id}
+                            className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-[0_18px_45px_rgba(2,8,23,0.35)] transition duration-300 hover:-translate-y-1 hover:border-white/20"
+                        >
+                            <div className="relative aspect-[2/3] w-full">
+                                <img src={service.img} alt={service.title} className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                                <div className="absolute inset-0 bg-linear-to-b from-slate-950/10 via-slate-950/35 to-slate-950/90" />
 
-                            <div className="relative z-10 flex h-full min-h-[220px] flex-col justify-between p-6">
-                                <div>
-                                    <span className="inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white">{s.tag}</span>
-                                    <h3 className="mt-4 text-lg font-semibold text-white">{s.title}</h3>
-                                    <p className="mt-2 text-sm text-slate-200">{s.desc}</p>
-                                </div>
+                                <div className="relative z-10 flex h-full flex-col justify-between p-5 sm:p-6">
+                                    <div>
+                                        <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/90">
+                                            {service.tag}
+                                        </span>
+                                        <h3 className="mt-4 text-2xl font-bold leading-tight text-white">
+                                            {service.title}
+                                        </h3>
+                                        <p className="mt-3 max-w-[18ch] text-sm leading-6 text-slate-200/90">
+                                            {service.desc}
+                                        </p>
+                                    </div>
 
-                                <div className="mt-6 flex items-center justify-between">
-                                    <button className="inline-flex items-center gap-2 rounded-full bg-[#296BE1] px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_30px_rgba(41,107,225,0.18)] hover:bg-[#1f58be]">Explore</button>
-                                    <div className="flex items-center gap-3">
-                                        <span className="inline-block h-10 w-10 translate-y-1 rounded-full bg-white/8 text-center text-white/90">›</span>
+                                    <div className="flex items-center justify-between pt-6">
+                                        <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#CFEFFF]">
+                                            {service.category}
+                                        </span>
+                                        <button type="button" className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#296BE1] shadow-[0_10px_25px_rgba(255,255,255,0.18)] transition hover:scale-105">
+                                            →
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </article>
                     ))}
+
+                    {visibleServices.length === 0 && (
+                        <div className="col-span-full rounded-3xl border border-white/10 bg-white/5 p-10 text-center text-slate-300">
+                            No services found for this tab.
+                        </div>
+                    )}
                 </div>
             </div>
         </section>
