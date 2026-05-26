@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Star } from "lucide-react"
 import man1 from "@/assets/feedbacks/man1.jpg"
 import man2 from "@/assets/feedbacks/man2.jpg"
 import man3 from "@/assets/feedbacks/man3.jpg"
-import woman1 from "@/assets/feedbacks/woman1.jpg"
+import woman1 from "@/assets/feedbacks/woman1.jpeg"
 import woman2 from "@/assets/feedbacks/woman2.jpg"
 
 const testimonials = [
@@ -19,20 +19,20 @@ const testimonials = [
     },
     {
         id: 2,
-        name: "Alicia Gomez",
-        role: "Operations Lead, UrbanFit",
+        name: "Dilini Apsara",
+        role: "Undergraduate Student",
         rating: 5,
         quote:
-            "The rollout was smooth from start to finish. They listened carefully, delivered on time, and gave us a system that our team actually enjoys using every day.",
+            "The café at KVK Arena is cozy, modern, and perfect for spending quality time.",
         image: woman1,
     },
     {
         id: 3,
-        name: "Rahul Mehta",
-        role: "Founder, Summit Retail",
+        name: "Dasun Shyaminda",
+        role: "Software Developer",
         rating: 4,
         quote:
-            "We needed something reliable and scalable. The result exceeded expectations and made our internal workflow noticeably faster within the first week.",
+            "I played a lot of games at KVK Games and every visit was full of fun, excitement, and unforgettable memories.",
         image: man2,
     },
     {
@@ -46,11 +46,11 @@ const testimonials = [
     },
     {
         id: 5,
-        name: "Jason Lee",
-        role: "Product Manager, BluePeak",
+        name: "Lasath Rathnayake",
+        role: "Badminton Player",
         rating: 5,
         quote:
-            "They took a complex brief and turned it into a simple, high-performing solution. The attention to detail was excellent throughout.",
+            "KVK Arena provides excellent badminton facilities with enough space and professional standards.",
         image: man3,
     },
 ]
