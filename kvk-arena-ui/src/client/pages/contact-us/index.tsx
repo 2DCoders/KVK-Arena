@@ -1,5 +1,5 @@
 import Map from "@/components/map"
-import { Send } from "lucide-react"
+import { Phone, Mail, MapPin, Clock, Send } from "lucide-react";
 
 export default function ContactUs() {
     return (
@@ -51,6 +51,17 @@ export default function ContactUs() {
                         style={{ animationDuration: "22s" }}
                     />
                 </svg>
+                <span
+                    aria-hidden="true"
+                    className="snake-send absolute left-0 top-0 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-[#296BE1] text-white"
+                    style={{
+                        offsetPath:
+                            'path("M-40 170 C 90 85, 150 255, 260 170 S 430 75, 540 145 S 700 275, 830 180 S 1010 75, 1135 155 S 1310 275, 1490 185")',
+                        animationDelay: "-4s",
+                    }}
+                >
+                    <Send size={14} strokeWidth={2.6} />
+                </span>
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(45,134,252,0.20),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(124,58,237,0.12),transparent_30%)]" />
             </div>
 
@@ -101,10 +112,74 @@ export default function ContactUs() {
                                 />
                             </div>
                         </div>
-
                     </div>
                 </div>
+                {/* Info Cards */}
+                <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                    {/* Mobile */}
+                    <div className="group rounded-xl bg-white/5 p-4 border border-white/10 transition-all duration-300 hover:scale-[1.03] hover:bg-white/10 hover:shadow-[0_0_25px_rgba(45,134,252,0.25)]">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-[#2d86fc]/10 text-[#2d86fc] group-hover:scale-110 transition">
+                                <Phone size={18} />
+                            </div>
+                            <div>
+                                <p className="text-xs text-slate-400">Mobile</p>
+                                <p className="text-sm font-semibold text-white">
+                                    +94 77 123 4567
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Email */}
+                    <div className="group rounded-xl bg-white/5 p-4 border border-white/10 transition-all duration-300 hover:scale-[1.03] hover:bg-white/10 hover:shadow-[0_0_25px_rgba(124,58,237,0.25)]">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400 group-hover:scale-110 transition">
+                                <Mail size={18} />
+                            </div>
+                            <div>
+                                <p className="text-xs text-slate-400">Email</p>
+                                <p className="text-sm font-semibold text-white">
+                                    info@kvkarena.com
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Address */}
+                    <div className="group sm:col-span-2 rounded-xl bg-white/5 p-4 border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:bg-white/10 hover:shadow-[0_0_25px_rgba(207,239,255,0.15)]">
+                        <div className="flex items-start gap-3">
+                            <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-300 group-hover:scale-110 transition">
+                                <MapPin size={18} />
+                            </div>
+                            <div>
+                                <p className="text-xs text-slate-400">Address</p>
+                                <p className="text-sm font-semibold text-white">
+                                    KVK Arena, Main Street, Colombo, Sri Lanka
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Working Days */}
+                    <div className="group sm:col-span-2 rounded-xl bg-white/5 p-4 border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:bg-white/10 hover:shadow-[0_0_25px_rgba(255,255,255,0.08)]">
+                        <div className="flex items-start gap-3">
+                            <div className="p-2 rounded-lg bg-yellow-500/10 text-yellow-300 group-hover:scale-110 transition">
+                                <Clock size={18} />
+                            </div>
+                            <div>
+                                <p className="text-xs text-slate-400">Working Days</p>
+                                <p className="text-sm font-semibold text-white">
+                                    Monday – Sunday: 6:00 AM – 10:00 PM
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
+
         </section>
     )
 }

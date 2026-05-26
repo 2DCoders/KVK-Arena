@@ -14,7 +14,7 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="fixed left-0 top-0 z-50 w-full bg-transparent py-4 rounded-full">
+    <header className="fixed left-0 top-0 z-9999 w-full bg-transparent py-4 rounded-full">
       <div className={isScrolled
         ? "relative rounded-full mx-auto flex h-20 max-w-295 items-center justify-between overflow-hidden border border-white/30 bg-white/30 px-6 py-2 shadow-lg backdrop-blur-md lg:px-8"
         : "relative rounded-full mx-auto flex h-20 max-w-295 items-center justify-between overflow-hidden border border-white/14 bg-[linear-gradient(135deg,rgba(6,12,28,0.78),rgba(15,23,42,0.52),rgba(8,16,32,0.72))] px-6 py-2 shadow-[0_18px_50px_rgba(2,6,23,0.45)] backdrop-blur-2xl lg:px-8"
@@ -83,7 +83,7 @@ export default function Header() {
 
       {/* Mobile Sidebar */}
         <div
-          className={`fixed inset-0 z-50 transition-all duration-300 ${
+          className={`fixed inset-0 z-9999 transition-all duration-300 ${
             mobileMenuOpen
               ? "visible bg-black/40 backdrop-blur-[2px] opacity-100"
               : "invisible opacity-0"
