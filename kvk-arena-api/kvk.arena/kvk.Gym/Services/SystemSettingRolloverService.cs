@@ -42,16 +42,16 @@ public class SystemSettingRolloverService
             return;
 
         var business = GetBusinessDateInfo();
-        var todayUtc = business.UtcMidnight;
-        var previousUtc = ToUtcMidnight(business.LocalDate.AddDays(-1), business.TimeZone);
-        var nextUtc = ToUtcMidnight(business.LocalDate.AddDays(1), business.TimeZone);
+        var todayLocal = business.LocalMidnight;
+        var previousLocal = ToLocalMidnight(business.LocalDate.AddDays(-1));
+        var nextLocal = ToLocalMidnight(business.LocalDate.AddDays(1));
 
         var setting = new SystemSetting
         {
             Id = SystemSetting.SingletonId,
-            PreviousDayEnd = previousUtc,
-            CurrentDay = todayUtc,
-            NextWorkingDay = nextUtc,
+            PreviousDayEnd = previousLocal,
+            CurrentDay = todayLocal,
+            NextWorkingDay = nextLocal,
             LastDayEndCheckedDate = null,
             IsDayEndCompleted = false
         };
@@ -72,19 +72,19 @@ public class SystemSettingRolloverService
             return;
 
         var business = GetBusinessDateInfo();
-        var todayUtc = business.UtcMidnight;
-        if (EnsureUtcKind(setting.CurrentDay) == todayUtc)
+        var todayLocal = business.LocalMidnight;
+        if (EnsureLocalKind(setting.CurrentDay) == todayLocal)
             return;
 
-        var previousDayUtc = setting.CurrentDay == default
-            ? ToUtcMidnight(business.LocalDate.AddDays(-1), business.TimeZone)
-            : EnsureUtcKind(setting.CurrentDay);
+        var previousDayLocal = setting.CurrentDay == default
+            ? ToLocalMidnight(business.LocalDate.AddDays(-1))
+            : EnsureLocalKind(setting.CurrentDay);
 
-        setting.PreviousDayEnd = previousDayUtc;
-        setting.CurrentDay = todayUtc;
-        setting.NextWorkingDay = ToUtcMidnight(business.LocalDate.AddDays(1), business.TimeZone);
+        setting.PreviousDayEnd = previousDayLocal;
+        setting.CurrentDay = todayLocal;
+        setting.NextWorkingDay = ToLocalMidnight(business.LocalDate.AddDays(1));
 
-        await UpdateDayEndStatusAsync(db, setting, previousDayUtc, cancellationToken);
+        await UpdateDayEndStatusAsync(db, setting, previousDayLocal, cancellationToken);
 
         await db.SaveChangesAsync(cancellationToken);
     }
@@ -98,50 +98,46 @@ public class SystemSettingRolloverService
         if (previousDay == default)
             return;
 
-        var previousDayUtc = EnsureUtcKind(previousDay);
-        var dayStartUtc = previousDayUtc.Date;
-        var dayEndUtc = dayStartUtc.AddDays(1);
+        var previousDayLocal = EnsureLocalKind(previousDay);
+        var dayStartLocal = previousDayLocal.Date;
+        var dayEndLocal = dayStartLocal.AddDays(1);
 
         var dayEndCompleted = await db.DayEnds
             .AsNoTracking()
-            .AnyAsync(d => d.CurrentDate >= dayStartUtc && d.CurrentDate < dayEndUtc, cancellationToken);
+            .AnyAsync(d => d.CurrentDate >= dayStartLocal && d.CurrentDate < dayEndLocal, cancellationToken);
 
-        setting.LastDayEndCheckedDate = previousDayUtc;
+        setting.LastDayEndCheckedDate = previousDayLocal;
         setting.IsDayEndCompleted = dayEndCompleted;
 
         if (!dayEndCompleted)
         {
             _logger.LogWarning(
                 "Day-end record missing for {PreviousDay}",
-                previousDayUtc.ToString("yyyy-MM-dd"));
+                previousDayLocal.ToString("yyyy-MM-dd"));
         }
     }
 
-    private (DateTime LocalDate, DateTime UtcMidnight, TimeZoneInfo TimeZone) GetBusinessDateInfo()
+    private (DateTime LocalDate, DateTime LocalMidnight) GetBusinessDateInfo()
     {
         var options = _options.Value;
         var timeZone = ResolveTimeZone(options.TimeZoneId);
         var nowInZone = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, timeZone);
         var localDate = nowInZone.Date;
-        var utcMidnight = ToUtcMidnight(localDate, timeZone);
-        return (localDate, utcMidnight, timeZone);
+        var localMidnight = ToLocalMidnight(localDate);
+        return (localDate, localMidnight);
     }
 
-    private static DateTime ToUtcMidnight(DateTime localDate, TimeZoneInfo timeZone)
+    private static DateTime ToLocalMidnight(DateTime localDate)
     {
-        var localMidnight = DateTime.SpecifyKind(localDate.Date, DateTimeKind.Unspecified);
-        return TimeZoneInfo.ConvertTimeToUtc(localMidnight, timeZone);
+        return DateTime.SpecifyKind(localDate.Date, DateTimeKind.Unspecified);
     }
 
-    private static DateTime EnsureUtcKind(DateTime value)
+    private static DateTime EnsureLocalKind(DateTime value)
     {
-        if (value.Kind == DateTimeKind.Utc)
+        if (value.Kind == DateTimeKind.Unspecified)
             return value;
 
-        if (value.Kind == DateTimeKind.Unspecified)
-            return DateTime.SpecifyKind(value, DateTimeKind.Utc);
-
-        return value.ToUniversalTime();
+        return DateTime.SpecifyKind(value, DateTimeKind.Unspecified);
     }
 
     private TimeZoneInfo ResolveTimeZone(string? timeZoneId)
