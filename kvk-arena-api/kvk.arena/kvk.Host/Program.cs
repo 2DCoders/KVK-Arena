@@ -1,14 +1,21 @@
 using System.Diagnostics;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.Extensions.Hosting;
 using kvk.BuildingBlocks.Interfaces;
 using kvk.BuildingBlocks.Persistence;
 using kvk.BuildingBlocks.Services;
 using kvk.Host.Middlewares;
+using kvk.Host.Hangfire;
 using kvk.Identity;
 using kvk.Gym;
+using kvk.Gym.Domain;
+using kvk.Gym.Options;
+using kvk.Gym.Services;
 using kvk.Financial;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
+using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -84,18 +91,30 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader());
 });
 
+var hangfireConnection = builder.Configuration.GetConnectionString("HangfireConnection");
 
+if (string.IsNullOrWhiteSpace(hangfireConnection))
+    hangfireConnection = builder.Configuration.GetConnectionString("DefaultConnection");
 
+if (string.IsNullOrWhiteSpace(hangfireConnection))
+    throw new InvalidOperationException("A connection string named 'HangfireConnection' or 'DefaultConnection' is required for Hangfire.");
 
-// Register Identity module (DbContext + services). This enables identity endpoints and JWT support.
+builder.Services.AddHangfire(config =>
+{
+    config.UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UsePostgreSqlStorage(options => options.UseNpgsqlConnection(hangfireConnection));
+});
+
+builder.Services.AddHangfireServer();
+
+// Register module services]]]]]]]]]]]]]]
 var identityInitializer = new IdentityModuleInitializer();
 identityInitializer.RegisterModule(builder.Services, builder.Configuration);
 
-// Register Gym module so its integrator event handlers are available in DI.
 var gymInitializer = new GymModuleInitializer();
 gymInitializer.RegisterModule(builder.Services, builder.Configuration);
 
-// Register Financial module (analytics/services)
 var financialInitializer = new FinancialModuleInitializer();
 financialInitializer.RegisterModule(builder.Services, builder.Configuration);
 
@@ -133,14 +152,45 @@ app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireDashboardAuthFilter() }
+});
+
 app.UseCors();
 app.MapControllers();
 
-
-
-
 // Log startup information
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
+var dayEndOptions = app.Services.GetRequiredService<IOptions<GymDayEndOptions>>().Value;
+var dayEndTimeZone = ResolveTimeZone(dayEndOptions.TimeZoneId, logger);
+var runAt = dayEndOptions.RunAt;
+var dailyCron = Cron.Daily(runAt.Hours, runAt.Minutes);
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<GymDbContext>();
+    var currentSetting = db.SystemSettings
+        .AsNoTracking()
+        .FirstOrDefault(s => s.Id == SystemSetting.SingletonId);
+
+    var businessDate = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, dayEndTimeZone).Date;
+
+    if (currentSetting == null || currentSetting.CurrentDay.Date < businessDate)
+    {
+        BackgroundJob.Enqueue<SystemSettingRolloverService>(job => job.RunAsync());
+        logger.LogInformation("System setting rollover queued for catch-up.");
+    }
+}
+
+RecurringJob.AddOrUpdate<SystemSettingRolloverService>(
+    "Gym.SystemSettingRollover",
+    job => job.RunAsync(),
+    dailyCron,
+    new RecurringJobOptions { TimeZone = dayEndTimeZone });
+
 logger.LogInformation("KVK Arena API starting up...");
 logger.LogInformation("Environment: {Environment}", app.Environment.EnvironmentName);
 
@@ -168,3 +218,24 @@ if (app.Environment.IsDevelopment())
 }
 
 app.Run();
+
+static TimeZoneInfo ResolveTimeZone(string? timeZoneId, ILogger logger)
+{
+    if (string.IsNullOrWhiteSpace(timeZoneId))
+        return TimeZoneInfo.Local;
+
+    try
+    {
+        return TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+    }
+    catch (TimeZoneNotFoundException)
+    {
+        logger.LogWarning("Time zone '{TimeZoneId}' not found. Falling back to local time.", timeZoneId);
+        return TimeZoneInfo.Local;
+    }
+    catch (InvalidTimeZoneException)
+    {
+        logger.LogWarning("Time zone '{TimeZoneId}' invalid. Falling back to local time.", timeZoneId);
+        return TimeZoneInfo.Local;
+    }
+}

@@ -25,6 +25,7 @@ public class GymDbContext : AppDbContextBase
     public DbSet<MembershipPlan> MembershipPlans { get; set; } = null!;
     public DbSet<DayPassMember> DayPassMembers { get; set; } = null!;
     public DbSet<DayEndRecord> DayEnds { get; set; } = null!;
+    public DbSet<SystemSetting> SystemSettings { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -1,6 +1,7 @@
 using kvk.BuildingBlocks.Interfaces;
 using kvk.Gym.Services;
 using kvk.Gym.Interfaces;
+using kvk.Gym.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,9 @@ public class GymModuleInitializer : IModuleInitializer
 
         services.AddDbContext<GymDbContext>(options => options.UseNpgsql(connectionString));
 
+        services.Configure<GymDayEndOptions>(configuration.GetSection(GymDayEndOptions.SectionName));
+        services.AddScoped<SystemSettingRolloverService>();
+
         // Register services
         services.AddScoped<IMembershipService, MembershipService>();
         services.AddScoped<IAttendanceService, AttendanceService>();
@@ -31,5 +35,3 @@ public class GymModuleInitializer : IModuleInitializer
         services.AddScoped<IStaffAssignedToModuleEventHandler, EventHandlers.StaffAssignedToModuleEventHandler>();
     }
 }
-
-

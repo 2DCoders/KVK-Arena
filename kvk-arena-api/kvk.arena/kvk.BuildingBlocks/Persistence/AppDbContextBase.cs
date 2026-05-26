@@ -32,6 +32,8 @@ public abstract class AppDbContextBase : DbContext
         _httpContextAccessor = httpContextAccessor;
     }
 
+    private static readonly TimeZoneInfo AuditTimeZone = ResolveAuditTimeZone();
+
     /// <summary>
     /// Configures model relationships, constraints, and global query filters.
     /// Automatically discovers and applies HasQueryFilter for all BaseEntity types.
@@ -71,6 +73,14 @@ public abstract class AppDbContextBase : DbContext
                 modelBuilder.Entity(entityType.ClrType)
                     .HasIndex(new[] { nameof(BaseEntity.TenantId), nameof(AuditableEntity.CreatedAt) })
                     .HasDatabaseName($"IX_{entityType.ClrType.Name}_TenantId_CreatedAt");
+
+                modelBuilder.Entity(entityType.ClrType)
+                    .Property(nameof(AuditableEntity.CreatedAt))
+                    .HasColumnType("timestamp without time zone");
+
+                modelBuilder.Entity(entityType.ClrType)
+                    .Property(nameof(AuditableEntity.LastModifiedAt))
+                    .HasColumnType("timestamp without time zone");
             }
         }
     }
@@ -141,7 +151,7 @@ public abstract class AppDbContextBase : DbContext
     /// </summary>
     private void ApplyAuditTrail(Guid tenantId)
     {
-        var now = DateTime.UtcNow;
+        var now = GetAuditLocalNow();
         var currentUserId = GetCurrentUserId();
 
         var baseEntries = ChangeTracker.Entries<BaseEntity>();
@@ -188,6 +198,28 @@ public abstract class AppDbContextBase : DbContext
                         entry.Entity.GetType().Name, entry.Entity.Id, currentUserId);
                     break;
             }
+        }
+    }
+
+    private static DateTime GetAuditLocalNow()
+    {
+        var localNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, AuditTimeZone);
+        return localNow.DateTime;
+    }
+
+    private static TimeZoneInfo ResolveAuditTimeZone()
+    {
+        try
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById("Sri Lanka Standard Time");
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            return TimeZoneInfo.Utc;
+        }
+        catch (InvalidTimeZoneException)
+        {
+            return TimeZoneInfo.Utc;
         }
     }
 

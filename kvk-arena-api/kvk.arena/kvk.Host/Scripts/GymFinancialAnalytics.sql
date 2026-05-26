@@ -3,7 +3,7 @@ DROP MATERIALIZED VIEW IF EXISTS gym."MemberFinancialAnalyticsDaily";
 CREATE MATERIALIZED VIEW IF NOT EXISTS gym."MemberFinancialAnalyticsDaily"
 AS
 SELECT
-    DATE(mp."CreatedAt") AS "AnalyticsDate",
+    mp."CreatedAt"::date AS "AnalyticsDate",
 
     EXTRACT(YEAR FROM mp."CreatedAt")::INT AS "Year",
     EXTRACT(MONTH FROM mp."CreatedAt")::INT AS "Month",
@@ -69,14 +69,14 @@ SELECT
 
     COUNT(*) FILTER (
         WHERE mp."MemberShipEndDate" IS NOT NULL
-        AND mp."MemberShipEndDate" < NOW()
+        AND mp."MemberShipEndDate" < (NOW() AT TIME ZONE 'Asia/Colombo')
     ) AS "ExpiredMemberships",
 
-    NOW() AS "LastRefreshAt"
+    (NOW() AT TIME ZONE 'Asia/Colombo') AS "LastRefreshAt"
 
 FROM gym."MemberPayments" mp
 GROUP BY
-    DATE(mp."CreatedAt"),
+    mp."CreatedAt",
     EXTRACT(YEAR FROM mp."CreatedAt"),
     EXTRACT(MONTH FROM mp."CreatedAt"),
     EXTRACT(WEEK FROM mp."CreatedAt"),

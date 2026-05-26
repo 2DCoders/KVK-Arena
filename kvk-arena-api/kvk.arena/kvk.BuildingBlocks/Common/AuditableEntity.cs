@@ -8,7 +8,7 @@ public class AuditableEntity : BaseEntity
 {
 
     /// <summary>
-    /// UTC timestamp when entity was created.
+    /// Local timestamp when entity was created.
     /// Auto-populated in SaveChanges().
     /// </summary>
     public DateTime CreatedAt { get; set; }
@@ -20,7 +20,7 @@ public class AuditableEntity : BaseEntity
     public Guid CreatedBy { get; set; }
 
     /// <summary>
-    /// UTC timestamp when entity was last modified.
+    /// Local timestamp when entity was last modified.
     /// Auto-populated in SaveChanges().
     /// </summary>
     public DateTime LastModifiedAt { get; set; }

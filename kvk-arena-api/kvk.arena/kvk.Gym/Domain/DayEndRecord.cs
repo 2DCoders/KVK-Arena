@@ -12,8 +12,10 @@ public class DayEndRecord
 	public Guid Id { get; set; } = Guid.NewGuid();
 
 	// business date the record belongs to
+	[Column(TypeName = "timestamp without time zone")]
 	public DateTime CurrentDate { get; set; }
 
+	[Column(TypeName = "timestamp without time zone")]
 	public DateTime NextWorkingDate { get; set; }
 
 	[Column(TypeName = "numeric(18,2)")]
@@ -34,7 +36,6 @@ public class DayEndRecord
 	[Column(TypeName = "numeric(18,2)")]
 	public decimal HoldForNextDay { get; set; }
 
-	public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+	[Column(TypeName = "timestamp without time zone")]
+	public DateTime CreatedAt { get; set; } = DateTime.Now;
 }
-
-
