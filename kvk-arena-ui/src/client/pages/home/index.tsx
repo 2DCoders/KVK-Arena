@@ -4,6 +4,7 @@ import BrandsSlider from "../brands-slider";
 import Services from "../services";
 import WorkFlow from "../work-flow";
 import Feedbacks from "../feedbacks";
+import Gallery from "../gallery";
 
 function WhatsappIcon() {
     return (
@@ -83,6 +84,7 @@ export default function Home() {
             <Services />
             <WorkFlow />
             <Feedbacks />
+            <Gallery />
         </Main>
     )
 }

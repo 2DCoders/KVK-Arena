@@ -10,11 +10,11 @@ import woman2 from "@/assets/feedbacks/woman2.jpg"
 const testimonials = [
     {
         id: 1,
-        name: "David Kumar",
-        role: "CEO, NexaTech",
+        name: "Dulhan Rajitha",
+        role: "Gym Member",
         rating: 5,
         quote:
-            "IT.S transformed our entire cloud infrastructure. Their team was professional, fast, and incredibly knowledgeable. We saw immediate performance gains and a 40% reduction in downtime. Highly recommended!",
+            "KVK Gym completely changed my fitness routine. The trainers are supportive, the equipment is modern, and the environment keeps me motivated every day.",
         image: man1,
     },
     {
