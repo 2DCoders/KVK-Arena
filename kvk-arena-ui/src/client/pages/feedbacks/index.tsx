@@ -1,0 +1,175 @@
+import { useEffect, useState } from "react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+
+import man1 from "@/assets/feedbacks/man1.jpg"
+import man2 from "@/assets/feedbacks/man2.jpg"
+import man3 from "@/assets/feedbacks/man3.jpg"
+import woman1 from "@/assets/feedbacks/woman1.jpg"
+import woman2 from "@/assets/feedbacks/woman2.jpg"
+
+const testimonials = [
+    {
+        id: 1,
+        name: "David Kumar",
+        role: "CEO, NexaTech",
+        quote:
+            "IT.S transformed our entire cloud infrastructure. Their team was professional, fast, and incredibly knowledgeable. We saw immediate performance gains and a 40% reduction in downtime. Highly recommended!",
+        image: man1,
+    },
+    {
+        id: 2,
+        name: "Alicia Gomez",
+        role: "Operations Lead, UrbanFit",
+        quote:
+            "The rollout was smooth from start to finish. They listened carefully, delivered on time, and gave us a system that our team actually enjoys using every day.",
+        image: woman1,
+    },
+    {
+        id: 3,
+        name: "Rahul Mehta",
+        role: "Founder, Summit Retail",
+        quote:
+            "We needed something reliable and scalable. The result exceeded expectations and made our internal workflow noticeably faster within the first week.",
+        image: man2,
+    },
+    {
+        id: 4,
+        name: "Sana Ibrahim",
+        role: "Marketing Director, Halo Group",
+        quote:
+            "Clear communication, thoughtful execution, and a polished final product. The team felt like an extension of our own department.",
+        image: woman2,
+    },
+    {
+        id: 5,
+        name: "Jason Lee",
+        role: "Product Manager, BluePeak",
+        quote:
+            "They took a complex brief and turned it into a simple, high-performing solution. The attention to detail was excellent throughout.",
+        image: man3,
+    },
+]
+
+export default function Feedbacks() {
+    const [activeIndex, setActiveIndex] = useState(0)
+
+    const goToPrevious = () => {
+        setActiveIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length)
+    }
+
+    const goToNext = () => {
+        setActiveIndex((prev) => (prev + 1) % testimonials.length)
+    }
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            goToNext()
+        }, 5000)
+
+        return () => clearInterval(interval)
+    }, [])
+
+    const activeTestimonial = testimonials[activeIndex]
+
+    return (
+        <section className="relative overflow-hidden bg-[#f5f5f5] py-14 lg:py-20">
+            <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+                {/* Heading */}
+                <div className="mx-auto max-w-3xl text-center">
+                    <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl bg-linear-to-r from-[#000000] via-[#2d86fc] to-[#2d86fc] bg-clip-text text-transparent">
+                        What Our Clients Say
+                    </h2>
+
+                    <p className="mt-4 text-base text-slate-500">
+                        We are proud to partner with businesses that value innovation,
+                        reliability, and measurable results. Here’s what some of our
+                        clients have to say about working with IT.S.
+                    </p>
+                </div>
+
+                {/* Avatar Row */}
+                <div className="mt-12 flex items-center justify-center gap-3 sm:gap-5">
+                    {testimonials.map((item, index) => {
+                        const isActive = index === activeIndex
+
+                        return (
+                            <button
+                                key={item.id}
+                                onClick={() => setActiveIndex(index)}
+                                className={`relative overflow-hidden rounded-full transition-all duration-500 ${isActive
+                                        ? "h-20 w-20 sm:h-24 sm:w-24 scale-110 shadow-[0_15px_40px_rgba(0,0,0,0.18)]"
+                                        : "h-12 w-12 sm:h-14 sm:w-14 opacity-80 grayscale"
+                                    }`}
+                            >
+                                <img
+                                    src={item.image}
+                                    alt={item.name}
+                                    className="h-full w-full object-cover rounded-full"
+                                />
+
+                                {isActive && (
+                                    <div className="absolute inset-0 rounded-full ring-4 ring-white" />
+                                )}
+                            </button>
+                        )
+                    })}
+                </div>
+
+                {/* Content */}
+                <div className="relative mt-14 flex items-center justify-center">
+                    {/* Left Arrow */}
+                    <button
+                        onClick={goToPrevious}
+                        className="absolute left-0 z-10 hidden h-11 w-11 items-center justify-center rounded-full bg-white text-slate-700 shadow-md transition hover:scale-105 lg:flex"
+                    >
+                        <ChevronLeft size={18} />
+                    </button>
+
+                    {/* Testimonial */}
+                    <div className="mx-auto max-w-4xl text-center">
+                        <p className="text-lg leading-8 text-slate-700 sm:text-xl sm:leading-9">
+                            “{activeTestimonial.quote}”
+                        </p>
+
+                        <div className="mt-10 flex items-center justify-center gap-4">
+                            <h3 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+                                {activeTestimonial.name}
+                            </h3>
+
+                            <div className="h-7 w-px bg-slate-300" />
+
+                            <p className="text-base text-slate-500">
+                                {activeTestimonial.role}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Right Arrow */}
+                    <button
+                        onClick={goToNext}
+                        className="absolute right-0 z-10 hidden h-11 w-11 items-center justify-center rounded-full bg-[#296BE1] text-white shadow-[0_10px_30px_rgba(41,107,225,0.28)] transition hover:scale-105 lg:flex"
+                    >
+                        <ChevronRight size={18} />
+                    </button>
+                </div>
+
+                {/* Mobile Arrows */}
+                <div className="mt-10 flex items-center justify-center gap-4 lg:hidden">
+                    <button
+                        onClick={goToPrevious}
+                        className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-700 shadow-md"
+                    >
+                        <ChevronLeft size={18} />
+                    </button>
+
+                    <button
+                        onClick={goToNext}
+                        className="flex h-11 w-11 items-center justify-center rounded-full bg-[#296BE1] text-white shadow-[0_10px_30px_rgba(41,107,225,0.28)]"
+                    >
+                        <ChevronRight size={18} />
+                    </button>
+                </div>
+            </div>
+        </section>
+    )
+}
