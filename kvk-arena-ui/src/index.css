@@ -81,6 +81,17 @@ input[type="number"]::-webkit-inner-spin-button {
   color: #111827;
 }
 
+@keyframes snake-dash {
+  to {
+    stroke-dashoffset: -240;
+  }
+}
+
+.snake-dash {
+  stroke-dasharray: 12 18;
+  animation: snake-dash 14s linear infinite;
+}
+
 /* Glass morphism background */
 .glass {
   background: rgba(255, 255, 255, 0.82);

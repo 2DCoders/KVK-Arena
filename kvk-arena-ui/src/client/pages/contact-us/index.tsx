@@ -4,6 +4,56 @@ import { Send } from "lucide-react"
 export default function ContactUs() {
     return (
         <section className="relative overflow-hidden bg-linear-to-b from-slate-950 to-slate-900 py-20 lg:py-28">
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+                <svg
+                    viewBox="0 0 1440 900"
+                    preserveAspectRatio="none"
+                    className="absolute inset-0 h-full w-full opacity-45"
+                >
+                    <defs>
+                        <linearGradient id="snakeLineOne" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="rgba(45,134,252,0.10)" />
+                            <stop offset="50%" stopColor="rgba(207,239,255,0.55)" />
+                            <stop offset="100%" stopColor="rgba(41,107,225,0.08)" />
+                        </linearGradient>
+                        <linearGradient id="snakeLineTwo" x1="100%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="rgba(124,58,237,0.08)" />
+                            <stop offset="50%" stopColor="rgba(145,206,255,0.42)" />
+                            <stop offset="100%" stopColor="rgba(45,134,252,0.10)" />
+                        </linearGradient>
+                    </defs>
+
+                    <path
+                        d="M-40 170 C 90 85, 150 255, 260 170 S 430 75, 540 145 S 700 275, 830 180 S 1010 75, 1135 155 S 1310 275, 1490 185"
+                        fill="none"
+                        stroke="url(#snakeLineOne)"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        className="snake-dash"
+                        style={{ animationDuration: "16s" }}
+                    />
+                    <path
+                        d="M-60 340 C 80 270, 150 420, 285 352 S 455 240, 585 330 S 770 460, 900 345 S 1095 225, 1225 320 S 1380 430, 1510 350"
+                        fill="none"
+                        stroke="url(#snakeLineTwo)"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        className="snake-dash"
+                        style={{ animationDuration: "20s", animationDirection: "reverse" }}
+                    />
+                    <path
+                        d="M-40 610 C 120 520, 190 700, 330 620 S 500 500, 635 590 S 820 740, 955 630 S 1140 500, 1260 610 S 1395 710, 1500 645"
+                        fill="none"
+                        stroke="rgba(255,255,255,0.12)"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        className="snake-dash"
+                        style={{ animationDuration: "22s" }}
+                    />
+                </svg>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(45,134,252,0.20),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(124,58,237,0.12),transparent_30%)]" />
+            </div>
+
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-start">
                     {/* Left: modern contact card */}
