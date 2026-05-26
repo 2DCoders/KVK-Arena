@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Star } from "lucide-react"
 
 import man1 from "@/assets/feedbacks/man1.jpg"
 import man2 from "@/assets/feedbacks/man2.jpg"
@@ -12,6 +12,7 @@ const testimonials = [
         id: 1,
         name: "David Kumar",
         role: "CEO, NexaTech",
+        rating: 5,
         quote:
             "IT.S transformed our entire cloud infrastructure. Their team was professional, fast, and incredibly knowledgeable. We saw immediate performance gains and a 40% reduction in downtime. Highly recommended!",
         image: man1,
@@ -20,6 +21,7 @@ const testimonials = [
         id: 2,
         name: "Alicia Gomez",
         role: "Operations Lead, UrbanFit",
+        rating: 5,
         quote:
             "The rollout was smooth from start to finish. They listened carefully, delivered on time, and gave us a system that our team actually enjoys using every day.",
         image: woman1,
@@ -28,6 +30,7 @@ const testimonials = [
         id: 3,
         name: "Rahul Mehta",
         role: "Founder, Summit Retail",
+        rating: 4,
         quote:
             "We needed something reliable and scalable. The result exceeded expectations and made our internal workflow noticeably faster within the first week.",
         image: man2,
@@ -36,6 +39,7 @@ const testimonials = [
         id: 4,
         name: "Sana Ibrahim",
         role: "Marketing Director, Halo Group",
+        rating: 5,
         quote:
             "Clear communication, thoughtful execution, and a polished final product. The team felt like an extension of our own department.",
         image: woman2,
@@ -44,6 +48,7 @@ const testimonials = [
         id: 5,
         name: "Jason Lee",
         role: "Product Manager, BluePeak",
+        rating: 5,
         quote:
             "They took a complex brief and turned it into a simple, high-performing solution. The attention to detail was excellent throughout.",
         image: man3,
@@ -130,8 +135,23 @@ export default function Feedbacks() {
                         <p className="text-lg leading-8 text-slate-700 sm:text-xl sm:leading-9">
                             “{activeTestimonial.quote}”
                         </p>
+                        
 
-                        <div className="mt-10 flex items-center justify-center gap-4">
+                        <div className="mt-4 flex items-center justify-center gap-1.5">
+                            {Array.from({ length: 5 }).map((_, starIndex) => {
+                                const filled = starIndex < activeTestimonial.rating
+
+                                return (
+                                    <Star
+                                        key={starIndex}
+                                        size={18}
+                                        className={filled ? "fill-[#296BE1] text-[#296BE1]" : "text-slate-300"}
+                                    />
+                                )
+                            })}
+                        </div>
+
+                        <div className="mt-8 flex items-center justify-center gap-4">
                             <h3 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
                                 {activeTestimonial.name}
                             </h3>
