@@ -91,7 +91,7 @@ export default function ContactUs() {
                                 <textarea aria-label="Message" placeholder="Message" rows={3} className="rounded-md border border-transparent bg-white/3 px-4 py-3 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#296BE1]/40" />
 
                                 <div className="flex items-center gap-4">
-                                    <button type="submit" className="inline-flex items-center gap-3 rounded-full bg-[#296BE1] px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_36px_rgba(41,107,225,0.22)] transition hover:bg-[#1f58be]">
+                                    <button type="submit" className="inline-flex cursor-pointer items-center gap-3 rounded-full bg-[#296BE1] px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_36px_rgba(41,107,225,0.22)] transition hover:bg-[#1f58be]">
                                         <Send size={16} />
                                         Send Message
                                     </button>
