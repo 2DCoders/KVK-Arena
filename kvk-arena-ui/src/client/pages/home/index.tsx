@@ -6,6 +6,7 @@ import WorkFlow from "../work-flow";
 import Feedbacks from "../feedbacks";
 import Gallery from "../gallery";
 import AboutUs from "../about-us";
+import ContactUs from "../contact-us";
 
 function WhatsappIcon() {
     return (
@@ -87,6 +88,7 @@ export default function Home() {
             <Feedbacks />
             <Gallery />
             <AboutUs />
+            <ContactUs />
         </Main>
     )
 }
