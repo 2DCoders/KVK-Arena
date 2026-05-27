@@ -126,7 +126,7 @@ export default function ContactUs() {
                             <div>
                                 <p className="text-xs text-slate-400">Mobile</p>
                                 <p className="text-sm font-semibold text-white">
-                                    +94 77 123 4567
+                                    +94 76 560 5885
                                 </p>
                             </div>
                         </div>
@@ -141,7 +141,7 @@ export default function ContactUs() {
                             <div>
                                 <p className="text-xs text-slate-400">Email</p>
                                 <p className="text-sm font-semibold text-white">
-                                    info@kvkarena.com
+                                    kvkarena28@gmail.com
                                 </p>
                             </div>
                         </div>
@@ -156,7 +156,7 @@ export default function ContactUs() {
                             <div>
                                 <p className="text-xs text-slate-400">Address</p>
                                 <p className="text-sm font-semibold text-white">
-                                    KVK Arena, Main Street, Colombo, Sri Lanka
+                                    No.387, Bambalapitiya road, Colombo 4
                                 </p>
                             </div>
                         </div>
@@ -171,7 +171,7 @@ export default function ContactUs() {
                             <div>
                                 <p className="text-xs text-slate-400">Working Days</p>
                                 <p className="text-sm font-semibold text-white">
-                                    Monday – Sunday: 6:00 AM – 10:00 PM
+                                    Monday – Sunday
                                 </p>
                             </div>
                         </div>

@@ -45,7 +45,7 @@ export default function Home() {
         <Main>
             <div className="fixed right-0 top-1/2 z-50 flex -translate-y-1/2 flex-col gap-2 pr-0">
                 <a
-                    href="https://wa.me/0000000000"
+                    href="https://wa.me/+94765605885"
                     target="_blank"
                     rel="noreferrer"
                     aria-label="WhatsApp"
@@ -54,7 +54,7 @@ export default function Home() {
                     <WhatsappIcon />
                 </a>
                 <a
-                    href="https://www.tiktok.com"
+                    href="https://www.tiktok.com/@kvk.arena?_r=1&_t=ZS-96Z68QaWNRh"
                     target="_blank"
                     rel="noreferrer"
                     aria-label="TikTok"
@@ -63,7 +63,7 @@ export default function Home() {
                     <TikTokIcon />
                 </a>
                 <a
-                    href="https://www.facebook.com"
+                    href="https://www.facebook.com/share/1A6qJ3RfSy/?mibextid=wwXIfr"
                     target="_blank"
                     rel="noreferrer"
                     aria-label="Facebook"
@@ -72,7 +72,7 @@ export default function Home() {
                     <FacebookIcon />
                 </a>
                 <a
-                    href="https://www.instagram.com"
+                    href="https://www.instagram.com/kvk_arena"
                     target="_blank"
                     rel="noreferrer"
                     aria-label="Instagram"

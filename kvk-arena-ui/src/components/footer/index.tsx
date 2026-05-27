@@ -39,19 +39,31 @@ export default function Footer() {
 
               {/* Socials */}
               <div className="mt-8 flex items-center gap-4">
-                <a href="#" className="text-slate-500 transition hover:text-black">
+                <a href="https://wa.me/+94765605885"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="WhatsApp" className="text-slate-500 transition hover:text-black">
                   <WhatsAppOutlined className="h-5 w-5" />
                 </a>
 
-                <a href="#" className="text-slate-500 transition hover:text-black">
+                <a href="https://www.tiktok.com/@kvk.arena?_r=1&_t=ZS-96Z68QaWNRh"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="TikTok" className="text-slate-500 transition hover:text-black">
                   <TikTokOutlined className="h-5 w-5" />
                 </a>
 
-                <a href="#" className="text-slate-500 transition hover:text-black">
+                <a href="https://www.facebook.com/share/1A6qJ3RfSy/?mibextid=wwXIfr"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Facebook" className="text-slate-500 transition hover:text-black">
                   <FacebookOutlined className="h-5 w-5" />
                 </a>
 
-                <a href="#" className="text-slate-500 transition hover:text-black">
+                <a href="https://www.instagram.com/kvk_arena"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Instagram" className="text-slate-500 transition hover:text-black">
                   <InstagramOutlined className="h-5 w-5" />
                 </a>
               </div>
@@ -202,7 +214,7 @@ export default function Footer() {
           <div className="mt-12 border-t border-slate-200 pt-6 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <p className="text-sm text-slate-400">
               © {new Date().getFullYear()} KvK Arena. All rights reserved. | Developed by <a href="https://2d-coders.lk" target="_blank" rel="noopener noreferrer" className="text-slate-600 hover:text-slate-900 transition bold">
-               <b> 2D-Coders </b> 
+                <b> 2D-Coders </b>
               </a>
             </p>
 
