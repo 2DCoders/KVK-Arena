@@ -1,4 +1,5 @@
 import { useRef, useState } from "react"
+import { useEffect } from "react"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 
 import gym from "@/assets/gym.png"
@@ -6,6 +7,7 @@ import carwash from "@/assets/carwash.jpg"
 import badminton from "@/assets/badminton.jpg"
 import gaming from "@/assets/billiard.jpg"
 import cafe from "@/assets/coffee.jpg"
+import AOS from 'aos'
 
 const services = [
     {
@@ -79,6 +81,11 @@ export default function Services() {
         ? services
         : services.filter((service) => service.category === activeTab)
 
+    useEffect(() => {
+        // Refresh AOS animations when visible services change (filtering)
+        AOS.refresh()
+    }, [visibleServices])
+
     return (
         <section className="relative overflow-hidden bg-white/5 py-10 lg:py-16">
             <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -136,9 +143,11 @@ export default function Services() {
                         className="overflow-x-auto pb-4 scrollbar-none scroll-smooth"
                     >
                         <div className="flex w-max gap-6 snap-x snap-mandatory pr-14 md:pr-16">
-                        {visibleServices.map((service) => (
+                        {visibleServices.map((service, idx) => (
                             <article
                                 key={service.id}
+                                data-aos="fade-up"
+                                data-aos-delay={`${idx * 80}`}
                                 className="group relative min-w-70 snap-start overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-[0_18px_45px_rgba(0,0,0,0.15)] transition duration-300 hover:-translate-y-1 hover:border-white/20 sm:min-w-80 lg:min-w-75"
                             >
                                 <div className="relative aspect-2/3 w-full">
