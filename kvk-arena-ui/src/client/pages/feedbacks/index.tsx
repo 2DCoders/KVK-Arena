@@ -47,7 +47,7 @@ const testimonials = [
     {        
         id: 5,
         name: "Dulhan Rajitha",
-        role: "Gym Member",
+        role: "Gym Athlete",
         rating: 5,
         quote:
             "KVK Gym completely changed my fitness routine. The trainers are supportive, the equipment is modern, and the environment keeps me motivated every day.",
