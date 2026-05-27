@@ -12,7 +12,7 @@ const stats = [
 
 export default function AboutUs() {
     return (
-        <section className="relative overflow-hidden bg-white py-16 lg:py-24">
+        <section className="relative overflow-hidden bg-white py-16 lg:py-30">
             <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(45,134,252,0.10),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(41,107,225,0.08),transparent_30%)]" />
 
             <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
