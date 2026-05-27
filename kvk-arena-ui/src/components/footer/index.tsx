@@ -144,7 +144,7 @@ export default function Footer() {
 
                     <li>
                       <a
-                        href="#"
+                        href="#services"
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
                         Services
@@ -153,7 +153,7 @@ export default function Footer() {
 
                     <li>
                       <a
-                        href="#"
+                        href="#about"
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
                         About
@@ -162,7 +162,7 @@ export default function Footer() {
 
                     <li>
                       <a
-                        href="#"
+                        href="#contact"
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
                         Contact

@@ -83,12 +83,22 @@ export default function Home() {
             </div>
             <Hero />
             <BrandsSlider />
-            <Services />
+
+            <section id="services" className="relative overflow-hidden py-10 lg:py-16">
+                <Services />
+            </section>
+            
             <WorkFlow />
             <Feedbacks />
             <Gallery />
+
+            <section id="about" className="relative overflow-hidden py-10 lg:py-16">
             <AboutUs />
+            </section>
+
+            <section id="contact" className="relative overflow-hidden py-10 lg:py-16">
             <ContactUs />
+            </section>
         </Main>
     )
 }

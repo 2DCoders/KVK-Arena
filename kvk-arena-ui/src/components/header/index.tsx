@@ -25,7 +25,7 @@ export default function Header() {
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.35),transparent_28%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.18),transparent_30%)]" />
         )}
         <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/20" />
-        
+
         {/* Left Menu - Desktop */}
         <nav className="relative z-10 hidden items-center gap-8 lg:flex">
           <a
@@ -35,21 +35,22 @@ export default function Header() {
             Home
           </a>
 
-          <div className="group relative cursor-pointer">
-            <div className={`flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(37,99,235,0.18)] ${isScrolled ? 'text-slate-700 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950' : 'text-slate-200 hover:bg-white/10 hover:text-white hover:backdrop-blur-sm'}`}>
-              Services
-            </div>
-          </div>
+          <a
+            href="#services"
+            className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(37,99,235,0.18)] ${isScrolled ? 'text-slate-700 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950' : 'text-slate-200 hover:bg-white/10 hover:text-white hover:backdrop-blur-sm'}`}
+          >
+            Services
+          </a>
 
           <a
-            href="#"
+            href="#about"
             className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(37,99,235,0.18)] ${isScrolled ? 'text-slate-700 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950' : 'text-slate-200 hover:bg-white/10 hover:text-white hover:backdrop-blur-sm'}`}
           >
             About
           </a>
 
           <a
-            href="#"
+            href="#contact"
             className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(37,99,235,0.18)] ${isScrolled ? 'text-slate-700 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950' : 'text-slate-200 hover:bg-white/10 hover:text-white hover:backdrop-blur-sm'}`}
           >
             Contact
@@ -82,18 +83,16 @@ export default function Header() {
       </div>
 
       {/* Mobile Sidebar */}
-        <div
-          className={`fixed inset-0 z-9999 transition-all duration-300 ${
-            mobileMenuOpen
-              ? "visible bg-black/40 backdrop-blur-[2px] opacity-100"
-              : "invisible opacity-0"
+      <div
+        className={`fixed inset-0 z-9999 transition-all duration-300 ${mobileMenuOpen
+            ? "visible bg-black/40 backdrop-blur-[2px] opacity-100"
+            : "invisible opacity-0"
           }`}
-        >
+      >
         {/* Sidebar */}
         <div
-          className={`absolute right-0 top-0 h-full w-70 border-l border-white/12 bg-white/95 p-6 shadow-2xl backdrop-blur-md transition-transform duration-300 ${
-            mobileMenuOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+          className={`absolute right-0 top-0 h-full w-70 border-l border-white/12 bg-white/95 p-6 shadow-2xl backdrop-blur-md transition-transform duration-300 ${mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+            }`}
         >
           {/* Top */}
           <div className="mb-8 flex items-center justify-between">
