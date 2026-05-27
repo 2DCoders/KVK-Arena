@@ -6,6 +6,14 @@ import badmintom from "@/assets/gallery/badminton-g.jpg";
 import gaming from "@/assets/gallery/pool-g.jpg";
 import cafe from "@/assets/gallery/cafe-g.jpg";
 
+const galleryItems = [
+    { id: 1, src: gym, alt: "transformation 1" },
+    { id: 2, src: carwash, alt: "transformation 2" },
+    { id: 3, src: badmintom, alt: "transformation 3" },
+    { id: 4, src: gaming, alt: "transformation 4" },
+    { id: 5, src: cafe, alt: "transformation 5" },
+]
+
 export default function Gallery() {
     return (
         <section className="relative overflow-hidden bg-[linear-gradient(180deg,#020617_0%,#06162d_52%,#020617_100%)] py-20 lg:py-28">
@@ -23,62 +31,39 @@ export default function Gallery() {
 
                     <div className="order-first lg:order-last">
                         <div className="grid grid-cols-3 gap-1 sm:gap-6">
-                            <div className="group relative col-span-1 overflow-hidden rounded-sm cursor-pointer">
-                                <img src={gym} alt="transformation 1" className="h-40 w-full object-cover transition-transform duration-500 hover:scale-105 sm:h-48 lg:h-56" />
-                                <div className="absolute inset-0 bg-black/30" />
-                                <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                                    <button type="button" className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white px-6 py-3 text-sm font-medium text-white transition hover:bg-white hover:text-black">
-                                        View Album
-                                        <Eye size={18} />
-                                    </button>
+                            {galleryItems.slice(0, 3).map((item) => (
+                                <div key={item.id} className="group relative col-span-1 overflow-hidden rounded-sm cursor-pointer">
+                                    <img src={item.src} alt={item.alt} className="h-40 w-full object-cover transition-transform duration-500 hover:scale-105 sm:h-48 lg:h-56" />
+                                    <div className="absolute inset-0 bg-black/30" />
+                                    <div className="absolute left-3 top-3 z-10 inline-flex items-center rounded-full border border-white/20 bg-black/55 px-3 py-1 text-xs font-semibold tracking-[0.18em] text-white shadow-[0_8px_24px_rgba(0,0,0,0.25)] backdrop-blur-md">
+                                        5 images
+                                    </div>
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                                        <button type="button" className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white px-6 py-3 text-sm font-medium text-white transition hover:bg-white hover:text-black">
+                                            View Album
+                                            <Eye size={18} />
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div className="group relative col-span-1 overflow-hidden rounded-sm cursor-pointer">
-                                <img src={carwash} alt="transformation 2" className="h-40 w-full object-cover transition-transform duration-500 hover:scale-105 sm:h-48 lg:h-56" />
-                                <div className="absolute inset-0 bg-black/30" />
-                                <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                                    <button type="button" className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white px-6 py-3 text-sm font-medium text-white transition hover:bg-white hover:text-black">
-                                        View Album
-                                        <Eye size={18} />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="group relative col-span-1 overflow-hidden rounded-sm cursor-pointer">
-                                <img src={badmintom} alt="transformation 3" className="h-40 w-full object-cover transition-transform duration-500 hover:scale-105 sm:h-48 lg:h-56" />
-                                <div className="absolute inset-0 bg-black/30" />
-                                <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                                    <button type="button" className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white px-6 py-3 text-sm font-medium text-white transition hover:bg-white hover:text-black">
-                                        View Album
-                                        <Eye size={18} />
-                                    </button>
-                                </div>
-                            </div>
+                            ))}
                         </div>
 
                         <div className="mt-4 grid grid-cols-2 gap-1 sm:gap-6">
-                            <div className="group relative col-span-1 overflow-hidden rounded-sm cursor-pointer">
-                                <img src={gaming} alt="transformation 4" className="h-56 w-full object-cover transition-transform duration-500 hover:scale-105 sm:h-64 lg:h-72" />
-                                <div className="absolute inset-0 bg-black/30" />
-                                <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                                    <button type="button" className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white px-6 py-3 text-sm font-medium text-white transition hover:bg-white hover:text-black">
-                                        View Album
-                                        <Eye size={18} />
-                                    </button>
+                            {galleryItems.slice(3).map((item) => (
+                                <div key={item.id} className="group relative col-span-1 overflow-hidden rounded-sm cursor-pointer">
+                                    <img src={item.src} alt={item.alt} className="h-56 w-full object-cover transition-transform duration-500 hover:scale-105 sm:h-64 lg:h-72" />
+                                    <div className="absolute inset-0 bg-black/30" />
+                                    <div className="absolute left-3 top-3 z-10 inline-flex items-center rounded-full border border-white/20 bg-black/55 px-3 py-1 text-xs font-semibold tracking-[0.18em] text-white shadow-[0_8px_24px_rgba(0,0,0,0.25)] backdrop-blur-md">
+                                        5 images
+                                    </div>
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                                        <button type="button" className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white px-6 py-3 text-sm font-medium text-white transition hover:bg-white hover:text-black">
+                                            View Album
+                                            <Eye size={18} />
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div className="group relative col-span-1 overflow-hidden rounded-sm cursor-pointer">
-                                <img src={cafe} alt="transformation 5" className="h-56 w-full object-cover transition-transform duration-500 hover:scale-105 sm:h-64 lg:h-72" />
-                                <div className="absolute inset-0 bg-black/30" />
-                                <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                                    <button type="button" className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white px-6 py-3 text-sm font-medium text-white transition hover:bg-white hover:text-black">
-                                        View Album
-                                        <Eye size={18} />
-                                    </button>
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     </div>
                 </div>

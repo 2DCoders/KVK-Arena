@@ -92,11 +92,11 @@ export default function Home() {
             <Feedbacks />
             <Gallery />
 
-            <section id="about" className="relative overflow-hidden py-10 lg:py-16">
+            <section id="about" className="relative overflow-hidden">
             <AboutUs />
             </section>
 
-            <section id="contact" className="relative overflow-hidden py-10 lg:py-16">
+            <section id="contact" className="relative overflow-hidden">
             <ContactUs />
             </section>
         </Main>
