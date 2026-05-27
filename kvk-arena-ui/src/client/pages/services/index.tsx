@@ -2,9 +2,9 @@ import { useState } from "react"
 import { ArrowRight } from "lucide-react"
 
 import gym from "@/assets/gym.png"
-import carwash from "@/assets/carwash.jpeg"
+import carwash from "@/assets/carwash.jpg"
 import badminton from "@/assets/badminton.jpg"
-import gaming from "@/assets/pool.jpg"
+import gaming from "@/assets/billiard.jpg"
 
 const services = [
     {
@@ -37,6 +37,14 @@ const services = [
         tag: "Entertainment",
         category: "gaming",
         desc: "Relax and play in a dedicated gaming zone with a premium setup.",
+        img: gaming,
+    },
+    {
+        id: 5,
+        title: "Cafe",
+        tag: "Food & Beverage",
+        category: "cafe",
+        desc: "Relax and enjoy delicious coffee and snacks in a cozy environment.",
         img: gaming,
     }
 ]
