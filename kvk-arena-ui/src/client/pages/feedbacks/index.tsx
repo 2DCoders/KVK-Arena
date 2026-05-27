@@ -3,19 +3,19 @@ import { ChevronLeft, ChevronRight, Star } from "lucide-react"
 
 import man1 from "@/assets/feedbacks/man1.jpg"
 import man2 from "@/assets/feedbacks/man2.jpg"
-import man3 from "@/assets/feedbacks/man3.jpg"
+import man3 from "@/assets/feedbacks/man3.jpeg"
 import woman1 from "@/assets/feedbacks/woman1.jpeg"
-import woman2 from "@/assets/feedbacks/woman2.jpg"
+import woman2 from "@/assets/feedbacks/woman2.jpeg"
 
 const testimonials = [
     {
         id: 1,
-        name: "Dulhan Rajitha",
-        role: "Gym Member",
+        name: "Kasun Perera",
+        role: "Badminton Player",
         rating: 5,
         quote:
-            "KVK Gym completely changed my fitness routine. The trainers are supportive, the equipment is modern, and the environment keeps me motivated every day.",
-        image: man1,
+            "KVK Arena provides excellent badminton facilities with enough space and professional standards.",
+        image: man3,
     },
     {
         id: 2,
@@ -37,21 +37,21 @@ const testimonials = [
     },
     {
         id: 4,
-        name: "Sana Ibrahim",
-        role: "Marketing Director, Halo Group",
-        rating: 5,
-        quote:
-            "Clear communication, thoughtful execution, and a polished final product. The team felt like an extension of our own department.",
-        image: woman2,
-    },
-    {
-        id: 5,
-        name: "Lasath Rathnayake",
+        name: "Janika Chathuni",
         role: "Badminton Player",
         rating: 5,
         quote:
-            "KVK Arena provides excellent badminton facilities with enough space and professional standards.",
-        image: man3,
+            "KVK Arena has one of the best badminton courts I’ve played on. Clean, spacious, and professional!",
+        image: woman2,
+    },
+    {        
+        id: 5,
+        name: "Dulhan Rajitha",
+        role: "Gym Member",
+        rating: 5,
+        quote:
+            "KVK Gym completely changed my fitness routine. The trainers are supportive, the equipment is modern, and the environment keeps me motivated every day.",
+        image: man1,
     },
 ]
 
