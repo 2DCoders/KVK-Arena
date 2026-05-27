@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
-import logo from "@/assets/kvk-arena-header-logo.png";
+import logo from "@/assets/kvk-arena-header-logo1.png";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -30,27 +30,27 @@ export default function Header() {
         <nav className="relative z-10 hidden items-center gap-8 lg:flex">
           <a
             href="#"
-            className={`text-sm font-medium transition ${isScrolled ? 'text-slate-700 hover:text-slate-900' : 'text-slate-200 hover:text-white'}`}
+            className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(37,99,235,0.18)] ${isScrolled ? 'text-slate-700 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950' : 'text-slate-200 hover:bg-white/10 hover:text-white hover:backdrop-blur-sm'}`}
           >
             Home
           </a>
 
           <div className="group relative cursor-pointer">
-            <div className={`flex items-center gap-1 text-sm font-medium transition ${isScrolled ? 'text-slate-700 hover:text-slate-900' : 'text-slate-200 hover:text-white'}`}>
+            <div className={`flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(37,99,235,0.18)] ${isScrolled ? 'text-slate-700 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950' : 'text-slate-200 hover:bg-white/10 hover:text-white hover:backdrop-blur-sm'}`}>
               Services
             </div>
           </div>
 
           <a
             href="#"
-            className={`text-sm font-medium transition ${isScrolled ? 'text-slate-700 hover:text-slate-900' : 'text-slate-200 hover:text-white'}`}
+            className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(37,99,235,0.18)] ${isScrolled ? 'text-slate-700 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950' : 'text-slate-200 hover:bg-white/10 hover:text-white hover:backdrop-blur-sm'}`}
           >
             About
           </a>
 
           <a
             href="#"
-            className={`text-sm font-medium transition ${isScrolled ? 'text-slate-700 hover:text-slate-900' : 'text-slate-200 hover:text-white'}`}
+            className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(37,99,235,0.18)] ${isScrolled ? 'text-slate-700 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950' : 'text-slate-200 hover:bg-white/10 hover:text-white hover:backdrop-blur-sm'}`}
           >
             Contact
           </a>
@@ -67,7 +67,7 @@ export default function Header() {
 
         {/* Right Button - Desktop */}
         <div className="relative z-10 hidden lg:block">
-          <button className={`cursor-pointer rounded-full px-7 py-2.5 text-sm font-extrabold tracking-[0.08em] transition ${isScrolled ? 'border border-slate-200 bg-white text-slate-900 shadow-sm hover:bg-slate-50' : 'border border-white/30 bg-white text-slate-950 shadow-[0_10px_24px_rgba(255,255,255,0.14)] hover:bg-slate-100'}`}>
+          <button className={`cursor-pointer rounded-full px-7 py-2.5 text-sm font-extrabold tracking-[0.08em] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(37,99,235,0.24)] ${isScrolled ? 'border border-slate-200 bg-white text-slate-900 shadow-sm hover:border-sky-200 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950' : 'border border-white/30 bg-white text-slate-950 shadow-[0_10px_24px_rgba(255,255,255,0.14)] hover:border-sky-200 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950'}`}>
             Sign In
           </button>
         </div>
@@ -75,7 +75,7 @@ export default function Header() {
         {/* Mobile Menu Button */}
         <button
           onClick={() => setMobileMenuOpen(true)}
-          className={`relative z-10 ml-auto rounded-lg p-2 transition lg:hidden ${isScrolled ? 'text-slate-700 hover:bg-slate-100' : 'text-slate-100 hover:bg-white/10'}`}
+          className={`relative z-10 ml-auto rounded-xl p-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(37,99,235,0.16)] lg:hidden ${isScrolled ? 'text-slate-700 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950' : 'text-slate-100 hover:bg-white/10 hover:text-white'}`}
         >
           <Menu size={26} />
         </button>
@@ -105,7 +105,7 @@ export default function Header() {
 
             <button
               onClick={() => setMobileMenuOpen(false)}
-              className="cursor-pointer rounded-lg p-2 text-slate-700 transition hover:bg-slate-100"
+              className="cursor-pointer rounded-lg p-2 text-slate-700 transition-all duration-300 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950"
             >
               <X size={24} />
             </button>
@@ -115,33 +115,33 @@ export default function Header() {
           <nav className="flex flex-col gap-5">
             <a
               href="#"
-              className="text-[15px] font-medium text-slate-800 transition hover:text-slate-900"
+              className="rounded-xl px-3 py-2 text-[15px] font-medium text-slate-800 transition-all duration-300 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950"
             >
               Home
             </a>
 
             <div>
-              <div className="mb-3 flex items-center justify-between text-[15px] font-medium text-slate-800">
+              <div className="mb-3 flex items-center justify-between rounded-xl px-3 py-2 text-[15px] font-medium text-slate-800 transition-all duration-300 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950">
                 Services
               </div>
             </div>
 
             <a
               href="#"
-              className="text-[15px] font-medium text-slate-800 transition hover:text-slate-900"
+              className="rounded-xl px-3 py-2 text-[15px] font-medium text-slate-800 transition-all duration-300 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950"
             >
               About
             </a>
 
             <a
               href="#"
-              className="text-[15px] font-medium text-slate-800 transition hover:text-slate-900"
+              className="rounded-xl px-3 py-2 text-[15px] font-medium text-slate-800 transition-all duration-300 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950"
             >
               Contact
             </a>
 
             {/* Mobile Sign In */}
-            <button className="mt-6 cursor-pointer rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold tracking-[0.06em] text-slate-900 transition hover:bg-slate-50">
+            <button className="mt-6 cursor-pointer rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold tracking-[0.06em] text-slate-900 transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-200 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950 hover:shadow-[0_16px_36px_rgba(37,99,235,0.16)]">
               Sign In
             </button>
           </nav>
