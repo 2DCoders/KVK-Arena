@@ -25,7 +25,8 @@ export default function Gallery() {
                         <div className="grid grid-cols-3 gap-1 sm:gap-6">
                             <div className="group relative col-span-1 overflow-hidden rounded-sm cursor-pointer">
                                 <img src={gym} alt="transformation 1" className="h-40 w-full object-cover transition-transform duration-500 hover:scale-105 sm:h-48 lg:h-56" />
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/45 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                                <div className="absolute inset-0 bg-black/30" />
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                                     <button type="button" className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white px-6 py-3 text-sm font-medium text-white transition hover:bg-white hover:text-black">
                                         View Album
                                         <Eye size={18} />
@@ -35,7 +36,8 @@ export default function Gallery() {
 
                             <div className="group relative col-span-1 overflow-hidden rounded-sm cursor-pointer">
                                 <img src={carwash} alt="transformation 2" className="h-40 w-full object-cover transition-transform duration-500 hover:scale-105 sm:h-48 lg:h-56" />
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/45 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                                <div className="absolute inset-0 bg-black/30" />
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                                     <button type="button" className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white px-6 py-3 text-sm font-medium text-white transition hover:bg-white hover:text-black">
                                         View Album
                                         <Eye size={18} />
@@ -45,7 +47,8 @@ export default function Gallery() {
 
                             <div className="group relative col-span-1 overflow-hidden rounded-sm cursor-pointer">
                                 <img src={badmintom} alt="transformation 3" className="h-40 w-full object-cover transition-transform duration-500 hover:scale-105 sm:h-48 lg:h-56" />
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/45 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                                <div className="absolute inset-0 bg-black/30" />
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                                     <button type="button" className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white px-6 py-3 text-sm font-medium text-white transition hover:bg-white hover:text-black">
                                         View Album
                                         <Eye size={18} />
@@ -57,7 +60,8 @@ export default function Gallery() {
                         <div className="mt-4 grid grid-cols-2 gap-1 sm:gap-6">
                             <div className="group relative col-span-1 overflow-hidden rounded-sm cursor-pointer">
                                 <img src={gaming} alt="transformation 4" className="h-56 w-full object-cover transition-transform duration-500 hover:scale-105 sm:h-64 lg:h-72" />
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/45 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                                <div className="absolute inset-0 bg-black/30" />
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                                     <button type="button" className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white px-6 py-3 text-sm font-medium text-white transition hover:bg-white hover:text-black">
                                         View Album
                                         <Eye size={18} />
@@ -67,7 +71,8 @@ export default function Gallery() {
 
                             <div className="group relative col-span-1 overflow-hidden rounded-sm cursor-pointer">
                                 <img src={cafe} alt="transformation 5" className="h-56 w-full object-cover transition-transform duration-500 hover:scale-105 sm:h-64 lg:h-72" />
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/45 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                                <div className="absolute inset-0 bg-black/30" />
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                                     <button type="button" className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white px-6 py-3 text-sm font-medium text-white transition hover:bg-white hover:text-black">
                                         View Album
                                         <Eye size={18} />

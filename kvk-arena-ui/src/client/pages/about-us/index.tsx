@@ -1,9 +1,7 @@
 import { ArrowRight } from "lucide-react"
 
-import gym from "@/assets/gym.png"
-import carwash from "@/assets/carwash.jpeg"
-import badminton from "@/assets/badminton.jpg"
-import gaming from "@/assets/pool.jpg"
+import gym from "@/assets/about.png"
+import badminton from "@/assets/about2.jpg"
 
 const stats = [
     { value: "4", label: "Core Services" },
@@ -36,7 +34,7 @@ export default function AboutUs() {
                             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
                                 <button
                                     type="button"
-                                    className="inline-flex items-center justify-center gap-2 rounded-full bg-[#296BE1] px-7 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(41,107,225,0.22)] transition hover:bg-[#1f58be]"
+                                    className="inline-flex items-center cursor-pointer justify-center gap-2 rounded-full bg-[#296BE1] px-7 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(41,107,225,0.22)] transition hover:bg-[#1f58be]"
                                 >
                                     Explore Services
                                     <ArrowRight size={16} />
@@ -44,7 +42,7 @@ export default function AboutUs() {
 
                                 <button
                                     type="button"
-                                    className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-7 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
+                                    className="inline-flex items-center cursor-pointer justify-center rounded-full border border-slate-200 bg-white px-7 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
                                 >
                                     Learn More
                                 </button>
