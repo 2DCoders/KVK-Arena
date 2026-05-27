@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^6.2.3",
+    "aos": "^2.3.4",
     "autoprefixer": "^10.5.0",
     "axios": "^1.16.1",
     "leaflet": "^1.9.4",
