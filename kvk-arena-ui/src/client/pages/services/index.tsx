@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { ArrowRight } from "lucide-react"
+import { useRef, useState } from "react"
+import { ArrowLeft, ArrowRight } from "lucide-react"
 
 import gym from "@/assets/gym.png"
 import carwash from "@/assets/carwash.jpg"
@@ -61,6 +61,19 @@ const tabs = [
 
 export default function Services() {
     const [activeTab, setActiveTab] = useState("all")
+    const scrollerRef = useRef<HTMLDivElement | null>(null)
+
+    const scrollServices = (direction: "left" | "right") => {
+        const container = scrollerRef.current
+
+        if (!container) return
+
+        const distance = container.clientWidth * 0.8
+        container.scrollBy({
+            left: direction === "left" ? -distance : distance,
+            behavior: "smooth",
+        })
+    }
 
     const visibleServices = activeTab === "all"
         ? services
@@ -108,12 +121,25 @@ export default function Services() {
                     </div>
                 </div>
 
-                <div className="mt-10 overflow-x-auto pb-4">
-                    <div className="flex w-max gap-6 snap-x snap-mandatory">
+                <div className="relative mt-10">
+                    <button
+                        type="button"
+                        aria-label="Scroll services left"
+                        onClick={() => scrollServices("left")}
+                        className="absolute left-0 top-1/2 z-20 cursor-pointer hidden -translate-y-1/2 rounded-full border border-white/15 bg-white/90 p-3 text-slate-700 shadow-[0_16px_40px_rgba(15,23,42,0.18)] backdrop-blur-md transition-all duration-300 hover:-translate-y-1/2 hover:border-sky-200 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950 hover:shadow-[0_18px_45px_rgba(37,99,235,0.18)] md:inline-flex"
+                    >
+                        <ArrowLeft size={18} />
+                    </button>
+
+                    <div
+                        ref={scrollerRef}
+                        className="overflow-x-auto pb-4 scrollbar-none scroll-smooth"
+                    >
+                        <div className="flex w-max gap-6 snap-x snap-mandatory pr-14 md:pr-16">
                         {visibleServices.map((service) => (
                             <article
                                 key={service.id}
-                                className="group relative min-w-70 snap-start overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-[0_18px_45px_rgba(2,8,23,0.35)] transition duration-300 hover:-translate-y-1 hover:border-white/20 sm:min-w-80 lg:min-w-75"
+                                className="group relative min-w-70 snap-start overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-[0_18px_45px_rgba(0,0,0,0.15)] transition duration-300 hover:-translate-y-1 hover:border-white/20 sm:min-w-80 lg:min-w-75"
                             >
                                 <div className="relative aspect-2/3 w-full">
                                     <img src={service.img} alt={service.title} className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
@@ -151,7 +177,17 @@ export default function Services() {
                                 No services found for this tab.
                             </div>
                         )}
+                        </div>
                     </div>
+
+                    <button
+                        type="button"
+                        aria-label="Scroll services right"
+                        onClick={() => scrollServices("right")}
+                        className="absolute right-0 top-1/2 z-20 cursor-pointer hidden -translate-y-1/2 rounded-full border border-white/15 bg-white/90 p-3 text-slate-700 shadow-[0_16px_40px_rgba(15,23,42,0.18)] backdrop-blur-md transition-all duration-300 hover:-translate-y-1/2 hover:border-sky-200 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950 hover:shadow-[0_18px_45px_rgba(37,99,235,0.18)] md:inline-flex"
+                    >
+                        <ArrowRight size={18} />
+                    </button>
                 </div>
             </div>
         </section>

@@ -76,7 +76,7 @@ export default function WorkFlow() {
                 {/* Header */}
                 <div className="mx-auto max-w-3xl text-center">
                     <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl bg-linear-to-r from-[#2d86fc] via-[#CFEFFF] to-[#8FC0FF] bg-clip-text text-transparent">
-                        The Journey of a Member
+                        Every Step of the Journey
                     </h2>
 
                     <p className="mt-4 text-base text-slate-300">
