@@ -5,6 +5,7 @@ import gym from "@/assets/gym.png"
 import carwash from "@/assets/carwash.jpg"
 import badminton from "@/assets/badminton.jpg"
 import gaming from "@/assets/billiard.jpg"
+import cafe from "@/assets/coffee.jpg"
 
 const services = [
     {
@@ -45,7 +46,7 @@ const services = [
         tag: "Food & Beverage",
         category: "cafe",
         desc: "Relax and enjoy delicious coffee and snacks in a cozy environment.",
-        img: gaming,
+        img: cafe,
     }
 ]
 
@@ -55,6 +56,7 @@ const tabs = [
     { key: "carwash", label: "Car Wash" },
     { key: "badminton", label: "Badminton" },
     { key: "gaming", label: "Gaming" },
+    { key: "cafe", label: "Cafe" },
 ]
 
 export default function Services() {
@@ -106,48 +108,50 @@ export default function Services() {
                     </div>
                 </div>
 
-                <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {visibleServices.map((service) => (
-                        <article
-                            key={service.id}
-                            className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-[0_18px_45px_rgba(2,8,23,0.35)] transition duration-300 hover:-translate-y-1 hover:border-white/20"
-                        >
-                            <div className="relative aspect-[2/3] w-full">
-                                <img src={service.img} alt={service.title} className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-                                <div className="absolute inset-0 bg-black/45" />
-                                <div className="absolute inset-0 bg-linear-to-b from-transparent via-slate-950/35 to-slate-950/90" />
+                <div className="mt-10 overflow-x-auto pb-4">
+                    <div className="flex w-max gap-6 snap-x snap-mandatory">
+                        {visibleServices.map((service) => (
+                            <article
+                                key={service.id}
+                                className="group relative min-w-70 snap-start overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-[0_18px_45px_rgba(2,8,23,0.35)] transition duration-300 hover:-translate-y-1 hover:border-white/20 sm:min-w-80 lg:min-w-75"
+                            >
+                                <div className="relative aspect-2/3 w-full">
+                                    <img src={service.img} alt={service.title} className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                                    <div className="absolute inset-0 bg-black/45" />
+                                    <div className="absolute inset-0 bg-linear-to-b from-transparent via-slate-950/35 to-slate-950/90" />
 
-                                <div className="relative z-10 flex h-full flex-col justify-between p-5 sm:p-6">
-                                    <div>
-                                        <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/90">
-                                            {service.tag}
-                                        </span>
-                                        <h3 className="mt-4 text-2xl font-bold leading-tight text-white">
-                                            {service.title}
-                                        </h3>
-                                        <p className="mt-3 max-w-[18ch] text-sm leading-6 text-slate-200/90">
-                                            {service.desc}
-                                        </p>
-                                    </div>
+                                    <div className="relative z-10 flex h-full flex-col justify-between p-5 sm:p-6">
+                                        <div>
+                                            <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/90">
+                                                {service.tag}
+                                            </span>
+                                            <h3 className="mt-4 text-2xl font-bold leading-tight text-white">
+                                                {service.title}
+                                            </h3>
+                                            <p className="mt-3 max-w-[18ch] text-sm leading-6 text-slate-200/90">
+                                                {service.desc}
+                                            </p>
+                                        </div>
 
-                                    <div className="flex items-center justify-between pt-6">
-                                        <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#CFEFFF]">
-                                            {service.category}
-                                        </span>
-                                        <button type="button" className="inline-flex cursor-pointer h-11 w-11 items-center justify-center rounded-full bg-white text-[#296BE1] shadow-[0_10px_25px_rgba(255,255,255,0.18)] transition hover:scale-105">
-                                            <ArrowRight size={18} className="text-[#296BE1]" />
-                                        </button>
+                                        <div className="flex items-center justify-between pt-6">
+                                            <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#CFEFFF]">
+                                                {service.category}
+                                            </span>
+                                            <button type="button" className="inline-flex cursor-pointer h-11 w-11 items-center justify-center rounded-full bg-white text-[#296BE1] shadow-[0_10px_25px_rgba(255,255,255,0.18)] transition hover:scale-105">
+                                                <ArrowRight size={18} className="text-[#296BE1]" />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </article>
-                    ))}
+                            </article>
+                        ))}
 
-                    {visibleServices.length === 0 && (
-                        <div className="col-span-full rounded-3xl border border-white/10 bg-white/5 p-10 text-center text-slate-300">
-                            No services found for this tab.
-                        </div>
-                    )}
+                        {visibleServices.length === 0 && (
+                            <div className="min-w-70 rounded-3xl border border-white/10 bg-white/5 p-10 text-center text-slate-300 sm:min-w-80 lg:min-w-90">
+                                No services found for this tab.
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </section>

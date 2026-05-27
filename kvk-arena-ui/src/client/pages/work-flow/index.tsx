@@ -1,5 +1,5 @@
-import { Dumbbell, Truck, Gamepad, Feather, ShoppingBag, SproutIcon, PlayIcon, SportShoe } from "lucide-react"
-import bg from "@/assets/flow_bg.jpg"
+import { Dumbbell, Truck, Gamepad, SportShoe, Coffee } from "lucide-react"
+import bg from "@/assets/flow1.png"
 
 const features = [
     {
@@ -48,10 +48,10 @@ const features = [
     },
     {
         id: 5,
-        title: "Clothing",
-        subtitle: "Merch & Gear",
-        desc: "Buy branded apparel and sportswear at the arena store.",
-        icon: ShoppingBag,
+        title: "Cafe",
+        subtitle: "Coffee & Snacks",
+        desc: "Relax with fresh coffee, snacks, and a comfortable lounge atmosphere.",
+        icon: Coffee,
         color: "from-pink-500 to-rose-600",
         glow: "shadow-[0_0_40px_rgba(244,114,182,0.45)]",
         dot: "bg-pink-300",
@@ -68,7 +68,7 @@ export default function WorkFlow() {
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
                 style={{ backgroundImage: `url(${bg})` }}
             />
-            <div aria-hidden="true" className="absolute inset-0 bg-black/78" />
+            <div aria-hidden="true" className="absolute inset-0 bg-black/48" />
             {/* Background Glow */}
 
             <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -88,7 +88,7 @@ export default function WorkFlow() {
                 <div className="relative mt-20">
 
                     {/* Connection Line */}
-                    <div className="absolute left-0 right-0 top-10 hidden h-[1px] bg-white/10 lg:block" />
+                    <div className="absolute left-0 right-0 top-10 hidden h-px bg-white/10 lg:block" />
 
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
                         {features.map((f) => {
@@ -97,18 +97,18 @@ export default function WorkFlow() {
                             return (
                                 <div
                                     key={f.id}
-                                    className="group relative overflow-hidden rounded-[30px] border border-white/10 bg-gradient-to-b from-[#081225] to-[#050b18] p-7 text-center transition-all duration-500 hover:-translate-y-2 hover:border-white/20"
+                                    className="group relative overflow-hidden rounded-[30px] border border-white/10 bg-linear-to-b from-[#081225] to-[#050b18] p-7 text-center transition-all duration-500 hover:-translate-y-2 hover:border-white/20"
                                 >
                                     {/* Glass Glow */}
                                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.06),transparent_60%)]" />
 
                                     {/* Step */}
                                     <div className="relative mb-8 flex items-center justify-center gap-3">
-                                        <div className="h-[1px] w-10 bg-white/20" />
+                                        <div className="h-px w-10 bg-white/20" />
                                         <span className={`text-xs font-bold tracking-[0.3em] ${f.text}`}>
-                                            STEP 0{f.id}
+                                            0{f.id}
                                         </span>
-                                        <div className="h-[1px] w-10 bg-white/20" />
+                                        <div className="h-px w-10 bg-white/20" />
                                     </div>
 
                                     {/* Icon */}
@@ -128,7 +128,7 @@ export default function WorkFlow() {
 
                                         {/* Icon Box */}
                                         <div
-                                            className={`relative flex h-12 w-12 items-center justify-center rounded-[24px] bg-gradient-to-br ${f.color} text-4xl text-white ${f.glow} transition-transform duration-500 group-hover:scale-110`}
+                                            className={`relative flex h-12 w-12 items-center justify-center rounded-3xl bg-linear-to-br ${f.color} text-4xl text-white ${f.glow} transition-transform duration-500 group-hover:scale-110`}
                                         >
                                             <Icon size={28} className="text-white" />
                                         </div>
@@ -148,7 +148,7 @@ export default function WorkFlow() {
                                     </p>
 
                                     {/* Big Number */}
-                                    <span className="pointer-events-none absolute bottom-0 right-4 text-[110px] font-black leading-none text-white/[0.03]">
+                                    <span className="pointer-events-none absolute bottom-0 right-4 text-[110px] font-black leading-none text-white/3">
                                         0{f.id}
                                     </span>
                                 </div>

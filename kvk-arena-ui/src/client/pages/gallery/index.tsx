@@ -1,10 +1,10 @@
 import { Eye } from "lucide-react";
 
-import gym from "@/assets/gym.png";
-import carwash from "@/assets/carwash.jpeg";
-import badmintom from "@/assets/badminton.jpg";
-import gaming from "@/assets/pool.jpg";
-import cafe from "@/assets/cafe.jpg";
+import gym from "@/assets/gallery/gym-g.jpg";
+import carwash from "@/assets/gallery/carwash-g.jpg";
+import badmintom from "@/assets/gallery/badminton-g.jpg";
+import gaming from "@/assets/gallery/pool-g.jpg";
+import cafe from "@/assets/gallery/cafe-g.jpg";
 
 export default function Gallery() {
     return (
