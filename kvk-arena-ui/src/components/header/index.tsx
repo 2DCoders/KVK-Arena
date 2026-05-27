@@ -59,11 +59,13 @@ export default function Header() {
 
         {/* Logo */}
         <div className="absolute left-1/2 z-10 -translate-x-1/2">
-          <img
-            src={logo}
-            alt="KVK Arena"
-            className="h-10 w-auto object-contain lg:h-12 cursor-pointer"
-          />
+          <a href="#">
+            <img
+              src={logo}
+              alt="KVK Arena"
+              className="h-10 w-auto object-contain lg:h-12 cursor-pointer"
+            />
+          </a>
         </div>
 
         {/* Right Button - Desktop */}
@@ -85,8 +87,8 @@ export default function Header() {
       {/* Mobile Sidebar */}
       <div
         className={`fixed inset-0 z-9999 transition-all duration-300 ${mobileMenuOpen
-            ? "visible bg-black/40 backdrop-blur-[2px] opacity-100"
-            : "invisible opacity-0"
+          ? "visible bg-black/40 backdrop-blur-[2px] opacity-100"
+          : "invisible opacity-0"
           }`}
       >
         {/* Sidebar */}
