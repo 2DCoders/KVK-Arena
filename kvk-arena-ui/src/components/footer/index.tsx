@@ -1,9 +1,6 @@
 import logoSrc from "@/assets/kvk-arena-header-logo.png";
 import {
-  TwitterOutlined,
   InstagramOutlined,
-  LinkedinOutlined,
-  GithubOutlined,
   WhatsAppOutlined,
   TikTokOutlined,
   FacebookOutlined,
