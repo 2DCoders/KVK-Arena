@@ -86,9 +86,9 @@ export default function Feedbacks() {
                     </h2>
 
                     <p data-aos="fade-up" data-aos-delay="100" className="mt-4 text-base text-slate-500">
-                        We are proud to partner with businesses that value innovation,
-                        reliability, and measurable results. Here’s what some of our
-                        clients have to say about working with IT.S.
+                        From intense workouts and competitive matches to relaxing cafe
+                        moments, KVK Arena is built to deliver comfort, quality, and
+                        unforgettable experiences for every visitor.
                     </p>
                 </div>
 

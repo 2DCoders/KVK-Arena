@@ -33,7 +33,7 @@ export default function Gallery() {
                         <div className="grid grid-cols-3 gap-1 sm:gap-6">
                             {galleryItems.slice(0, 3).map((item) => (
                                 <div key={item.id} data-aos="zoom-in" data-aos-delay="200" className="group relative col-span-1 overflow-hidden rounded-sm cursor-pointer">
-                                    <img src={item.src} alt={item.alt} className="h-40 w-full object-cover transition-transform duration-500 hover:scale-105 sm:h-48 lg:h-56" />
+                                    <img src={item.src} alt={item.alt} className="aspect-[3/4] w-full object-cover transition-transform duration-500 hover:scale-105 sm:aspect-[4/5] lg:aspect-[16/10]" />
                                     <div className="absolute inset-0 bg-black/30" />
                                     <div className="absolute left-3 top-3 z-10 inline-flex items-center rounded-full border border-white/20 bg-black/55 px-3 py-1 text-xs font-semibold tracking-[0.18em] text-white shadow-[0_8px_24px_rgba(0,0,0,0.25)] backdrop-blur-md">
                                         5 images
@@ -51,7 +51,7 @@ export default function Gallery() {
                         <div className="mt-4 grid grid-cols-2 gap-1 sm:gap-6">
                             {galleryItems.slice(3).map((item) => (
                                 <div key={item.id} data-aos="zoom-in" data-aos-delay="200" className="group relative col-span-1 overflow-hidden rounded-sm cursor-pointer">
-                                    <img src={item.src} alt={item.alt} className="h-56 w-full object-cover transition-transform duration-500 hover:scale-105 sm:h-64 lg:h-72" />
+                                    <img src={item.src} alt={item.alt} className="aspect-[4/3] w-full object-cover transition-transform duration-500 hover:scale-105 sm:aspect-[16/10] lg:aspect-[2/1]" />
                                     <div className="absolute inset-0 bg-black/30" />
                                     <div className="absolute left-3 top-3 z-10 inline-flex items-center rounded-full border border-white/20 bg-black/55 px-3 py-1 text-xs font-semibold tracking-[0.18em] text-white shadow-[0_8px_24px_rgba(0,0,0,0.25)] backdrop-blur-md">
                                         5 images

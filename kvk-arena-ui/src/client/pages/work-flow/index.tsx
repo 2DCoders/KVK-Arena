@@ -122,7 +122,7 @@ export default function WorkFlow() {
                                     <div
                                         key={f.id}
                                         data-aos="fade-up"
-                                        data-aos-delay={`${index * 400}`}
+                                        data-aos-delay={`${index * 100}`}
                                         className={`group relative overflow-hidden rounded-[30px] border border-white/10 bg-linear-to-b from-[#081225] to-[#050b18] p-7 text-center transition-all duration-700 hover:-translate-y-2 hover:border-white/20 ${isVisible ? "translate-y-0 opacity-100 blur-0" : "translate-y-8 opacity-0 blur-[2px]"}`}
                                     >
                                         {/* Glass Glow */}

@@ -103,7 +103,7 @@ export default function Services() {
                         data-aos="fade-right"
                         type="button"
                         onClick={() => setActiveTab("all")}
-                        className="rounded-full cursor-pointer border border-slate-200 bg-white px-5 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
+                        className="hidden rounded-full cursor-pointer border border-slate-200 bg-white px-5 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 sm:inline-flex"
                     >
                         View All
                     </button>

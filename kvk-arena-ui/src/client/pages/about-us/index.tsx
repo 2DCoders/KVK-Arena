@@ -31,12 +31,12 @@ export default function AboutUs() {
                                 From the first booking to the final visit, our goal is to keep everything easy, fast, and dependable. Whether you are here to move, relax, or get things done, the arena is built to keep your routine flowing.
                             </p>
 
-                            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+                            <div className="mt-8 flex gap-4 sm:flex-row">
                                 <a href="#services">
                                     <button
                                         data-aos="fade-right" data-aos-delay="250"
                                         type="button"
-                                        className="inline-flex items-center cursor-pointer justify-center gap-2 rounded-full bg-[#296BE1] px-7 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(41,107,225,0.22)] transition hover:bg-[#1f58be]"
+                                        className="inline-flex items-center cursor-pointer justify-center gap-2 rounded-full bg-[#296BE1] px-5 py-2.5 text-xs font-semibold text-white shadow-[0_14px_34px_rgba(41,107,225,0.22)] transition hover:bg-[#1f58be] sm:px-7 sm:py-3 sm:text-sm"
                                     >
                                         Explore Services
                                         <ArrowRight size={16} />
@@ -47,7 +47,7 @@ export default function AboutUs() {
                                 <button
                                     data-aos="fade-right" data-aos-delay="250"
                                     type="button"
-                                    className="inline-flex items-center cursor-pointer justify-center rounded-full border border-slate-200 bg-white px-7 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
+                                    className="inline-flex items-center cursor-pointer justify-center rounded-full border border-slate-200 bg-white px-5 py-2.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 sm:px-7 sm:py-3 sm:text-sm"
                                 >
                                     Learn More
                                 </button>
