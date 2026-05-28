@@ -102,7 +102,32 @@ export default function ContactUs() {
 
                     {/* Right: clean map card */}
                     <div className="relative flex items-center justify-center" data-aos="fade-left" data-aos-delay="200">
-                        <div className="w-full overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-black/10">
+                        <div className="w-full overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-black/10 md:hidden">
+                            <div className="flex h-full min-h-72 flex-col justify-between bg-[linear-gradient(180deg,#f8fbff_0%,#eef5ff_100%)] p-6 text-slate-900">
+                                <div>
+                                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#296BE1]">
+                                        Find Us
+                                    </p>
+                                    <h3 className="mt-3 text-2xl font-extrabold tracking-tight">
+                                        KVK Arena
+                                    </h3>
+                                    <p className="mt-3 text-sm leading-6 text-slate-600">
+                                        Open the map in Google Maps for directions. The live map is shown on larger screens.
+                                    </p>
+                                </div>
+
+                                <a
+                                    href="https://maps.app.goo.gl/AUDR2VgjT6JbvmvR8"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center justify-center rounded-full bg-[#296BE1] px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(41,107,225,0.22)] transition hover:bg-[#1f58be]"
+                                >
+                                    Open Map
+                                </a>
+                            </div>
+                        </div>
+
+                        <div className="hidden w-full overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-black/10 md:block">
                             <div className="aspect-square w-full sm:aspect-auto sm:h-113">
                                 <Map
                                     locationLink="https://maps.app.goo.gl/AUDR2VgjT6JbvmvR8"
