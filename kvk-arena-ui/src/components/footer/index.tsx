@@ -210,7 +210,7 @@ export default function Footer() {
           {/* Bottom */}
           <div className="mt-12 border-t border-slate-200 pt-6 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <p className="text-sm text-slate-400">
-              © {new Date().getFullYear()} KvK Arena. All rights reserved. | Developed by <a href="https://2d-coders.lk" target="_blank" rel="noopener noreferrer" className="text-slate-600 hover:text-slate-900 transition bold">
+              © {new Date().getFullYear()} KvK Arena. All rights reserved. | Developed by <a href="https://2dcoders.lk" target="_blank" rel="noopener noreferrer" className="text-slate-600 hover:text-slate-900 transition bold">
                 <b> 2D-Coders </b>
               </a>
             </p>
