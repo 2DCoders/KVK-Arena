@@ -81,11 +81,11 @@ export default function Feedbacks() {
             <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
                 {/* Heading */}
                 <div className="mx-auto max-w-3xl text-center">
-                    <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl bg-linear-to-r from-[#000000] via-[#2d86fc] to-[#2d86fc] bg-clip-text text-transparent">
+                    <h2 data-aos="fade-up" className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl bg-linear-to-r from-[#000000] via-[#2d86fc] to-[#2d86fc] bg-clip-text text-transparent">
                         What Our Clients Say
                     </h2>
 
-                    <p className="mt-4 text-base text-slate-500">
+                    <p data-aos="fade-up" data-aos-delay="100" className="mt-4 text-base text-slate-500">
                         We are proud to partner with businesses that value innovation,
                         reliability, and measurable results. Here’s what some of our
                         clients have to say about working with IT.S.
@@ -107,6 +107,8 @@ export default function Feedbacks() {
                                     }`}
                             >
                                 <img
+                                    data-aos="fade-up"
+                                    data-aos-delay={`${index * 100}`}
                                     src={item.image}
                                     alt={item.name}
                                     className="h-full w-full object-cover rounded-full"
@@ -132,12 +134,12 @@ export default function Feedbacks() {
 
                     {/* Testimonial */}
                     <div className="mx-auto max-w-4xl text-center">
-                        <p className="text-lg leading-8 text-slate-700 sm:text-xl sm:leading-9">
+                        <p data-aos="fade-up" data-aos-delay="200" className="text-lg leading-8 text-slate-700 sm:text-xl sm:leading-9">
                             “{activeTestimonial.quote}”
                         </p>
                         
 
-                        <div className="mt-4 flex items-center justify-center gap-1.5">
+                        <div className="mt-4 flex items-center justify-center gap-1.5" data-aos="fade-up" data-aos-delay="250">
                             {Array.from({ length: 5 }).map((_, starIndex) => {
                                 const filled = starIndex < activeTestimonial.rating
 
@@ -151,7 +153,7 @@ export default function Feedbacks() {
                             })}
                         </div>
 
-                        <div className="mt-8 flex items-center justify-center gap-4">
+                        <div className="mt-8 flex items-center justify-center gap-4" data-aos="fade-up" data-aos-delay="250">
                             <h3 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
                                 {activeTestimonial.name}
                             </h3>

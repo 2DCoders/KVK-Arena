@@ -1,4 +1,5 @@
 import { useRef, useState } from "react"
+import { useEffect } from "react"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 
 import gym from "@/assets/gym.png"
@@ -6,6 +7,7 @@ import carwash from "@/assets/carwash.jpg"
 import badminton from "@/assets/badminton.jpg"
 import gaming from "@/assets/billiard.jpg"
 import cafe from "@/assets/coffee.jpg"
+import AOS from 'aos'
 
 const services = [
     {
@@ -79,20 +81,26 @@ export default function Services() {
         ? services
         : services.filter((service) => service.category === activeTab)
 
+    useEffect(() => {
+        // Refresh AOS animations when visible services change (filtering)
+        AOS.refresh()
+    }, [visibleServices])
+
     return (
         <section className="relative overflow-hidden bg-white/5 py-10 lg:py-16">
             <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="mx-auto max-w-3xl text-center">
-                    <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl bg-linear-to-r from-[#000000] via-[#2d86fc] to-[#2d86fc] bg-clip-text text-transparent">
+                    <h2 data-aos="fade-up" className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl bg-linear-to-r from-[#000000] via-[#2d86fc] to-[#2d86fc] bg-clip-text text-transparent">
                         Our Core Services
                     </h2>
-                    <p className="mt-4 text-base text-slate-500">
+                    <p data-aos="fade-up" data-aos-delay="100" className="mt-4 text-base text-slate-500">
                         From AI solutions to custom development, we provide the tools and expertise to help your business grow smarter, faster, and more efficiently.
                     </p>
                 </div>
 
                 <div className="mt-8 flex flex-col items-center justify-between gap-4 lg:flex-row">
                     <button
+                        data-aos="fade-right"
                         type="button"
                         onClick={() => setActiveTab("all")}
                         className="rounded-full cursor-pointer border border-slate-200 bg-white px-5 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
@@ -106,6 +114,8 @@ export default function Services() {
 
                             return (
                                 <button
+                                    data-aos="fade-left"
+                                    data-aos-delay={`${tabs.findIndex(t => t.key === tab.key) * 100}`}
                                     key={tab.key}
                                     type="button"
                                     onClick={() => setActiveTab(tab.key)}
@@ -136,47 +146,49 @@ export default function Services() {
                         className="overflow-x-auto pb-4 scrollbar-none scroll-smooth"
                     >
                         <div className="flex w-max gap-6 snap-x snap-mandatory pr-14 md:pr-16">
-                        {visibleServices.map((service) => (
-                            <article
-                                key={service.id}
-                                className="group relative min-w-70 snap-start overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-[0_18px_45px_rgba(0,0,0,0.15)] transition duration-300 hover:-translate-y-1 hover:border-white/20 sm:min-w-80 lg:min-w-75"
-                            >
-                                <div className="relative aspect-2/3 w-full">
-                                    <img src={service.img} alt={service.title} className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-                                    <div className="absolute inset-0 bg-black/45" />
-                                    <div className="absolute inset-0 bg-linear-to-b from-transparent via-slate-950/35 to-slate-950/90" />
+                            {visibleServices.map((service, idx) => (
+                                <article
+                                    key={service.id}
+                                    data-aos="fade-up"
+                                    data-aos-delay={`${idx * 400}`}
+                                    className="group relative min-w-70 snap-start overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-[0_18px_45px_rgba(0,0,0,0.15)] transition duration-300 hover:-translate-y-1 hover:border-white/20 sm:min-w-80 lg:min-w-75"
+                                >
+                                    <div className="relative aspect-2/3 w-full">
+                                        <img src={service.img} alt={service.title} className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                                        <div className="absolute inset-0 bg-black/45" />
+                                        <div className="absolute inset-0 bg-linear-to-b from-transparent via-slate-950/35 to-slate-950/90" />
 
-                                    <div className="relative z-10 flex h-full flex-col justify-between p-5 sm:p-6">
-                                        <div>
-                                            <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/90">
-                                                {service.tag}
-                                            </span>
-                                            <h3 className="mt-4 text-2xl font-bold leading-tight text-white">
-                                                {service.title}
-                                            </h3>
-                                            <p className="mt-3 max-w-[18ch] text-sm leading-6 text-slate-200/90">
-                                                {service.desc}
-                                            </p>
-                                        </div>
+                                        <div className="relative z-10 flex h-full flex-col justify-between p-5 sm:p-6">
+                                            <div>
+                                                <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/90">
+                                                    {service.tag}
+                                                </span>
+                                                <h3 className="mt-4 text-2xl font-bold leading-tight text-white">
+                                                    {service.title}
+                                                </h3>
+                                                <p className="mt-3 max-w-[18ch] text-sm leading-6 text-slate-200/90">
+                                                    {service.desc}
+                                                </p>
+                                            </div>
 
-                                        <div className="flex items-center justify-between pt-6">
-                                            <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#CFEFFF]">
-                                                {service.category}
-                                            </span>
-                                            <button type="button" className="inline-flex cursor-pointer h-11 w-11 items-center justify-center rounded-full bg-white text-[#296BE1] shadow-[0_10px_25px_rgba(255,255,255,0.18)] transition hover:scale-105">
-                                                <ArrowRight size={18} className="text-[#296BE1]" />
-                                            </button>
+                                            <div className="flex items-center justify-between pt-6">
+                                                <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#CFEFFF]">
+                                                    {service.category}
+                                                </span>
+                                                <button type="button" className="inline-flex cursor-pointer h-11 w-11 items-center justify-center rounded-full bg-white text-[#296BE1] shadow-[0_10px_25px_rgba(255,255,255,0.18)] transition hover:scale-105">
+                                                    <ArrowRight size={18} className="text-[#296BE1]" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </article>
-                        ))}
+                                </article>
+                            ))}
 
-                        {visibleServices.length === 0 && (
-                            <div className="min-w-70 rounded-3xl border border-white/10 bg-white/5 p-10 text-center text-slate-300 sm:min-w-80 lg:min-w-90">
-                                No services found for this tab.
-                            </div>
-                        )}
+                            {visibleServices.length === 0 && (
+                                <div className="min-w-70 rounded-3xl border border-white/10 bg-white/5 p-10 text-center text-slate-300 sm:min-w-80 lg:min-w-90">
+                                    No services found for this tab.
+                                </div>
+                            )}
                         </div>
                     </div>
 
