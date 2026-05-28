@@ -103,7 +103,7 @@ export default function ContactUs() {
                     {/* Right: clean map card */}
                     <div className="relative flex items-center justify-center" data-aos="fade-left" data-aos-delay="200">
                         <div className="w-full overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-black/10">
-                            <div className="h-80 sm:h-113">
+                            <div className="aspect-square w-full sm:aspect-auto sm:h-113">
                                 <Map
                                     locationLink="https://maps.app.goo.gl/AUDR2VgjT6JbvmvR8"
                                     readOnly={true}
