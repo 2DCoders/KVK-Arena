@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from "react"
+
 import { Dumbbell, Truck, Gamepad, SportShoe, Coffee } from "lucide-react"
 import bg from "@/assets/flow1.png"
 
@@ -60,9 +62,31 @@ const features = [
 ]
 
 export default function WorkFlow() {
+    const sectionRef = useRef<HTMLElement | null>(null)
+    const [isVisible, setIsVisible] = useState(false)
+
+    useEffect(() => {
+        const section = sectionRef.current
+
+        if (!section) {
+            return
+        }
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsVisible(entry.isIntersecting)
+            },
+            { threshold: 0.22 }
+        )
+
+        observer.observe(section)
+
+        return () => observer.disconnect()
+    }, [])
+
     return (
         <>
-        <section className="relative overflow-hidden py-20 lg:py-28">
+        <section ref={sectionRef} className="relative overflow-hidden py-20 lg:py-28">
             <div
                 aria-hidden="true"
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
@@ -91,13 +115,14 @@ export default function WorkFlow() {
                     <div className="absolute left-0 right-0 top-10 hidden h-px bg-white/10 lg:block" />
 
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
-                        {features.map((f) => {
+                        {features.map((f, index) => {
                             const Icon = f.icon
 
                             return (
                                 <div
                                     key={f.id}
-                                    className="group relative overflow-hidden rounded-[30px] border border-white/10 bg-linear-to-b from-[#081225] to-[#050b18] p-7 text-center transition-all duration-500 hover:-translate-y-2 hover:border-white/20"
+                                    className={`group relative overflow-hidden rounded-[30px] border border-white/10 bg-linear-to-b from-[#081225] to-[#050b18] p-7 text-center transition-all duration-700 hover:-translate-y-2 hover:border-white/20 ${isVisible ? "translate-y-0 opacity-100 blur-0" : "translate-y-8 opacity-0 blur-[2px]"}`}
+                                    style={{ transitionDelay: `${index * 120}ms` }}
                                 >
                                     {/* Glass Glow */}
                                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.06),transparent_60%)]" />
@@ -118,7 +143,7 @@ export default function WorkFlow() {
                                         <div className="absolute inset-0 rounded-full border border-white/10" />
 
                                         {/* Orbiting Glow Dot */}
-                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                                             <div className="relative h-20 w-20">
                                                 <div className="absolute inset-0 animate-orbit">
                                                     <div className={`absolute -top-1 left-1/2 -translate-x-1/2 h-3 w-3 rounded-full ${f.dot} blur-[1px] animate-glow`} />
@@ -177,6 +202,13 @@ export default function WorkFlow() {
                             .animate-orbit {
                                 transform-origin: center center;
                                 animation: orbit 6s linear infinite;
+                            }
+
+                            @media (prefers-reduced-motion: reduce) {
+                                .animate-glow,
+                                .animate-orbit {
+                                    animation: none;
+                                }
                             }
                         `}</style>
                 </>

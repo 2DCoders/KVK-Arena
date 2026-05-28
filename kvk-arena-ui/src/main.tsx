@@ -15,4 +15,4 @@ createRoot(document.getElementById('root')!).render(
 )
 
 // Initialize AOS (Animate On Scroll)
-AOS.init({ once: true, duration: 700, easing: 'ease-in-out' })
+AOS.init({ once: false, duration: 700, easing: 'ease-in-out' })
