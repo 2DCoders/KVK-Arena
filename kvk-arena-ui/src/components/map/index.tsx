@@ -5,7 +5,6 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 // Fix marker icon issue in Leaflet with Webpack/Vite
-import 'leaflet/dist/leaflet.css';
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
@@ -30,6 +29,29 @@ const MapFocus: React.FC<MapFocusProps> = ({ position }) => {
   }, [position, map]);
 
   return null;
+};
+
+const MapResizeFix: React.FC = () => {
+    const map = useMap();
+
+    useEffect(() => {
+        const syncMapSize = () => {
+            map.invalidateSize();
+        };
+
+        const animationFrame = window.requestAnimationFrame(syncMapSize);
+        const timeout = window.setTimeout(syncMapSize, 150);
+
+        window.addEventListener('resize', syncMapSize);
+
+        return () => {
+            window.cancelAnimationFrame(animationFrame);
+            window.clearTimeout(timeout);
+            window.removeEventListener('resize', syncMapSize);
+        };
+    }, [map]);
+
+    return null;
 };
 
 const defaultCenter: [number, number] = [6.882545, 79.859001];
@@ -72,6 +94,7 @@ const Map: React.FC<MapProps> = ({ locationLink, readOnly = false }) => {
             />
             {position && <Marker position={position} />}
             {position && <MapFocus position={position} />}
+            <MapResizeFix />
             {!readOnly && <LocationSetter />}
         </MapContainer>
     );
