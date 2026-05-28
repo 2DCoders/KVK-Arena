@@ -29,7 +29,7 @@ export default function Gallery() {
                         </p>
                     </div>
 
-                    <div className="order-first lg:order-last">
+                    <div>
                         <div className="grid grid-cols-3 gap-1 sm:gap-6">
                             {galleryItems.slice(0, 3).map((item) => (
                                 <div key={item.id} data-aos="zoom-in" data-aos-delay="200" className="group relative col-span-1 overflow-hidden rounded-sm cursor-pointer">
