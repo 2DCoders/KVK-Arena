@@ -20,11 +20,11 @@ export default function Gallery() {
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 gap-12 lg:grid-cols-1 lg:items-start">
                     <div className="grid grid-cols-1 items-start gap-6 text-center lg:grid-cols-2 lg:text-left">
-                        <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl bg-linear-to-r from-[#2d86fc] via-[#CFEFFF] to-[#8FC0FF] bg-clip-text text-transparent">
+                        <h2 data-aos="fade-right" className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl bg-linear-to-r from-[#2d86fc] via-[#CFEFFF] to-[#8FC0FF] bg-clip-text text-transparent">
                             Where Passion Meets Performance
                         </h2>
 
-                        <p className="text-base text-slate-300 lg:justify-self-end lg:max-w-xl lg:text-left">
+                        <p data-aos="fade-left" data-aos-delay="100" className="text-base text-slate-300 lg:justify-self-end lg:max-w-xl lg:text-left">
                             Explore our before and after gallery to see how we bring damaged vehicles back to top condition — clean, sharp, and road-ready.
                         </p>
                     </div>
@@ -32,7 +32,7 @@ export default function Gallery() {
                     <div className="order-first lg:order-last">
                         <div className="grid grid-cols-3 gap-1 sm:gap-6">
                             {galleryItems.slice(0, 3).map((item) => (
-                                <div key={item.id} className="group relative col-span-1 overflow-hidden rounded-sm cursor-pointer">
+                                <div key={item.id} data-aos="zoom-in" data-aos-delay="200" className="group relative col-span-1 overflow-hidden rounded-sm cursor-pointer">
                                     <img src={item.src} alt={item.alt} className="h-40 w-full object-cover transition-transform duration-500 hover:scale-105 sm:h-48 lg:h-56" />
                                     <div className="absolute inset-0 bg-black/30" />
                                     <div className="absolute left-3 top-3 z-10 inline-flex items-center rounded-full border border-white/20 bg-black/55 px-3 py-1 text-xs font-semibold tracking-[0.18em] text-white shadow-[0_8px_24px_rgba(0,0,0,0.25)] backdrop-blur-md">
@@ -50,7 +50,7 @@ export default function Gallery() {
 
                         <div className="mt-4 grid grid-cols-2 gap-1 sm:gap-6">
                             {galleryItems.slice(3).map((item) => (
-                                <div key={item.id} className="group relative col-span-1 overflow-hidden rounded-sm cursor-pointer">
+                                <div key={item.id} data-aos="zoom-in" data-aos-delay="200" className="group relative col-span-1 overflow-hidden rounded-sm cursor-pointer">
                                     <img src={item.src} alt={item.alt} className="h-56 w-full object-cover transition-transform duration-500 hover:scale-105 sm:h-64 lg:h-72" />
                                     <div className="absolute inset-0 bg-black/30" />
                                     <div className="absolute left-3 top-3 z-10 inline-flex items-center rounded-full border border-white/20 bg-black/55 px-3 py-1 text-xs font-semibold tracking-[0.18em] text-white shadow-[0_8px_24px_rgba(0,0,0,0.25)] backdrop-blur-md">

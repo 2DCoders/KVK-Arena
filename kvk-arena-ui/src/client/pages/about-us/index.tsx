@@ -19,28 +19,33 @@ export default function AboutUs() {
                 <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-16">
                     <div>
                         <div className="max-w-2xl">
-                            <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl bg-linear-to-r from-[#000000] via-[#2d86fc] to-[#2d86fc] bg-clip-text text-transparent">
+                            <h2 data-aos="fade-right" className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl bg-linear-to-r from-[#000000] via-[#2d86fc] to-[#2d86fc] bg-clip-text text-transparent">
                                 About KVK Arena
                             </h2>
 
-                            <p className="mt-5 text-base leading-8 text-slate-500">
+                            <p data-aos="fade-right" data-aos-delay="100" className="mt-5 text-base leading-8 text-slate-500">
                                 KVK Arena brings gym training, car wash care, badminton play, and gaming into one connected experience. We design every service around convenience, comfort, and a smooth day for our members.
                             </p>
 
-                            <p className="mt-4 text-base leading-8 text-slate-500">
+                            <p data-aos="fade-right" data-aos-delay="150" className="mt-4 text-base leading-8 text-slate-500">
                                 From the first booking to the final visit, our goal is to keep everything easy, fast, and dependable. Whether you are here to move, relax, or get things done, the arena is built to keep your routine flowing.
                             </p>
 
                             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-                                <button
-                                    type="button"
-                                    className="inline-flex items-center cursor-pointer justify-center gap-2 rounded-full bg-[#296BE1] px-7 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(41,107,225,0.22)] transition hover:bg-[#1f58be]"
-                                >
-                                    Explore Services
-                                    <ArrowRight size={16} />
-                                </button>
+                                <a href="#services">
+                                    <button
+                                        data-aos="fade-right" data-aos-delay="250"
+                                        type="button"
+                                        className="inline-flex items-center cursor-pointer justify-center gap-2 rounded-full bg-[#296BE1] px-7 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(41,107,225,0.22)] transition hover:bg-[#1f58be]"
+                                    >
+                                        Explore Services
+                                        <ArrowRight size={16} />
+                                    </button>
+                                </a>
+
 
                                 <button
+                                    data-aos="fade-right" data-aos-delay="250"
                                     type="button"
                                     className="inline-flex items-center cursor-pointer justify-center rounded-full border border-slate-200 bg-white px-7 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
                                 >
@@ -53,7 +58,7 @@ export default function AboutUs() {
                     <div className="relative mx-auto w-full max-w-140 lg:max-w-none">
                         <div className="absolute -right-4 -top-4 hidden h-32 w-32 rounded-full border border-dashed border-slate-300/80 lg:block" />
 
-                        <div className="relative">
+                        <div className="relative" data-aos="fade-left">
                             <div className="overflow-hidden rounded-[10px] shadow-[0_24px_60px_rgba(15,23,42,0.14)]">
                                 <img src={gym} alt="KVK Arena gym" className="h-90 w-full object-cover sm:h-105" />
                             </div>
