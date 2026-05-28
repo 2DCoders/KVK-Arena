@@ -13,14 +13,14 @@ export default function Hero() {
 
       <div className="relative z-10 mx-auto mt-5 flex max-w-7xl flex-col items-center gap-8 px-4 text-center lg:px-8 mb-5">
         <div className="hero-fade-up max-w-4xl">
-          <h1 className="mt-6 mb-5 text-5xl font-black leading-[1.2] tracking-[-0.035em] block bg-linear-to-r from-[#2d86fc] via-[#CFEFFF] to-[#8FC0FF] bg-clip-text text-transparent sm:text-6xl lg:text-7xl xl:text-7xl">
+          <h1 className="mt-6 mb-5 text-5xl font-black leading-[1.2] tracking-[-0.035em] block bg-linear-to-r from-[#2d86fc] via-[#CFEFFF] to-[#8FC0FF] bg-clip-text text-transparent sm:text-5xl lg:text-6xl xl:text-7xl">
             One arena for
             <span className="block bg-linear-to-r from-[#2d86fc] via-[#CFEFFF] to-[#8FC0FF] bg-clip-text text-transparent">
               movement, play, care.
             </span>
           </h1>
 
-          <p className="mt-6 mx-auto max-w-2xl text-base leading-8 text-slate-200 sm:text-lg">
+          <p className="mt-6 mx-auto max-w-2xl text-base leading-8 text-slate-200 lg:text-md sm:text-md">
             Explore four connected experiences in a modern light-space design: Gym, Carwash, Badminton Court, and Gaming Centre. Book faster, move easier, and keep your day flowing in one place.
           </p>
 
