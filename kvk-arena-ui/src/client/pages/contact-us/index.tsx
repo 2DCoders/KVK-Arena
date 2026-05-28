@@ -95,8 +95,6 @@ export default function ContactUs() {
                                         <Send size={16} />
                                         Send Message
                                     </button>
-
-                                    <p className="text-sm text-slate-400">We reply within 24 hours.</p>
                                 </div>
                             </form>
                         </div>
