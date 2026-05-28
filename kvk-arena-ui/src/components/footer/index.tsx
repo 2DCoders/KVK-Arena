@@ -214,14 +214,6 @@ export default function Footer() {
                 <b> 2D-Coders </b>
               </a>
             </p>
-
-            <div className="flex flex-wrap items-center gap-5">
-              <span
-                className="text-sm text-slate-500 hover:text-slate-900 transition"
-              >
-                Registration No #PV362889
-              </span>
-            </div>
           </div>
         </div>
       </div>

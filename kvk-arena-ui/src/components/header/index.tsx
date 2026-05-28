@@ -6,6 +6,9 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
+  const closeMobileMenu = () => setMobileMenuOpen(false);
+  const toggleMobileMenu = () => setMobileMenuOpen((current) => !current);
+
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 600);
     onScroll();
@@ -14,10 +17,10 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="fixed left-0 top-0 z-9999 w-full bg-transparent py-4 rounded-full">
+    <header className="fixed left-0 top-0 z-9999 w-full rounded-full bg-transparent py-2 lg:py-4">
       <div className={isScrolled
-        ? "relative rounded-full mx-auto flex h-20 max-w-295 items-center justify-between overflow-hidden border border-white/30 bg-white/30 px-6 py-2 shadow-lg backdrop-blur-md lg:px-8"
-        : "relative rounded-full mx-auto flex h-20 max-w-295 items-center justify-between overflow-hidden border border-white/14 bg-[linear-gradient(135deg,rgba(6,12,28,0.78),rgba(15,23,42,0.52),rgba(8,16,32,0.72))] px-6 py-2 shadow-[0_18px_50px_rgba(2,6,23,0.45)] backdrop-blur-2xl lg:px-8"
+        ? "relative mx-auto flex h-16 max-w-295 items-center justify-between overflow-hidden rounded-full border border-white/30 bg-white/30 px-4 py-1.5 shadow-lg backdrop-blur-md lg:h-20 lg:px-8 lg:py-2"
+        : "relative mx-auto flex h-16 max-w-295 items-center justify-between overflow-hidden rounded-full border border-white/14 bg-[linear-gradient(135deg,rgba(6,12,28,0.78),rgba(15,23,42,0.52),rgba(8,16,32,0.72))] px-4 py-1.5 shadow-[0_18px_50px_rgba(2,6,23,0.45)] backdrop-blur-2xl lg:h-20 lg:px-8 lg:py-2"
       }>
         {!isScrolled ? (
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.22),transparent_38%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_30%)]" />
@@ -63,7 +66,7 @@ export default function Header() {
             <img
               src={logo}
               alt="KVK Arena"
-              className="h-10 w-auto object-contain lg:h-12 cursor-pointer"
+              className="h-8 w-auto cursor-pointer object-contain lg:h-12"
             />
           </a>
         </div>
@@ -77,15 +80,16 @@ export default function Header() {
 
         {/* Mobile Menu Button */}
         <button
-          onClick={() => setMobileMenuOpen(true)}
-          className={`relative z-10 ml-auto rounded-xl p-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(37,99,235,0.16)] lg:hidden ${isScrolled ? 'text-slate-700 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950' : 'text-slate-100 hover:bg-white/10 hover:text-white'}`}
+          onClick={toggleMobileMenu}
+          className={`relative z-10 ml-auto rounded-xl p-1.5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(37,99,235,0.16)] lg:hidden ${isScrolled ? 'text-slate-700 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950' : 'text-slate-100 hover:bg-white/10 hover:text-white'}`}
         >
-          <Menu size={26} />
+          <Menu size={18} />
         </button>
       </div>
 
       {/* Mobile Sidebar */}
       <div
+        onClick={closeMobileMenu}
         className={`fixed inset-0 z-9999 transition-all duration-300 ${mobileMenuOpen
           ? "visible bg-black/40 backdrop-blur-[2px] opacity-100"
           : "invisible opacity-0"
@@ -93,6 +97,7 @@ export default function Header() {
       >
         {/* Sidebar */}
         <div
+          onClick={(event) => event.stopPropagation()}
           className={`absolute right-0 top-0 h-full w-70 border-l border-white/12 bg-white/95 p-6 shadow-2xl backdrop-blur-md transition-transform duration-300 ${mobileMenuOpen ? "translate-x-0" : "translate-x-full"
             }`}
         >
@@ -105,7 +110,7 @@ export default function Header() {
             />
 
             <button
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={closeMobileMenu}
               className="cursor-pointer rounded-lg p-2 text-slate-700 transition-all duration-300 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950"
             >
               <X size={24} />
@@ -116,33 +121,41 @@ export default function Header() {
           <nav className="flex flex-col gap-5">
             <a
               href="#"
+              onClick={closeMobileMenu}
               className="rounded-xl px-3 py-2 text-[15px] font-medium text-slate-800 transition-all duration-300 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950"
             >
               Home
             </a>
 
-            <div>
-              <div className="mb-3 flex items-center justify-between rounded-xl px-3 py-2 text-[15px] font-medium text-slate-800 transition-all duration-300 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950">
-                Services
-              </div>
-            </div>
+            <a
+              href="#services"
+              onClick={closeMobileMenu}
+              className="rounded-xl px-3 py-2 text-[15px] font-medium text-slate-800 transition-all duration-300 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950"
+            >
+              Services
+            </a>
 
             <a
-              href="#"
+              href="#about"
+              onClick={closeMobileMenu}
               className="rounded-xl px-3 py-2 text-[15px] font-medium text-slate-800 transition-all duration-300 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950"
             >
               About
             </a>
 
             <a
-              href="#"
+              href="#contact"
+              onClick={closeMobileMenu}
               className="rounded-xl px-3 py-2 text-[15px] font-medium text-slate-800 transition-all duration-300 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950"
             >
               Contact
             </a>
 
             {/* Mobile Sign In */}
-            <button className="mt-6 cursor-pointer rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold tracking-[0.06em] text-slate-900 transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-200 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950 hover:shadow-[0_16px_36px_rgba(37,99,235,0.16)]">
+            <button
+              onClick={closeMobileMenu}
+              className="mt-6 cursor-pointer rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold tracking-[0.06em] text-slate-900 transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-200 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950 hover:shadow-[0_16px_36px_rgba(37,99,235,0.16)]"
+            >
               Sign In
             </button>
           </nav>

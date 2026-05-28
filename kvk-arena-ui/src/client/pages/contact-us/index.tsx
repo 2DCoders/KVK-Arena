@@ -79,7 +79,7 @@ export default function ContactUs() {
                             </p>
 
                             <form data-aos="fade-right" data-aos-delay="200" className="mt-8 grid gap-4">
-                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
                                     <label className="sr-only">Name</label>
                                     <input aria-label="Name" placeholder="Name" className="rounded-md border border-transparent bg-white/3 px-4 py-3 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#296BE1]/40" />
 
@@ -95,8 +95,6 @@ export default function ContactUs() {
                                         <Send size={16} />
                                         Send Message
                                     </button>
-
-                                    <p className="text-sm text-slate-400">We reply within 24 hours.</p>
                                 </div>
                             </form>
                         </div>
@@ -104,7 +102,7 @@ export default function ContactUs() {
 
                     {/* Right: clean map card */}
                     <div className="relative flex items-center justify-center" data-aos="fade-left" data-aos-delay="200">
-                        <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-black/10">
+                        <div className="w-full overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-black/10">
                             <div className="h-80 sm:h-113">
                                 <Map
                                     locationLink="https://maps.app.goo.gl/AUDR2VgjT6JbvmvR8"
@@ -115,7 +113,7 @@ export default function ContactUs() {
                     </div>
                 </div>
                 {/* Info Cards */}
-                <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-2">
 
                     {/* Mobile */}
                     <div className="group rounded-xl bg-white/5 p-4 border border-white/10 transition-all duration-300 hover:scale-[1.03] hover:bg-white/10 hover:shadow-[0_0_25px_rgba(45,134,252,0.25)]">
@@ -148,7 +146,7 @@ export default function ContactUs() {
                     </div>
 
                     {/* Address */}
-                    <div className="group sm:col-span-2 rounded-xl bg-white/5 p-4 border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:bg-white/10 hover:shadow-[0_0_25px_rgba(207,239,255,0.15)]">
+                    <div className="group rounded-xl bg-white/5 p-4 border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:bg-white/10 hover:shadow-[0_0_25px_rgba(207,239,255,0.15)]">
                         <div className="flex items-start gap-3">
                             <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-300 group-hover:scale-110 transition">
                                 <MapPin size={18} />
@@ -163,7 +161,7 @@ export default function ContactUs() {
                     </div>
 
                     {/* Working Days */}
-                    <div className="group sm:col-span-2 rounded-xl bg-white/5 p-4 border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:bg-white/10 hover:shadow-[0_0_25px_rgba(255,255,255,0.08)]">
+                    <div className="group rounded-xl bg-white/5 p-4 border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:bg-white/10 hover:shadow-[0_0_25px_rgba(255,255,255,0.08)]">
                         <div className="flex items-start gap-3">
                             <div className="p-2 rounded-lg bg-yellow-500/10 text-yellow-300 group-hover:scale-110 transition">
                                 <Clock size={18} />
