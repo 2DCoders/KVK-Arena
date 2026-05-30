@@ -8,27 +8,90 @@ import d7 from "@/assets/circle/dragon_7.jpg";
 import d8 from "@/assets/circle/dragon_8.jpg";
 import d9 from "@/assets/circle/dragon_9.jpg";
 import d10 from "@/assets/circle/dragon_10.jpg";
+import model from "@/assets/circle/model.png";
+import "@/client/styles/styles.css";
 
-const images = [d1, d2, d3, d4, d5, d6, d7, d8, d9, d10];
+const cards = [
+  {
+    image: d1,
+    title: "Strength Training",
+    subtitle: "Build Power & Muscle",
+  },
+  {
+    image: d2,
+    title: "Cardio Zone",
+    subtitle: "Improve Endurance",
+  },
+  {
+    image: d3,
+    title: "Badminton",
+    subtitle: "Professional Courts",
+  },
+  {
+    image: d4,
+    title: "Gaming Arena",
+    subtitle: "Ultimate Experience",
+  },
+  {
+    image: d5,
+    title: "Car Wash",
+    subtitle: "Premium Detailing",
+  },
+  {
+    image: d6,
+    title: "Fitness Classes",
+    subtitle: "Train Together",
+  },
+  {
+    image: d7,
+    title: "Recovery",
+    subtitle: "Rest & Recharge",
+  },
+  {
+    image: d8,
+    title: "Nutrition",
+    subtitle: "Healthy Lifestyle",
+  },
+  {
+    image: d9,
+    title: "Personal Coach",
+    subtitle: "Expert Guidance",
+  },
+  {
+    image: d10,
+    title: "KVK Arena",
+    subtitle: "Train Like A Champion",
+  },
+];
 
 export default function Circle() {
-    return (
-        <div className="banner">
-            <div className="slider" style={{ "--quantity": images.length } as React.CSSProperties}>
-                {images.map((imgSrc, index) => (
-                    <div
-                        className="item"
-                        key={index}
-                        style={{ "--position": index + 1 } as React.CSSProperties}
-                    >
-                        <img src={imgSrc} alt={`Dragon ${index + 1}`} />
-                    </div>
-                ))}
+  return (
+    <div className="banner">
+      <div
+        className="slider"
+        style={{ "--quantity": cards.length } as React.CSSProperties}
+      >
+        {cards.map((card, index) => (
+          <div
+            className="item"
+            key={index}
+            style={{ "--position": index + 1 } as React.CSSProperties}
+          >
+            <div className="gym-card">
+              <img src={card.image} alt={card.title} />
+
+              <div className="card-content">
+                <h3>{card.title}</h3>
+                <p>{card.subtitle}</p>
+              </div>
             </div>
-            <div className="content">
-                <h1 data-content="">KVK ARENA GYM</h1>
-                <div className="model"></div>
-            </div>
-        </div>
-    );
+          </div>
+        ))}
+      </div>
+
+      <div className="content">
+        <h1>KVK ARENA</h1>
+      </div>
+    </div>
+  );
 }
