@@ -8,6 +8,7 @@ import badminton from "@/assets/badminton.jpg"
 import gaming from "@/assets/billiard.jpg"
 import cafe from "@/assets/coffee.jpg"
 import AOS from 'aos'
+import { useNavigate } from "react-router-dom"
 
 const services = [
     {
@@ -17,6 +18,7 @@ const services = [
         category: "gym",
         desc: "Modern training space for strength, cardio, and active recovery.",
         img: gym,
+        navigateTo: "/gym"
     },
     {
         id: 2,
@@ -25,6 +27,7 @@ const services = [
         category: "carwash",
         desc: "Professional wash and shine services to keep vehicles spotless.",
         img: carwash,
+        navigateTo: "/carwash"
     },
     {
         id: 3,
@@ -33,6 +36,7 @@ const services = [
         category: "badminton",
         desc: "Fast-paced indoor court booking for training and friendly matches.",
         img: badminton,
+        navigateTo: "/badminton"
     },
     {
         id: 4,
@@ -41,6 +45,7 @@ const services = [
         category: "gaming",
         desc: "Relax and play in a dedicated gaming zone with a premium setup.",
         img: gaming,
+        navigateTo: "/gaming"
     },
     {
         id: 5,
@@ -49,6 +54,7 @@ const services = [
         category: "cafe",
         desc: "Relax and enjoy delicious coffee and snacks in a cozy environment.",
         img: cafe,
+        navigateTo: "/cafe"
     }
 ]
 
@@ -64,6 +70,8 @@ const tabs = [
 export default function Services() {
     const [activeTab, setActiveTab] = useState("all")
     const scrollerRef = useRef<HTMLDivElement | null>(null)
+
+    const navigate = useNavigate()
 
     const scrollServices = (direction: "left" | "right") => {
         const container = scrollerRef.current
@@ -175,7 +183,7 @@ export default function Services() {
                                                 <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#CFEFFF]">
                                                     {service.category}
                                                 </span>
-                                                <button type="button" className="inline-flex cursor-pointer h-11 w-11 items-center justify-center rounded-full bg-white text-[#296BE1] shadow-[0_10px_25px_rgba(255,255,255,0.18)] transition hover:scale-105">
+                                                <button onClick={() => navigate(service.navigateTo)} type="button" className="inline-flex cursor-pointer h-11 w-11 items-center justify-center rounded-full bg-white text-[#296BE1] shadow-[0_10px_25px_rgba(255,255,255,0.18)] transition hover:scale-105">
                                                     <ArrowRight size={18} className="text-[#296BE1]" />
                                                 </button>
                                             </div>
