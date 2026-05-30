@@ -70,7 +70,7 @@ export default function GymHeader() {
         {/* Right Button - Desktop */}
         <div className="relative z-10 hidden lg:block">
           <button className={`cursor-pointer rounded-full px-7 py-2.5 text-sm font-extrabold tracking-[0.08em] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(37,99,235,0.24)] ${isScrolled ? 'border border-slate-200 bg-white text-slate-900 shadow-sm hover:border-sky-200 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950' : 'border border-white/30 bg-white text-slate-950 shadow-[0_10px_24px_rgba(255,255,255,0.14)] hover:border-sky-200 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950'}`}>
-            Sign In
+            Join Now
           </button>
         </div>
 
@@ -120,7 +120,7 @@ export default function GymHeader() {
               onClick={closeMobileMenu}
               className="rounded-xl px-3 py-2 text-[15px] font-medium text-slate-800 transition-all duration-300 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950"
             >
-              Home
+              Main Arena
             </a>
 
             <a
@@ -136,15 +136,7 @@ export default function GymHeader() {
               onClick={closeMobileMenu}
               className="rounded-xl px-3 py-2 text-[15px] font-medium text-slate-800 transition-all duration-300 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950"
             >
-              About
-            </a>
-
-            <a
-              href="#contact"
-              onClick={closeMobileMenu}
-              className="rounded-xl px-3 py-2 text-[15px] font-medium text-slate-800 transition-all duration-300 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950"
-            >
-              Contact
+              Membership Plans
             </a>
 
             {/* Mobile Sign In */}
@@ -152,7 +144,7 @@ export default function GymHeader() {
               onClick={closeMobileMenu}
               className="mt-6 cursor-pointer rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold tracking-[0.06em] text-slate-900 transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-200 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950 hover:shadow-[0_16px_36px_rgba(37,99,235,0.16)]"
             >
-              Sign In
+              Join Now
             </button>
           </nav>
         </div>

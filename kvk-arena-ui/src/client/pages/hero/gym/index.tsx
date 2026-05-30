@@ -14,9 +14,9 @@ export default function GymHero() {
       <div className="relative z-10 mx-auto mt-5 flex max-w-7xl flex-col items-center gap-8 px-4 text-center lg:px-8 mb-5">
         <div className="hero-fade-up max-w-4xl">
           <h1 className="mt-6 mb-5 text-4xl font-black leading-[1.2] tracking-[-0.035em] block bg-linear-to-r from-[#2d86fc] via-[#CFEFFF] to-[#8FC0FF] bg-clip-text text-transparent sm:text-5xl lg:text-6xl xl:text-7xl">
-            Train stronger
+            Transform Body.
             <span className="block bg-linear-to-r from-[#2d86fc] via-[#CFEFFF] to-[#8FC0FF] bg-clip-text text-transparent">
-              in the KVK Arena Gym.
+              Elevate Your Life.
             </span>
           </h1>
 
