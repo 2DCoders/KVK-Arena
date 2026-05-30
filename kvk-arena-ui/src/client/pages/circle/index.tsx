@@ -89,6 +89,10 @@ export default function Circle() {
         ))}
       </div>
 
+      <div className="model" aria-hidden="true">
+        <img src={model} alt="KVK Arena model" />
+      </div>
+
       <div className="content">
         <h1>KVK ARENA</h1>
       </div>
