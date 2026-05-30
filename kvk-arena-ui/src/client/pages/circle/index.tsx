@@ -14,61 +14,70 @@ import "@/client/styles/styles.css";
 const cards = [
     {
         image: d1,
-        title: "Strength Training",
-        subtitle: "Build Power & Muscle",
+        title: "Bench Press",
+        subtitle: "Heavy compound movement for chest and triceps",
+        category: "Fitness",
     },
     {
         image: d2,
-        title: "Cardio Zone",
-        subtitle: "Improve Endurance",
+        title: "Dumbbell Curl",
+        subtitle: "Biceps isolation exercise for arm strength",
+        category: "Fitness",
     },
     {
         image: d3,
-        title: "Badminton",
-        subtitle: "Professional Courts",
+        title: "Cardio",
+        subtitle: "High-intensity training to improve endurance",
+        category: "Fitness",
     },
     {
         image: d4,
-        title: "Gaming Arena",
-        subtitle: "Ultimate Experience",
+        title: "Incline Bench Press",
+        subtitle: "Upper-chest focused pressing with controlled motion",
+        category: "Fitness",
     },
     {
         image: d5,
-        title: "Car Wash",
-        subtitle: "Premium Detailing",
+        title: "Back Press",
+        subtitle: "Targets posterior deltoids and upper back",
+        category: "Fitness",
     },
     {
         image: d6,
-        title: "Fitness Classes",
-        subtitle: "Train Together",
+        title: "Front Press",
+        subtitle: "Develops anterior shoulders and core stability",
+        category: "Fitness",
     },
     {
         image: d7,
-        title: "Recovery",
-        subtitle: "Rest & Recharge",
+        title: "One-Arm Rowing",
+        subtitle: "Builds lats and unilateral pulling strength",
+        category: "Fitness",
     },
     {
         image: d8,
-        title: "Nutrition",
-        subtitle: "Healthy Lifestyle",
+        title: "Dumbbell Curl",
+        subtitle: "Focus on biceps peak and controlled reps",
+        category: "Fitness",
     },
     {
         image: d9,
-        title: "Personal Coach",
-        subtitle: "Expert Guidance",
+        title: "Dumbbell Fly",
+        subtitle: "Opens the chest and increases pec stretch",
+        category: "Fitness",
     },
     {
         image: d10,
-        title: "KVK Arena",
-        subtitle: "Train Like A Champion",
+        title: "Lat Pull Down",
+        subtitle: "Strengthens lats for improved pulling power",
+        category: "Fitness",
     },
 ];
 
 export default function Circle() {
     return (
         <div className="banner">
-            <div
-                className="slider"
+            <div className="slider"
                 style={{ "--quantity": cards.length } as React.CSSProperties}
             >
                 {cards.map((card, index) => (
@@ -78,9 +87,12 @@ export default function Circle() {
                         style={{ "--position": index + 1 } as React.CSSProperties}
                     >
                         <div className="gym-card">
+                            {card.category && (
+                                <div className="card-pill">{card.category}</div>
+                            )}
                             <img src={card.image} alt={card.title} />
 
-                            <div className="card-content">
+                            <div className="image-overlay">
                                 <h3>{card.title}</h3>
                                 <p>{card.subtitle}</p>
                             </div>
@@ -89,11 +101,11 @@ export default function Circle() {
                 ))}
             </div>
 
-            <div className="content">
-
                 <div className="model" aria-hidden="true">
                     <img src={model} alt="KVK Arena model" />
                 </div>
+
+            <div className="content">
                 <h1>KVK ARENA</h1>
             </div>
         </div>
