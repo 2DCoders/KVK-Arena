@@ -26,7 +26,7 @@
 
     <ItemGroup>
         <Folder Include="Common\" />
-        <Folder Include="Enums\" />
+        <Folder Include="Features\CalenderHoliday\" />
         <Folder Include="Interfaces\" />
     </ItemGroup>
 

@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
+using kvk.BuildingBlocks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +33,11 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<ISmsService, SmsService>();
 builder.Services.AddHttpContextAccessor();
+// Register IHttpClientFactory for remote ICS imports
+builder.Services.AddHttpClient();
 
+builder.Services.Configure<PayHereOptions>(builder.Configuration.GetSection(PayHereOptions.SectionName));
+builder.Services.AddHttpClient<IPaymentGatewayService, PaymentGatewayService>();
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -153,10 +158,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseHangfireDashboard("/hangfire", new DashboardOptions
-{
-    Authorization = new[] { new HangfireDashboardAuthFilter() }
-});
+app.UseHangfireDashboard("/hangfire");
 
 app.UseCors();
 app.MapControllers();

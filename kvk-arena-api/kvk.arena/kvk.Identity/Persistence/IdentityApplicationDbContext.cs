@@ -1,6 +1,7 @@
 using kvk.BuildingBlocks.Interfaces;
 using kvk.BuildingBlocks.Persistence;
 using kvk.Identity.Domain;
+using kvk.BuildingBlocks.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -29,6 +30,8 @@ public class IdentityApplicationDbContext : AppDbContextBase
     public DbSet<StaffRole> StaffRoles => Set<StaffRole>();
 
     public DbSet<StaffModule> StaffModules => Set<StaffModule>();
+    
+    public DbSet<CalenderHolidays> CalenderHolidays => Set<CalenderHolidays>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
