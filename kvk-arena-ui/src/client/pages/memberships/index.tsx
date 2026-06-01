@@ -131,7 +131,7 @@ export default function Memberships() {
                         type="button"
                         onClick={() => scrollRail("left")}
                         aria-label="Scroll membership plans left"
-                        className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white shadow-[0_12px_30px_rgba(0,0,0,0.24)] transition hover:-translate-y-0.5 hover:bg-white/10"
+                        className="flex cursor-pointer h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white shadow-[0_12px_30px_rgba(0,0,0,0.24)] transition hover:-translate-y-0.5 hover:bg-white/10"
                     >
                         <ChevronLeft size={18} />
                     </button>
@@ -140,7 +140,7 @@ export default function Memberships() {
                         type="button"
                         onClick={() => scrollRail("right")}
                         aria-label="Scroll membership plans right"
-                        className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#296BE1] text-white shadow-[0_12px_30px_rgba(41,107,225,0.28)] transition hover:-translate-y-0.5 hover:bg-[#1f58be]"
+                        className="flex cursor-pointer h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#296BE1] text-white shadow-[0_12px_30px_rgba(41,107,225,0.28)] transition hover:-translate-y-0.5 hover:bg-[#1f58be]"
                     >
                         <ChevronRight size={18} />
                     </button>
