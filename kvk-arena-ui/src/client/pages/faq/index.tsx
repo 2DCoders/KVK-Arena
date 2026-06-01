@@ -140,11 +140,9 @@ export default function FAQ() {
                             return (
                                 <div
                                     key={item.question}
-                                    data-aos="fade-up"
-                                    data-aos-delay={`${index * 60}`}
-                                    className={`overflow-hidden rounded-2xl border transition-all duration-300 ${isOpen
-                                            ? "border-[#e6a79e]/45 bg-[#1d1010] shadow-[0_18px_50px_rgba(0,0,0,0.28)]"
-                                            : "border-white/8 bg-white/6 hover:border-white/14 hover:bg-white/8"
+                                    className={`rounded-2xl border transition-all duration-300 ${isOpen
+                                            ? "border-[#e6a79e]/45 bg-[#1d1010]"
+                                            : "border-white/8 bg-white/6"
                                         }`}
                                 >
                                     <button
@@ -152,21 +150,26 @@ export default function FAQ() {
                                         onClick={() => setOpenIndex(isOpen ? -1 : index)}
                                         className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6"
                                     >
-                                        <span className={`text-sm font-medium tracking-tight sm:text-base ${isOpen ? "text-white" : "text-slate-100"}`}>
+                                        <span
+                                            className={`text-sm font-medium sm:text-base ${isOpen ? "text-white" : "text-slate-100"
+                                                }`}
+                                        >
                                             {item.question}
                                         </span>
 
-                                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${isOpen
-                                                ? "border-[#e6a79e]/40 bg-[#e6a79e]/10 text-[#f2c0b8]"
-                                                : "border-white/10 bg-white/5 text-slate-300"
-                                            }`}>
-                                            <ChevronDown size={16} className={`transition-transform duration-300 ${isOpen ? "rotate-180" : "rotate-0"}`} />
-                                        </span>
+                                        <ChevronDown
+                                            size={18}
+                                            className={`transition-transform duration-300 ${isOpen ? "rotate-180" : ""
+                                                }`}
+                                        />
                                     </button>
 
-                                    <div className={`grid transition-all duration-300 ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
-                                        <div className="overflow-hidden px-5 pb-5 sm:px-6">
-                                            <p className="max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">
+                                    <div
+                                        className={`overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                                            }`}
+                                    >
+                                        <div className="border-t border-white/10 px-5 py-4 sm:px-6">
+                                            <p className="text-sm leading-7 text-slate-300 sm:text-base">
                                                 {item.answer}
                                             </p>
                                         </div>
