@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using kvk.BuildingBlocks.Interfaces;
 
 namespace kvk.Gym.Services;
 
@@ -82,7 +83,18 @@ public class SystemSettingRolloverService
 
         setting.PreviousDayEnd = previousDayLocal;
         setting.CurrentDay = todayLocal;
-        setting.NextWorkingDay = ToLocalMidnight(business.LocalDate.AddDays(1));
+
+        // Resolve holiday service from the scope if available and compute next working day by skipping persisted holidays.
+        var holidayService = scope.ServiceProvider.GetService<IHolidayService>();
+        if (holidayService != null)
+        {
+            var next = await holidayService.GetNextWorkingDayAsync(business.LocalDate, cancellationToken);
+            setting.NextWorkingDay = ToLocalMidnight(next);
+        }
+        else
+        {
+            setting.NextWorkingDay = ToLocalMidnight(business.LocalDate.AddDays(1));
+        }
 
         await UpdateDayEndStatusAsync(db, setting, previousDayLocal, cancellationToken);
 
