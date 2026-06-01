@@ -2,6 +2,7 @@ import GymHeader from "@/components/header/gym";
 import GymHero from "../../hero/gym";
 import Circle from "../../circle";
 import GymStepper from "../../gym-stepper";
+import Memberships from "../../memberships";
 
 export default function GymHome() {
     return (
@@ -9,6 +10,7 @@ export default function GymHome() {
             <GymHeader />
             <GymHero />
             <GymStepper />
+            <Memberships />
             <Circle />
         </>
     )
