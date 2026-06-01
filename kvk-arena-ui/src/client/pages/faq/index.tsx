@@ -58,9 +58,6 @@ export default function FAQ() {
 
             <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
                 <div className="mx-auto max-w-3xl text-center">
-                    <p data-aos="fade-up" className="text-xs font-semibold uppercase tracking-[0.28em] text-[#8FC0FF]">
-                        Support Center
-                    </p>
 
                     <h2
                         data-aos="fade-up"
@@ -148,7 +145,7 @@ export default function FAQ() {
                                     <button
                                         type="button"
                                         onClick={() => setOpenIndex(isOpen ? -1 : index)}
-                                        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6"
+                                        className="flex w-full cursor-pointer items-center justify-between gap-4 px-5 py-4 text-left sm:px-6"
                                     >
                                         <span
                                             className={`text-sm font-medium sm:text-base ${isOpen ? "text-white" : "text-slate-100"
@@ -157,11 +154,12 @@ export default function FAQ() {
                                             {item.question}
                                         </span>
 
-                                        <ChevronDown
-                                            size={18}
-                                            className={`transition-transform duration-300 ${isOpen ? "rotate-180" : ""
-                                                }`}
-                                        />
+                                        <span className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300">
+                                            <ChevronDown
+                                                size={18}
+                                                className={`transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+                                            />
+                                        </span>
                                     </button>
 
                                     <div
