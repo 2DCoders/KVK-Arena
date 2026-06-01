@@ -1,6 +1,7 @@
 using kvk.BuildingBlocks.Auth;
 using kvk.BuildingBlocks.Interfaces;
 using kvk.Identity.Features.Auth;
+using kvk.Identity.Features.CalenderHoliday;
 using kvk.Identity.Features.StaffModule;
 using kvk.Identity.Features.Role;
 using kvk.Identity.Persistence;

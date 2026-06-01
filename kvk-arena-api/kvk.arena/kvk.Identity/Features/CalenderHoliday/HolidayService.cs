@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace kvk.Identity.Services;
+namespace kvk.Identity.Features.CalenderHoliday;
 
 public class HolidayService : IHolidayService
 {
