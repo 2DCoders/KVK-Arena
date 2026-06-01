@@ -30,7 +30,7 @@ export default function GymStepper() {
     useEffect(() => {
         const interval = setInterval(() => {
             setActiveIndex((current) => (current + 1) % steps.length)
-        }, 1500)
+        }, 2000)
 
         return () => clearInterval(interval)
     }, [])
@@ -69,7 +69,7 @@ export default function GymStepper() {
                             >
                                 <div
                                     className={`relative z-10 flex h-28 w-28 items-center justify-center rounded-full border shadow-[0_10px_30px_rgba(15,23,42,0.05)] transition duration-300 ${isActive
-                                            ? "border-[#111111] bg-[#111111] text-white shadow-[0_18px_45px_rgba(17,17,17,0.18)]"
+                                            ? "border-[#296BE1] bg-[#296BE1] text-white shadow-[0_18px_45px_rgba(17,17,17,0.18)]"
                                             : "border-slate-300 bg-white text-slate-900"
                                         }`}
                                 >

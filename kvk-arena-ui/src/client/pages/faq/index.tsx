@@ -73,7 +73,7 @@ export default function FAQ() {
                 </div>
 
                 <div className="mt-12 grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
-                    <aside className="rounded-3xl border border-white/8 bg-white/6 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur-sm sm:p-8">
+                    <aside data-aos="fade-right" data-aos-delay="200" className="rounded-3xl border border-white/8 bg-white/6 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur-sm sm:p-8">
                         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#8FC0FF]">
                             Support Snapshot
                         </p>
@@ -119,8 +119,8 @@ export default function FAQ() {
                                 </div>
                             </div>
 
-                            <div className="rounded-2xl border border-[#e6a79e]/30 bg-[#1d1010] p-4">
-                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#f2c0b8]">
+                            <div className="rounded-2xl border border-[#e6a79e]/30 bg-[#2a200a] p-4">
+                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#f4d58a]">
                                     Need personal help?
                                 </p>
                                 <p className="mt-2 text-sm leading-6 text-slate-300">
@@ -130,7 +130,7 @@ export default function FAQ() {
                         </div>
                     </aside>
 
-                    <div className="space-y-3">
+                    <div data-aos="fade-left" data-aos-delay="200" className="space-y-3">
                         {faqItems.map((item, index) => {
                             const isOpen = index === openIndex
 
@@ -138,8 +138,8 @@ export default function FAQ() {
                                 <div
                                     key={item.question}
                                     className={`rounded-2xl border transition-all duration-300 ${isOpen
-                                            ? "border-[#e6a79e]/45 bg-[#1d1010]"
-                                            : "border-white/8 bg-white/6"
+                                        ? "border-[#8b6b1f]/55 bg-[#2a200a]"
+                                        : "border-white/8 bg-white/6"
                                         }`}
                                 >
                                     <button
@@ -148,13 +148,16 @@ export default function FAQ() {
                                         className="flex w-full cursor-pointer items-center justify-between gap-4 px-5 py-4 text-left sm:px-6"
                                     >
                                         <span
-                                            className={`text-sm font-medium sm:text-base ${isOpen ? "text-white" : "text-slate-100"
+                                            className={`text-sm font-medium sm:text-base ${isOpen ? "text-[#f4d58a]" : "text-slate-100"
                                                 }`}
                                         >
                                             {item.question}
                                         </span>
 
-                                        <span className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300">
+                                        <span className={`flex h-8 w-8 items-center justify-center rounded-full border transition-all duration-300 ${isOpen
+                                            ? "border-[#c6a84b]/40 bg-[#3a2e0c] text-[#f4d58a]"
+                                            : "border-white/10 bg-white/5 text-slate-300"
+                                            }`}>
                                             <ChevronDown
                                                 size={18}
                                                 className={`transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
@@ -166,7 +169,7 @@ export default function FAQ() {
                                         className={`overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
                                             }`}
                                     >
-                                        <div className="border-t border-white/10 px-5 py-4 sm:px-6">
+                                        <div className="border-t border-[#8b6b1f]/35 px-5 py-4 sm:px-6">
                                             <p className="text-sm leading-7 text-slate-300 sm:text-base">
                                                 {item.answer}
                                             </p>
