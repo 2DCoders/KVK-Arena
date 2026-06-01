@@ -37,6 +37,18 @@ export default function GymStepper() {
 
     return (
         <section className="relative overflow-hidden bg-[#f5f5f5] py-14 lg:py-20">
+            <style>{`
+                @keyframes gym-step-fill {
+                    from {
+                        transform: scaleY(0);
+                    }
+
+                    to {
+                        transform: scaleY(2);
+                    }
+                }
+            `}</style>
+
             <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
                 <div className="mx-auto max-w-3xl text-center">
                     <p data-aos="fade-up" className="text-sm font-semibold uppercase tracking-[0.28em] text-slate-500">
@@ -57,35 +69,47 @@ export default function GymStepper() {
 
                     <div className="grid gap-6 lg:grid-cols-4 lg:gap-4">
                         {steps.map((step, index) => {
-                        const Icon = step.icon
-                        const isActive = index === activeIndex
+                            const Icon = step.icon
+                            const isActive = index === activeIndex
 
-                        return (
-                            <div
-                                key={step.title}
-                                data-aos="fade-up"
-                                data-aos-delay={`${index * 100}`}
-                                className="relative z-10 flex flex-col items-center text-center"
-                            >
+                            return (
                                 <div
-                                    className={`relative z-10 flex h-28 w-28 items-center justify-center rounded-full border shadow-[0_10px_30px_rgba(15,23,42,0.05)] transition duration-300 ${isActive
-                                            ? "border-[#296BE1] bg-[#296BE1] text-white shadow-[0_18px_45px_rgba(17,17,17,0.18)]"
-                                            : "border-slate-300 bg-white text-slate-900"
-                                        }`}
+                                    key={step.title}
+                                    data-aos="fade-up"
+                                    data-aos-delay={`${index * 100}`}
+                                    className="relative z-10 flex flex-col items-center text-center"
                                 >
-                                    <Icon size={38} strokeWidth={1.8} />
-                                </div>
+                                    <div
+                                        className={`relative z-10 flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border shadow-[0_10px_30px_rgba(15,23,42,0.05)] transition duration-300 ${isActive
+                                            ? " text-white shadow-[0_18px_45px_rgba(17,17,17,0.18)]"
+                                            : "border-slate-300 bg-white text-slate-900"
+                                            }`}
+                                    >
+                                        {isActive && (
+                                            <span
+                                                aria-hidden="true"
+                                                className="absolute inset-0 origin-left bg-linear-to-r from-[#0f3c91] via-[#296BE1] to-[#8fc0ff]"
+                                                style={{ animation: "gym-step-fill 2s linear forwards" }}
+                                            />
+                                        )}
 
-                                <div className="mt-6 max-w-[18rem] px-3">
-                                    <h3 className="text-lg font-bold tracking-tight text-slate-900">
-                                        {step.title}
-                                    </h3>
-                                    <p className="mt-2 text-sm leading-6 text-slate-500">
-                                        {step.description}
-                                    </p>
+                                        <Icon
+                                            size={38}
+                                            strokeWidth={1.8}
+                                            className="relative z-10"
+                                        />
+                                    </div>
+
+                                    <div className="mt-6 max-w-[18rem] px-3">
+                                        <h3 className="text-lg font-bold tracking-tight text-slate-900">
+                                            {step.title}
+                                        </h3>
+                                        <p className="mt-2 text-sm leading-6 text-slate-500">
+                                            {step.description}
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
-                        )
+                            )
                         })}
                     </div>
                 </div>
