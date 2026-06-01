@@ -78,33 +78,56 @@ export default function FAQ() {
                 <div className="mt-12 grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
                     <aside className="rounded-3xl border border-white/8 bg-white/6 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur-sm sm:p-8">
                         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#8FC0FF]">
-                            Need a quick answer?
+                            Support Snapshot
                         </p>
 
                         <h3 className="mt-4 text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
-                            Clear answers for new and existing members.
+                            Fast help for memberships, coaching, and bookings.
                         </h3>
 
                         <p className="mt-4 text-sm leading-7 text-slate-300 sm:text-base">
-                            Our memberships are flexible, our coaching is structured, and our support team is here to make the process simple.
+                            We keep the process simple: choose a plan, check the answers below, and reach out when you need a personal follow-up.
                         </p>
 
-                        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                        <div className="mt-8 space-y-4">
                             <div className="rounded-2xl border border-white/8 bg-slate-900/60 p-4">
                                 <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
-                                    Response time
+                                    Best for
                                 </p>
-                                <p className="mt-2 text-2xl font-extrabold tracking-tight text-white">
-                                    Within 1 day
+                                <p className="mt-2 text-lg font-bold tracking-tight text-white">
+                                    New members, parents, and athletes
+                                </p>
+                                <p className="mt-2 text-sm leading-6 text-slate-300">
+                                    Most questions are about membership options, access rules, and first-session preparation.
                                 </p>
                             </div>
 
-                            <div className="rounded-2xl border border-white/8 bg-slate-900/60 p-4">
-                                <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
-                                    Support style
+                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                                <div className="rounded-2xl border border-white/8 bg-slate-900/60 p-4">
+                                    <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
+                                        Support hours
+                                    </p>
+                                    <p className="mt-2 text-2xl font-extrabold tracking-tight text-white">
+                                        Mon - Sun
+                                    </p>
+                                </div>
+
+                                <div className="rounded-2xl border border-white/8 bg-slate-900/60 p-4">
+                                    <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
+                                        Support style
+                                    </p>
+                                    <p className="mt-2 text-2xl font-extrabold tracking-tight text-white">
+                                        Friendly and direct
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="rounded-2xl border border-[#e6a79e]/30 bg-[#1d1010] p-4">
+                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#f2c0b8]">
+                                    Need personal help?
                                 </p>
-                                <p className="mt-2 text-2xl font-extrabold tracking-tight text-white">
-                                    Friendly and direct
+                                <p className="mt-2 text-sm leading-6 text-slate-300">
+                                    Contact the team directly if your question is about a special membership plan or coaching package.
                                 </p>
                             </div>
                         </div>
