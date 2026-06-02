@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react"
+import { useRef } from "react"
 import { ChevronLeft, ChevronRight, Check } from "lucide-react"
 
 type Plan = {
@@ -85,15 +85,6 @@ const plans: Plan[] = [
 
 export default function Memberships() {
     const railRef = useRef<HTMLDivElement | null>(null)
-
-    const stats = useMemo(
-        () => [
-            { label: "Plans", value: `${plans.length}+` },
-            { label: "Support", value: "Weekly" },
-            { label: "Access", value: "Flexible" },
-        ],
-        [],
-    )
 
     const scrollRail = (direction: "left" | "right") => {
         const rail = railRef.current
