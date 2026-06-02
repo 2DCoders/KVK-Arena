@@ -5,6 +5,7 @@ import GymStepper from "../../gym-stepper";
 import Memberships from "../../memberships";
 import FAQ from "../../faq";
 import { useLayoutEffect } from "react";
+import Trainers from "../../trainers";
 
 export default function GymHome() {
 
@@ -19,8 +20,9 @@ export default function GymHome() {
             <GymHero />
             <GymStepper />
             <Memberships />
-            <Circle />
+            <Trainers />
             <FAQ />
+            <Circle />
         </>
     )
 }
