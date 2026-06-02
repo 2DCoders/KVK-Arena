@@ -2,6 +2,7 @@ import GymHeader from "@/components/header/gym";
 import GymHero from "../../hero/gym";
 // import Circle from "../../circle";
 import GymStepper from "../../gym-stepper";
+import GymStats from "../../stats/gym";
 import Memberships from "../../memberships";
 // import LineBanner from "../../line-banner";
 import FAQ from "../../faq";
@@ -45,6 +46,7 @@ export default function GymHome() {
         <>
             <GymHeader />
             <GymHero />
+            <GymStats />
             <GymStepper />
 
             <section id="memberships" className="relative overflow-hidden">
