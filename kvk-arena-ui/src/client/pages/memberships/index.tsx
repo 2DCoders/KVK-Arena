@@ -146,14 +146,14 @@ export default function Memberships() {
                         <article
                             key={plan.name}
                             className={`group relative min-w-[320px] flex-1 basis-[320px] overflow-hidden rounded-2xl border p-6 shadow-[0_18px_50px_rgba(0,0,0,0.2)] transform-gpu transition duration-300 ease-out hover:z-20 hover:[transform:perspective(1200px)_translateY(-12px)_rotateX(7deg)_rotateY(-7deg)_scale(1.03)] hover:shadow-[0_28px_70px_rgba(0,0,0,0.35)] sm:min-w-[360px] sm:basis-[360px] ${plan.featured
-                                ? "border-[#e6a79e] bg-[#2a200a] ring-1 ring-[#e6a79e]/30"
+                                ? "border-[#296BE1] bg-[#000000] ring-1 ring-[#e6a79e]/30"
                                 : "border-white/6 bg-white/6"
                                 }`}
                         >
                             <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-white/15 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
                             {plan.featured && (
-                                <div className="absolute right-6 top-6 rounded-full border border-[#e6a79e]/40 bg-[#e6a79e]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f4d58a]">
+                                <div className="absolute right-6 top-6 rounded-full border border-[#296BE1]/40 bg-[#e6a79e]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#296BE1]">
                                     Recommended
                                 </div>
                             )}
