@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, Star } from "lucide-react";
 
 import t1 from "@/assets/trainer.jpg";
 import t2 from "@/assets/trainer.jpg";
@@ -65,14 +65,14 @@ export default function Trainers() {
                     <div className="flex gap-3">
                         <button
                             onClick={() => scroll("left")}
-                            className="w-12 h-12 rounded-full backdrop-blur-xl bg-white/80 border border-white shadow-lg hover:bg-[#296BE1] hover:text-white transition-all duration-300 flex items-center justify-center"
+                            className="w-12 h-12 cursor-pointer rounded-full backdrop-blur-xl bg-white/80 border border-white shadow-lg hover:bg-[#296BE1] hover:text-white transition-all duration-300 flex items-center justify-center"
                         >
                             <ChevronLeft size={20} />
                         </button>
 
                         <button
                             onClick={() => scroll("right")}
-                            className="w-12 h-12 rounded-full backdrop-blur-xl bg-white/80 border border-white shadow-lg hover:bg-[#296BE1] hover:text-white transition-all duration-300 flex items-center justify-center"
+                            className="w-12 h-12 cursor-pointer rounded-full backdrop-blur-xl bg-white/80 border border-white shadow-lg hover:bg-[#296BE1] hover:text-white transition-all duration-300 flex items-center justify-center"
                         >
                             <ChevronRight size={20} />
                         </button>
@@ -82,7 +82,7 @@ export default function Trainers() {
                 {/* Slider */}
                 <div
                     ref={scrollRef}
-                    className="flex gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-2"
+                    className="flex gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-15"
                 >
                     {trainers.map((trainer) => (
                         <div
@@ -113,7 +113,6 @@ export default function Trainers() {
                                     />
 
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                                    <div className="absolute inset-0 bg-[#296BE1]/10 opacity-0 group-hover:opacity-100 transition-all duration-500" />
 
                                     {/* Rating */}
                                     <div className="absolute top-5 right-5 flex items-center gap-1 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full shadow">
@@ -125,24 +124,35 @@ export default function Trainers() {
 
                                     {/* View More */}
                                     <div className="absolute inset-0 flex items-center justify-center">
-                                        <button className="
-                                            px-6 py-3
+                                        <button
+                                            type="button"
+                                            className="
+                                            inline-flex
+                                            items-center
+                                            gap-2
                                             rounded-full
-                                            bg-white
-                                            text-black
-                                            font-semibold
-                                            shadow-xl
+                                            border border-white
+                                            px-6 py-3
+                                            text-sm font-medium
+                                            text-white
+                                            cursor-pointer
+
                                             opacity-0
-                                            translate-y-5
+                                            translate-y-6
+                                            pointer-events-none
+
+                                            transition-all duration-500
+
                                             group-hover:opacity-100
                                             group-hover:translate-y-0
-                                            transition-all
-                                            duration-500
-                                            hover:bg-[#296BE1]
-                                            hover:text-white
-                                            cursor-pointer
-                                        ">
+                                            group-hover:pointer-events-auto
+
+                                            hover:bg-white
+                                            hover:text-black
+                                        "
+                                        >
                                             View More
+                                            <Eye size={18} />
                                         </button>
                                     </div>
                                 </div>
