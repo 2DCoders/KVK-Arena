@@ -49,7 +49,7 @@ export default function GymHeader() {
           </a>
 
           <a
-            href="#about"
+            href="#memberships"
             className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(37,99,235,0.18)] ${isScrolled ? 'text-white hover:bg-white/10 hover:text-white' : 'text-slate-200 hover:bg-white/10 hover:text-white hover:backdrop-blur-sm'}`}
           >
             Membership Plans
@@ -132,7 +132,7 @@ export default function GymHeader() {
             </a>
 
             <a
-              href="#about"
+              href="#memberships"
               onClick={closeMobileMenu}
               className="rounded-xl px-3 py-2 text-[15px] font-medium text-slate-800 transition-all duration-300 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950"
             >

@@ -30,7 +30,7 @@ export default function Trainers() {
     };
 
     return (
-        <section className="relative py-20 bg-gradient-to-b from-slate-50 via-white to-blue-50/40 overflow-hidden">
+        <section className="relative bg-gradient-to-b from-slate-50 via-white to-blue-50/40 overflow-hidden pt-25">
 
             {/* Background Blobs */}
             <div className="absolute top-0 left-0 w-96 h-96 bg-[#296BE1]/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />

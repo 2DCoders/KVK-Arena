@@ -101,7 +101,7 @@ export default function Memberships() {
     }
 
     return (
-        <section className="relative overflow-hidden bg-linear-to-b from-slate-950 to-slate-900 py-5 lg:py-15">
+        <section className="relative overflow-hidden bg-linear-to-b from-slate-950 to-slate-900 pt-25 pb-10">
             <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="mx-auto max-w-3xl text-center">
 
