@@ -1,11 +1,12 @@
 import GymHeader from "@/components/header/gym";
 import GymHero from "../../hero/gym";
-import Circle from "../../circle";
+// import Circle from "../../circle";
 import GymStepper from "../../gym-stepper";
 import Memberships from "../../memberships";
 import FAQ from "../../faq";
 import { useLayoutEffect } from "react";
 import Trainers from "../../trainers";
+import GymFeatures from "../../features/gym";
 
 export default function GymHome() {
 
@@ -22,7 +23,8 @@ export default function GymHome() {
             <Memberships />
             <Trainers />
             <FAQ />
-            <Circle />
+            <GymFeatures />
+            {/* <Circle /> */}
         </>
     )
 }

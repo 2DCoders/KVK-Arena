@@ -82,7 +82,8 @@ export default function Trainers() {
                 {/* Slider */}
                 <div
                     ref={scrollRef}
-                    className="flex gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-15"
+                    data-aos="fade-up"
+                    className="flex gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-15 pt-10"
                 >
                     {trainers.map((trainer) => (
                         <div
