@@ -7,6 +7,8 @@ import FAQ from "../../faq";
 import { useLayoutEffect } from "react";
 import Trainers from "../../trainers";
 import GymFeatures from "../../features/gym";
+import Footer from "@/components/footer";
+
 
 export default function GymHome() {
 
@@ -24,6 +26,7 @@ export default function GymHome() {
             <Trainers />
             <FAQ />
             <GymFeatures />
+            <Footer />
             {/* <Circle /> */}
         </>
     )
