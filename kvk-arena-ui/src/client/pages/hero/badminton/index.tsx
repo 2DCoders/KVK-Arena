@@ -1,77 +1,89 @@
 import hero_bg from "@/assets/hero/badminton_hero.png";
-import SignupModal from "@/components/signup/gym";
-import { useState } from "react";
 
 export default function BadmintonHero() {
-  const [isOpenSignup, setIsOpenSignup] = useState(false);
-
   return (
-    <div>
-      <SignupModal open={isOpenSignup} onClose={() => setIsOpenSignup(false)} />
-      <section className="relative isolate overflow-hidden py-16 sm:py-20 lg:py-38">
+    <section className="relative isolate overflow-hidden min-h-[90vh] flex items-center py-26">
+      {/* Background */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-100 rounded-lg"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${hero_bg})` }}
       />
 
-      {/* <div aria-hidden="true" className="absolute inset-0 rounded-lg bg-slate-950/20" /> */}
-      <div aria-hidden="true" className="absolute inset-0 rounded-lg bg-linear-to-b from-slate-950/30 via-slate-950/65 to-slate-950/85" />
+      {/* Dark Overlay */}
+      <div className="absolute inset-0 bg-black/50" />
 
-      <div className="relative z-10 mx-auto mt-5 flex max-w-7xl flex-col items-center gap-8 px-4 text-center lg:px-8 mb-5">
-        <div className="hero-fade-up max-w-4xl">
-          <h1 className="mt-6 mb-5 text-4xl font-black leading-[1.2] tracking-[-0.035em] block bg-linear-to-r from-[#2d86fc] via-[#CFEFFF] to-[#8FC0FF] bg-clip-text text-transparent sm:text-5xl lg:text-6xl xl:text-7xl">
-            Transform Body.
-            <span className="block bg-linear-to-r from-[#2d86fc] via-[#CFEFFF] to-[#8FC0FF] bg-clip-text text-transparent">
-              Elevate Your Life.
+      {/* Content */}
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-10">
+        <div className="max-w-3xl">
+          {/* Small Label */}
+          <p className="text-white/80 text-sm md:text-base mb-4 tracking-wide uppercase pt-5">
+            KVK Arena Badminton Club
+          </p>
+
+          {/* Main Heading */}
+          <h1 className="text-white font-extrabold uppercase leading-none">
+            <span className="block text-5xl sm:text-6xl lg:text-7xl">
+              Train
+            </span>
+            <span className="block text-5xl sm:text-6xl lg:text-7xl">
+              Play
+            </span>
+            <span className="block text-5xl sm:text-6xl lg:text-7xl">
+              Compete
             </span>
           </h1>
 
-          <p className="mt-6 mx-auto max-w-2xl text-base leading-8 text-slate-200 lg:text-md sm:text-md">
-            Build strength, improve endurance, and stay consistent in a premium training space with modern equipment, cardio zones, and a motivating atmosphere.
+          {/* Description */}
+          <p className="mt-6 max-w-xl text-white/90 text-base md:text-lg">
+            Join passionate badminton players, improve your skills with expert
+            coaching, and compete on professional courts designed for every
+            level.
           </p>
+        </div>
 
-          <div className="mt-9 flex justify-center items-center gap-4 sm:flex-row sm:justify-center">
-            <button
-              onClick={() => setIsOpenSignup(true)}
-              className="inline-flex cursor-pointer items-center justify-center rounded-full bg-[#296BE1] px-5 py-2.5 text-xs font-semibold text-white shadow-[0_16px_36px_rgba(41,107,225,0.35)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1f58be] sm:px-8 sm:py-4 sm:text-sm"
-            >
-              Join Gym
-            </button>
-            <button className="inline-flex cursor-pointer items-center justify-center rounded-full border border-white/35 bg-white/10 px-5 py-2.5 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(15,23,42,0.16)] backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:border-white/55 hover:bg-white/16 sm:px-8 sm:py-4 sm:text-sm">
-              <a href="#memberships">View Memberships</a>
-            </button>
+        {/* Bottom Cards */}
+        <div className="mt-12 flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
+          {/* Countdown Card */}
+          <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl px-6 py-4">
+            <div className="flex gap-8">
+              <div>
+                <p className="text-3xl font-bold text-white">12</p>
+                <p className="text-white/70 text-sm">Days</p>
+              </div>
+
+              <div>
+                <p className="text-3xl font-bold text-white">08</p>
+                <p className="text-white/70 text-sm">Hours</p>
+              </div>
+
+              <div>
+                <p className="text-3xl font-bold text-white">45</p>
+                <p className="text-white/70 text-sm">Min</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Event Card */}
+          <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-4 flex items-center gap-4">
+            <div className="h-14 w-14 rounded-xl bg-lime-400 flex items-center justify-center">
+              🏸
+            </div>
+
+            <div>
+              <h3 className="text-white font-semibold">
+                Summer Badminton Championship
+              </h3>
+              <p className="text-white/70 text-sm">
+                August 15th, 2026
+              </p>
+              <p className="text-white/60 text-sm">
+                KVK Arena Indoor Courts
+              </p>
+            </div>
           </div>
         </div>
       </div>
-
-      <style>{`
-        .hero-fade-up {
-          opacity: 0;
-          transform: translateY(26px);
-          animation: hero-fade-up 700ms ease forwards;
-        }
-
-        @keyframes hero-fade-up {
-          0% {
-            opacity: 0;
-            transform: translateY(26px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .hero-fade-up {
-            animation: none;
-            opacity: 1;
-            transform: none;
-          }
-        }
-      `}</style>
     </section>
-    </div>    
   );
 }
