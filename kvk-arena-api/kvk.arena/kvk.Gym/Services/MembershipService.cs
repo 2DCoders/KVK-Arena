@@ -28,6 +28,10 @@ public class MembershipService : IMembershipService
 
         try
         {
+            var existingMember = await _db.Memberships
+                .AnyAsync(m => m.Email == request.Email, cancellationToken);
+            if (existingMember) return Result.Failure("Email is already registered");
+
             MembershipPlan? plan = null;
 
             if (request.MemberType == kvk.Gym.Enums.MemberType.Client)
@@ -52,10 +56,6 @@ public class MembershipService : IMembershipService
                 if (plan == null)
                     return Result.Failure("Membership plan not found");
             }
-
-            // var existingMember = await _db.Memberships
-            //     .AnyAsync(m => m.Email == request.Email, cancellationToken);
-            // if (existingMember)                return Result.Failure("A member with the provided email already exists");
 
             var memberToken = await GetNextMembershipTokenAsync(request.MemberType.ToString(), DateTime.UtcNow.Year,
                 cancellationToken);
@@ -307,9 +307,20 @@ public class MembershipService : IMembershipService
         try
         {
             var existing =
-                await _db.Memberships.SingleOrDefaultAsync(m => m.IdentityUserId == identityUserId && !m.IsDeleted, cancellationToken);
+                await _db.Memberships.SingleOrDefaultAsync(m => m.IdentityUserId == identityUserId && !m.IsDeleted,
+                    cancellationToken);
             if (existing != null)
             {
+                if (email != existing.Email)
+                {
+                    var anotherMemberWithEmail = await _db.Memberships.AnyAsync(
+                        m => m.Email == email && m.IdentityUserId != identityUserId, cancellationToken);
+                    if (anotherMemberWithEmail)
+                    {
+                        return Result.Failure("Email is already registered");
+                    }
+                }
+
                 // update basic info
                 existing.Email = email;
                 existing.FirstName = fullName?.Split(' ').FirstOrDefault() ?? existing.FirstName;
@@ -320,6 +331,12 @@ public class MembershipService : IMembershipService
                 await _db.SaveChangesAsync(cancellationToken);
 
                 return Result.Success("Staff membership updated");
+            }
+
+            var emailExists = await _db.Memberships.AnyAsync(m => m.Email == email, cancellationToken);
+            if (emailExists)
+            {
+                return Result.Failure("Email is already registered");
             }
 
             var memberToken = await GetNextMembershipTokenAsync("Staff", DateTime.UtcNow.Year, cancellationToken);
@@ -367,12 +384,18 @@ public class MembershipService : IMembershipService
             if (member == null)
                 return Result.Failure("Member not found");
 
+            if (!string.IsNullOrWhiteSpace(request.Email) && request.Email != member.Email)
+            {
+                var existingMember = await _db.Memberships
+                    .AnyAsync(m => m.Email == request.Email && m.Id != memberId, cancellationToken);
+                if (existingMember)
+                    return Result.Failure("Email is already registered");
+            }
+
             if (!string.IsNullOrWhiteSpace(request.FirstName))
                 member.FirstName = request.FirstName;
             if (!string.IsNullOrWhiteSpace(request.LastName))
                 member.LastName = request.LastName;
-            if (!string.IsNullOrWhiteSpace(request.Email))
-                member.Email = request.Email;
             if (!string.IsNullOrWhiteSpace(request.Phone))
                 member.Phone = request.Phone;
             if (request.DateOfBirth.HasValue)
