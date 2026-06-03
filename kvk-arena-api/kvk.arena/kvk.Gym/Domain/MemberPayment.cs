@@ -16,7 +16,7 @@ public class MemberPayment : AuditableEntity
     public decimal Amount { get; set; }
 
     public PaymentType PaymentType { get; set; }
-    
+
     public PaymentStatus PaymentStatus { get; set; }
     
     public DateTime? MemberShipStartDate { get; set; }

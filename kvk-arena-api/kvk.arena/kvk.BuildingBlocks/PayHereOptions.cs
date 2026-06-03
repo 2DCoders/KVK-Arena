@@ -4,11 +4,9 @@ public class PayHereOptions
 {
     public const string SectionName = "PayHere";
 
-    public string ApiKey { get; set; } = string.Empty;
-    public string ApiSecret { get; set; } = string.Empty;
+    public string MerchantId { get; set; } = string.Empty;
+    public string MerchantSecret { get; set; } = string.Empty;
+    public string Currency { get; set; } = "LKR";
     public string ChargeUrl { get; set; } = string.Empty;
-    public string ApiKeyFieldName { get; set; } = "api_key";
-    public string ApiSecretFieldName { get; set; } = "api_secret";
     public int TimeoutSeconds { get; set; } = 30;
 }
-

@@ -1,4 +1,5 @@
 using kvk.BuildingBlocks.Interfaces;
+using kvk.BuildingBlocks.Services;
 using kvk.Gym.Services;
 using kvk.Gym.Interfaces;
 using kvk.Gym.Options;
@@ -29,6 +30,8 @@ public class GymModuleInitializer : IModuleInitializer
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IMembershipPlanService, MembershipPlanService>();
         services.AddScoped<IDayPassMemberService, DayPassMemberService>();
+        services.AddScoped<IGymPaymentGatewayService, GymPaymentGatewayService>();
+        services.AddScoped<IHashService, HashService>();
         // Use module adapter that wires the generic DayEnd service to GymDbContext
         services.AddScoped<IDayEndService, GymDayEndService>();
         // Register integrator event handlers (building-blocks contract)
