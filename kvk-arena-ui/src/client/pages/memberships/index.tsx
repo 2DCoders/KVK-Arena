@@ -75,7 +75,7 @@ export default function Memberships() {
                     data-aos="fade-up"
                     className="mt-5 py-5 flex gap-6 overflow-x-auto scroll-smooth pb-6 pr-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                 >
-                    {plans.map((plan) => (
+                    {plans.filter((plan) => plan.isActive === 1).map((plan) => (
                         <article
                             key={plan.id}
                             className={`group relative min-w-[320px] flex-1 basis-[320px] overflow-hidden rounded-2xl border p-6 shadow-[0_18px_50px_rgba(0,0,0,0.2)] transform-gpu transition duration-300 ease-out hover:z-20 hover:[transform:perspective(1200px)_translateY(-12px)_rotateX(7deg)_rotateY(-7deg)_scale(1.03)] hover:shadow-[0_28px_70px_rgba(0,0,0,0.35)] sm:min-w-[360px] sm:basis-[360px] ${plan.title === "Monthly Plan"
