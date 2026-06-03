@@ -1,11 +1,13 @@
-import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
 import logo from "@/assets/gym_logo.png";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Menu, X } from "lucide-react";
+import SignupModal from "@/components/signup/gym";
 
 export default function GymHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isOpenSignup, setIsOpenSignup] = useState(false);
   const navigate = useNavigate();
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
@@ -19,7 +21,7 @@ export default function GymHeader() {
   }, []);
 
   return (
-    <header className="fixed left-0 top-0 z-9999 w-full rounded-full bg-transparent py-2 lg:py-4">
+    <header className="fixed left-0 top-0 z-9999 w-full rounded-full bg-transparent py-2 lg:py-4">      
       <div className={isScrolled
         ? "relative mx-auto flex h-16 max-w-295 items-center justify-between overflow-hidden rounded-full border border-black/30 bg-black/60 px-4 py-1.5 shadow-lg backdrop-blur-md lg:h-20 lg:px-8 lg:py-2"
         : "relative mx-auto flex h-16 max-w-295 items-center justify-between overflow-hidden rounded-full border border-white/14 bg-[linear-gradient(135deg,rgba(6,12,28,0.78),rgba(15,23,42,0.52),rgba(8,16,32,0.72))] px-4 py-1.5 shadow-[0_18px_50px_rgba(2,6,23,0.45)] backdrop-blur-2xl lg:h-20 lg:px-8 lg:py-2"
@@ -69,7 +71,7 @@ export default function GymHeader() {
 
         {/* Right Button - Desktop */}
         <div className="relative z-10 hidden lg:block">
-          <button className={`cursor-pointer rounded-full px-7 py-2.5 text-sm font-extrabold tracking-[0.08em] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(37,99,235,0.24)] ${isScrolled ? 'border border-white/20 bg-transparent text-white shadow-none' : 'border border-white/30 bg-white text-slate-950 shadow-[0_10px_24px_rgba(255,255,255,0.14)]'}`}>
+          <button onClick={() => setIsOpenSignup(true)} className={`cursor-pointer rounded-full px-7 py-2.5 text-sm font-extrabold tracking-[0.08em] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(37,99,235,0.24)] ${isScrolled ? 'border border-white/20 bg-transparent text-white shadow-none' : 'border border-white/30 bg-white text-slate-950 shadow-[0_10px_24px_rgba(255,255,255,0.14)]'}`}>
             Join Now
           </button>
         </div>
@@ -82,6 +84,8 @@ export default function GymHeader() {
           <Menu size={18} />
         </button>
       </div>
+
+      <SignupModal open={isOpenSignup} onClose={() => setIsOpenSignup(false)} />
 
       {/* Mobile Sidebar */}
       <div
@@ -141,7 +145,10 @@ export default function GymHeader() {
 
             {/* Mobile Sign In */}
             <button
-              onClick={closeMobileMenu}
+              onClick={() => {
+                closeMobileMenu();
+                setIsOpenSignup(true);
+              }}
               className="mt-6 cursor-pointer rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold tracking-[0.06em] text-slate-900 transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-200 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950 hover:shadow-[0_16px_36px_rgba(37,99,235,0.16)]"
             >
               Join Now
