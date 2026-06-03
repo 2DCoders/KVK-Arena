@@ -44,6 +44,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
         email: "",
         phone: "",
         dob: "",
+        password: "",
     });
     const [serverError, setServerError] = useState<string | null>(null);
     const [errors, setErrors] = useState<any>({});
@@ -67,6 +68,12 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
             newErrors.email = "Email is required";
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
             newErrors.email = "Invalid email format";
+        }
+
+        if (!form.password.trim()) {
+            newErrors.password = "Password is required";
+        } else if (form.password.length < 6) {
+            newErrors.password = "Password must be at least 6 characters";
         }
 
         if (!form.phone.trim()) {
@@ -94,6 +101,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
         form.email &&
         form.phone &&
         form.dob &&
+        form.password &&
         gender &&
         confirm;
 
@@ -108,6 +116,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                 email: form.email.trim(),
                 phone: form.phone.trim(),
                 dateOfBirth: new Date(form.dob).toISOString(),
+                password: form.password.trim(),
                 memberType: 1,
                 gender: gender,
                 membershipPlanId: selectedPlan,
@@ -330,6 +339,28 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                                         {errors.email && (
                                             <p className="mt-1 text-xs text-red-500">
                                                 {errors.email}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* PASSWORD */}
+                                    <div className="md:col-span-2">
+                                        <label className="mb-2 block text-xs font-semibold uppercase text-slate-500">
+                                            Password
+                                        </label>
+
+                                        <input
+                                            type="password"
+                                            name="password"
+                                            placeholder="Enter password"
+                                            value={form.password}
+                                            onChange={handleChange}
+                                            className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-[#296BE1] focus:ring-4 focus:ring-[#296BE1]/10"
+                                        />
+
+                                        {errors.password && (
+                                            <p className="mt-1 text-xs text-red-500">
+                                                {errors.password}
                                             </p>
                                         )}
                                     </div>

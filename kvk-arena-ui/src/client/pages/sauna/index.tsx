@@ -45,32 +45,59 @@ export default function SaunaPage() {
                     </div>
                 </div>
 
-                {/* Bottom Advertisement Banner */}
-                <div className="relative mt-16 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-gray-900 via-black to-gray-900 p-10 md:p-14 shadow-2xl">
+                {/* Bottom Advertisement Banners */}
+                <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-10">
 
-                    {/* Glow effects */}
-                    <div className="absolute -top-20 -right-20 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl" />
-                    <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl" />
+                    {/* Left Banner */}
+                    <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-gray-900 via-black to-gray-900 p-10 md:p-14 shadow-2xl">
 
-                    <div className="relative max-w-3xl">
+                        {/* Glow effects */}
+                        <div className="absolute -top-20 -right-20 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl" />
+                        <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl" />
 
-                        {/* Badge */}
-                        <span className="inline-flex items-center rounded-full border border-white/20 bg-white/5 px-4 py-1 text-xs tracking-widest text-gray-300">
-                            PREMIUM WELLNESS FEATURE
-                        </span>
+                        <div className="relative max-w-3xl">
 
-                        {/* Title */}
-                        <h3 className="mt-5 text-3xl md:text-4xl font-bold text-white leading-tight">
-                            Included Sauna Access
-                        </h3>
+                            <span className="inline-flex items-center rounded-full border border-white/20 bg-white/5 px-4 py-1 text-xs tracking-widest text-gray-300">
+                                PREMIUM WELLNESS FEATURE
+                            </span>
 
-                        {/* Description */}
-                        <p className="mt-4 text-gray-300 text-base md:text-lg leading-relaxed">
-                            Recover faster, relieve muscle tension, and enjoy a premium wellness experience
-                            after every workout. Our sauna facilities are designed to support both physical
-                            recovery and mental relaxation.
-                        </p>
+                            <h3 className="mt-5 text-3xl md:text-4xl font-bold text-white leading-tight">
+                                Included Sauna Access
+                            </h3>
+
+                            <p className="mt-4 text-gray-300 text-base md:text-lg leading-relaxed">
+                                Recover faster, relieve muscle tension, and enjoy a premium wellness experience
+                                after every workout. Our sauna facilities are designed to support both physical
+                                recovery and mental relaxation.
+                            </p>
+                        </div>
                     </div>
+
+                    {/* Right Banner */}
+                    <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-black via-gray-900 to-black p-10 md:p-14 shadow-2xl">
+
+                        {/* Glow effects */}
+                        <div className="absolute -top-16 -right-16 h-64 w-64 rounded-full bg-purple-500/20 blur-3xl" />
+                        <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-blue-500/20 blur-3xl" />
+
+                        <div className="relative">
+
+                            <span className="inline-flex items-center rounded-full border border-white/20 bg-white/5 px-4 py-1 text-xs tracking-widest text-gray-300">
+                                GYM PARTNER PROGRAM
+                            </span>
+
+                            <h3 className="mt-5 text-3xl md:text-4xl font-bold text-white leading-tight">
+                                Freelance Trainer Friendly
+                            </h3>
+
+                            <p className="mt-4 text-gray-300 text-base md:text-lg leading-relaxed ml-auto max-w-2xl">
+                                We welcome freelance trainers with flexible access, client management support,
+                                and a professional environment to grow your personal training business inside our facility.
+                            </p>
+
+                        </div>
+                    </div>
+
                 </div>
 
             </div>
