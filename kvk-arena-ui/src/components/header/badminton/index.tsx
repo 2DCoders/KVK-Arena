@@ -50,17 +50,17 @@ export default function BadmintonHeader() {
                     </a>
 
                     <a
-                        href="#trainers"
+                        href="#courts"
                         className="rounded-full px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"
                     >
-                        Trainers
+                        Courts
                     </a>
 
                     <a
-                        href="#memberships"
+                        href="#services"
                         className="rounded-full px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"
                     >
-                        Membership Plans
+                        Services
                     </a>
                 </nav>
 
@@ -83,7 +83,7 @@ export default function BadmintonHeader() {
                         onClick={() => setIsOpenSignup(true)}
                         className="rounded-full cursor-pointer border border-white/30 bg-white px-7 py-2.5 text-sm font-extrabold text-slate-900 transition hover:-translate-y-0.5 hover:shadow-lg"
                     >
-                        Join Now
+                        Book Now
                     </button>
                 </div>
 
@@ -109,9 +109,9 @@ export default function BadmintonHeader() {
                 <div
                     onClick={(e) => e.stopPropagation()}
                     className={`absolute right-0 top-0 h-full w-72 border-l border-white/10
-          bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950
-          p-6 shadow-[0_30px_80px_rgba(0,0,0,0.6)] backdrop-blur-xl
-          transition-transform duration-300 ${mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+                        bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950
+                        p-6 shadow-[0_30px_80px_rgba(0,0,0,0.6)] backdrop-blur-xl
+                        transition-transform duration-300 ${mobileMenuOpen ? "translate-x-0" : "translate-x-full"
                         }`}
                 >
                     {/* glow border */}
@@ -153,19 +153,19 @@ export default function BadmintonHeader() {
                         </a>
 
                         <a
-                            href="#trainers"
+                            href="#courts"
                             onClick={closeMobileMenu}
                             className="rounded-xl px-3 py-2 text-[15px] font-medium text-slate-300 transition hover:bg-white/10 hover:text-white hover:pl-4"
                         >
-                            Trainers
+                            Courts
                         </a>
 
                         <a
-                            href="#memberships"
+                            href="#services"
                             onClick={closeMobileMenu}
                             className="rounded-xl px-3 py-2 text-[15px] font-medium text-slate-300 transition hover:bg-white/10 hover:text-white hover:pl-4"
                         >
-                            Membership Plans
+                            Services
                         </a>
 
                         {/* JOIN BUTTON */}
@@ -176,7 +176,7 @@ export default function BadmintonHeader() {
                             }}
                             className="mt-6 cursor-pointer rounded-xl bg-[#296BE1] px-5 py-3 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#2158bc] hover:shadow-[0_16px_36px_rgba(41,107,225,0.35)]"
                         >
-                            Join Now
+                            Book Now
                         </button>
                     </nav>
                 </div>

@@ -46,22 +46,6 @@ export default function BadmintonHome() {
     return (
         <>
             <BadmintonHeader />
-            <GymHero />
-            <GymStats />
-            <GymStepper />
-
-            <section id="memberships" className="relative overflow-hidden">
-                <Memberships />
-            </section>
-
-            <section id="trainers" className="relative overflow-hidden">
-                <Trainers />
-            </section>
-            <FAQ />
-            <GymFeatures />
-            {/* <LineBanner /> */}
-            <GymFooter />
-            {/* <Circle /> */}
             <div className="fixed bottom-6 right-4 z-50 flex items-end gap-3 sm:bottom-8 sm:right-6">
                 <div className="flex min-w-18 flex-col items-center rounded-full border border-white/30 bg-slate-950/85 px-3 py-2 text-white shadow-[0_18px_45px_rgba(15,23,42,0.32)] backdrop-blur-md">
                     <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-200/90">
