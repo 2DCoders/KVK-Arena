@@ -152,7 +152,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
 
     return (
         <div className="fixed inset-0 z-5000 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md overflow-y-auto">
-            {true && (
+            {pageAlert.visible && (
                 <div>
                     <Alert variant={pageAlert.variant as any} title={pageAlert.title} description={pageAlert.description} onClose={() => setPageAlert((s) => ({ ...s, visible: false }))} />
                 </div>

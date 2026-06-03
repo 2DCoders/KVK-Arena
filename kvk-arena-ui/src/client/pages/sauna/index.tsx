@@ -14,7 +14,7 @@ export default function SaunaPage() {
                             Train Hard. Recover Smarter.
                         </h2>
 
-                        <ul className="space-y-4 text-gray-700 pt-0 mt-6" data-aos="fade-up" data-aos-delay="150">
+                        <ul className="space-y-4 text-gray-700 pt-0 mt-6" data-aos="fade-right" data-aos-delay="150">
                             {[
                                 "Premium Strength & Cardio Equipment",
                                 "Spacious Training Environment",
@@ -33,7 +33,7 @@ export default function SaunaPage() {
                     </div>
 
                     {/* Right Image */}
-                    <div className="relative">
+                    <div className="relative" data-aos="fade-left" data-aos-delay="200">
                         <img
                             src={saunaImage}
                             alt="Gym Sauna Facility"
