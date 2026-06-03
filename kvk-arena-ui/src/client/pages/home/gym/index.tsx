@@ -10,6 +10,7 @@ import { useLayoutEffect, useState, useEffect } from "react";
 import Trainers from "../../trainers";
 import GymFeatures from "../../features/gym";
 import GymFooter from "@/components/footer/gym";
+import SaunaPage from "../../sauna";
 
 
 export default function GymHome() {
@@ -53,6 +54,7 @@ export default function GymHome() {
                 <Memberships />
             </section>
             
+            <SaunaPage />
 
             <section id="trainers" className="relative overflow-hidden">
                 <Trainers />
