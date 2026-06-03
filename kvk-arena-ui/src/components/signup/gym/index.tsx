@@ -45,7 +45,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
         phone: "",
         dob: "",
     });
-
+    const [serverError, setServerError] = useState<string | null>(null);
     const [errors, setErrors] = useState<any>({});
 
     if (!open) return null;
@@ -71,7 +71,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
 
         if (!form.phone.trim()) {
             newErrors.phone = "Phone is required";
-        } else if (form.phone.length < 7) {
+        } else if (form.phone.length !== 9 || !/^\d+$/.test(form.phone)) {
             newErrors.phone = "Invalid phone number";
         }
 
@@ -99,7 +99,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
 
     const handleRegister = async () => {
         if (!validate()) return;
-
+        setServerError(null);
         setLoading(true);
         try {
             const body = {
@@ -115,7 +115,11 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                 deviceFingerprintId2: null,
             };
 
-            await registerMember(body);
+            const res = await registerMember(body);
+            const created = res?.additionalData?.response ?? res?.response ?? res ?? null;
+            const newMemberId = created?.id ?? created?.memberId ?? null;
+
+            sessionStorage.setItem("newMemberId", newMemberId);
 
             setPageAlert({
                 visible: true,
@@ -126,6 +130,15 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
 
             setStep(2);
         } catch (error: any) {
+
+            const message =
+                error?.response?.data?.message ||
+                error?.message ||
+                "An error occurred while registering";
+
+            setServerError(message);
+
+            sessionStorage.setItem("newMemberId", "");
             setPageAlert({
                 visible: true,
                 variant: 'error',
@@ -138,8 +151,8 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
     };
 
     return (
-        <div className="fixed inset-0 z-5000000000 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md overflow-y-auto">
-            {pageAlert.visible && (
+        <div className="fixed inset-0 z-5000 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md overflow-y-auto">
+            {true && (
                 <div>
                     <Alert variant={pageAlert.variant as any} title={pageAlert.title} description={pageAlert.description} onClose={() => setPageAlert((s) => ({ ...s, visible: false }))} />
                 </div>
@@ -246,6 +259,12 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                                 </span>
                             </div>
                         </div>
+
+                        {serverError && (
+                            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                                {serverError}
+                            </div>
+                        )}
 
                         {/* STEP 1 */}
                         {step === 1 && (
