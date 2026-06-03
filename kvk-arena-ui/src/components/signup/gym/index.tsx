@@ -72,9 +72,9 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
         confirm;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md">
+        <div className="fixed inset-0 z-5000000000 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md overflow-y-auto">
 
-            <div className="relative w-full max-w-6xl overflow-hidden rounded-[32px] bg-white shadow-[0_40px_100px_rgba(0,0,0,0.25)]">
+            <div className="relative w-full max-w-6xl overflow-y-auto max-h-[95vh] md:overflow-hidden rounded-[32px] bg-white shadow-[0_40px_100px_rgba(0,0,0,0.25)]">
 
                 {/* CLOSE */}
                 <button
@@ -84,7 +84,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                     ×
                 </button>
 
-                <div className="grid min-h-[600px] md:grid-cols-[42%_58%]">
+                <div className="grid md:grid-cols-[42%_58%]">
 
                     {/* LEFT PANEL */}
                     <div className="relative hidden md:block">
@@ -113,7 +113,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                     </div>
 
                     {/* RIGHT PANEL */}
-                    <div className="bg-gradient-to-br from-white via-slate-50 to-slate-100 p-6 md:p-10">
+                    <div className="bg-gradient-to-br from-white via-slate-50 to-slate-100 p-6 md:p-10 max-h-[95vh] overflow-y-auto">
 
                         {/* HEADER */}
                         <div className="mb-6">
