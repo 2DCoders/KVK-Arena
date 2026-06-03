@@ -45,14 +45,27 @@ export default function SaunaPage() {
                     </div>
                 </div>
 
-                {/* Bottom Banner */}
-                <div className="mt-16 bg-gray-900 text-white rounded-2xl p-10 md:p-14">
-                    <div className="max-w-3xl">
-                        <h3 className="text-2xl md:text-3xl font-semibold mb-4">
+                {/* Bottom Advertisement Banner */}
+                <div className="relative mt-16 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-gray-900 via-black to-gray-900 p-10 md:p-14 shadow-2xl">
+
+                    {/* Glow effects */}
+                    <div className="absolute -top-20 -right-20 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl" />
+                    <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl" />
+
+                    <div className="relative max-w-3xl">
+
+                        {/* Badge */}
+                        <span className="inline-flex items-center rounded-full border border-white/20 bg-white/5 px-4 py-1 text-xs tracking-widest text-gray-300">
+                            PREMIUM WELLNESS FEATURE
+                        </span>
+
+                        {/* Title */}
+                        <h3 className="mt-5 text-3xl md:text-4xl font-bold text-white leading-tight">
                             Included Sauna Access
                         </h3>
 
-                        <p className="text-gray-300 leading-relaxed">
+                        {/* Description */}
+                        <p className="mt-4 text-gray-300 text-base md:text-lg leading-relaxed">
                             Recover faster, relieve muscle tension, and enjoy a premium wellness experience
                             after every workout. Our sauna facilities are designed to support both physical
                             recovery and mental relaxation.
