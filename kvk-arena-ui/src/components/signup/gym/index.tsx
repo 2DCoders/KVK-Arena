@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import gymImage from "@/assets/gym-signup.jpg";
 import { getMembershipPlans } from "@/services/memberships-api";
+import { registerMember } from "@/services/auth-api";
+import Alert from "@/components/alert";
 
 interface SignupModalProps {
     open: boolean;
@@ -13,6 +15,8 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
     const [confirm, setConfirm] = useState(false);
     const [plans, setPlans] = useState<any[]>([])
     const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+    const [pageAlert, setPageAlert] = useState<{ visible: boolean; variant?: 'success' | 'error' | 'warning' | 'info'; title?: string; description?: string }>({ visible: false });
+    const [loading, setLoading] = useState(false);
 
     const fetchMembershipPlans = async () => {
         try {
@@ -96,6 +100,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
     const handleRegister = async () => {
         if (!validate()) return;
 
+        setLoading(true);
         try {
             const body = {
                 firstName: form.firstName.trim(),
@@ -110,19 +115,46 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                 deviceFingerprintId2: null,
             };
 
-            console.log("REGISTER PAYLOAD:", body);
+            await registerMember(body);
 
-            // TODO: replace with your API
-            // await registerMember(body);
+            setPageAlert({
+                visible: true,
+                variant: 'success',
+                title: 'Details Saved',
+                description: 'The member details have been successfully saved.'
+            });
 
-            setStep(2); // move to step 2 AFTER success OR keep here if needed
-        } catch (error) {
-            console.error("Registration failed:", error);
+            setStep(2);
+        } catch (error: any) {
+            setPageAlert({
+                visible: true,
+                variant: 'error',
+                title: 'Registration Failed',
+                description: error.response.data.message || 'An error occurred while registering the member. Please try again.'
+            });
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <div className="fixed inset-0 z-5000000000 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md overflow-y-auto">
+            {pageAlert.visible && (
+                <div>
+                    <Alert variant={pageAlert.variant as any} title={pageAlert.title} description={pageAlert.description} onClose={() => setPageAlert((s) => ({ ...s, visible: false }))} />
+                </div>
+            )}
+
+            {loading && (
+                <div className="fixed inset-0 z-[9999999999] flex items-center justify-center bg-black/60 backdrop-blur-md">
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="h-14 w-14 animate-spin rounded-full border-4 border-white/30 border-t-white"></div>
+                        <p className="text-sm text-white font-medium">
+                            Registering...
+                        </p>
+                    </div>
+                </div>
+            )}
 
             <div className="relative w-full max-w-6xl overflow-y-auto max-h-[95vh] md:overflow-hidden rounded-[32px] bg-white shadow-[0_40px_100px_rgba(0,0,0,0.25)]">
 
@@ -390,15 +422,14 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                                         if (!ok) return;
 
                                         await handleRegister();
-                                        setStep(2);
                                     }}
-                                    disabled={!isValid}
-                                    className={`mt-6 h-11 w-full rounded-xl text-sm font-semibold transition ${isValid
+                                    disabled={!isValid || loading}
+                                    className={`mt-6 h-11 w-full rounded-xl text-sm font-semibold transition ${isValid && !loading
                                         ? "bg-[#296BE1] text-white shadow-lg shadow-[#296BE1]/20 hover:bg-[#2158bc] cursor-pointer"
                                         : "cursor-not-allowed bg-slate-200 text-slate-400"
                                         }`}
                                 >
-                                    Submit & Next
+                                    {loading ? "Processing..." : "Submit & Next"}
                                 </button>
                             </>
                         )}
