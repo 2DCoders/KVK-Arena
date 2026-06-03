@@ -23,6 +23,16 @@ public class MembershipsController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = ((dynamic)result.AdditionalData["response"]).Id }, result);
     }
 
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] MemberLoginRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _service.LoginAsync(request, cancellationToken);
+        return Ok(result);
+    }
+
+
     [HttpPut("{id:guid}/fingerprints")]
     public async Task<IActionResult> UpdateFingerprints(Guid id, [FromBody] UpdateFingerprintsRequest request, CancellationToken cancellationToken = default)
     {
