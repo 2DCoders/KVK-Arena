@@ -10,42 +10,42 @@ const faqItems: FaqItem[] = [
     {
         question: "Do I need prior fitness experience to join?",
         answer:
-            "Not at all. Our programs are designed for every level, from complete beginners to advanced athletes. Our coaches tailor everything to your pace.",
+            "No prior experience needed. Our experienced trainers will guide you based on your current fitness level.",
     },
     {
         question: "How does the membership work?",
         answer:
-            "Choose the plan that fits your goals, visit the arena during supported hours, and enjoy access to the facilities and coaching options included in your membership.",
+            "Memberships start from 15,000 rupees per month with different packages available. You can book a call to find out which package best suits your needs and goals.",
     },
     {
         question: "Do you offer personal training?",
         answer:
-            "Yes. One-on-one coaching is available for members who want a structured plan, progress tracking, and direct support from a coach.",
+            "Yes. Personal training sessions start from 2,500 rupees and upwards.",
     },
     {
         question: "Can I pause or cancel my membership?",
         answer:
-            "Yes, membership support is flexible. If your schedule changes, our team can help you review pause or cancellation options based on your plan.",
+            "Yes. Simply notify our front desk and we’ll take care of it for you.",
     },
     {
         question: "Are group classes included in the membership?",
         answer:
-            "Group class access depends on the membership type you choose. Some plans include classes by default, while others offer them as an add-on.",
+            "We don’t offer group classes, but our trainers are always ready to assist and guide anyone who needs support on the gym floor.",
     },
     {
         question: "Do you offer nutrition guidance?",
         answer:
-            "Yes. We can connect you with guidance that supports your training goals, whether you want general advice or a more structured plan.",
+            "Yes. Our trainers provide personalised nutrition guidelines to help you get the best results possible.",
     },
     {
         question: "What should I bring for my first session?",
         answer:
-            "Bring comfortable sportswear, a water bottle, and any personal items you need. If you have a plan or goals in mind, that helps us tailor the session.",
+            "Bring sneakers, comfortable clothing, and a towel.",
     },
     {
         question: "Do you have online coaching options?",
         answer:
-            "Online coaching is available for members who need more flexible support. It is a good option if you want guidance between in-person visits.",
+            "Yes. Our online coaching includes a custom training plan tailored to your needs, nutrition guidelines, and full accountability support.",
     },
 ]
 
@@ -119,8 +119,8 @@ export default function FAQ() {
                                 </div>
                             </div>
 
-                            <div className="rounded-2xl border border-[#e6a79e]/30 bg-[#2a200a] p-4">
-                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#f4d58a]">
+                            <div className="rounded-2xl border border-[#296BE1]/30 bg-[#000000] p-4">
+                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#296BE1]">
                                     Need personal help?
                                 </p>
                                 <p className="mt-2 text-sm leading-6 text-slate-300">
@@ -138,7 +138,7 @@ export default function FAQ() {
                                 <div
                                     key={item.question}
                                     className={`rounded-2xl border transition-all duration-300 ${isOpen
-                                        ? "border-[#8b6b1f]/55 bg-[#2a200a]"
+                                        ? "border-[#296BE1] bg-[#000000]"
                                         : "border-white/8 bg-white/6"
                                         }`}
                                 >
@@ -148,14 +148,14 @@ export default function FAQ() {
                                         className="flex w-full cursor-pointer items-center justify-between gap-4 px-5 py-4 text-left sm:px-6"
                                     >
                                         <span
-                                            className={`text-sm font-medium sm:text-base ${isOpen ? "text-[#f4d58a]" : "text-slate-100"
+                                            className={`text-sm font-medium sm:text-base ${isOpen ? "text-[#296BE1]" : "text-slate-100"
                                                 }`}
                                         >
                                             {item.question}
                                         </span>
 
                                         <span className={`flex h-8 w-8 items-center justify-center rounded-full border transition-all duration-300 ${isOpen
-                                            ? "border-[#c6a84b]/40 bg-[#3a2e0c] text-[#f4d58a]"
+                                            ? "border-[#296BE1]/40 bg-[#000000] text-[#296BE1]"
                                             : "border-white/10 bg-white/5 text-slate-300"
                                             }`}>
                                             <ChevronDown

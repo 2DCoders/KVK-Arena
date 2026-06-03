@@ -1,13 +1,20 @@
 import hero_bg from "@/assets/hero/gym-hero.png";
+import SignupModal from "@/components/signup/gym";
+import { useState } from "react";
 
 export default function GymHero() {
+  const [isOpenSignup, setIsOpenSignup] = useState(false);
+
   return (
-    <section className="relative isolate overflow-hidden py-16 sm:py-20 lg:py-38">
+    <div>
+      <SignupModal open={isOpenSignup} onClose={() => setIsOpenSignup(false)} />
+      <section className="relative isolate overflow-hidden py-16 sm:py-20 lg:py-38">
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-100 rounded-lg"
         style={{ backgroundImage: `url(${hero_bg})` }}
       />
+
       {/* <div aria-hidden="true" className="absolute inset-0 rounded-lg bg-slate-950/20" /> */}
       <div aria-hidden="true" className="absolute inset-0 rounded-lg bg-linear-to-b from-slate-950/30 via-slate-950/65 to-slate-950/85" />
 
@@ -25,11 +32,14 @@ export default function GymHero() {
           </p>
 
           <div className="mt-9 flex justify-center items-center gap-4 sm:flex-row sm:justify-center">
-            <button className="inline-flex cursor-pointer items-center justify-center rounded-full bg-[#296BE1] px-5 py-2.5 text-xs font-semibold text-white shadow-[0_16px_36px_rgba(41,107,225,0.35)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1f58be] sm:px-8 sm:py-4 sm:text-sm">
+            <button
+              onClick={() => setIsOpenSignup(true)}
+              className="inline-flex cursor-pointer items-center justify-center rounded-full bg-[#296BE1] px-5 py-2.5 text-xs font-semibold text-white shadow-[0_16px_36px_rgba(41,107,225,0.35)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1f58be] sm:px-8 sm:py-4 sm:text-sm"
+            >
               Join Gym
             </button>
             <button className="inline-flex cursor-pointer items-center justify-center rounded-full border border-white/35 bg-white/10 px-5 py-2.5 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(15,23,42,0.16)] backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:border-white/55 hover:bg-white/16 sm:px-8 sm:py-4 sm:text-sm">
-              View Memberships
+              <a href="#memberships">View Memberships</a>
             </button>
           </div>
         </div>
@@ -62,5 +72,6 @@ export default function GymHero() {
         }
       `}</style>
     </section>
+    </div>    
   );
 }

@@ -137,17 +137,20 @@ export default function Home() {
             <section id="services" className="relative overflow-hidden py-10 lg:py-16">
                 <Services />
             </section>
-            
+
             <WorkFlow />
             <Feedbacks />
-            <Gallery />
+
+            <section id="gallery" className="relative overflow-hidden">
+                <Gallery />
+            </section>
 
             <section id="about" className="relative overflow-hidden">
-            <AboutUs />
+                <AboutUs />
             </section>
 
             <section id="contact" className="relative overflow-hidden">
-            <ContactUs />
+                <ContactUs />
             </section>
         </Main>
     )

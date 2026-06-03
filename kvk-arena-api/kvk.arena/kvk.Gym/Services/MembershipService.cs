@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using kvk.Gym.Features.Memberships;
 using kvk.Gym.Interfaces;
 using System.Security.Cryptography;
+using kvk.BuildingBlocks.Auth;
 using kvk.BuildingBlocks.Constants;
 using kvk.BuildingBlocks.Interfaces;
 
@@ -13,11 +14,16 @@ public class MembershipService : IMembershipService
 {
     private readonly GymDbContext _db;
     private readonly ISmsService _smsService;
+    private readonly IJwtService _jwtService;
+    private readonly IPermissionAuthorizationService _permissionService;
 
-    public MembershipService(GymDbContext db, ISmsService smsService)
+    public MembershipService(GymDbContext db, ISmsService smsService, IJwtService jwtService,
+        IPermissionAuthorizationService permissionService)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
         _smsService = smsService;
+        _jwtService = jwtService;
+        _permissionService = permissionService;
     }
 
     public async Task<Result> CreateMemberAsync(CreateMembershipRequest request,
@@ -28,6 +34,14 @@ public class MembershipService : IMembershipService
 
         try
         {
+            var existingMember = await _db.Memberships
+                .AnyAsync(m => m.Email == request.Email, cancellationToken);
+            if (existingMember) return Result.Failure("Email is already registered");
+            
+            
+            if (string.IsNullOrWhiteSpace(request.Password))
+                return Result.Failure("Password is required");
+
             MembershipPlan? plan = null;
 
             if (request.MemberType == kvk.Gym.Enums.MemberType.Client)
@@ -53,10 +67,6 @@ public class MembershipService : IMembershipService
                     return Result.Failure("Membership plan not found");
             }
 
-            // var existingMember = await _db.Memberships
-            //     .AnyAsync(m => m.Email == request.Email, cancellationToken);
-            // if (existingMember)                return Result.Failure("A member with the provided email already exists");
-
             var memberToken = await GetNextMembershipTokenAsync(request.MemberType.ToString(), DateTime.UtcNow.Year,
                 cancellationToken);
 
@@ -67,7 +77,7 @@ public class MembershipService : IMembershipService
                 Email = request.Email,
                 Phone = request.Phone,
                 UserName = request.Email ?? $"{request.FirstName}.{request.LastName}.{Guid.NewGuid()}",
-                PasswordHash = string.Empty,
+                PasswordHash = PasswordEncryption.HashPassword(request.Password),
                 Status = "Active",
                 DateOfBirth = request.DateOfBirth,
                 MemberType = request.MemberType,
@@ -148,6 +158,54 @@ public class MembershipService : IMembershipService
         catch (Exception ex)
         {
             return Result.Failure($"Failed to create member: {ex.Message}");
+        }
+    }
+
+
+    public async Task<MemberLoginResponse> LoginAsync(MemberLoginRequest request, CancellationToken cancellationToken)
+    {
+        if (request == null)
+            throw new ArgumentNullException(nameof(request));
+
+        if (string.IsNullOrWhiteSpace(request.Username))
+            throw new ArgumentNullException(nameof(request.Username));
+
+        if (string.IsNullOrWhiteSpace(request.Password))
+            throw new ArgumentNullException(nameof(request.Password));
+
+        try
+        {
+            var membership = await _db.Set<Membership>()
+                .SingleOrDefaultAsync(s => s.UserName == request.Username, cancellationToken);
+
+            if (membership == null)
+                throw new Exception("Invalid username or password");
+
+            if (!PasswordEncryption.VerifyPassword(request.Password, membership.PasswordHash))
+                throw new Exception("Invalid username or password");
+
+            // Get user permissions
+            var permissions = (await _permissionService.GetUserPermissions(membership.Id, cancellationToken)).ToArray();
+
+
+            // Generate JWT token
+            var token = _jwtService.GenerateToken(membership.Id, permissions);
+
+            var response = new MemberLoginResponse
+            {
+                MemberId = membership.Id,
+                Token = token,
+                Email = membership.Email,
+                Username = membership.UserName,
+                FirstName = membership.FirstName,
+                LastName = membership.LastName
+            };
+
+            return response;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Failed to login: {ex.Message}");
         }
     }
 
@@ -307,9 +365,20 @@ public class MembershipService : IMembershipService
         try
         {
             var existing =
-                await _db.Memberships.SingleOrDefaultAsync(m => m.IdentityUserId == identityUserId && !m.IsDeleted, cancellationToken);
+                await _db.Memberships.SingleOrDefaultAsync(m => m.IdentityUserId == identityUserId && !m.IsDeleted,
+                    cancellationToken);
             if (existing != null)
             {
+                if (email != existing.Email)
+                {
+                    var anotherMemberWithEmail = await _db.Memberships.AnyAsync(
+                        m => m.Email == email && m.IdentityUserId != identityUserId, cancellationToken);
+                    if (anotherMemberWithEmail)
+                    {
+                        return Result.Failure("Email is already registered");
+                    }
+                }
+
                 // update basic info
                 existing.Email = email;
                 existing.FirstName = fullName?.Split(' ').FirstOrDefault() ?? existing.FirstName;
@@ -320,6 +389,12 @@ public class MembershipService : IMembershipService
                 await _db.SaveChangesAsync(cancellationToken);
 
                 return Result.Success("Staff membership updated");
+            }
+
+            var emailExists = await _db.Memberships.AnyAsync(m => m.Email == email, cancellationToken);
+            if (emailExists)
+            {
+                return Result.Failure("Email is already registered");
             }
 
             var memberToken = await GetNextMembershipTokenAsync("Staff", DateTime.UtcNow.Year, cancellationToken);
@@ -367,12 +442,18 @@ public class MembershipService : IMembershipService
             if (member == null)
                 return Result.Failure("Member not found");
 
+            if (!string.IsNullOrWhiteSpace(request.Email) && request.Email != member.Email)
+            {
+                var existingMember = await _db.Memberships
+                    .AnyAsync(m => m.Email == request.Email && m.Id != memberId, cancellationToken);
+                if (existingMember)
+                    return Result.Failure("Email is already registered");
+            }
+
             if (!string.IsNullOrWhiteSpace(request.FirstName))
                 member.FirstName = request.FirstName;
             if (!string.IsNullOrWhiteSpace(request.LastName))
                 member.LastName = request.LastName;
-            if (!string.IsNullOrWhiteSpace(request.Email))
-                member.Email = request.Email;
             if (!string.IsNullOrWhiteSpace(request.Phone))
                 member.Phone = request.Phone;
             if (request.DateOfBirth.HasValue)
@@ -575,8 +656,8 @@ public class MembershipService : IMembershipService
             return Result.Failure($"Failed to soft-delete member: {ex.Message}");
         }
     }
-    
-    
+
+
     public async Task<Result> ReverseSoftDeleteMemberAsync(Guid memberId, CancellationToken cancellationToken = default)
     {
         if (memberId == Guid.Empty)
@@ -602,7 +683,7 @@ public class MembershipService : IMembershipService
             return Result.Failure($"Failed to Reverse soft-delete member: {ex.Message}");
         }
     }
-    
+
 
     public async Task<Result> PermanentlyDeleteMemberAsync(Guid memberId, CancellationToken cancellationToken = default)
     {
@@ -620,13 +701,15 @@ public class MembershipService : IMembershipService
             // Business rule: permanent delete only allowed when there is at least one pending payment
             // AND there are no saved fingerprints on the member.
             var hasPendingPayment = await _db.MemberPayments
-                .AnyAsync(p => p.MembershipId == memberId && p.PaymentStatus == kvk.Gym.Enums.PaymentStatus.Pending, cancellationToken);
+                .AnyAsync(p => p.MembershipId == memberId && p.PaymentStatus == kvk.Gym.Enums.PaymentStatus.Pending,
+                    cancellationToken);
 
             var hasFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
                                   !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2);
 
             if (!hasPendingPayment || hasFingerprints)
-                return Result.Failure("Permanent delete is allowed only for members with pending payments and no saved fingerprints");
+                return Result.Failure(
+                    "Permanent delete is allowed only for members with pending payments and no saved fingerprints");
 
             // With cascade delete configured for MemberPayments and MemberAttendances, removing the membership
             // will delete related payments and attendances automatically.
