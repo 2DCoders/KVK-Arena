@@ -33,7 +33,7 @@ export default function SaunaPage() {
                     </div>
 
                     {/* Right Image */}
-                    <div className="relative" data-aos="fade-left" data-aos-delay="200">
+                    <div className="relative" data-aos="fade-right" data-aos-delay="200">
                         <img
                             src={saunaImage}
                             alt="Gym Sauna Facility"

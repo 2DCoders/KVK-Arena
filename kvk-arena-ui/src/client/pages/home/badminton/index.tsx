@@ -53,8 +53,6 @@ export default function BadmintonHome() {
             <section id="memberships" className="relative overflow-hidden">
                 <Memberships />
             </section>
-            
-            <SaunaPage />
 
             <section id="trainers" className="relative overflow-hidden">
                 <Trainers />
