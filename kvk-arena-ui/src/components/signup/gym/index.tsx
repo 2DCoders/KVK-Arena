@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import gymImage from "@/assets/gym-signup.jpg";
+import { getMembershipPlans } from "@/services/memberships-api";
 
 interface SignupModalProps {
     open: boolean;
@@ -9,8 +10,29 @@ interface SignupModalProps {
 export default function SignupModal({ open, onClose }: SignupModalProps) {
     const [step, setStep] = useState(1);
     const [gender, setGender] = useState<number | null>(null);
-    const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
     const [confirm, setConfirm] = useState(false);
+    const [plans, setPlans] = useState<any[]>([])
+    const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+
+    const fetchMembershipPlans = async () => {
+        try {
+            const res = await getMembershipPlans()
+            setPlans(res.additionalData.response)
+        } catch (error) {
+            console.error("Error fetching membership plans:", error)
+        }
+    }
+
+    useEffect(() => {
+        fetchMembershipPlans();
+    }, []);
+
+    useEffect(() => {
+        if (plans.length > 0 && !selectedPlan) {
+            const first = plans.find(p => p.isActive === 1);
+            if (first) setSelectedPlan(first.id);
+        }
+    }, [plans]);
 
     const [form, setForm] = useState({
         firstName: "",
@@ -70,6 +92,34 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
         form.dob &&
         gender &&
         confirm;
+
+    const handleRegister = async () => {
+        if (!validate()) return;
+
+        try {
+            const body = {
+                firstName: form.firstName.trim(),
+                lastName: form.lastName.trim(),
+                email: form.email.trim(),
+                phone: form.phone.trim(),
+                dateOfBirth: new Date(form.dob).toISOString(),
+                memberType: 1,
+                gender: gender,
+                membershipPlanId: selectedPlan,
+                deviceFingerprintId1: null,
+                deviceFingerprintId2: null,
+            };
+
+            console.log("REGISTER PAYLOAD:", body);
+
+            // TODO: replace with your API
+            // await registerMember(body);
+
+            setStep(2); // move to step 2 AFTER success OR keep here if needed
+        } catch (error) {
+            console.error("Registration failed:", error);
+        }
+    };
 
     return (
         <div className="fixed inset-0 z-5000000000 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md overflow-y-auto">
@@ -145,11 +195,10 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
 
                             <div className="flex items-center gap-3">
                                 <div
-                                    className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
-                                        step === 2
-                                            ? "bg-[#296BE1] text-white"
-                                            : "border border-slate-300 text-slate-400"
-                                    }`}
+                                    className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${step === 2
+                                        ? "bg-[#296BE1] text-white"
+                                        : "border border-slate-300 text-slate-400"
+                                        }`}
                                 >
                                     2
                                 </div>
@@ -292,11 +341,10 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                                             <button
                                                 type="button"
                                                 onClick={() => setGender(1)}
-                                                className={`h-10 rounded-xl border cursor-pointer text-sm ${
-                                                    gender === 1
-                                                        ? "bg-[#296BE1] text-white border-[#296BE1]"
-                                                        : "bg-white"
-                                                }`}
+                                                className={`h-10 rounded-xl border cursor-pointer text-sm ${gender === 1
+                                                    ? "bg-[#296BE1] text-white border-[#296BE1]"
+                                                    : "bg-white"
+                                                    }`}
                                             >
                                                 Male
                                             </button>
@@ -304,11 +352,10 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                                             <button
                                                 type="button"
                                                 onClick={() => setGender(2)}
-                                                className={`h-10 rounded-xl border cursor-pointer text-sm ${
-                                                    gender === 2
-                                                        ? "bg-[#296BE1] text-white border-[#296BE1]"
-                                                        : "bg-white"
-                                                }`}
+                                                className={`h-10 rounded-xl border cursor-pointer text-sm ${gender === 2
+                                                    ? "bg-[#296BE1] text-white border-[#296BE1]"
+                                                    : "bg-white"
+                                                    }`}
                                             >
                                                 Female
                                             </button>
@@ -338,16 +385,18 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
 
                                 {/* BUTTON */}
                                 <button
-                                    onClick={() => {
-                                        if (!validate()) return;
+                                    onClick={async () => {
+                                        const ok = validate();
+                                        if (!ok) return;
+
+                                        await handleRegister();
                                         setStep(2);
                                     }}
                                     disabled={!isValid}
-                                    className={`mt-6 h-11 w-full rounded-xl text-sm font-semibold transition ${
-                                        isValid
-                                            ? "bg-[#296BE1] text-white shadow-lg shadow-[#296BE1]/20 hover:bg-[#2158bc] cursor-pointer"
-                                            : "cursor-not-allowed bg-slate-200 text-slate-400"
-                                    }`}
+                                    className={`mt-6 h-11 w-full rounded-xl text-sm font-semibold transition ${isValid
+                                        ? "bg-[#296BE1] text-white shadow-lg shadow-[#296BE1]/20 hover:bg-[#2158bc] cursor-pointer"
+                                        : "cursor-not-allowed bg-slate-200 text-slate-400"
+                                        }`}
                                 >
                                     Submit & Next
                                 </button>
@@ -357,31 +406,82 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                         {/* STEP 2 */}
                         {step === 2 && (
                             <>
-                                <div className="grid gap-4 md:grid-cols-3">
-                                    {[
-                                        { name: "Monthly", price: "LKR 5,000" },
-                                        { name: "Quarterly", price: "LKR 13,500" },
-                                        { name: "Annual", price: "LKR 48,000" },
-                                    ].map((plan) => (
-                                        <button
-                                            key={plan.name}
-                                            onClick={() => setSelectedPlan(plan.name)}
-                                            className={`rounded-2xl border p-5 text-left transition ${
-                                                selectedPlan === plan.name
-                                                    ? "border-[#296BE1] bg-[#296BE1]/5"
-                                                    : "border-slate-200 bg-white"
-                                            }`}
-                                        >
-                                            <h4 className="font-bold">
-                                                {plan.name}
-                                            </h4>
-                                            <p className="mt-2 text-2xl font-black text-[#296BE1]">
-                                                {plan.price}
-                                            </p>
-                                        </button>
-                                    ))}
+                                {/* HEADER */}
+                                <div className="mb-4">
+                                    <h3 className="text-xl font-bold text-slate-900">
+                                        Choose Your Membership
+                                    </h3>
+                                    <p className="text-sm text-slate-500">
+                                        Select a plan to continue payment
+                                    </p>
                                 </div>
 
+                                {/* PLAN CARDS */}
+                                <div className="grid gap-3 md:grid-cols-2">
+                                    {plans
+                                        .filter((p) => p.isActive === 1)
+                                        .map((plan) => {
+                                            const isSelected = selectedPlan === plan.id;
+
+                                            return (
+                                                <button
+                                                    key={plan.id}
+                                                    onClick={() => setSelectedPlan(plan.id)}
+                                                    className={`text-left rounded-2xl border p-4 transition-all duration-200 hover:shadow-md ${isSelected
+                                                        ? "border-[#296BE1] bg-[#296BE1]/5 shadow-lg"
+                                                        : "border-slate-200 bg-white"
+                                                        }`}
+                                                >
+                                                    {/* TITLE */}
+                                                    <div className="flex items-start justify-between">
+                                                        <div>
+                                                            <h4 className="font-bold text-slate-900">
+                                                                {plan.title}
+                                                            </h4>
+
+                                                            <p className="text-xs text-slate-500 mt-1">
+                                                                {plan.durationInDays === 1
+                                                                    ? "1 Day"
+                                                                    : plan.durationInDays === 30
+                                                                        ? "1 Month"
+                                                                        : plan.durationInDays === 90
+                                                                            ? "3 Months"
+                                                                            : plan.durationInDays === 365
+                                                                                ? "1 Year"
+                                                                                : `${plan.durationInDays} Days`}
+                                                            </p>
+                                                        </div>
+
+                                                        <div className="text-[#296BE1] font-black text-lg">
+                                                            LKR {plan.price}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* DESCRIPTION */}
+                                                    <p className="mt-3 text-xs text-slate-500 line-clamp-2">
+                                                        {plan.description}
+                                                    </p>
+
+                                                    {/* FEATURES PREVIEW */}
+                                                    <div className="mt-3 flex flex-wrap gap-1">
+                                                        {plan.features
+                                                            .split(",")
+                                                            .slice(0, 3)
+                                                            .map((f: string) => (
+                                                                <span
+                                                                    key={f}
+                                                                    className="text-[10px] px-2 py-1 rounded-full bg-slate-100 text-slate-600"
+                                                                >
+                                                                    {f.trim()}
+                                                                </span>
+                                                            ))}
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
+                                </div>
+
+                                {/* ACTIONS */}
                                 <div className="mt-6 flex gap-3">
                                     <button
                                         onClick={() => setStep(1)}
@@ -390,8 +490,22 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                                         Back
                                     </button>
 
-                                    <button className="h-11 flex-1 rounded-xl bg-[#296BE1] text-sm font-semibold text-white">
-                                        Complete
+                                    <button
+                                        disabled={!selectedPlan}
+                                        onClick={() => {
+                                            if (!selectedPlan) return;
+
+                                            // TODO: trigger payment or submit API here
+                                            console.log("Selected Plan:", selectedPlan);
+
+                                            setStep(3); // optional success step
+                                        }}
+                                        className={`h-11 flex-1 rounded-xl text-sm font-semibold transition ${selectedPlan
+                                            ? "bg-[#296BE1] text-white hover:bg-[#2158bc]"
+                                            : "bg-slate-200 text-slate-400 cursor-not-allowed"
+                                            }`}
+                                    >
+                                        Pay & Continue
                                     </button>
                                 </div>
                             </>
