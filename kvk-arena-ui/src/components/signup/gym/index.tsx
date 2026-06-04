@@ -261,8 +261,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                 </div>
             )}
 
-            <div className="relative w-full max-w-6xl overflow-y-auto max-h-[95vh] md:overflow-hidden rounded-[32px] bg-white shadow-[0_40px_100px_rgba(0,0,0,0.25)]">
-
+<div className="relative w-full max-w-6xl min-h-[90vh] overflow-y-auto max-h-[95vh] md:overflow-hidden rounded-[32px] bg-white shadow-[0_40px_100px_rgba(0,0,0,0.25)]">
                 {/* CLOSE */}
                 <button
                     onClick={onClose}
@@ -271,10 +270,10 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                     ×
                 </button>
 
-                <div className="grid md:grid-cols-[42%_58%]">
+                <div className="grid min-h-[90vh] md:grid-cols-[42%_58%]">
 
                     {/* LEFT PANEL */}
-                    <div className="relative hidden md:block">
+                    <div className="relative hidden md:block h-full">
                         <img
                             src={gymImage}
                             alt="Gym"
