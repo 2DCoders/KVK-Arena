@@ -4,6 +4,7 @@ import { getMembershipPlans } from "@/services/memberships-api";
 import { registerMember } from "@/services/auth-api";
 import Alert from "@/components/alert";
 import { createPayment } from "@/services/pay-api";
+import {getEnv} from "@/env";
 
 interface SignupModalProps {
     open: boolean;
@@ -215,18 +216,14 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                 city: "Colombo",
                 country: "Sri Lanka",
 
-                return_url: "http://localhost:5173/success",
-                cancel_url: "http://localhost:5173/cancel",
-                notify_url: "https://klc.runasp.net/api/payment/notify",
-            }
-
-            console.log(paymentDetails);
-            
+                return_url: `${getEnv().BASE_URL}success`,
+                cancel_url: `${getEnv().BASE_URL}cancel`,
+                notify_url: `${getEnv().API_URL}payments/notify`,
+            }            
 
             window.payhere.startPayment(paymentDetails);
 
         } catch (error) {
-            console.error(error);
 
             setPageAlert({
                 visible: true,
