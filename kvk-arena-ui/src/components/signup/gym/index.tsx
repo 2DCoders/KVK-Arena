@@ -50,8 +50,6 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
     const [serverError, setServerError] = useState<string | null>(null);
     const [errors, setErrors] = useState<any>({});
 
-    if (!open) return null;
-
     const handleChange = (e: any) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
@@ -107,25 +105,25 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
         confirm;
 
     useEffect(() => {
-        if (!window.payhere) return;
+        const interval = setInterval(() => {
+            if (window.payhere) {
+                clearInterval(interval);
 
-        // ✅ Payment Success
-        window.payhere.onCompleted = function (orderId: string) {
-            console.log("Payment successful. Order ID:", orderId);
+                window.payhere.onCompleted = (orderId: string) => {
+                    console.log("Payment success:", orderId);
+                };
 
-            // Example:
-            // navigate("/success");
-        };
+                window.payhere.onDismissed = () => {
+                    console.log("Payment cancelled");
+                };
 
-        // ❌ User closed payment window
-        window.payhere.onDismissed = function () {
-            console.log("Payment dismissed by user");
-        };
+                window.payhere.onError = (error: any) => {
+                    console.log("Payment error:", error);
+                };
+            }
+        }, 300);
 
-        // ⚠️ Error happened
-        window.payhere.onError = function (error: any) {
-            console.log("Payment error:", error);
-        };
+        return () => clearInterval(interval);
     }, []);
 
     const handleRegister = async () => {
@@ -183,22 +181,21 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
     };
 
     const handleInitPayment = async () => {
-        const body = {
-            amount: plans.find(p => p.id === selectedPlan)?.price ?? 0,
-            memberId: localStorage.getItem("newMemberId") ?? "",
-            membershipPlanId: selectedPlan,
-        };
-
         try {
-            setLoading(true);
+            const body = {
+                amount: plans.find(p => p.id === selectedPlan)?.price ?? 0,
+                memberId: localStorage.getItem("newMemberId") ?? "",
+                membershipPlanId: selectedPlan,
+            };
 
             const response = await createPayment(body);
+            const payment = response;
 
-            const payment = response.additionalData?.response;
+            if (!window.payhere) {
+                throw new Error("PayHere not loaded");
+            }
 
-            console.log("PayHere payload:", payment);
-
-            window.payhere.startPayment({
+            const paymentDetails = {
                 sandbox: true,
 
                 merchant_id: payment.merchantId,
@@ -220,8 +217,13 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
 
                 return_url: "http://localhost:5173/success",
                 cancel_url: "http://localhost:5173/cancel",
-                notify_url: "https://localhost:7007/api/payment/notify",
-            });
+                notify_url: "https://klc.runasp.net/api/payment/notify",
+            }
+
+            console.log(paymentDetails);
+            
+
+            window.payhere.startPayment(paymentDetails);
 
         } catch (error) {
             console.error(error);
@@ -232,10 +234,10 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                 title: "Payment Failed",
                 description: "Could not start PayHere payment",
             });
-        } finally {
-            setLoading(false);
         }
     };
+
+    if (!open) return null;
 
     return (
         <div className="fixed inset-0 z-5000 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md overflow-y-auto">
