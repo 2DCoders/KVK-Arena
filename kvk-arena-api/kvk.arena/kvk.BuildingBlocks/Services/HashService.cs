@@ -6,6 +6,15 @@ namespace kvk.BuildingBlocks.Services;
 public interface IHashService
 {
     string GeneratePayHereHash(string merchantId, string merchantSecret, string orderId, decimal amount, string currency);
+    
+    string GenerateNotificationMd5Sig(
+        string merchantId,
+        string merchantSecret,
+        string orderId,
+        decimal amount,
+        string currency,
+        int statusCode);
+    
 }
 
 public class HashService : IHashService
@@ -30,5 +39,25 @@ public class HashService : IHashService
         var hashBytes = md5.ComputeHash(inputBytes);
         return Convert.ToHexString(hashBytes).ToUpperInvariant();
     }
+    
+    public string GenerateNotificationMd5Sig(
+        string merchantId,
+        string merchantSecret,
+        string orderId,
+        decimal amount,
+        string currency,
+        int statusCode)
+    {
+        var hashedSecret = ComputeMd5(merchantSecret);
+
+        return ComputeMd5(
+            merchantId +
+            orderId +
+            amount.ToString("0.00") +
+            currency +
+            statusCode +
+            hashedSecret);
+    }
+    
 }
 
