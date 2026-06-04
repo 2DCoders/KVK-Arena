@@ -1,15 +1,6 @@
-import GymHero from "../../hero/gym";
 // import Circle from "../../circle";
-import GymStepper from "../../gym-stepper";
-import GymStats from "../../stats/gym";
-import Memberships from "../../memberships";
 // import LineBanner from "../../line-banner";
-import FAQ from "../../faq";
 import { useLayoutEffect, useState, useEffect } from "react";
-import Trainers from "../../trainers";
-import GymFeatures from "../../features/gym";
-import GymFooter from "@/components/footer/gym";
-import SaunaPage from "../../sauna";
 import BadmintonHeader from "@/components/header/badminton";
 import BadmintonHero from "../../hero/badminton";
 
