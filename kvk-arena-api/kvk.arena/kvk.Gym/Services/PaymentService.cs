@@ -13,13 +13,11 @@ public class PaymentService : IPaymentService
 {
     private readonly GymDbContext _db;
     private readonly ISmsService _smsService;
-    private readonly IPaymentGatewayService _gatewayService;
 
-    public PaymentService(GymDbContext db, ISmsService smsService,IPaymentGatewayService gatewayService)
+    public PaymentService(GymDbContext db, ISmsService smsService)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
         _smsService = smsService;
-        _gatewayService = gatewayService;
     }
 
     public async Task<Result> CreatePaymentAsync(Guid memberId, CreatePaymentRequest request,
@@ -34,46 +32,46 @@ public class PaymentService : IPaymentService
             if (member == null)
                 return Result.Failure("Member not found");
 
-            var isCardPayment = request.PaymentType == PaymentType.CreditCard ||
-                                request.PaymentType == PaymentType.DebitCard;
-
-            if (isCardPayment)
-            {
-                if (string.IsNullOrWhiteSpace(member.Email))
-                    return Result.Failure("Member email is required for card payments");
-                if (string.IsNullOrWhiteSpace(member.Phone))
-                    return Result.Failure("Member phone is required for card payments");
-                if (string.IsNullOrWhiteSpace(member.FirstName) || string.IsNullOrWhiteSpace(member.LastName))
-                    return Result.Failure("Member name is required for card payments");
-
-                var orderId = $"{member.MembershipNumber}-{DateTime.UtcNow:yyyyMMddHHmmss}";
-                var chargeRequest = new PaymentGatewayChargeRequest
-                {
-                    OrderId = orderId,
-                    Amount = request.Amount,
-                    Currency = "LKR",
-                    Description = $"Membership payment for {member.MembershipNumber}",
-                    Customer = new PaymentGatewayCustomer
-                    {
-                        FirstName = member.FirstName,
-                        LastName = member.LastName,
-                        Email = member.Email,
-                        Phone = member.Phone!
-                    },
-                    AdditionalFields = new Dictionary<string, string>
-                    {
-                        ["membership_id"] = member.Id.ToString(),
-                        ["membership_number"] = member.MembershipNumber
-                    }
-                };
-
-                var chargeResult = await _gatewayService.CreateChargeAsync(chargeRequest, cancellationToken);
-                if (!chargeResult.Succeeded)
-                    return Result.Failure($"Payment gateway charge failed: {chargeResult.Message ?? "Unknown error"}");
-
-                if (!string.IsNullOrWhiteSpace(chargeResult.GatewayReference))
-                    request.TransactionReference = chargeResult.GatewayReference;
-            }
+            // var isCardPayment = request.PaymentType == PaymentType.CreditCard ||
+            //                     request.PaymentType == PaymentType.DebitCard;
+            //
+            // if (isCardPayment)
+            // {
+            //     if (string.IsNullOrWhiteSpace(member.Email))
+            //         return Result.Failure("Member email is required for card payments");
+            //     if (string.IsNullOrWhiteSpace(member.Phone))
+            //         return Result.Failure("Member phone is required for card payments");
+            //     if (string.IsNullOrWhiteSpace(member.FirstName) || string.IsNullOrWhiteSpace(member.LastName))
+            //         return Result.Failure("Member name is required for card payments");
+            //
+            //     var orderId = $"{member.MembershipNumber}-{DateTime.UtcNow:yyyyMMddHHmmss}";
+            //     var chargeRequest = new PaymentGatewayChargeRequest
+            //     {
+            //         OrderId = orderId,
+            //         Amount = request.Amount,
+            //         Currency = "LKR",
+            //         Description = $"Membership payment for {member.MembershipNumber}",
+            //         Customer = new PaymentGatewayCustomer
+            //         {
+            //             FirstName = member.FirstName,
+            //             LastName = member.LastName,
+            //             Email = member.Email,
+            //             Phone = member.Phone!
+            //         },
+            //         AdditionalFields = new Dictionary<string, string>
+            //         {
+            //             ["membership_id"] = member.Id.ToString(),
+            //             ["membership_number"] = member.MembershipNumber
+            //         }
+            //     };
+            //
+            //     var chargeResult = await _gatewayService.CreateChargeAsync(chargeRequest, cancellationToken);
+            //     if (!chargeResult.Succeeded)
+            //         return Result.Failure($"Payment gateway charge failed: {chargeResult.Message ?? "Unknown error"}");
+            //
+            //     if (!string.IsNullOrWhiteSpace(chargeResult.GatewayReference))
+            //         request.TransactionReference = chargeResult.GatewayReference;
+            // }
 
             var memberPayment = await _db.MemberPayments
                 .Where(p => p.MembershipId == memberId)

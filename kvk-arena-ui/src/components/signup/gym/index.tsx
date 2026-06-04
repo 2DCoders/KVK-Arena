@@ -3,6 +3,7 @@ import gymImage from "@/assets/gym-signup.jpg";
 import { getMembershipPlans } from "@/services/memberships-api";
 import { registerMember } from "@/services/auth-api";
 import Alert from "@/components/alert";
+import { createPayment } from "@/services/pay-api";
 
 interface SignupModalProps {
     open: boolean;
@@ -48,8 +49,6 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
     });
     const [serverError, setServerError] = useState<string | null>(null);
     const [errors, setErrors] = useState<any>({});
-
-    if (!open) return null;
 
     const handleChange = (e: any) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -105,6 +104,28 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
         gender &&
         confirm;
 
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (window.payhere) {
+                clearInterval(interval);
+
+                window.payhere.onCompleted = (orderId: string) => {
+                    console.log("Payment success:", orderId);
+                };
+
+                window.payhere.onDismissed = () => {
+                    console.log("Payment cancelled");
+                };
+
+                window.payhere.onError = (error: any) => {
+                    console.log("Payment error:", error);
+                };
+            }
+        }, 300);
+
+        return () => clearInterval(interval);
+    }, []);
+
     const handleRegister = async () => {
         if (!validate()) return;
         setServerError(null);
@@ -128,7 +149,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
             const created = res?.additionalData?.response ?? res?.response ?? res ?? null;
             const newMemberId = created?.id ?? created?.memberId ?? null;
 
-            sessionStorage.setItem("newMemberId", newMemberId);
+            localStorage.setItem("newMemberId", newMemberId);
 
             setPageAlert({
                 visible: true,
@@ -147,7 +168,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
 
             setServerError(message);
 
-            sessionStorage.setItem("newMemberId", "");
+            localStorage.setItem("newMemberId", "");
             setPageAlert({
                 visible: true,
                 variant: 'error',
@@ -158,6 +179,65 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
             setLoading(false);
         }
     };
+
+    const handleInitPayment = async () => {
+        try {
+            const body = {
+                amount: plans.find(p => p.id === selectedPlan)?.price ?? 0,
+                memberId: localStorage.getItem("newMemberId") ?? "",
+                membershipPlanId: selectedPlan,
+            };
+
+            const response = await createPayment(body);
+            const payment = response;
+
+            if (!window.payhere) {
+                throw new Error("PayHere not loaded");
+            }
+
+            const paymentDetails = {
+                sandbox: true,
+
+                merchant_id: payment.merchantId,
+                order_id: payment.orderId,
+                currency: payment.currency,
+                amount: payment.amount,
+                hash: payment.hash,
+
+                items: "Gym Membership",
+
+                first_name: form.firstName,
+                last_name: form.lastName,
+                email: form.email,
+                phone: form.phone,
+
+                address: "N/A",
+                city: "Colombo",
+                country: "Sri Lanka",
+
+                return_url: "http://localhost:5173/success",
+                cancel_url: "http://localhost:5173/cancel",
+                notify_url: "https://klc.runasp.net/api/payment/notify",
+            }
+
+            console.log(paymentDetails);
+            
+
+            window.payhere.startPayment(paymentDetails);
+
+        } catch (error) {
+            console.error(error);
+
+            setPageAlert({
+                visible: true,
+                variant: "error",
+                title: "Payment Failed",
+                description: "Could not start PayHere payment",
+            });
+        }
+    };
+
+    if (!open) return null;
 
     return (
         <div className="fixed inset-0 z-5000 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md overflow-y-auto">
@@ -572,21 +652,26 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                                     </button>
 
                                     <button
-                                        disabled={!selectedPlan}
-                                        onClick={() => {
+                                        disabled={!selectedPlan || loading}
+                                        onClick={async () => {
                                             if (!selectedPlan) return;
 
-                                            // TODO: trigger payment or submit API here
-                                            console.log("Selected Plan:", selectedPlan);
+                                            setLoading(true);
 
-                                            setStep(3); // optional success step
+                                            try {
+                                                await handleInitPayment();
+                                            } catch (error) {
+                                                console.error(error);
+                                            } finally {
+                                                setLoading(false);
+                                            }
                                         }}
                                         className={`h-11 flex-1 rounded-xl text-sm font-semibold transition ${selectedPlan
                                             ? "bg-[#296BE1] text-white hover:bg-[#2158bc]"
                                             : "bg-slate-200 text-slate-400 cursor-not-allowed"
                                             }`}
                                     >
-                                        Pay & Continue
+                                        {loading ? "Processing..." : "Pay & Continue"}
                                     </button>
                                 </div>
                             </>

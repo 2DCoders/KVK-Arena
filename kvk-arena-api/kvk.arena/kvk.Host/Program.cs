@@ -37,7 +37,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 
 builder.Services.Configure<PayHereOptions>(builder.Configuration.GetSection(PayHereOptions.SectionName));
-builder.Services.AddHttpClient<IPaymentGatewayService, PaymentGatewayService>();
+// builder.Services.AddHttpClient<IPaymentGatewayService, PaymentGatewayService>();
 
 builder.Services.AddEndpointsApiExplorer();
 

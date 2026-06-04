@@ -28,4 +28,3 @@ public class PaymentRecord : AuditableEntity
     public Guid? MembershipPlanId { get; set; }
     public string? MembershipPlanTitle { get; set; }
 }
-
