@@ -88,6 +88,10 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                     description: "You have been logged in successfully."
                 });
             }
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
             
         } catch (error:any) {
             setPageAlert({
