@@ -184,6 +184,9 @@ public class MembershipService : IMembershipService
             if (!PasswordEncryption.VerifyPassword(request.Password, membership.PasswordHash))
                 throw new Exception("Invalid username or password");
 
+            if (membership.IsDeleted)
+                throw new Exception("You account has been removed. Please contact administrator.");
+
             // Get user permissions
             var permissions = (await _permissionService.GetUserPermissions(membership.Id, cancellationToken)).ToArray();
 
