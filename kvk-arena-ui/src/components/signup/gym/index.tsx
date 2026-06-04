@@ -3,6 +3,7 @@ import gymImage from "@/assets/gym-signup.jpg";
 import { getMembershipPlans } from "@/services/memberships-api";
 import { registerMember } from "@/services/auth-api";
 import Alert from "@/components/alert";
+import { createPayment } from "@/services/pay-api";
 
 interface SignupModalProps {
     open: boolean;
@@ -105,6 +106,28 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
         gender &&
         confirm;
 
+    useEffect(() => {
+        if (!window.payhere) return;
+
+        // ✅ Payment Success
+        window.payhere.onCompleted = function (orderId: string) {
+            console.log("Payment successful. Order ID:", orderId);
+
+            // Example:
+            // navigate("/success");
+        };
+
+        // ❌ User closed payment window
+        window.payhere.onDismissed = function () {
+            console.log("Payment dismissed by user");
+        };
+
+        // ⚠️ Error happened
+        window.payhere.onError = function (error: any) {
+            console.log("Payment error:", error);
+        };
+    }, []);
+
     const handleRegister = async () => {
         if (!validate()) return;
         setServerError(null);
@@ -128,7 +151,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
             const created = res?.additionalData?.response ?? res?.response ?? res ?? null;
             const newMemberId = created?.id ?? created?.memberId ?? null;
 
-            sessionStorage.setItem("newMemberId", newMemberId);
+            localStorage.setItem("newMemberId", newMemberId);
 
             setPageAlert({
                 visible: true,
@@ -147,12 +170,67 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
 
             setServerError(message);
 
-            sessionStorage.setItem("newMemberId", "");
+            localStorage.setItem("newMemberId", "");
             setPageAlert({
                 visible: true,
                 variant: 'error',
                 title: 'Registration Failed',
                 description: error.response.data.message || 'An error occurred while registering the member. Please try again.'
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleInitPayment = async () => {
+        const body = {
+            amount: plans.find(p => p.id === selectedPlan)?.price ?? 0,
+            memberId: localStorage.getItem("newMemberId") ?? "",
+            membershipPlanId: selectedPlan,
+        };
+
+        try {
+            setLoading(true);
+
+            const response = await createPayment(body);
+
+            const payment = response.additionalData?.response;
+
+            console.log("PayHere payload:", payment);
+
+            window.payhere.startPayment({
+                sandbox: true,
+
+                merchant_id: payment.merchantId,
+                order_id: payment.orderId,
+                currency: payment.currency,
+                amount: payment.amount,
+                hash: payment.hash,
+
+                items: "Gym Membership",
+
+                first_name: form.firstName,
+                last_name: form.lastName,
+                email: form.email,
+                phone: form.phone,
+
+                address: "N/A",
+                city: "Colombo",
+                country: "Sri Lanka",
+
+                return_url: "http://localhost:5173/success",
+                cancel_url: "http://localhost:5173/cancel",
+                notify_url: "https://localhost:7007/api/payment/notify",
+            });
+
+        } catch (error) {
+            console.error(error);
+
+            setPageAlert({
+                visible: true,
+                variant: "error",
+                title: "Payment Failed",
+                description: "Could not start PayHere payment",
             });
         } finally {
             setLoading(false);
@@ -572,21 +650,26 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                                     </button>
 
                                     <button
-                                        disabled={!selectedPlan}
-                                        onClick={() => {
+                                        disabled={!selectedPlan || loading}
+                                        onClick={async () => {
                                             if (!selectedPlan) return;
 
-                                            // TODO: trigger payment or submit API here
-                                            console.log("Selected Plan:", selectedPlan);
+                                            setLoading(true);
 
-                                            setStep(3); // optional success step
+                                            try {
+                                                await handleInitPayment();
+                                            } catch (error) {
+                                                console.error(error);
+                                            } finally {
+                                                setLoading(false);
+                                            }
                                         }}
                                         className={`h-11 flex-1 rounded-xl text-sm font-semibold transition ${selectedPlan
                                             ? "bg-[#296BE1] text-white hover:bg-[#2158bc]"
                                             : "bg-slate-200 text-slate-400 cursor-not-allowed"
                                             }`}
                                     >
-                                        Pay & Continue
+                                        {loading ? "Processing..." : "Pay & Continue"}
                                     </button>
                                 </div>
                             </>
