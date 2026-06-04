@@ -75,6 +75,11 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
             const response = await loginMember(body);
             console.log(response);
 
+            localStorage.setItem("memberToken", response.token);
+            localStorage.setItem("memberName", response.firstName + " " + response.lastName);
+            localStorage.setItem("memberEmail", response.email);
+            localStorage.setItem("memberId", response.memberId);
+
             if (response.email === loginForm.email) {
                 setPageAlert({
                     visible: true,
@@ -91,6 +96,11 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                 title: "Login Failed",
                 description: error.response?.data?.message || "An error occurred while logging in. Please try again.",
             });
+
+            localStorage.removeItem("memberToken");
+            localStorage.removeItem("memberName");
+            localStorage.removeItem("memberEmail");
+            localStorage.removeItem("memberId");
         } finally {
             setLoadingLogin(false)
         }
