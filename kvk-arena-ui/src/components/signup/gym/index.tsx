@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import gymImage from "@/assets/gym-signup.jpg";
 import { getMembershipPlans } from "@/services/memberships-api";
-import { registerMember } from "@/services/auth-api";
+import { loginMember, registerMember } from "@/services/auth-api";
 import Alert from "@/components/alert";
 import { createPayment } from "@/services/pay-api";
 import { getEnv } from "@/env";
@@ -19,6 +19,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
     const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
     const [pageAlert, setPageAlert] = useState<{ visible: boolean; variant?: 'success' | 'error' | 'warning' | 'info'; title?: string; description?: string }>({ visible: false });
     const [loading, setLoading] = useState(false);
+    const [loadingLogin, setLoadingLogin] = useState(false);
 
     const fetchMembershipPlans = async () => {
         try {
@@ -60,6 +61,40 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
     const handleChange = (e: any) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
+
+    const handleLogin = async() => {
+
+        setLoadingLogin(true);
+
+        const body = {
+            username: loginForm.email,
+            password: loginForm.password
+        }
+
+        try {
+            const response = await loginMember(body);
+            console.log(response);
+
+            if (response.email === loginForm.email) {
+                setPageAlert({
+                    visible: true,
+                    variant: "success",
+                    title: "Login Successful",
+                    description: "You have been logged in successfully."
+                });
+            }
+            
+        } catch (error:any) {
+            setPageAlert({
+                visible: true,
+                variant: "error",
+                title: "Login Failed",
+                description: error.response?.data?.message || "An error occurred while logging in. Please try again.",
+            });
+        } finally {
+            setLoadingLogin(false)
+        }
+    }
 
     const validate = () => {
         const newErrors: any = {};
@@ -260,8 +295,20 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                     </div>
                 </div>
             )}
+            
 
-<div className="relative w-full max-w-6xl min-h-[90vh] overflow-y-auto max-h-[95vh] md:overflow-hidden rounded-[32px] bg-white shadow-[0_40px_100px_rgba(0,0,0,0.25)]">
+            {loadingLogin && (
+                <div className="fixed inset-0 z-[9999999999] flex items-center justify-center bg-black/60 backdrop-blur-md">
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="h-14 w-14 animate-spin rounded-full border-4 border-white/30 border-t-white"></div>
+                        <p className="text-sm text-white font-medium">
+                            Logging in...
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            <div className="relative w-full max-w-6xl min-h-[90vh] overflow-y-auto max-h-[95vh] md:overflow-hidden rounded-[32px] bg-white shadow-[0_40px_100px_rgba(0,0,0,0.25)]">
                 {/* CLOSE */}
                 <button
                     onClick={onClose}
@@ -422,8 +469,9 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                                     </div>
 
                                     <button
+                                        disabled={!loginForm.email || !loginForm.password}
                                         onClick={() => {
-                                            // call login api
+                                            handleLogin();
                                         }}
                                         className="mt-4 h-11 w-full rounded-xl bg-[#296BE1] text-white text-sm font-semibold hover:bg-[#2158bc] transition cursor-pointer"
                                     >

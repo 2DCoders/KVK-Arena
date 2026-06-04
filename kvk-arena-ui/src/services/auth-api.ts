@@ -11,3 +11,12 @@ export const registerMember = async (memberData: any) => {
         throw error;
     }
 }
+
+export const loginMember = async (credentials: any) => {
+    try {
+        const response = await axios.post(`${API_BASE_URL}/login`, credentials);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
