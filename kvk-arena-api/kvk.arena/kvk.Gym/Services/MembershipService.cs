@@ -542,7 +542,7 @@ public class MembershipService : IMembershipService
                 .FirstOrDefaultAsync(cancellationToken);
 
             MemberPayment payment;
-            if (latestPayment != null && latestPayment.PaymentStatus == kvk.Gym.Enums.PaymentStatus.Pending)
+            if (latestPayment != null && latestPayment.MemberShipEndDate > DateTime.Now)
             {
                 // update existing pending payment to reflect new plan amount and dates
                 latestPayment.Amount = plan.Price;
@@ -554,22 +554,19 @@ public class MembershipService : IMembershipService
 
                 payment = latestPayment;
             }
-            else
+            else if (latestPayment != null && latestPayment.MemberShipEndDate < DateTime.Now)
             {
-                // create a new payment record for the upgrade
-                payment = new MemberPayment
-                {
-                    MembershipId = member.Id,
-                    Amount = plan.Price,
-                    PaymentType = request.PaymentType,
-                    PaymentStatus = kvk.Gym.Enums.PaymentStatus.Paid,
-                    MemberShipStartDate = startDate,
-                    MemberShipRenewalDate = renewalDate,
-                    MemberShipEndDate = endDate
-                };
+                latestPayment.Amount = plan.Price;
+                latestPayment.PaymentType = request.PaymentType;
 
-                _db.MemberPayments.Add(payment);
+                var newStartDate = latestPayment.MemberShipEndDate.Value;
+                
+                latestPayment.MemberShipStartDate = newStartDate;
+                latestPayment.MemberShipRenewalDate = renewalDate;
+                latestPayment.MemberShipEndDate = newStartDate.AddDays(plan.DurationInDays);
+                latestPayment.PaymentStatus = kvk.Gym.Enums.PaymentStatus.Paid;
             }
+
 
             await _db.SaveChangesAsync(cancellationToken);
 
@@ -579,14 +576,14 @@ public class MembershipService : IMembershipService
                 var record = new PaymentRecord
                 {
                     MembershipId = member.Id,
-                    MemberPaymentId = payment.Id,
-                    Amount = payment.Amount,
-                    PaymentType = payment.PaymentType,
-                    PaymentStatus = payment.PaymentStatus,
-                    MemberShipStartDate = payment.MemberShipStartDate,
-                    MemberShipEndDate = payment.MemberShipEndDate,
-                    MemberShipRenewalDate = payment.MemberShipRenewalDate,
-                    TransactionReference = payment.TransactionReference,
+                    MemberPaymentId = latestPayment.Id,
+                    Amount = latestPayment.Amount,
+                    PaymentType = latestPayment.PaymentType,
+                    PaymentStatus = latestPayment.PaymentStatus,
+                    MemberShipStartDate = latestPayment.MemberShipStartDate,
+                    MemberShipEndDate = latestPayment.MemberShipEndDate,
+                    MemberShipRenewalDate = latestPayment.MemberShipRenewalDate,
+                    TransactionReference = latestPayment.TransactionReference,
                     MembershipNumber = member.MembershipNumber,
                     MembershipPlanId = member.MembershipPlanId,
                     MembershipPlanTitle = plan.Title
@@ -600,8 +597,8 @@ public class MembershipService : IMembershipService
                 // Non-fatal: if recording fails, do not block the upgrade flow
             }
 
-            var message = MessageList.GetPlanUpgradedMessage(member.FirstName, plan.Title, payment.MemberShipStartDate,
-                payment.MemberShipEndDate);
+            var message = MessageList.GetPlanUpgradedMessage(member.FirstName, plan.Title, latestPayment.MemberShipStartDate,
+                latestPayment.MemberShipEndDate);
             await _smsService.SendSingleMessageAsync(member.Phone!, message, cancellationToken);
 
 
@@ -620,9 +617,9 @@ public class MembershipService : IMembershipService
                 MembershipPlanId = member.MembershipPlanId,
                 MembershipPlanTitle = plan.Title,
                 MembershipPlanPrice = plan.Price,
-                MembershipStartDate = payment.MemberShipStartDate,
-                MembershipEndDate = payment.MemberShipEndDate,
-                PaymentStatus = payment.PaymentStatus,
+                MembershipStartDate = latestPayment.MemberShipStartDate,
+                MembershipEndDate = latestPayment.MemberShipEndDate,
+                PaymentStatus = latestPayment.PaymentStatus,
                 MembershipPlanDurationInDays = plan.DurationInDays,
                 IdentityUserId = member.IdentityUserId,
                 IsSavedFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
