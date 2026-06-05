@@ -1,4 +1,5 @@
-import { getMember } from "@/services/auth-api";
+import Alert from "@/components/alert";
+import { getMember, updateMember } from "@/services/auth-api";
 import {
     X,
     Mail,
@@ -32,6 +33,8 @@ export default function UserProfileModal({
         phoneNumber: "",
         gender: 1,
     });
+    const [pageAlert, setPageAlert] = useState<{ visible: boolean; variant?: 'success' | 'error' | 'warning' | 'info'; title?: string; description?: string }>({ visible: false });
+
 
     const memberId = localStorage.getItem("memberId") || "N/A";
     const memberName = localStorage.getItem("memberName") || "N/A";
@@ -54,6 +57,29 @@ export default function UserProfileModal({
         localStorage.removeItem("memberEmail");
         localStorage.removeItem("memberToken");
         window.location.reload();
+    }
+
+    const handleUpdateMember = async () => {
+        try {
+            await updateMember(memberId, form, memberToken);
+            setPageAlert({
+                visible: true,
+                variant: 'success',
+                title: 'Success',
+                description: 'Member updated successfully'
+            });
+        } catch (error) {
+            console.error("Error updating member:", error);
+            setPageAlert({
+                visible: true,
+                variant: 'error',
+                title: 'Error',
+                description: 'Failed to update member'
+            });
+        } finally {
+            setIsEditing(false);
+            handleGetMember();
+        }
     }
 
     useEffect(() => {
@@ -83,6 +109,12 @@ export default function UserProfileModal({
 
     return (
         <div className="fixed inset-0 z-[9999]">
+
+            {pageAlert.visible && (
+                <div>
+                    <Alert variant={pageAlert.variant as any} title={pageAlert.title} description={pageAlert.description} onClose={() => setPageAlert((s) => ({ ...s, visible: false }))} />
+                </div>
+            )}
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-black/80 backdrop-blur-md"
@@ -269,14 +301,7 @@ export default function UserProfileModal({
                                 <div className="bg-white rounded-3xl p-6 shadow-xl border">
 
                                     <div className="flex justify-between items-center mb-5">
-                                        <h3 className="text-xl font-bold">Contact Information</h3>
-
-                                        <button
-                                            onClick={() => setIsEditing(!isEditing)}
-                                            className="p-2 cursor-pointer hover:bg-slate-100 rounded-xl"
-                                        >
-                                            ✏️
-                                        </button>
+                                        <h3 className="text-xl font-bold">Personal Information</h3>
                                     </div>
 
                                     <div className="space-y-4">
@@ -336,10 +361,10 @@ export default function UserProfileModal({
                                         {/* Update Button */}
                                         {isEditing && (
                                             <button
-                                                className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700"
+                                                disabled={!isEditing || !form.firstName || !form.lastName || !form.email || !form.phoneNumber}
+                                                className="w-full cursor-pointer bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700"
                                                 onClick={() => {
-                                                    console.log("Update payload:", form);
-                                                    setIsEditing(false);
+                                                    handleUpdateMember();
                                                 }}
                                             >
                                                 Update Profile
@@ -380,7 +405,7 @@ export default function UserProfileModal({
                                         </div>
                                     </div>
                                 )}
-                                
+
                                 {/* PASSWORD + LOGOUT */}
                                 <div className="bg-white rounded-3xl p-8 shadow-xl border">
 
@@ -452,7 +477,7 @@ export default function UserProfileModal({
                                     </div>
                                 </div>
 
-                                
+
 
                                 {/* BENEFITS */}
                                 <div className="bg-white rounded-3xl p-6 shadow-xl border">

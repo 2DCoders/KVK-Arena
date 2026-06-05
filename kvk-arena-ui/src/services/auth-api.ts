@@ -33,3 +33,16 @@ export const getMember = async (memberId: string, token: string) => {
         throw error;
     }
 }
+
+export const updateMember = async (memberId: string, memberData: any, token: string) => {
+    try {
+        const response = await axios.put(`${API_BASE_URL}/${memberId}`, memberData, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
