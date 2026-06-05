@@ -75,7 +75,7 @@ export default function UserProfileModal({
                                 <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-4 py-2">
                                     <Crown size={16} className="text-blue-300" />
                                     <span className="text-sm font-medium text-blue-200">
-                                        Platinum Membership
+                                        {memberData?.membershipPlanTitle || "N/A"}
                                     </span>
                                 </div>
 
@@ -119,7 +119,7 @@ export default function UserProfileModal({
                                             <Crown size={22} className="text-yellow-400" />
 
                                             <span className="text-2xl font-bold text-white">
-                                                Platinum
+                                                {memberData?.membershipPlanTitle || "N/A"}
                                             </span>
                                         </div>
 
@@ -132,8 +132,8 @@ export default function UserProfileModal({
                                                     Membership Status
                                                 </span>
 
-                                                <span className="text-sm font-semibold text-green-400 flex items-center gap-2">
-                                                    Active
+                                                <span className={`text-sm font-semibold ${memberData?.membershipStatus === "Active" ? "text-green-400" : "text-red-400"} flex items-center gap-2`}>
+                                                    {memberData?.membershipStatus}
                                                 </span>
                                             </div>
 
