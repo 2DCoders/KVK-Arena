@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Menu, User, X } from "lucide-react";
 import SignupModal from "@/components/signup/gym";
+import UserProfileModal from "@/components/profile/gym";
 
 export default function GymHeader() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const [isOpenSignup, setIsOpenSignup] = useState(false);
+    const [profileOpen, setProfileOpen] = useState(false);
     const navigate = useNavigate();
 
     const memberId = localStorage.getItem("memberId") || null;
@@ -27,6 +29,11 @@ export default function GymHeader() {
 
     return (
         <header className="fixed left-0 top-0 z-50 w-full rounded-full bg-transparent py-2 lg:py-4">
+
+            <UserProfileModal
+                open={profileOpen}
+                onClose={() => setProfileOpen(false)}
+            />
             <div
                 className={
                     isScrolled
@@ -105,6 +112,9 @@ export default function GymHeader() {
                             hover:bg-white/20
                             hover:shadow-[0_10px_30px_rgba(41,107,225,0.35)]
                             "
+                            onClick={() => {
+                                setProfileOpen(true);
+                            }}
                         >
                             <User className="h-5 w-5 text-white" />
                         </button>
@@ -133,9 +143,9 @@ export default function GymHeader() {
                 <div
                     onClick={(e) => e.stopPropagation()}
                     className={`absolute right-0 top-0 h-full w-72 border-l border-white/10
-          bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950
-          p-6 shadow-[0_30px_80px_rgba(0,0,0,0.6)] backdrop-blur-xl
-          transition-transform duration-300 ${mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+                    bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950
+                    p-6 shadow-[0_30px_80px_rgba(0,0,0,0.6)] backdrop-blur-xl
+                    transition-transform duration-300 ${mobileMenuOpen ? "translate-x-0" : "translate-x-full"
                         }`}
                 >
                     {/* glow border */}
@@ -184,15 +194,42 @@ export default function GymHeader() {
                         </a>
 
                         {/* JOIN BUTTON */}
-                        <button
-                            onClick={() => {
-                                closeMobileMenu();
-                                setIsOpenSignup(true);
-                            }}
-                            className="mt-6 cursor-pointer rounded-xl bg-[#296BE1] px-5 py-3 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#2158bc] hover:shadow-[0_16px_36px_rgba(41,107,225,0.35)]"
-                        >
-                            Join Now
-                        </button>
+
+                        {!memberToken && !memberName && !memberEmail && !memberId ? (
+                            <button
+                                onClick={() => {
+                                    closeMobileMenu();
+                                    setIsOpenSignup(true);
+                                }}
+                                className="mt-6 cursor-pointer rounded-xl bg-[#296BE1] px-5 py-3 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#2158bc] hover:shadow-[0_16px_36px_rgba(41,107,225,0.35)]"
+                            >
+                                Join Now
+                            </button>
+                        ) : (
+                            <div className="relative z-20 hidden lg:block group">
+                                <button
+                                    className="
+                                    flex h-11 w-11 items-center justify-center
+                                    cursor-pointer
+                                    rounded-full
+                                    border border-white/20
+                                    bg-white/50
+                                    backdrop-blur-xl
+                                    shadow-lg
+                                    transition-all duration-300
+                                    hover:scale-105
+                                    hover:bg-white/20
+                                    hover:shadow-[0_10px_30px_rgba(41,107,225,0.35)]
+                                    "
+                                    onClick={() => {
+                                        setProfileOpen(true);
+                                        closeMobileMenu();
+                                    }}
+                                >
+                                    <User className="h-5 w-5 text-white" />
+                                </button>
+                            </div>
+                        )}
                     </nav>
                 </div>
             </div>
