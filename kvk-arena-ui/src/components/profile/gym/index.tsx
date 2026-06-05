@@ -8,6 +8,7 @@ import {
     Crown,
     User,
     Fingerprint,
+    DollarSign,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -132,7 +133,7 @@ export default function UserProfileModal({
                                             {/* Membership Status */}
                                             <div className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2 border border-white/5">
                                                 <span className="text-sm text-slate-300">
-                                                    Membership Status
+                                                    Membership
                                                 </span>
 
                                                 <span className={`text-sm font-semibold ${memberData?.membershipStatus === "Active" ? "text-green-400" : "text-red-400"} flex items-center gap-2`}>
@@ -149,10 +150,25 @@ export default function UserProfileModal({
                                                     </span>
                                                 </div>
 
-                                                <span className="text-sm font-semibold text-blue-400">
+                                                <span className={`text-sm font-semibold ${memberData?.isSavedFingerprints ? "text-green-400" : "text-red-400"}`}>
                                                     {memberData?.isSavedFingerprints ? "Enrolled" : "Not Yet"}
                                                 </span>
                                             </div>
+                                            
+                                            {/* Payment Status */}
+                                            <div className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2 border border-white/5">
+                                                <div className="flex items-center gap-2 text-slate-300">
+                                                    <DollarSign size={16} className="text-blue-400" />
+                                                    <span className="text-sm">
+                                                        Payment
+                                                    </span>
+                                                </div>
+
+                                                <span className={`text-sm font-semibold ${memberData?.memberPayment?.paymentStatus === 1 ? "text-red-400" : "text-green-400"}`}>
+                                                    {memberData?.memberPayment?.paymentStatus === 1 ? "Unpaid" : "Paid"}
+                                                </span>
+                                            </div>
+
 
                                         </div>
 
