@@ -24,11 +24,18 @@ export default function UserProfileModal({
     if (!open) return null;
 
     const [memberData, setMemberData] = useState<any>(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [form, setForm] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phoneNumber: "",
+        gender: 1,
+    });
 
     const memberId = localStorage.getItem("memberId") || "N/A";
     const memberName = localStorage.getItem("memberName") || "N/A";
     const memberEmail = localStorage.getItem("memberEmail") || "N/A";
-    const memberPhone = localStorage.getItem("memberPhone") || "N/A";
     const memberToken = localStorage.getItem("memberToken") || "";
 
     const handleGetMember = async () => {
@@ -41,9 +48,38 @@ export default function UserProfileModal({
         }
     }
 
+    const handleLogout = () => {
+        localStorage.removeItem("memberId");
+        localStorage.removeItem("memberName");
+        localStorage.removeItem("memberEmail");
+        localStorage.removeItem("memberToken");
+        window.location.reload();
+    }
+
     useEffect(() => {
         handleGetMember();
     }, []);
+
+    useEffect(() => {
+        if (memberData) {
+            setForm({
+                firstName: memberData.firstName || "",
+                lastName: memberData.lastName || "",
+                email: memberData.email || "",
+                phoneNumber: memberData.phoneNumber || "",
+                gender: memberData.gender || 1,
+            });
+        }
+    }, [memberData]);
+
+    const handleChange = (e: any) => {
+        const { name, value } = e.target;
+
+        setForm((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
 
     return (
         <div className="fixed inset-0 z-[9999]">
@@ -154,7 +190,7 @@ export default function UserProfileModal({
                                                     {memberData?.isSavedFingerprints ? "Enrolled" : "Not Yet"}
                                                 </span>
                                             </div>
-                                            
+
                                             {/* Payment Status */}
                                             <div className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2 border border-white/5">
                                                 <div className="flex items-center gap-2 text-slate-300">
@@ -232,35 +268,80 @@ export default function UserProfileModal({
                                     <div className="flex justify-between items-center mb-5">
                                         <h3 className="text-xl font-bold">Contact Information</h3>
 
-                                        <button className="p-2 cursor-pointer hover:bg-slate-100 rounded-xl">
-                                            <svg
-                                                className="w-5 h-5"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth={2}
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5" />
-                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                                            </svg>
+                                        <button
+                                            onClick={() => setIsEditing(!isEditing)}
+                                            className="p-2 cursor-pointer hover:bg-slate-100 rounded-xl"
+                                        >
+                                            ✏️
                                         </button>
                                     </div>
 
                                     <div className="space-y-4">
-                                        <div className="flex gap-3 items-center">
-                                            <Mail className="text-blue-600" />
-                                            {memberData?.email || "john@email.com"}
-                                        </div>
 
-                                        <div className="flex gap-3 items-center">
-                                            <Phone className="text-blue-600" />
-                                            {memberData?.phoneNumber || "+94 77 123 4567"}
-                                        </div>
+                                        {/* First Name */}
+                                        <input
+                                            name="firstName"
+                                            value={form.firstName}
+                                            onChange={handleChange}
+                                            disabled={!isEditing}
+                                            className="w-full p-3 rounded-xl border bg-slate-50 disabled:bg-slate-100"
+                                            placeholder="First Name"
+                                        />
 
-                                        <div className="flex gap-3 items-center">
-                                            <User className="text-blue-600" />
-                                            {memberData?.membershipNumber || "Not provided"}
-                                        </div>
+                                        {/* Last Name */}
+                                        <input
+                                            name="lastName"
+                                            value={form.lastName}
+                                            onChange={handleChange}
+                                            disabled={!isEditing}
+                                            className="w-full p-3 rounded-xl border bg-slate-50 disabled:bg-slate-100"
+                                            placeholder="Last Name"
+                                        />
+
+                                        {/* Email */}
+                                        <input
+                                            name="email"
+                                            value={form.email}
+                                            onChange={handleChange}
+                                            disabled={!isEditing}
+                                            className="w-full p-3 rounded-xl border bg-slate-50 disabled:bg-slate-100"
+                                            placeholder="Email"
+                                        />
+
+                                        {/* Phone */}
+                                        <input
+                                            name="phoneNumber"
+                                            value={form.phoneNumber}
+                                            onChange={handleChange}
+                                            disabled={!isEditing}
+                                            className="w-full p-3 rounded-xl border bg-slate-50 disabled:bg-slate-100"
+                                            placeholder="Phone Number"
+                                        />
+
+                                        {/* Gender */}
+                                        <select
+                                            name="gender"
+                                            value={form.gender}
+                                            onChange={handleChange}
+                                            disabled={!isEditing}
+                                            className="w-full p-3 rounded-xl border bg-slate-50 disabled:bg-slate-100"
+                                        >
+                                            <option value={1}>Male</option>
+                                            <option value={2}>Female</option>
+                                        </select>
+
+                                        {/* Update Button */}
+                                        {isEditing && (
+                                            <button
+                                                className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700"
+                                                onClick={() => {
+                                                    console.log("Update payload:", form);
+                                                    setIsEditing(false);
+                                                }}
+                                            >
+                                                Update Profile
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
 
@@ -296,48 +377,7 @@ export default function UserProfileModal({
                                         </div>
                                     </div>
                                 )}
-
-
-                                {/* BENEFITS */}
-                                <div className="bg-white rounded-3xl p-6 shadow-xl border">
-                                    <h3 className="text-xl font-bold mb-4">
-                                        Membership Benefits
-                                    </h3>
-
-                                    {memberData?.membershipPlan?.features?.split(',').map((b) => (
-                                        <div key={b} className="p-3 bg-slate-50 rounded-xl mb-2">
-                                            {b}
-                                        </div>
-                                    ))}
-                                </div>
-
-                            </div>
-
-                            {/* RIGHT */}
-                            <div className="lg:col-span-2 space-y-8">
-
-                                {/* ATTENDANCE */}
-                                <div className="bg-white rounded-3xl p-8 shadow-xl border">
-                                    <div className="flex justify-between mb-6">
-                                        <h3 className="text-2xl font-bold">Attendance Report</h3>
-                                        <span className="text-slate-500">This Month</span>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        {[
-                                            { label: "Present", value: "18" },
-                                            { label: "Missed", value: "4" },
-                                            { label: "Streak", value: "6 Days" },
-                                            { label: "Rate", value: "82%" },
-                                        ].map((i) => (
-                                            <div key={i.label} className="bg-slate-50 p-4 rounded-xl">
-                                                <p className="text-sm text-slate-500">{i.label}</p>
-                                                <p className="text-xl font-bold">{i.value}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
+                                
                                 {/* PASSWORD + LOGOUT */}
                                 <div className="bg-white rounded-3xl p-8 shadow-xl border">
 
@@ -375,11 +415,53 @@ export default function UserProfileModal({
                                             Update Password
                                         </button>
 
-                                        <button className="w-full mt-4 cursor-pointer bg-red-500 text-white py-3 rounded-xl font-semibold hover:bg-red-600">
+                                        <button onClick={handleLogout} className="w-full mt-4 cursor-pointer bg-red-500 text-white py-3 rounded-xl font-semibold hover:bg-red-600">
                                             Logout
                                         </button>
 
                                     </div>
+                                </div>
+
+                            </div>
+
+                            {/* RIGHT */}
+                            <div className="lg:col-span-2 space-y-8">
+
+                                {/* ATTENDANCE */}
+                                <div className="bg-white rounded-3xl p-8 shadow-xl border">
+                                    <div className="flex justify-between mb-6">
+                                        <h3 className="text-2xl font-bold">Attendance Report</h3>
+                                        <span className="text-slate-500">This Month</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        {[
+                                            { label: "Present", value: "18" },
+                                            { label: "Missed", value: "4" },
+                                            { label: "Streak", value: "6 Days" },
+                                            { label: "Rate", value: "82%" },
+                                        ].map((i) => (
+                                            <div key={i.label} className="bg-slate-50 p-4 rounded-xl">
+                                                <p className="text-sm text-slate-500">{i.label}</p>
+                                                <p className="text-xl font-bold">{i.value}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                
+
+                                {/* BENEFITS */}
+                                <div className="bg-white rounded-3xl p-6 shadow-xl border">
+                                    <h3 className="text-xl font-bold mb-4">
+                                        Membership Benefits
+                                    </h3>
+
+                                    {memberData?.membershipPlan?.features?.split(',').map((b: any) => (
+                                        <div key={b} className="p-3 bg-slate-50 rounded-xl mb-2">
+                                            {b}
+                                        </div>
+                                    ))}
                                 </div>
 
                             </div>
