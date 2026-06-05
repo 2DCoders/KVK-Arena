@@ -22,9 +22,8 @@ public interface IMembershipService
 
     Task<Result> ReverseSoftDeleteMemberAsync(Guid memberId, CancellationToken cancellationToken = default);
 
-    
-
     // Permanently delete a member. Allowed only for members that meet configured criteria.
     Task<Result> PermanentlyDeleteMemberAsync(Guid memberId, CancellationToken cancellationToken = default);
     Task<Result> EnsureMembershipForStaffAsync(string identityUserId, string email, string fullName, CancellationToken cancellationToken = default);
+    Task<Result> AssignTrainerAsync(Guid memberId, Guid trainerId, CancellationToken cancellationToken = default);
 }

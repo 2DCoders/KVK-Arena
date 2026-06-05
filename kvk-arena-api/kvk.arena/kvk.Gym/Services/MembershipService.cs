@@ -761,4 +761,33 @@ public class MembershipService : IMembershipService
             _ => "GYM-UNK"
         };
     }
+
+    public async Task<Result> AssignTrainerAsync(Guid memberId, Guid trainerId, CancellationToken cancellationToken = default)
+    {
+        if (memberId == Guid.Empty)
+            return Result.Failure("Member id cannot be empty");
+
+        if (trainerId == Guid.Empty)
+            return Result.Failure("Trainer id cannot be empty");
+
+        try
+        {
+            var member = await _db.Memberships.FindAsync(memberId);
+            if (member == null)
+                return Result.Failure("Member not found");
+
+            var trainer = await _db.Set<Trainer>().FindAsync(trainerId);
+            if (trainer == null)
+                return Result.Failure("Trainer not found");
+
+            member.TrainerId = trainerId;
+            await _db.SaveChangesAsync(cancellationToken);
+
+            return Result.Success("Trainer assigned successfully");
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure($"Failed to assign trainer: {ex.Message}");
+        }
+    }
 }

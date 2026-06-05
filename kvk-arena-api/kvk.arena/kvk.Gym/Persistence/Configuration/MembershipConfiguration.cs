@@ -20,9 +20,12 @@ public class MembershipConfiguration : IEntityTypeConfiguration<Membership>
         builder.HasOne(m => m.MembershipPlan)
             .WithMany()
             .HasForeignKey(m => m.MembershipPlanId);
+            
+        builder.HasOne(m => m.Trainer)
+            .WithMany()
+            .HasForeignKey(m => m.TrainerId);
 
         builder.HasIndex(m => m.Email)
             .IsUnique();
     }
 }
-

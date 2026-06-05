@@ -2,12 +2,9 @@ using System.Diagnostics;
 using Hangfire;
 using Hangfire.PostgreSql;
 using kvk.BuildingBlocks;
-using Microsoft.Extensions.Hosting;
 using kvk.BuildingBlocks.Interfaces;
-using kvk.BuildingBlocks.Persistence;
 using kvk.BuildingBlocks.Services;
 using kvk.Host.Middlewares;
-using kvk.Host.Hangfire;
 using kvk.Identity;
 using kvk.Gym;
 using kvk.Gym.Domain;
@@ -18,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Microsoft.Extensions.Options;
 using Serilog;
+using AG.LoggerViewer.UI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -136,6 +134,8 @@ gymInitializer.RegisterModule(builder.Services, builder.Configuration);
 var financialInitializer = new FinancialModuleInitializer();
 financialInitializer.RegisterModule(builder.Services, builder.Configuration);
 
+// builder.Services.AddLoggerViewer();
+
 var app = builder.Build();
 
 
@@ -175,6 +175,7 @@ app.UseHangfireDashboard("/hangfire");
 
 app.UseCors();
 app.MapControllers();
+// app.UseLoggerViewer();
 
 // Log startup information
 var logger = app.Services.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Program>>();
@@ -226,7 +227,7 @@ if (app.Environment.IsDevelopment())
         }
         catch (Exception ex)
         {
-            var loggerLocal = app.Services.GetRequiredService<ILogger<Program>>();
+            var loggerLocal = app.Services.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Program>>();
             loggerLocal.LogWarning(ex, "Failed to launch browser for Swagger UI.");
         }
     });

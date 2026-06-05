@@ -111,5 +111,14 @@ public class MembershipsController : ControllerBase
 
         return NoContent();
     }
-}
+    
+    [HttpPost("{id:guid}/assign-trainer")]
+    public async Task<IActionResult> AssignTrainer(Guid id, [FromBody] AssignTrainerRequest request, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.AssignTrainerAsync(id, request.TrainerId, cancellationToken);
+        if (!result.Succeeded)
+            return BadRequest(result);
 
+        return Ok(result);
+    }
+}
