@@ -100,7 +100,7 @@ export default function UserProfileModal({
                     {/* Close Button */}
                     <button
                         onClick={onClose}
-                        className="absolute cursor-pointer right-6 top-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-lg transition hover:bg-white/20"
+                        className="fixed cursor-pointer right-6 top-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-black/80 text-white backdrop-blur-lg transition hover:bg-white/20"
                     >
                         <X size={22} />
                     </button>
