@@ -168,9 +168,12 @@ export default function UserProfileModal({
 
                                             {/* Membership Status */}
                                             <div className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2 border border-white/5">
-                                                <span className="text-sm text-slate-300">
-                                                    Membership
-                                                </span>
+                                                <div className="flex items-center gap-2 text-slate-300">
+                                                    <User size={16} className="text-blue-400" />
+                                                    <span className="text-sm">
+                                                        Membership
+                                                    </span>
+                                                </div>
 
                                                 <span className={`text-sm font-semibold ${memberData?.membershipStatus === "Active" ? "text-green-400" : "text-red-400"} flex items-center gap-2`}>
                                                     {memberData?.membershipStatus}
