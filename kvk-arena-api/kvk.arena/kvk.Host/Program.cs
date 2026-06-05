@@ -15,7 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Microsoft.Extensions.Options;
 using Serilog;
-using AG.LoggerViewer.UI;
+//using AG.LoggerViewer.UI;
 
 var builder = WebApplication.CreateBuilder(args);
 

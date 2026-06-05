@@ -327,6 +327,8 @@ public class MembershipService : IMembershipService
                 .Where(p => p.MembershipId == memberId)
                 .OrderByDescending(p => p.CreatedAt)
                 .FirstOrDefaultAsync(cancellationToken);
+            
+            var trainer = await _db.Trainers.Where(t => t.Id == member.TrainerId).FirstOrDefaultAsync(cancellationToken);
 
             var response = new MembershipResponse
             {
@@ -346,6 +348,8 @@ public class MembershipService : IMembershipService
                 MembershipEndDate = latestPayment?.MemberShipEndDate,
                 PaymentStatus = latestPayment?.PaymentStatus ?? kvk.Gym.Enums.PaymentStatus.Pending,
                 MembershipPlanDurationInDays = member.MembershipPlan?.DurationInDays,
+                RewardPoints = member.Points,
+                AssignedTrainer = trainer != null ? $"{trainer.FirstName} {trainer.LastName}" : null,
                 IdentityUserId = member.IdentityUserId,
                 IsSavedFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
                                       !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2)

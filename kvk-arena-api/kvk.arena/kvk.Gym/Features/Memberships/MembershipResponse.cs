@@ -24,5 +24,8 @@ public class MembershipResponse
     public string? IdentityUserId { get; set; }
     public bool IsSavedFingerprints  { get; set; }
     
+    public int RewardPoints { get; set; }
+    
+    public string? AssignedTrainer { get; set; }
     public bool IsDeleted { get; set; }
 }
