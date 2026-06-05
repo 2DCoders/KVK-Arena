@@ -20,3 +20,16 @@ export const loginMember = async (credentials: any) => {
         throw error;
     }
 }
+
+export const getMember = async (memberId: string, token: string) => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/${memberId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}

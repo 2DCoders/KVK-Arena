@@ -327,8 +327,12 @@ public class MembershipService : IMembershipService
                 .Where(p => p.MembershipId == memberId)
                 .OrderByDescending(p => p.CreatedAt)
                 .FirstOrDefaultAsync(cancellationToken);
-            
-            var trainer = await _db.Trainers.Where(t => t.Id == member.TrainerId).FirstOrDefaultAsync(cancellationToken);
+
+            Trainer trainer = null;
+            if (member.TrainerId.HasValue)
+            {
+                trainer = await _db.Trainers.Where(t => t.Id == member.TrainerId).FirstOrDefaultAsync(cancellationToken);
+            }
 
             var response = new MembershipResponse
             {
