@@ -333,6 +333,10 @@ public class MembershipService : IMembershipService
             {
                 trainer = await _db.Trainers.Where(t => t.Id == member.TrainerId).FirstOrDefaultAsync(cancellationToken);
             }
+            
+            var memberPayment = await _db.MemberPayments.Where(p => p.MembershipId == member.Id)
+                .OrderByDescending(p => p.CreatedAt)
+                .FirstOrDefaultAsync(cancellationToken);
 
             var response = new MembershipResponse
             {
@@ -346,6 +350,8 @@ public class MembershipService : IMembershipService
                 Gender = member.Gender,
                 MembershipStatus = member.MembershipStatus.ToString(),
                 MembershipPlanId = member.MembershipPlanId,
+                MembershipPlan = member.MembershipPlan,
+                MemberPayment = memberPayment,
                 MembershipPlanTitle = member.MembershipPlan?.Title,
                 MembershipPlanPrice = member.MembershipPlan?.Price,
                 MembershipStartDate = latestPayment?.MemberShipStartDate,
@@ -355,6 +361,7 @@ public class MembershipService : IMembershipService
                 RewardPoints = member.Points,
                 AssignedTrainer = trainer != null ? $"{trainer.FirstName} {trainer.LastName}" : null,
                 IdentityUserId = member.IdentityUserId,
+                CreatedDate = member.CreatedAt,
                 IsSavedFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
                                       !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2)
             };

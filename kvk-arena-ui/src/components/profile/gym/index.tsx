@@ -84,14 +84,17 @@ export default function UserProfileModal({
                                 </h1>
 
                                 <p className="mt-3 max-w-xl text-slate-300">
-                                    Dedicated fitness enthusiast focused on strength training,
-                                    endurance, and maintaining a healthy lifestyle.
+                                    Start Date : {memberData?.memberPayment?.memberShipStartDate ? new Date(memberData.memberPayment.memberShipStartDate).toLocaleDateString() : "Not Yet"}
+                                </p>
+
+                                <p className="mt-3 max-w-xl text-slate-300">
+                                    End Date : {memberData?.memberPayment?.memberShipEndDate ? new Date(memberData.memberPayment.memberShipEndDate).toLocaleDateString() : "Not Yet"}
                                 </p>
 
                                 <div className="mt-6 flex flex-wrap gap-4 text-slate-300">
                                     <div className="flex items-center gap-2">
                                         <Calendar size={18} />
-                                        Member Since Jan 2025
+                                        Member Since {memberData?.createdDate ? new Date(memberData.createdDate).toLocaleDateString() : "Not Started Yet"}
                                     </div>
 
                                     <div className="flex items-center gap-2">
@@ -285,12 +288,7 @@ export default function UserProfileModal({
                                         Membership Benefits
                                     </h3>
 
-                                    {[
-                                        "Unlimited Gym Access",
-                                        "Free Sauna Access",
-                                        "Trainer Support",
-                                        "Nutrition Guidance",
-                                    ].map((b) => (
+                                    {memberData?.membershipPlan?.features?.split(',').map((b) => (
                                         <div key={b} className="p-3 bg-slate-50 rounded-xl mb-2">
                                             {b}
                                         </div>
@@ -335,7 +333,7 @@ export default function UserProfileModal({
 
                                         <input
                                             className="w-full p-3 rounded-xl bg-slate-100"
-                                            value="john_anderson"
+                                            value={memberEmail}
                                             readOnly
                                         />
 
