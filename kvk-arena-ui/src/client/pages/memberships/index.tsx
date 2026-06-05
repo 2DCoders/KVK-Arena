@@ -92,8 +92,11 @@ export default function Memberships() {
                             )}
 
                             <div className="mt-4 flex items-end gap-2">
-                                <span className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                                    LKR {plan.price}
+                                <span className="text-2xl font-extrabold tracking-tight text-white sm:text-2xl">
+                                    LKR {Number(plan.price).toLocaleString("en-LK", {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                    })}
                                 </span>
                                 <span className="pb-1 text-sm text-slate-400">/{plan.durationInDays === 1 ? "1 day" : plan.durationInDays === 30 ? "1 month" : plan.durationInDays === 90 ? "3 months" : plan.durationInDays === 365 ? "1 year" : `${plan.durationInDays} days`}</span>
                             </div>

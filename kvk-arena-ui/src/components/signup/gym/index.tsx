@@ -760,7 +760,10 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                                                         </div>
 
                                                         <div className="text-[#296BE1] font-black text-lg">
-                                                            LKR {plan.price}
+                                                            LKR {Number(plan.price).toLocaleString("en-LK", {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
                                                         </div>
                                                     </div>
 

@@ -1,10 +1,9 @@
 import Alert from "@/components/alert";
 import { getMember, updateMember } from "@/services/auth-api";
+import { getMembershipPlans } from "@/services/memberships-api";
 import {
     X,
-    Mail,
     Phone,
-    MapPin,
     Calendar,
     Crown,
     User,
@@ -34,18 +33,47 @@ export default function UserProfileModal({
         gender: 1,
     });
     const [pageAlert, setPageAlert] = useState<{ visible: boolean; variant?: 'success' | 'error' | 'warning' | 'info'; title?: string; description?: string }>({ visible: false });
-
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+    const [plans, setPlans] = useState<any[]>([])
+    const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+    const [isPlanEnd, setIsPlanEnd] = useState(false);
+    const [calculatedEndDate, setCalculatedEndDate] = useState<string | null>(null);
 
     const memberId = localStorage.getItem("memberId") || "N/A";
     const memberName = localStorage.getItem("memberName") || "N/A";
     const memberEmail = localStorage.getItem("memberEmail") || "N/A";
     const memberToken = localStorage.getItem("memberToken") || "";
 
+    const fetchMembershipPlans = async () => {
+        try {
+            const res = await getMembershipPlans()
+            setPlans(res.additionalData.response)
+        } catch (error) {
+            console.error("Error fetching membership plans:", error)
+        }
+    }
+
+    const calculateEndDate = (baseDate: Date, days: number) => {
+        const result = new Date(baseDate);
+        result.setDate(result.getDate() + days);
+        return result;
+    };
+
+    useEffect(() => {
+        fetchMembershipPlans();
+    }, []);
+
     const handleGetMember = async () => {
         try {
             const memberData = await getMember(memberId, memberToken);
             setMemberData(memberData?.additionalData?.response);
-            console.log("Member Data:", memberData?.additionalData?.response);
+            if (memberData?.additionalData?.response?.memberPayment?.memberShipEndDate === null) {
+                setIsPlanEnd(true);
+            } else if (memberData?.additionalData?.response?.memberPayment?.memberShipEndDate > new Date().toISOString()) {
+                setIsPlanEnd(false);
+            } else {
+                setIsPlanEnd(true);
+            }
         } catch (error) {
             console.error("Error fetching member data:", error);
         }
@@ -141,12 +169,180 @@ export default function UserProfileModal({
                         <div className="flex flex-col lg:flex-row justify-between gap-8">
                             {/* User Info */}
                             <div>
-                                <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-4 py-2">
-                                    <Crown size={16} className="text-blue-300" />
-                                    <span className="text-sm font-medium text-blue-200">
-                                        {memberData?.membershipPlanTitle || "N/A"}
-                                    </span>
+                                <div className="inline-flex items-center gap-2 ">
+                                    <div className="flex items-center gap-2 text-blue-300 rounded-full border border-blue-400/20 bg-blue-500/10 px-4 py-2">
+                                        <Crown size={16} className="text-blue-300" />
+                                        <span className="text-sm font-medium text-blue-200">
+                                            {memberData?.membershipPlanTitle || "N/A"}
+                                        </span>
+                                    </div>
+                                    <div
+                                        onClick={() => setShowUpgradeModal(true)}
+                                        className="flex items-center cursor-pointer gap-2 text-blue-300 rounded-full border border-blue-400/20 bg-yellow-500/40 px-4 py-2 hover:bg-yellow-400/50 transition"
+                                    >
+                                        <span className="text-sm font-medium text-blue-200">
+                                            Upgrade Plan
+                                        </span>
+                                    </div>
                                 </div>
+
+                                {showUpgradeModal && (
+                                    <div className="fixed inset-0 z-[10000] flex items-center justify-center">
+
+                                        {/* Backdrop */}
+                                        <div
+                                            className="absolute inset-0 bg-black/80"
+                                            onClick={() => setShowUpgradeModal(false)}
+                                        />
+
+                                        {/* Modal */}
+                                        <div className="relative w-[95%] md:w-[80%] lg:w-[60%] h-[80vh] bg-white rounded-3xl shadow-2xl overflow-hidden">
+
+                                            {/* Header */}
+                                            <div className="flex justify-between items-center p-6 border-b">
+                                                <h2 className="text-2xl font-bold">Upgrade Your Plan</h2>
+
+                                                <button
+                                                    onClick={() => setShowUpgradeModal(false)}
+                                                    className="p-2 cursor-pointer rounded-full hover:bg-slate-100"
+                                                >
+                                                    <X />
+                                                </button>
+                                            </div>
+
+                                            {/* Content */}
+                                            <div className="p-6 overflow-y-auto h-[calc(80vh-80px)]">
+
+                                                <div className="w-full flex justify-between items-center rounded-2xl border border-blue-500/20 bg-white-900/60 backdrop-blur-md px-6 py-5 mb-6">
+                                                    <div>
+                                                        <p className="text-slate-600">
+                                                            Choose a new membership plan below.
+                                                        </p>
+                                                        {selectedPlan && (
+                                                            <div className="text-slate-600 text-sm mt-2">
+                                                                <p>
+                                                                    Start Date:{" "}
+                                                                    <span className="font-semibold">
+                                                                        {isPlanEnd || !memberData?.memberPayment?.memberShipEndDate
+                                                                            ? new Date().toLocaleDateString()
+                                                                            : new Date(memberData.memberPayment.memberShipEndDate).toLocaleDateString()}
+                                                                    </span>
+                                                                </p>
+
+                                                                <p>
+                                                                    End Date:{" "}
+                                                                    <span className="font-semibold text-blue-600">
+                                                                        {calculatedEndDate
+                                                                            ? new Date(calculatedEndDate).toLocaleDateString()
+                                                                            : "-"}
+                                                                    </span>
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+
+                                                    <div>
+                                                        <button
+                                                            onClick={() => setSelectedPlan(null)}
+                                                            disabled={selectedPlan === null}
+                                                            className={`group relative cursor-pointer w-full text-left rounded-2xl p-4 transition-all duration-300
+                                                                ${selectedPlan === null
+                                                                    ? "bg-white border cursor-not-allowed border-slate-200"
+                                                                    : "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30"
+                                                                }`}
+                                                        >
+                                                            <div className="flex items-center justify-between">
+                                                                <h4 className={`font-semibold ${selectedPlan !== null ? "text-white" : "text-slate-900"}`}>
+                                                                    Pay Now
+                                                                </h4>
+                                                            </div>
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+
+                                                <div className="grid gap-3 md:grid-cols-2 mt-6">
+                                                    {plans
+                                                        .filter((p) => p.isActive === 1)
+                                                        .map((plan) => {
+                                                            const isSelected = selectedPlan === plan.id;
+
+                                                            return (
+                                                                <button
+                                                                    key={plan.id}
+                                                                    onClick={() => {
+                                                                        setSelectedPlan(plan.id);
+
+                                                                        const baseDate =
+                                                                            isPlanEnd || !memberData?.memberPayment?.memberShipEndDate
+                                                                                ? new Date()
+                                                                                : new Date(memberData.memberPayment.memberShipEndDate);
+
+                                                                        const newEnd = calculateEndDate(baseDate, plan.durationInDays);
+
+                                                                        setCalculatedEndDate(newEnd.toISOString());
+                                                                    }}
+                                                                    className={`text-left cursor-pointer rounded-2xl border p-4 transition-all duration-200 hover:shadow-md ${isSelected
+                                                                        ? "border-[#296BE1] bg-[#296BE1]/5 shadow-lg"
+                                                                        : "border-slate-200 bg-white"
+                                                                        }`}
+                                                                >
+                                                                    {/* TITLE */}
+                                                                    <div className="flex items-start justify-between">
+                                                                        <div>
+                                                                            <h4 className="font-bold text-slate-900">
+                                                                                {plan.title}
+                                                                            </h4>
+
+                                                                            <p className="text-xs text-slate-500 mt-1">
+                                                                                {plan.durationInDays === 1
+                                                                                    ? "1 Day"
+                                                                                    : plan.durationInDays === 30
+                                                                                        ? "1 Month"
+                                                                                        : plan.durationInDays === 90
+                                                                                            ? "3 Months"
+                                                                                            : plan.durationInDays === 365
+                                                                                                ? "1 Year"
+                                                                                                : `${plan.durationInDays} Days`}
+                                                                            </p>
+                                                                        </div>
+
+                                                                        <div className="text-[#296BE1] font-black text-lg">
+                                                                            LKR {Number(plan.price).toLocaleString("en-LK", {
+                                                                                minimumFractionDigits: 2,
+                                                                                maximumFractionDigits: 2,
+                                                                            })}
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {/* DESCRIPTION */}
+                                                                    <p className="mt-3 text-xs text-slate-500 line-clamp-2">
+                                                                        {plan.description}
+                                                                    </p>
+
+                                                                    {/* FEATURES PREVIEW */}
+                                                                    <div className="mt-3 flex flex-wrap gap-1">
+                                                                        {plan.features
+                                                                            .split(",")
+                                                                            .slice(0, 3)
+                                                                            .map((f: string) => (
+                                                                                <span
+                                                                                    key={f}
+                                                                                    className="text-[10px] px-2 py-1 rounded-full bg-slate-100 text-slate-600"
+                                                                                >
+                                                                                    {f.trim()}
+                                                                                </span>
+                                                                            ))}
+                                                                    </div>
+                                                                </button>
+                                                            );
+                                                        })}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
                                 <h1 className="mt-5 text-4xl md:text-6xl font-bold text-white">
                                     {memberData?.firstName + " " + memberData?.lastName || memberName}
@@ -373,38 +569,6 @@ export default function UserProfileModal({
                                     </div>
                                 </div>
 
-                                {/* TRAINER */}
-
-                                {memberData?.assignedTrainer !== null ? (
-                                    <div className="bg-white rounded-3xl p-6 shadow-xl border">
-                                        <h3 className="text-xl font-bold mb-5">Personal Trainer</h3>
-
-                                        <div className="flex gap-4 items-center">
-                                            <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white">
-                                                <User />
-                                            </div>
-
-                                            <div>
-                                                <h4 className="font-semibold">{memberData?.trainerName || ""}</h4>
-                                                <p className="text-sm text-slate-500">Trainer</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="bg-white rounded-3xl p-6 shadow-xl border">
-                                        <h3 className="text-xl font-bold mb-5">Personal Trainer</h3>
-
-                                        <div className="flex gap-4 items-center">
-                                            <div className="w-14 h-14 bg-slate-300 rounded-2xl flex items-center justify-center text-white">
-                                                <User />
-                                            </div>
-                                            <div>
-                                                <h4 className="font-semibold text-slate-500">No Trainer Assigned</h4>
-                                                <p className="text-sm text-slate-400">Please contact support to assign a trainer.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
 
                                 {/* PASSWORD + LOGOUT */}
                                 <div className="bg-white rounded-3xl p-8 shadow-xl border">
@@ -491,6 +655,39 @@ export default function UserProfileModal({
                                         </div>
                                     ))}
                                 </div>
+
+                                {/* TRAINER */}
+
+                                {memberData?.assignedTrainer !== null ? (
+                                    <div className="bg-white rounded-3xl p-6 shadow-xl border">
+                                        <h3 className="text-xl font-bold mb-5">Personal Trainer</h3>
+
+                                        <div className="flex gap-4 items-center">
+                                            <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white">
+                                                <User />
+                                            </div>
+
+                                            <div>
+                                                <h4 className="font-semibold">{memberData?.trainerName || ""}</h4>
+                                                <p className="text-sm text-slate-500">Trainer</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="bg-white rounded-3xl p-6 shadow-xl border">
+                                        <h3 className="text-xl font-bold mb-5">Personal Trainer</h3>
+
+                                        <div className="flex gap-4 items-center">
+                                            <div className="w-14 h-14 bg-slate-300 rounded-2xl flex items-center justify-center text-white">
+                                                <User />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-slate-500">No Trainer Assigned</h4>
+                                                <p className="text-sm text-slate-400">Please contact support to assign a trainer.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
                             </div>
 
