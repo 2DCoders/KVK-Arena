@@ -212,6 +212,38 @@ public class MembershipService : IMembershipService
         }
     }
 
+    public async Task<Result> ChangePasswordAsync(Guid memberId, string oldPassword, string newPassword,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(oldPassword))
+            throw new ArgumentException("Old password is required.", nameof(oldPassword));
+        if (string.IsNullOrWhiteSpace(newPassword))
+            throw new ArgumentException("New password is required.", nameof(newPassword));
+
+        try
+        {
+            var member = await _db.Set<Membership>()
+                .SingleOrDefaultAsync(s => s.Id == memberId, cancellationToken);
+
+            if (member == null)
+                throw new Exception("Member not found");
+
+            if (!PasswordEncryption.VerifyPassword(oldPassword, member.PasswordHash))
+                throw new Exception("Invalid old password");
+
+            member.PasswordHash = PasswordEncryption.HashPassword(newPassword);
+            _db.Set<Membership>().Update(member);
+            await _db.SaveChangesAsync(cancellationToken);
+
+            return Result.Success("Password changed successfully");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
     public async Task<Result> UpdateFingerprintsAsync(Guid memberId, UpdateFingerprintsRequest request,
         CancellationToken cancellationToken = default)
     {

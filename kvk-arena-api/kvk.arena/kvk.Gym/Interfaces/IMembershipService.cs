@@ -9,6 +9,8 @@ public interface IMembershipService
     
     Task<MemberLoginResponse> LoginAsync(MemberLoginRequest request, CancellationToken cancellationToken = default);
     
+    Task<Result> ChangePasswordAsync(Guid memberId,string oldPassword,string newPassword,CancellationToken cancellationToken = default);
+    
     Task<Result> UpdateFingerprintsAsync(Guid memberId, UpdateFingerprintsRequest request, CancellationToken cancellationToken = default);
     Task<Result> EditMemberAsync(Guid memberId, EditMembershipRequest request, CancellationToken cancellationToken = default);
     Task<Result> UpgradeMembershipPlanAsync(Guid memberId, UpgradeMembershipPlanRequest request, CancellationToken cancellationToken = default);

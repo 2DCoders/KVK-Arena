@@ -31,6 +31,16 @@ public class MembershipsController : ControllerBase
         var result = await _service.LoginAsync(request, cancellationToken);
         return Ok(result);
     }
+    
+    [HttpPut("change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.ChangePasswordAsync(request.MemberId, request.OldPassword, request.NewPassword, cancellationToken);
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
 
 
     [HttpPut("{id:guid}/fingerprints")]
