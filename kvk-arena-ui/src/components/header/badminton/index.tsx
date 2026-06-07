@@ -66,15 +66,19 @@ export default function BadmintonHeader() {
 
                 {/* LOGO */}
                 <div className="absolute left-1/2 z-10 -translate-x-1/2 flex items-center gap-2 max-w-[180px] sm:max-w-none">
-                    <img
-                        src={logo}
-                        alt="Badminton"
-                        className="h-8 w-auto lg:h-12 cursor-pointer object-contain"
-                    />
+                    <a href="#">
+                        <img
+                            src={logo}
+                            alt="Badminton"
+                            className="h-8 w-auto lg:h-12 cursor-pointer object-contain"
+                        />
+                    </a>
 
-                    <span className="text-white font-black text-xs sm:text-sm lg:text-xl tracking-wide truncate">
-                        BADMINTON
-                    </span>
+                    <a href="#">
+                        <span className="text-white cursor-pointer font-black text-xs sm:text-sm lg:text-xl tracking-wide truncate">
+                            BADMINTON
+                        </span>
+                    </a>
                 </div>
 
                 {/* JOIN BUTTON */}

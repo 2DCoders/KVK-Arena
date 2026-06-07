@@ -1,8 +1,9 @@
 import hero_bg from "@/assets/hero/badminton_hero.png";
+import { Badge } from "lucide-react";
 
 export default function BadmintonHero() {
   return (
-    <section className="relative isolate overflow-hidden min-h-[90vh] flex items-center py-26">
+    <section className="relative isolate overflow-hidden min-h-[90vh] flex items-center py-28">
       {/* Background */}
       <div
         aria-hidden="true"
@@ -18,67 +19,68 @@ export default function BadmintonHero() {
         <div className="max-w-3xl">
           {/* Small Label */}
           <p className="text-white/80 text-sm md:text-base mb-4 tracking-wide uppercase pt-5">
-            KVK Arena Badminton Club
+            
           </p>
 
           {/* Main Heading */}
           <h1 className="text-white font-extrabold uppercase leading-none">
-            <span className="block text-5xl sm:text-6xl lg:text-7xl">
+            <span className="block text-5xl sm:text-6xl lg:text-6xl">
               Train
             </span>
-            <span className="block text-5xl sm:text-6xl lg:text-7xl">
+            <span className="block text-5xl sm:text-6xl lg:text-6xl text-[#2d86fc]">
               Play
             </span>
-            <span className="block text-5xl sm:text-6xl lg:text-7xl">
+            <span className="block text-5xl sm:text-6xl lg:text-6xl">
               Compete
             </span>
           </h1>
 
           {/* Description */}
           <p className="mt-6 max-w-xl text-white/90 text-base md:text-lg">
-            Join passionate badminton players, improve your skills with expert
-            coaching, and compete on professional courts designed for every
-            level.
+            Book your court, gather your team, and enjoy fast-paced badminton matches on well-maintained courts built for recreational and competitive play.
           </p>
         </div>
 
         {/* Bottom Cards */}
         <div className="mt-12 flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
           {/* Countdown Card */}
-          <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl px-6 py-4">
-            <div className="flex gap-8">
-              <div>
-                <p className="text-3xl font-bold text-white">12</p>
-                <p className="text-white/70 text-sm">Days</p>
-              </div>
+            <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl px-6 py-5">
+              <div className="flex flex-wrap gap-8">
+                <div>
+                  <p className="text-3xl">🏸</p>
+                  <p className="font-semibold text-white">Pro Courts</p>
+                  <p className="text-white/70 text-sm">Premium playing surface</p>
+                </div>
 
-              <div>
-                <p className="text-3xl font-bold text-white">08</p>
-                <p className="text-white/70 text-sm">Hours</p>
-              </div>
+                <div>
+                  <p className="text-3xl">📅</p>
+                  <p className="font-semibold text-white">Easy Booking</p>
+                  <p className="text-white/70 text-sm">Reserve in seconds</p>
+                </div>
 
-              <div>
-                <p className="text-3xl font-bold text-white">45</p>
-                <p className="text-white/70 text-sm">Min</p>
+                <div>
+                  <p className="text-3xl">⚡</p>
+                  <p className="font-semibold text-white">Instant Confirm</p>
+                  <p className="text-white/70 text-sm">Real-time availability</p>
+                </div>
               </div>
-            </div>
           </div>
 
           {/* Event Card */}
           <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-4 flex items-center gap-4">
-            <div className="h-14 w-14 rounded-xl bg-lime-400 flex items-center justify-center">
-              🏸
+            <div className="h-14 w-14 rounded-xl bg-[#2d86fc] flex items-center justify-center">
+              <Badge className="h-7 w-7 text-white" />
             </div>
 
             <div>
               <h3 className="text-white font-semibold">
-                Summer Badminton Championship
+                KVK Arena Badminton Courts
               </h3>
               <p className="text-white/70 text-sm">
-                August 15th, 2026
+                Everyday 9 AM - 10 PM
               </p>
               <p className="text-white/60 text-sm">
-                KVK Arena Indoor Courts
+                Book your court now
               </p>
             </div>
           </div>
