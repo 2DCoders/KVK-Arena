@@ -18,7 +18,7 @@ const features = [
 
 export default function BadmintonServices() {
   return (
-    <section className="relative overflow-hidden bg-[#f5f5f5] py-20">
+    <section className="relative overflow-hidden bg-[#f5f5f5] py-5">
       <div className="relative w-full h-[750px]">
         {/* Curved Line */}
         <svg

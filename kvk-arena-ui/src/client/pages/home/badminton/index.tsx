@@ -5,6 +5,7 @@ import BadmintonHeader from "@/components/header/badminton";
 import BadmintonHero from "../../hero/badminton";
 import BadmintonServices from "../../services/badminton";
 import StatsBadminton from "../../stats/badminton";
+import BadmintonBookings from "../../bookings/badminton";
 
 
 export default function BadmintonHome() {
@@ -42,6 +43,7 @@ export default function BadmintonHome() {
             <BadmintonHeader />
             <BadmintonHero />
             <StatsBadminton />
+            <BadmintonBookings />
             <BadmintonServices />
 
             <div className="fixed bottom-6 right-4 z-50 flex items-end gap-3 sm:bottom-8 sm:right-6">
