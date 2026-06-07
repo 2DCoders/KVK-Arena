@@ -15,7 +15,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Microsoft.Extensions.Options;
 using Serilog;
-//using AG.LoggerViewer.UI;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -134,7 +135,6 @@ gymInitializer.RegisterModule(builder.Services, builder.Configuration);
 var financialInitializer = new FinancialModuleInitializer();
 financialInitializer.RegisterModule(builder.Services, builder.Configuration);
 
-// builder.Services.AddLoggerViewer();
 
 var app = builder.Build();
 
@@ -153,6 +153,13 @@ app.UseMiddleware<ErrorHandlerMiddleware>();
 // Tenant permission middleware (extracts TenantId from JWT)
 app.UseMiddleware<TenantPermissionMiddleware>();
 
+// if (app.Environment.IsDevelopment())
+// {
+//     app.Map("/logger", loggerApp =>
+//     {
+//         loggerApp.UseLoggerViewer();
+//     });
+// }
 
 
 if (app.Environment.IsDevelopment())
@@ -175,7 +182,6 @@ app.UseHangfireDashboard("/hangfire");
 
 app.UseCors();
 app.MapControllers();
-// app.UseLoggerViewer();
 
 // Log startup information
 var logger = app.Services.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Program>>();
