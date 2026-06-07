@@ -91,7 +91,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
             }
 
             setTimeout(() => {
-                // window.location.reload();
+                window.location.reload();
             }, 1000);
             
         } catch (error:any) {
