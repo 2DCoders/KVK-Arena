@@ -78,11 +78,13 @@ export default function GymHeader() {
 
                 {/* LOGO */}
                 <div className="absolute left-1/2 z-10 -translate-x-1/2">
+                <a href="#">
                     <img
                         src={logo}
                         alt="Gym"
                         className="h-8 w-auto lg:h-12 cursor-pointer object-contain"
                     />
+                </a>
                 </div>
 
                 {/* JOIN BUTTON */}
