@@ -1,6 +1,6 @@
 import Alert from "@/components/alert";
 import { getEnv } from "@/env";
-import { getMember, updateMember } from "@/services/auth-api";
+import { changePassword, getMember, updateMember } from "@/services/auth-api";
 import { getMembershipPlans } from "@/services/memberships-api";
 import { createPayment } from "@/services/pay-api";
 import {
@@ -40,6 +40,11 @@ export default function UserProfileModal({
     const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
     const [isPlanEnd, setIsPlanEnd] = useState(false);
     const [calculatedEndDate, setCalculatedEndDate] = useState<string | null>(null);
+    const [passwordForm, setPasswordForm] = useState({
+        newPassword: "",
+        confirmPassword: "",
+        oldPassword: "",
+    });
 
     const memberId = localStorage.getItem("memberId") || "N/A";
     const memberName = localStorage.getItem("memberName") || "N/A";
@@ -82,64 +87,84 @@ export default function UserProfileModal({
 
         return () => clearInterval(interval);
     }, []);
-    
+
 
     useEffect(() => {
         fetchMembershipPlans();
     }, []);
 
+    const handleChangePassword = async () => {
+        try {
+            await changePassword(memberId, { newPassword: passwordForm.newPassword, oldPassword: passwordForm.oldPassword }, memberToken);
+            setPageAlert({
+                visible: true,
+                variant: 'success',
+                title: 'Success',
+                description: 'Password changed successfully'
+            });
+        } catch (error) {
+            console.error("Error changing password:", error);
+            setPageAlert({
+                visible: true,
+                variant: 'error',
+                title: 'Error',
+                description: 'Failed to change password'
+            });
+        }
+    }
+
     const handleInitPayment = async () => {
-            try {
-                const body = {
-                    amount: plans.find(p => p.id === selectedPlan)?.price ?? 0,
-                    memberId,
-                    membershipPlanId: selectedPlan,
-                };
-    
-                const response = await createPayment(body);
-                const payment = response;
-    
-                if (!window.payhere) {
-                    throw new Error("PayHere not loaded");
-                }
-    
-                const paymentDetails = {
-                    sandbox: true,
-    
-                    merchant_id: payment.merchantId,
-                    order_id: payment.orderId,
-                    currency: payment.currency,
-                    amount: payment.amount,
-                    hash: payment.hash,
-    
-                    items: "Gym Membership",
-    
-                    first_name: memberData?.firstName || "",
-                    last_name: memberData?.lastName || "",
-                    email: memberEmail,
-                    phone: memberData?.phoneNumber || "N/A",
-    
-                    address: "N/A",
-                    city: "Colombo",
-                    country: "Sri Lanka",
-    
-                    return_url: `${getEnv().BASE_URL}success`,
-                    cancel_url: `${getEnv().BASE_URL}cancel`,
-                    notify_url: `${getEnv().API_URL}payments/notify`,
-                }
-    
-                window.payhere.startPayment(paymentDetails);
-    
-            } catch (error) {
-    
-                setPageAlert({
-                    visible: true,
-                    variant: "error",
-                    title: "Payment Failed",
-                    description: "Could not start PayHere payment",
-                });
+        try {
+            const body = {
+                amount: plans.find(p => p.id === selectedPlan)?.price ?? 0,
+                memberId,
+                membershipPlanId: selectedPlan,
+            };
+
+            const response = await createPayment(body);
+            const payment = response;
+
+            if (!window.payhere) {
+                throw new Error("PayHere not loaded");
             }
-        };
+
+            const paymentDetails = {
+                sandbox: true,
+
+                merchant_id: payment.merchantId,
+                order_id: payment.orderId,
+                currency: payment.currency,
+                amount: payment.amount,
+                hash: payment.hash,
+
+                items: "Gym Membership",
+
+                first_name: memberData?.firstName || "",
+                last_name: memberData?.lastName || "",
+                email: memberEmail,
+                phone: memberData?.phoneNumber || "N/A",
+
+                address: "N/A",
+                city: "Colombo",
+                country: "Sri Lanka",
+
+                return_url: `${getEnv().BASE_URL}success`,
+                cancel_url: `${getEnv().BASE_URL}cancel`,
+                notify_url: `${getEnv().API_URL}payments/notify`,
+            }
+
+            window.payhere.startPayment(paymentDetails);
+
+        } catch (error) {
+
+            setPageAlert({
+                visible: true,
+                variant: "error",
+                title: "Payment Failed",
+                description: "Could not start PayHere payment",
+            });
+        }
+    };
 
     const handleGetMember = async () => {
         try {
@@ -665,24 +690,43 @@ export default function UserProfileModal({
 
                                         <input
                                             type="password"
+                                            value={passwordForm.oldPassword}
+                                            onChange={(e) => setPasswordForm((prev) => ({ ...prev, oldPassword: e.target.value }))}
                                             placeholder="Current Password"
                                             className="w-full p-3 rounded-xl border"
                                         />
 
                                         <input
                                             type="password"
+                                            value={passwordForm.newPassword}
+                                            onChange={(e) => setPasswordForm((prev) => ({ ...prev, newPassword: e.target.value }))}
                                             placeholder="New Password"
                                             className="w-full p-3 rounded-xl border"
                                         />
 
                                         <input
                                             type="password"
+                                            value={passwordForm.confirmPassword}
+                                            onChange={(e) => setPasswordForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
                                             placeholder="Confirm Password"
                                             className="w-full p-3 rounded-xl border"
                                         />
 
-                                        <button className="w-full cursor-pointer bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700">
-                                            Update Password
+                                        <button
+                                            disabled={
+                                                !passwordForm.oldPassword ||
+                                                !passwordForm.newPassword ||
+                                                !passwordForm.confirmPassword
+                                            }
+                                            onClick={handleChangePassword}
+                                            className={`w-full py-3 rounded-xl font-semibold transition-all ${!passwordForm.oldPassword ||
+                                                    !passwordForm.newPassword ||
+                                                    !passwordForm.confirmPassword
+                                                    ? "bg-blue-600 text-white opacity-50 cursor-not-allowed"
+                                                    : "bg-blue-600 text-white hover:bg-blue-700 cursor-pointer"
+                                                }`}
+                                        >
+                                            Change Password
                                         </button>
 
                                         <button onClick={handleLogout} className="w-full mt-4 cursor-pointer bg-red-500 text-white py-3 rounded-xl font-semibold hover:bg-red-600">

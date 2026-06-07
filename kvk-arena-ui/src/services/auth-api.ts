@@ -46,3 +46,16 @@ export const updateMember = async (memberId: string, memberData: any, token: str
         throw error;
     }
 }
+
+export const changePassword = async (memberId: string, passwordData: any, token: string) => {
+    try {
+        const response = await axios.put(`${API_BASE_URL}/change-password?memberId=${memberId}`, passwordData, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
