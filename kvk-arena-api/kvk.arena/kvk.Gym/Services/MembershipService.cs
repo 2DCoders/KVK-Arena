@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using kvk.BuildingBlocks.Auth;
 using kvk.BuildingBlocks.Constants;
 using kvk.BuildingBlocks.Interfaces;
+using kvk.Gym.Enums;
 
 namespace kvk.Gym.Services;
 
@@ -176,7 +177,7 @@ public class MembershipService : IMembershipService
         try
         {
             var membership = await _db.Set<Membership>()
-                .SingleOrDefaultAsync(s => s.UserName == request.Username, cancellationToken);
+                .SingleOrDefaultAsync(s => s.UserName == request.Username && s.MemberType != MemberType.Staff, cancellationToken);
 
             if (membership == null)
                 throw new Exception("Invalid username or password");
@@ -201,7 +202,8 @@ public class MembershipService : IMembershipService
                 Email = membership.Email,
                 Username = membership.UserName,
                 FirstName = membership.FirstName,
-                LastName = membership.LastName
+                LastName = membership.LastName,
+                MemberType = membership.MemberType
             };
 
             return response;

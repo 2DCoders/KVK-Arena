@@ -79,6 +79,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
             localStorage.setItem("memberName", response.firstName + " " + response.lastName);
             localStorage.setItem("memberEmail", response.email);
             localStorage.setItem("memberId", response.memberId);
+            localStorage.setItem("memberType", response.memberType);
 
             if (response.email === loginForm.email) {
                 setPageAlert({
@@ -90,7 +91,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
             }
 
             setTimeout(() => {
-                window.location.reload();
+                // window.location.reload();
             }, 1000);
             
         } catch (error:any) {
@@ -105,6 +106,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
             localStorage.removeItem("memberName");
             localStorage.removeItem("memberEmail");
             localStorage.removeItem("memberId");
+            localStorage.removeItem("memberType");
         } finally {
             setLoadingLogin(false)
         }
