@@ -1,6 +1,8 @@
 import Alert from "@/components/alert";
+import { getEnv } from "@/env";
 import { getMember, updateMember } from "@/services/auth-api";
 import { getMembershipPlans } from "@/services/memberships-api";
+import { createPayment } from "@/services/pay-api";
 import {
     X,
     Phone,
@@ -60,8 +62,84 @@ export default function UserProfileModal({
     };
 
     useEffect(() => {
+        const interval = setInterval(() => {
+            if (window.payhere) {
+                clearInterval(interval);
+
+                window.payhere.onCompleted = (orderId: string) => {
+                    console.log("Payment success:", orderId);
+                };
+
+                window.payhere.onDismissed = () => {
+                    console.log("Payment cancelled");
+                };
+
+                window.payhere.onError = (error: any) => {
+                    console.log("Payment error:", error);
+                };
+            }
+        }, 300);
+
+        return () => clearInterval(interval);
+    }, []);
+    
+
+    useEffect(() => {
         fetchMembershipPlans();
     }, []);
+
+    const handleInitPayment = async () => {
+            try {
+                const body = {
+                    amount: plans.find(p => p.id === selectedPlan)?.price ?? 0,
+                    memberId,
+                    membershipPlanId: selectedPlan,
+                };
+    
+                const response = await createPayment(body);
+                const payment = response;
+    
+                if (!window.payhere) {
+                    throw new Error("PayHere not loaded");
+                }
+    
+                const paymentDetails = {
+                    sandbox: true,
+    
+                    merchant_id: payment.merchantId,
+                    order_id: payment.orderId,
+                    currency: payment.currency,
+                    amount: payment.amount,
+                    hash: payment.hash,
+    
+                    items: "Gym Membership",
+    
+                    first_name: memberData?.firstName || "",
+                    last_name: memberData?.lastName || "",
+                    email: memberEmail,
+                    phone: memberData?.phoneNumber || "N/A",
+    
+                    address: "N/A",
+                    city: "Colombo",
+                    country: "Sri Lanka",
+    
+                    return_url: `${getEnv().BASE_URL}success`,
+                    cancel_url: `${getEnv().BASE_URL}cancel`,
+                    notify_url: `${getEnv().API_URL}payments/notify`,
+                }
+    
+                window.payhere.startPayment(paymentDetails);
+    
+            } catch (error) {
+    
+                setPageAlert({
+                    visible: true,
+                    variant: "error",
+                    title: "Payment Failed",
+                    description: "Could not start PayHere payment",
+                });
+            }
+        };
 
     const handleGetMember = async () => {
         try {
@@ -253,7 +331,7 @@ export default function UserProfileModal({
                                                                 }`}
                                                         >
                                                             <div className="flex items-center justify-between">
-                                                                <h4 className={`font-semibold ${selectedPlan !== null ? "text-white" : "text-slate-900"}`}>
+                                                                <h4 onClick={handleInitPayment} className={`font-semibold ${selectedPlan !== null ? "text-white" : "text-slate-900"}`}>
                                                                     Pay Now
                                                                 </h4>
                                                             </div>
