@@ -34,7 +34,7 @@ export default function GamingHeader() {
           className={
             isScrolled
               ? "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,0,0,0.22),transparent_28%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.03),transparent_30%)]"
-              : "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.22),transparent_38%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_30%)]"
+              : "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(90,15,15,0.80),transparent_38%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_30%)]"
           }
         />
         <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/20" />
