@@ -7,7 +7,7 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
-export default function GymFooter() {
+export default function BadmintonFooter() {
   const navigate = useNavigate();
 
   return (
@@ -164,19 +164,19 @@ export default function GymFooter() {
 
                     <li>
                       <a
-                        href="#trainers"
+                        href="#courts"
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
-                        Trainers
+                        Courts
                       </a>
                     </li>
 
                     <li>
                       <a
-                        href="#memberships"
+                        href="#services"
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
-                        Membership Plans
+                        Services
                       </a>
                     </li>
                   </ul>

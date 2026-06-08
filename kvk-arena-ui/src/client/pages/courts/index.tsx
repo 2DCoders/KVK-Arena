@@ -58,7 +58,7 @@ export default function Courts() {
 
       <div className="relative z-10 mx-auto max-w-7xl px-6">
         {/* Header */}
-        <div className="mb-16 text-center">
+        <div className="mb-16 text-center" data-aos="fade-up">
           <span className="rounded-full border border-[#A65A2A]/30 bg-[#A65A2A]/10 px-4 py-2 text-sm font-semibold text-[#D98B4D]">
             OUR COURTS
           </span>
@@ -77,7 +77,7 @@ export default function Courts() {
         </div>
 
         {/* Courts */}
-        <div className="grid gap-8 lg:grid-cols-2">
+        <div className="grid gap-8 lg:grid-cols-2" data-aos="fade-up">
           {courts.map((courtItem) => (
             <div
               key={courtItem.id}

@@ -87,7 +87,7 @@ function FeatureCard({
 
 export default function BadmintonServices() {
   return (
-    <section className="relative overflow-hidden bg-[#F8F5F1] py-20 lg:py-28">
+    <section className="relative overflow-hidden bg-[#F8F5F1] py-20 lg:py-28" data-aos="fade-up">
       {/* Background */}
       <div className="absolute inset-0 bg-[linear-gradient(135deg,#ffffff_0%,#faf7f2_40%,#f5ede5_100%)]" />
 
@@ -101,7 +101,7 @@ export default function BadmintonServices() {
             Premium Facilities
           </span>
 
-          <h2 className="mt-5 text-4xl font-black text-slate-900 md:text-5xl lg:text-6xl">
+          <h2 className="mt-5 text-5xl font-black text-slate-900 md:text-5xl lg:text-5xl">
             Train Like
             <span className="block text-[#B45F28]">
               A Champion
@@ -115,7 +115,7 @@ export default function BadmintonServices() {
         </div>
 
         {/* Desktop Layout */}
-        <div className="relative mt-24 hidden min-h-[850px] lg:block">
+        <div className="relative mt-10 hidden min-h-[850px] lg:block">
           {/* Decorative Rings */}
           <div className="absolute left-1/2 top-1/2 h-[650px] w-[650px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#B45F28]/10" />
 
