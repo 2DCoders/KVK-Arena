@@ -6,6 +6,24 @@
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 }
 
+.swiper-pagination-bullet {
+  width: 10px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.3) !important;
+  opacity: 1;
+  transition: all 0.3s ease;
+}
+
+.swiper-pagination-bullet-active {
+  width: 28px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    #a65a2a,
+    #c9773a
+  ) !important;
+}
+
 body {
   --color-primary: #296BE1;
   --color-secondary: #0F172A;
