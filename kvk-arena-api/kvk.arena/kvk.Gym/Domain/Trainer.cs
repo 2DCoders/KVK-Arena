@@ -10,4 +10,8 @@ public class Trainer : User
     public int Rating { get; set; }
 
     public int YearsOfExperience { get; set; }
+    
+    public bool IsDeleted { get; set; }
+    
+    public DateTime? DeletedAt { get; set; }
 }

@@ -38,8 +38,8 @@ public class MembershipService : IMembershipService
             var existingMember = await _db.Memberships
                 .AnyAsync(m => m.Email == request.Email, cancellationToken);
             if (existingMember) return Result.Failure("Email is already registered");
-            
-            
+
+
             if (string.IsNullOrWhiteSpace(request.Password))
                 return Result.Failure("Password is required");
 
@@ -139,6 +139,26 @@ public class MembershipService : IMembershipService
 
                 await _smsService.SendSingleMessageAsync(member.Phone!, MessageList
                     .GetWelcomeMessage(member.FirstName, member.MembershipNumber), cancellationToken);
+            }
+
+            if (member.MemberType == kvk.Gym.Enums.MemberType.Trainer)
+            {
+                var trainer = new Trainer
+                {
+                    Id = member.Id,
+                    UserName = member.UserName,
+                    FirstName = member.FirstName,
+                    LastName = member.LastName,
+                    Email = member.Email,
+                    Status = "Active",
+                    PasswordHash = member.PasswordHash,
+                    Phone = member.Phone,
+                    Specialization = request.Specialization,
+                    YearsOfExperience = (int)request.YearsOfExperience!
+                };
+
+                _db.Trainers.Add(trainer);
+                await _db.SaveChangesAsync(cancellationToken);
             }
 
             var response = new MembershipResponse
@@ -365,9 +385,10 @@ public class MembershipService : IMembershipService
             Trainer trainer = null;
             if (member.TrainerId.HasValue)
             {
-                trainer = await _db.Trainers.Where(t => t.Id == member.TrainerId).FirstOrDefaultAsync(cancellationToken);
+                trainer = await _db.Trainers.Where(t => t.Id == member.TrainerId)
+                    .FirstOrDefaultAsync(cancellationToken);
             }
-            
+
             var memberPayment = await _db.MemberPayments.Where(p => p.MembershipId == member.Id)
                 .OrderByDescending(p => p.CreatedAt)
                 .FirstOrDefaultAsync(cancellationToken);
@@ -513,6 +534,32 @@ public class MembershipService : IMembershipService
             if (request.Gender.HasValue)
                 member.Gender = request.Gender.Value;
 
+            //Edit Trainer info if member is trainer
+            if (member.MemberType == kvk.Gym.Enums.MemberType.Trainer)
+            {
+                var trainer = await _db.Trainers.SingleOrDefaultAsync(t => t.Id == memberId, cancellationToken);
+                if (trainer != null)
+                {
+                    if (request.YearsOfExperience.HasValue)
+                        trainer.YearsOfExperience = request.YearsOfExperience.Value;
+                    if (!string.IsNullOrWhiteSpace(request.Specialization))
+                        trainer.Specialization = request.Specialization;
+                    if (!string.IsNullOrWhiteSpace(request.FirstName))
+                        member.FirstName = request.FirstName;
+                    if (!string.IsNullOrWhiteSpace(request.LastName))
+                        member.LastName = request.LastName;
+                    if (!string.IsNullOrWhiteSpace(request.Phone))
+                        member.Phone = request.Phone;
+                    if (request.DateOfBirth.HasValue)
+                        member.DateOfBirth = request.DateOfBirth.Value;
+                    if (request.Gender.HasValue)
+                        member.Gender = request.Gender.Value;
+
+                    _db.Trainers.Update(trainer);
+                }
+            }
+
+
             await _db.SaveChangesAsync(cancellationToken);
 
             var response = new MembershipResponse
@@ -601,7 +648,7 @@ public class MembershipService : IMembershipService
                 latestPayment.PaymentType = request.PaymentType;
 
                 var newStartDate = latestPayment.MemberShipEndDate.Value;
-                
+
                 latestPayment.MemberShipStartDate = newStartDate;
                 latestPayment.MemberShipRenewalDate = renewalDate;
                 latestPayment.MemberShipEndDate = newStartDate.AddDays(plan.DurationInDays);
@@ -638,7 +685,8 @@ public class MembershipService : IMembershipService
                 // Non-fatal: if recording fails, do not block the upgrade flow
             }
 
-            var message = MessageList.GetPlanUpgradedMessage(member.FirstName, plan.Title, latestPayment.MemberShipStartDate,
+            var message = MessageList.GetPlanUpgradedMessage(member.FirstName, plan.Title,
+                latestPayment.MemberShipStartDate,
                 latestPayment.MemberShipEndDate);
             await _smsService.SendSingleMessageAsync(member.Phone!, message, cancellationToken);
 
@@ -696,6 +744,17 @@ public class MembershipService : IMembershipService
             member.IsDeleted = true;
             member.DeletedAt = DateTime.UtcNow;
 
+            if (member.MemberType == kvk.Gym.Enums.MemberType.Trainer)
+            {
+                var trainer = await _db.Trainers.SingleOrDefaultAsync(t => t.Id == memberId, cancellationToken);
+
+                if (trainer == null)
+                    return Result.Failure("Trainer not found");
+                trainer.IsDeleted = true;
+                trainer.DeletedAt = DateTime.UtcNow;
+            }
+
+
             await _db.SaveChangesAsync(cancellationToken);
 
             return Result.Success("Member soft-deleted");
@@ -722,6 +781,16 @@ public class MembershipService : IMembershipService
 
             member.IsDeleted = false;
             member.DeletedAt = DateTime.UtcNow;
+
+            if (member.MemberType == kvk.Gym.Enums.MemberType.Trainer)
+            {
+                var trainer = await _db.Trainers.SingleOrDefaultAsync(t => t.Id == memberId, cancellationToken);
+
+                if (trainer == null)
+                    return Result.Failure("Trainer not found");
+                trainer.IsDeleted = false;
+                trainer.DeletedAt = DateTime.UtcNow;
+            }
 
             await _db.SaveChangesAsync(cancellationToken);
 
@@ -760,9 +829,20 @@ public class MembershipService : IMembershipService
                 return Result.Failure(
                     "Permanent delete is allowed only for members with pending payments and no saved fingerprints");
 
+
             // With cascade delete configured for MemberPayments and MemberAttendances, removing the membership
             // will delete related payments and attendances automatically.
             _db.Memberships.Remove(member);
+
+            if (member.MemberType == kvk.Gym.Enums.MemberType.Trainer)
+            {
+                var trainer = await _db.Trainers.SingleOrDefaultAsync(t => t.Id == memberId, cancellationToken);
+                if (trainer == null)
+                    return Result.Failure("Trainer not found");
+
+                _db.Trainers.Remove(trainer);
+            }
+
             await _db.SaveChangesAsync(cancellationToken);
 
             return Result.Success("Member permanently deleted");
@@ -808,7 +888,8 @@ public class MembershipService : IMembershipService
         };
     }
 
-    public async Task<Result> AssignTrainerAsync(Guid memberId, Guid trainerId, CancellationToken cancellationToken = default)
+    public async Task<Result> AssignTrainerAsync(Guid memberId, Guid trainerId,
+        CancellationToken cancellationToken = default)
     {
         if (memberId == Guid.Empty)
             return Result.Failure("Member id cannot be empty");

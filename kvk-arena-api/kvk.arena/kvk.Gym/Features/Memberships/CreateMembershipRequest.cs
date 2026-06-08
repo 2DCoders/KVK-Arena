@@ -15,4 +15,7 @@ public class CreateMembershipRequest
     public Guid? MembershipPlanId { get; set; }
     public string? DeviceFingerprintId1 { get; set; }
     public string? DeviceFingerprintId2 { get; set; }
+    
+    public string? Specialization { get; set; }
+    public int? YearsOfExperience { get; set; }
 }

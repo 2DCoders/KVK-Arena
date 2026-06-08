@@ -8,5 +8,8 @@ public class EditMembershipRequest
     public string? Phone { get; set; }
     public DateTime? DateOfBirth { get; set; }
     public kvk.Gym.Enums.Gender? Gender { get; set; }
+    
+    public string? Specialization { get; set; }
+    public int? YearsOfExperience { get; set; }
 }
 
