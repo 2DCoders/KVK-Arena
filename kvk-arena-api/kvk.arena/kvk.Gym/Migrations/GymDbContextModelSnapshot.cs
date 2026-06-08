@@ -322,12 +322,18 @@ namespace kvk.Gym.Migrations
                         .HasMaxLength(25)
                         .HasColumnType("character varying(25)");
 
+                    b.Property<int>("Points")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(25)
                         .HasColumnType("character varying(25)");
 
                     b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("TrainerId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("UserName")
@@ -353,6 +359,8 @@ namespace kvk.Gym.Migrations
 
                     b.HasIndex("TenantId")
                         .HasDatabaseName("IX_Membership_TenantId");
+
+                    b.HasIndex("TrainerId");
 
                     b.HasIndex("TenantId", "CreatedAt")
                         .HasDatabaseName("IX_Membership_TenantId_CreatedAt");
@@ -513,6 +521,89 @@ namespace kvk.Gym.Migrations
                         });
                 });
 
+            modelBuilder.Entity("kvk.Gym.Domain.Trainer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("LastModifiedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(25)
+                        .HasColumnType("character varying(25)");
+
+                    b.Property<int>("Rating")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("Specialization")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(25)
+                        .HasColumnType("character varying(25)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("YearsOfExperience")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_Trainer_TenantId");
+
+                    b.HasIndex("TenantId", "CreatedAt")
+                        .HasDatabaseName("IX_Trainer_TenantId_CreatedAt");
+
+                    b.ToTable("Trainer", "gym");
+                });
+
             modelBuilder.Entity("kvk.Gym.Domain.DayPassMember", b =>
                 {
                     b.HasOne("kvk.Gym.Domain.MembershipPlan", "MembershipPlan")
@@ -552,7 +643,13 @@ namespace kvk.Gym.Migrations
                         .WithMany()
                         .HasForeignKey("MembershipPlanId");
 
+                    b.HasOne("kvk.Gym.Domain.Trainer", "Trainer")
+                        .WithMany()
+                        .HasForeignKey("TrainerId");
+
                     b.Navigation("MembershipPlan");
+
+                    b.Navigation("Trainer");
                 });
 
             modelBuilder.Entity("kvk.Gym.Domain.PaymentRecord", b =>

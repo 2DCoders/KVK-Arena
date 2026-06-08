@@ -48,13 +48,13 @@ export default function GymHome() {
             <GymHeader />
             <GymHero />
             <GymStats />
-            <GymStepper />
+            
+            <SaunaPage />
 
             <section id="memberships" className="relative overflow-hidden">
                 <Memberships />
             </section>
-            
-            <SaunaPage />
+            <GymStepper />
 
             <section id="trainers" className="relative overflow-hidden">
                 <Trainers />

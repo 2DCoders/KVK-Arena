@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import gymImage from "@/assets/gym-signup.jpg";
 import { getMembershipPlans } from "@/services/memberships-api";
-import { registerMember } from "@/services/auth-api";
+import { loginMember, registerMember } from "@/services/auth-api";
 import Alert from "@/components/alert";
 import { createPayment } from "@/services/pay-api";
-import {getEnv} from "@/env";
+import { getEnv } from "@/env";
 
 interface SignupModalProps {
     open: boolean;
@@ -19,6 +19,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
     const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
     const [pageAlert, setPageAlert] = useState<{ visible: boolean; variant?: 'success' | 'error' | 'warning' | 'info'; title?: string; description?: string }>({ visible: false });
     const [loading, setLoading] = useState(false);
+    const [loadingLogin, setLoadingLogin] = useState(false);
 
     const fetchMembershipPlans = async () => {
         try {
@@ -50,10 +51,66 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
     });
     const [serverError, setServerError] = useState<string | null>(null);
     const [errors, setErrors] = useState<any>({});
+    const [authMode, setAuthMode] = useState<"signup" | "signin">("signup");
+
+    const [loginForm, setLoginForm] = useState({
+        email: "",
+        password: "",
+    });
 
     const handleChange = (e: any) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
+
+    const handleLogin = async() => {
+
+        setLoadingLogin(true);
+
+        const body = {
+            username: loginForm.email,
+            password: loginForm.password
+        }
+
+        try {
+            const response = await loginMember(body);
+            console.log(response);
+
+            localStorage.setItem("memberToken", response.token);
+            localStorage.setItem("memberName", response.firstName + " " + response.lastName);
+            localStorage.setItem("memberEmail", response.email);
+            localStorage.setItem("memberId", response.memberId);
+            localStorage.setItem("memberType", response.memberType);
+
+            if (response.email === loginForm.email) {
+                setPageAlert({
+                    visible: true,
+                    variant: "success",
+                    title: "Login Successful",
+                    description: "You have been logged in successfully."
+                });
+            }
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+            
+        } catch (error:any) {
+            setPageAlert({
+                visible: true,
+                variant: "error",
+                title: "Login Failed",
+                description: error.response?.data?.message || "An error occurred while logging in. Please try again.",
+            });
+
+            localStorage.removeItem("memberToken");
+            localStorage.removeItem("memberName");
+            localStorage.removeItem("memberEmail");
+            localStorage.removeItem("memberId");
+            localStorage.removeItem("memberType");
+        } finally {
+            setLoadingLogin(false)
+        }
+    }
 
     const validate = () => {
         const newErrors: any = {};
@@ -219,7 +276,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                 return_url: `${getEnv().BASE_URL}success`,
                 cancel_url: `${getEnv().BASE_URL}cancel`,
                 notify_url: `${getEnv().API_URL}payments/notify`,
-            }            
+            }
 
             window.payhere.startPayment(paymentDetails);
 
@@ -254,9 +311,20 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                     </div>
                 </div>
             )}
+            
 
-            <div className="relative w-full max-w-6xl overflow-y-auto max-h-[95vh] md:overflow-hidden rounded-[32px] bg-white shadow-[0_40px_100px_rgba(0,0,0,0.25)]">
+            {loadingLogin && (
+                <div className="fixed inset-0 z-[9999999999] flex items-center justify-center bg-black/60 backdrop-blur-md">
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="h-14 w-14 animate-spin rounded-full border-4 border-white/30 border-t-white"></div>
+                        <p className="text-sm text-white font-medium">
+                            Logging in...
+                        </p>
+                    </div>
+                </div>
+            )}
 
+            <div className="relative w-full max-w-6xl min-h-[90vh] overflow-y-auto max-h-[95vh] md:overflow-hidden rounded-[32px] bg-white shadow-[0_40px_100px_rgba(0,0,0,0.25)]">
                 {/* CLOSE */}
                 <button
                     onClick={onClose}
@@ -265,10 +333,10 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                     ×
                 </button>
 
-                <div className="grid md:grid-cols-[42%_58%]">
+                <div className="grid min-h-[90vh] md:grid-cols-[42%_58%]">
 
                     {/* LEFT PANEL */}
-                    <div className="relative hidden md:block">
+                    <div className="relative hidden md:block h-full">
                         <img
                             src={gymImage}
                             alt="Gym"
@@ -296,6 +364,28 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                     {/* RIGHT PANEL */}
                     <div className="bg-gradient-to-br from-white via-slate-50 to-slate-100 p-6 md:p-10 max-h-[95vh] overflow-y-auto">
 
+                        {/* AUTH TABS */}
+                        <div className="mb-6 rounded-xl bg-slate-200 p-1 flex">
+                            <button
+                                onClick={() => setAuthMode("signup")}
+                                className={`flex-1 rounded-lg py-2 text-sm font-semibold transition cursor-pointer ${authMode === "signup"
+                                    ? "bg-white text-[#296BE1] shadow"
+                                    : "text-slate-600"
+                                    }`}
+                            >
+                                Sign Up
+                            </button>
+
+                            <button
+                                onClick={() => setAuthMode("signin")}
+                                className={`flex-1 rounded-lg py-2 text-sm font-semibold transition cursor-pointer ${authMode === "signin"
+                                    ? "bg-white text-[#296BE1] shadow"
+                                    : "text-slate-600"
+                                    }`}
+                            >
+                                Sign In
+                            </button>
+                        </div>
                         {/* HEADER */}
                         <div className="mb-6">
                             <span className="inline-flex rounded-full bg-[#296BE1]/10 px-3 py-1 text-xs font-semibold text-[#296BE1]">
@@ -303,48 +393,109 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                             </span>
 
                             <h3 className="mt-3 text-3xl font-black text-slate-900">
-                                Start Your Fitness Journey
+                                {authMode === "signup"
+                                    ? "Start Your Fitness Journey"
+                                    : "Welcome Back"}
                             </h3>
 
                             <p className="mt-2 text-sm text-slate-500">
-                                Register in minutes and choose your plan.
+                                {authMode === "signup"
+                                    ? "Register in minutes and choose your plan."
+                                    : "Sign in to access your membership account."}
                             </p>
                         </div>
 
                         {/* STEP */}
-                        <div className="mb-8 flex items-center">
-                            <div className="flex items-center gap-3">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#296BE1] text-xs font-bold text-white">
-                                    1
-                                </div>
-                                <span className="text-sm font-semibold">
-                                    Registration
-                                </span>
-                            </div>
-
-                            <div className="mx-4 h-[2px] flex-1 bg-slate-200" />
-
-                            <div className="flex items-center gap-3">
-                                <div
-                                    className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${step === 2
-                                        ? "bg-[#296BE1] text-white"
-                                        : "border border-slate-300 text-slate-400"
-                                        }`}
-                                >
-                                    2
+                        {authMode === "signup" && (
+                            <div className="mb-8 flex items-center">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#296BE1] text-xs font-bold text-white">
+                                        1
+                                    </div>
+                                    <span className="text-sm font-semibold">
+                                        Registration
+                                    </span>
                                 </div>
 
-                                <span
-                                    className={
-                                        step === 2
-                                            ? "text-sm font-semibold"
-                                            : "text-sm text-slate-400"
-                                    }
-                                >
-                                    Membership
-                                </span>
+                                <div className="mx-4 h-[2px] flex-1 bg-slate-200" />
+
+                                <div className="flex items-center gap-3">
+                                    <div
+                                        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${step === 2
+                                            ? "bg-[#296BE1] text-white"
+                                            : "border border-slate-300 text-slate-400"
+                                            }`}
+                                    >
+                                        2
+                                    </div>
+
+                                    <span
+                                        className={
+                                            step === 2
+                                                ? "text-sm font-semibold"
+                                                : "text-sm text-slate-400"
+                                        }
+                                    >
+                                        Membership
+                                    </span>
+                                </div>
                             </div>
-                        </div>
+                        )}
+
+                        {authMode === "signin" && (
+                            <>
+                                <div className="space-y-4">
+
+                                    <div>
+                                        <label className="mb-2 block text-xs font-semibold uppercase text-slate-500">
+                                            Email
+                                        </label>
+
+                                        <input
+                                            type="email"
+                                            placeholder="Enter your email"
+                                            value={loginForm.email}
+                                            onChange={(e) =>
+                                                setLoginForm({
+                                                    ...loginForm,
+                                                    email: e.target.value,
+                                                })
+                                            }
+                                            className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-[#296BE1] focus:ring-4 focus:ring-[#296BE1]/10"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="mb-2 block text-xs font-semibold uppercase text-slate-500">
+                                            Password
+                                        </label>
+
+                                        <input
+                                            type="password"
+                                            placeholder="Enter your password"
+                                            value={loginForm.password}
+                                            onChange={(e) =>
+                                                setLoginForm({
+                                                    ...loginForm,
+                                                    password: e.target.value,
+                                                })
+                                            }
+                                            className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-[#296BE1] focus:ring-4 focus:ring-[#296BE1]/10"
+                                        />
+                                    </div>
+
+                                    <button
+                                        disabled={!loginForm.email || !loginForm.password}
+                                        onClick={() => {
+                                            handleLogin();
+                                        }}
+                                        className="mt-4 h-11 w-full rounded-xl bg-[#296BE1] text-white text-sm font-semibold hover:bg-[#2158bc] transition cursor-pointer"
+                                    >
+                                        Sign In
+                                    </button>
+                                </div>
+                            </>
+                        )}
 
                         {serverError && (
                             <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
@@ -353,7 +504,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                         )}
 
                         {/* STEP 1 */}
-                        {step === 1 && (
+                        {authMode === "signup" && step === 1 && (
                             <>
                                 <div className="grid gap-4 md:grid-cols-2">
 
@@ -400,7 +551,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                                     </div>
 
                                     {/* EMAIL */}
-                                    <div className="md:col-span-2">
+                                    <div>
                                         <label className="mb-2 block text-xs font-semibold uppercase text-slate-500">
                                             Email
                                         </label>
@@ -421,7 +572,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                                     </div>
 
                                     {/* PASSWORD */}
-                                    <div className="md:col-span-2">
+                                    <div>
                                         <label className="mb-2 block text-xs font-semibold uppercase text-slate-500">
                                             Password
                                         </label>
@@ -443,7 +594,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                                     </div>
 
                                     {/* PHONE */}
-                                    <div className="md:col-span-2">
+                                    <div>
                                         <label className="mb-2 block text-xs font-semibold uppercase text-slate-500">
                                             Phone
                                         </label>
@@ -611,7 +762,10 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                                                         </div>
 
                                                         <div className="text-[#296BE1] font-black text-lg">
-                                                            LKR {plan.price}
+                                                            LKR {Number(plan.price).toLocaleString("en-LK", {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
                                                         </div>
                                                     </div>
 

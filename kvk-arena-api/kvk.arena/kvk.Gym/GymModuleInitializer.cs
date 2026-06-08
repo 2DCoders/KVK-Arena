@@ -6,6 +6,7 @@ using kvk.Gym.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using kvk.Gym.Features.Trainers;
 
 namespace kvk.Gym;
 
@@ -32,6 +33,7 @@ public class GymModuleInitializer : IModuleInitializer
         services.AddScoped<IDayPassMemberService, DayPassMemberService>();
         services.AddScoped<IGymPaymentGatewayService, GymPaymentGatewayService>();
         services.AddScoped<IHashService, HashService>();
+        services.AddScoped<TrainerService>();
         // Use module adapter that wires the generic DayEnd service to GymDbContext
         services.AddScoped<IDayEndService, GymDayEndService>();
         // Register integrator event handlers (building-blocks contract)

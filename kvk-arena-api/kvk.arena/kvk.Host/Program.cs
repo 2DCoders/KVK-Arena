@@ -1,12 +1,10 @@
 using System.Diagnostics;
 using Hangfire;
 using Hangfire.PostgreSql;
-using Microsoft.Extensions.Hosting;
+using kvk.BuildingBlocks;
 using kvk.BuildingBlocks.Interfaces;
-using kvk.BuildingBlocks.Persistence;
 using kvk.BuildingBlocks.Services;
 using kvk.Host.Middlewares;
-using kvk.Host.Hangfire;
 using kvk.Identity;
 using kvk.Gym;
 using kvk.Gym.Domain;
@@ -16,10 +14,24 @@ using kvk.Financial;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Microsoft.Extensions.Options;
-using Scalar.AspNetCore;
-using kvk.BuildingBlocks;
+using Serilog;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ============================================================
+// Serilog Configuration
+// ============================================================
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
 
 // ============================================================
 // Services Registration
@@ -79,12 +91,12 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddAuthorization();
 // Add logging
-builder.Services.AddLogging(config =>
-{
-    config.AddConsole();
-    if (builder.Environment.IsDevelopment())
-        config.SetMinimumLevel(LogLevel.Debug);
-});
+// builder.Services.AddLogging(config =>
+// {
+//     config.AddConsole();
+//     if (builder.Environment.IsDevelopment())
+//         config.SetMinimumLevel(LogLevel.Debug);
+// });
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -123,6 +135,7 @@ gymInitializer.RegisterModule(builder.Services, builder.Configuration);
 var financialInitializer = new FinancialModuleInitializer();
 financialInitializer.RegisterModule(builder.Services, builder.Configuration);
 
+
 var app = builder.Build();
 
 
@@ -140,6 +153,13 @@ app.UseMiddleware<ErrorHandlerMiddleware>();
 // Tenant permission middleware (extracts TenantId from JWT)
 app.UseMiddleware<TenantPermissionMiddleware>();
 
+// if (app.Environment.IsDevelopment())
+// {
+//     app.Map("/logger", loggerApp =>
+//     {
+//         loggerApp.UseLoggerViewer();
+//     });
+// }
 
 
 if (app.Environment.IsDevelopment())
@@ -164,7 +184,7 @@ app.UseCors();
 app.MapControllers();
 
 // Log startup information
-var logger = app.Services.GetRequiredService<ILogger<Program>>();
+var logger = app.Services.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Program>>();
 
 var dayEndOptions = app.Services.GetRequiredService<IOptions<GymDayEndOptions>>().Value;
 var dayEndTimeZone = ResolveTimeZone(dayEndOptions.TimeZoneId, logger);
@@ -213,7 +233,7 @@ if (app.Environment.IsDevelopment())
         }
         catch (Exception ex)
         {
-            var loggerLocal = app.Services.GetRequiredService<ILogger<Program>>();
+            var loggerLocal = app.Services.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Program>>();
             loggerLocal.LogWarning(ex, "Failed to launch browser for Swagger UI.");
         }
     });
@@ -221,7 +241,7 @@ if (app.Environment.IsDevelopment())
 
 app.Run();
 
-static TimeZoneInfo ResolveTimeZone(string? timeZoneId, ILogger logger)
+static TimeZoneInfo ResolveTimeZone(string? timeZoneId, Microsoft.Extensions.Logging.ILogger logger)
 {
     if (string.IsNullOrWhiteSpace(timeZoneId))
         return TimeZoneInfo.Local;

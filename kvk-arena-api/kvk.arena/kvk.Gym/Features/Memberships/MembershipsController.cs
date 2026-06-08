@@ -31,6 +31,16 @@ public class MembershipsController : ControllerBase
         var result = await _service.LoginAsync(request, cancellationToken);
         return Ok(result);
     }
+    
+    [HttpPut("change-password")]
+    public async Task<IActionResult> ChangePassword(Guid memberId,[FromBody] ChangeGymPasswordRequest request, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.ChangePasswordAsync(memberId, request.OldPassword, request.NewPassword, cancellationToken);
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
 
 
     [HttpPut("{id:guid}/fingerprints")]
@@ -111,5 +121,14 @@ public class MembershipsController : ControllerBase
 
         return NoContent();
     }
-}
+    
+    [HttpPost("{id:guid}/assign-trainer")]
+    public async Task<IActionResult> AssignTrainer(Guid id, [FromBody] AssignTrainerRequest request, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.AssignTrainerAsync(id, request.TrainerId, cancellationToken);
+        if (!result.Succeeded)
+            return BadRequest(result);
 
+        return Ok(result);
+    }
+}

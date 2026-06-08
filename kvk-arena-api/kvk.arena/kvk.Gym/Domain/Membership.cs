@@ -32,6 +32,12 @@ public class Membership : User
     public string? DeviceFingerprintId1 { get; set; }
     
     public string? DeviceFingerprintId2 { get; set; }
+    
+    public int Points { get; set; }
+    
+    public Guid? TrainerId { get; set; }
+    
+    public Trainer? Trainer { get; set; }
 
     // Soft-delete support
     /// <summary>

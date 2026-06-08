@@ -9,6 +9,8 @@ public interface IMembershipService
     
     Task<MemberLoginResponse> LoginAsync(MemberLoginRequest request, CancellationToken cancellationToken = default);
     
+    Task<Result> ChangePasswordAsync(Guid memberId,string oldPassword,string newPassword,CancellationToken cancellationToken = default);
+    
     Task<Result> UpdateFingerprintsAsync(Guid memberId, UpdateFingerprintsRequest request, CancellationToken cancellationToken = default);
     Task<Result> EditMemberAsync(Guid memberId, EditMembershipRequest request, CancellationToken cancellationToken = default);
     Task<Result> UpgradeMembershipPlanAsync(Guid memberId, UpgradeMembershipPlanRequest request, CancellationToken cancellationToken = default);
@@ -22,9 +24,8 @@ public interface IMembershipService
 
     Task<Result> ReverseSoftDeleteMemberAsync(Guid memberId, CancellationToken cancellationToken = default);
 
-    
-
     // Permanently delete a member. Allowed only for members that meet configured criteria.
     Task<Result> PermanentlyDeleteMemberAsync(Guid memberId, CancellationToken cancellationToken = default);
     Task<Result> EnsureMembershipForStaffAsync(string identityUserId, string email, string fullName, CancellationToken cancellationToken = default);
+    Task<Result> AssignTrainerAsync(Guid memberId, Guid trainerId, CancellationToken cancellationToken = default);
 }

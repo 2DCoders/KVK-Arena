@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using kvk.BuildingBlocks.Auth;
 using kvk.BuildingBlocks.Constants;
 using kvk.BuildingBlocks.Interfaces;
+using kvk.Gym.Enums;
 
 namespace kvk.Gym.Services;
 
@@ -176,13 +177,16 @@ public class MembershipService : IMembershipService
         try
         {
             var membership = await _db.Set<Membership>()
-                .SingleOrDefaultAsync(s => s.UserName == request.Username, cancellationToken);
+                .SingleOrDefaultAsync(s => s.UserName == request.Username && s.MemberType != MemberType.Staff, cancellationToken);
 
             if (membership == null)
                 throw new Exception("Invalid username or password");
 
             if (!PasswordEncryption.VerifyPassword(request.Password, membership.PasswordHash))
                 throw new Exception("Invalid username or password");
+
+            if (membership.IsDeleted)
+                throw new Exception("You account has been removed. Please contact administrator.");
 
             // Get user permissions
             var permissions = (await _permissionService.GetUserPermissions(membership.Id, cancellationToken)).ToArray();
@@ -198,7 +202,8 @@ public class MembershipService : IMembershipService
                 Email = membership.Email,
                 Username = membership.UserName,
                 FirstName = membership.FirstName,
-                LastName = membership.LastName
+                LastName = membership.LastName,
+                MemberType = membership.MemberType
             };
 
             return response;
@@ -206,6 +211,38 @@ public class MembershipService : IMembershipService
         catch (Exception ex)
         {
             throw new Exception($"Failed to login: {ex.Message}");
+        }
+    }
+
+    public async Task<Result> ChangePasswordAsync(Guid memberId, string oldPassword, string newPassword,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(oldPassword))
+            throw new ArgumentException("Old password is required.", nameof(oldPassword));
+        if (string.IsNullOrWhiteSpace(newPassword))
+            throw new ArgumentException("New password is required.", nameof(newPassword));
+
+        try
+        {
+            var member = await _db.Set<Membership>()
+                .SingleOrDefaultAsync(s => s.Id == memberId, cancellationToken);
+
+            if (member == null)
+                throw new Exception("Member not found");
+
+            if (!PasswordEncryption.VerifyPassword(oldPassword, member.PasswordHash))
+                throw new Exception("Invalid old password");
+
+            member.PasswordHash = PasswordEncryption.HashPassword(newPassword);
+            _db.Set<Membership>().Update(member);
+            await _db.SaveChangesAsync(cancellationToken);
+
+            return Result.Success("Password changed successfully");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
         }
     }
 
@@ -325,6 +362,16 @@ public class MembershipService : IMembershipService
                 .OrderByDescending(p => p.CreatedAt)
                 .FirstOrDefaultAsync(cancellationToken);
 
+            Trainer trainer = null;
+            if (member.TrainerId.HasValue)
+            {
+                trainer = await _db.Trainers.Where(t => t.Id == member.TrainerId).FirstOrDefaultAsync(cancellationToken);
+            }
+            
+            var memberPayment = await _db.MemberPayments.Where(p => p.MembershipId == member.Id)
+                .OrderByDescending(p => p.CreatedAt)
+                .FirstOrDefaultAsync(cancellationToken);
+
             var response = new MembershipResponse
             {
                 Id = member.Id,
@@ -337,13 +384,18 @@ public class MembershipService : IMembershipService
                 Gender = member.Gender,
                 MembershipStatus = member.MembershipStatus.ToString(),
                 MembershipPlanId = member.MembershipPlanId,
+                MembershipPlan = member.MembershipPlan,
+                MemberPayment = memberPayment,
                 MembershipPlanTitle = member.MembershipPlan?.Title,
                 MembershipPlanPrice = member.MembershipPlan?.Price,
                 MembershipStartDate = latestPayment?.MemberShipStartDate,
                 MembershipEndDate = latestPayment?.MemberShipEndDate,
                 PaymentStatus = latestPayment?.PaymentStatus ?? kvk.Gym.Enums.PaymentStatus.Pending,
                 MembershipPlanDurationInDays = member.MembershipPlan?.DurationInDays,
+                RewardPoints = member.Points,
+                AssignedTrainer = trainer != null ? $"{trainer.FirstName} {trainer.LastName}" : null,
                 IdentityUserId = member.IdentityUserId,
+                CreatedDate = member.CreatedAt,
                 IsSavedFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
                                       !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2)
             };
@@ -531,7 +583,7 @@ public class MembershipService : IMembershipService
                 .FirstOrDefaultAsync(cancellationToken);
 
             MemberPayment payment;
-            if (latestPayment != null && latestPayment.PaymentStatus == kvk.Gym.Enums.PaymentStatus.Pending)
+            if (latestPayment != null && latestPayment.MemberShipEndDate > DateTime.Now)
             {
                 // update existing pending payment to reflect new plan amount and dates
                 latestPayment.Amount = plan.Price;
@@ -543,22 +595,19 @@ public class MembershipService : IMembershipService
 
                 payment = latestPayment;
             }
-            else
+            else if (latestPayment != null && latestPayment.MemberShipEndDate < DateTime.Now)
             {
-                // create a new payment record for the upgrade
-                payment = new MemberPayment
-                {
-                    MembershipId = member.Id,
-                    Amount = plan.Price,
-                    PaymentType = request.PaymentType,
-                    PaymentStatus = kvk.Gym.Enums.PaymentStatus.Paid,
-                    MemberShipStartDate = startDate,
-                    MemberShipRenewalDate = renewalDate,
-                    MemberShipEndDate = endDate
-                };
+                latestPayment.Amount = plan.Price;
+                latestPayment.PaymentType = request.PaymentType;
 
-                _db.MemberPayments.Add(payment);
+                var newStartDate = latestPayment.MemberShipEndDate.Value;
+                
+                latestPayment.MemberShipStartDate = newStartDate;
+                latestPayment.MemberShipRenewalDate = renewalDate;
+                latestPayment.MemberShipEndDate = newStartDate.AddDays(plan.DurationInDays);
+                latestPayment.PaymentStatus = kvk.Gym.Enums.PaymentStatus.Paid;
             }
+
 
             await _db.SaveChangesAsync(cancellationToken);
 
@@ -568,14 +617,14 @@ public class MembershipService : IMembershipService
                 var record = new PaymentRecord
                 {
                     MembershipId = member.Id,
-                    MemberPaymentId = payment.Id,
-                    Amount = payment.Amount,
-                    PaymentType = payment.PaymentType,
-                    PaymentStatus = payment.PaymentStatus,
-                    MemberShipStartDate = payment.MemberShipStartDate,
-                    MemberShipEndDate = payment.MemberShipEndDate,
-                    MemberShipRenewalDate = payment.MemberShipRenewalDate,
-                    TransactionReference = payment.TransactionReference,
+                    MemberPaymentId = latestPayment.Id,
+                    Amount = latestPayment.Amount,
+                    PaymentType = latestPayment.PaymentType,
+                    PaymentStatus = latestPayment.PaymentStatus,
+                    MemberShipStartDate = latestPayment.MemberShipStartDate,
+                    MemberShipEndDate = latestPayment.MemberShipEndDate,
+                    MemberShipRenewalDate = latestPayment.MemberShipRenewalDate,
+                    TransactionReference = latestPayment.TransactionReference,
                     MembershipNumber = member.MembershipNumber,
                     MembershipPlanId = member.MembershipPlanId,
                     MembershipPlanTitle = plan.Title
@@ -589,8 +638,8 @@ public class MembershipService : IMembershipService
                 // Non-fatal: if recording fails, do not block the upgrade flow
             }
 
-            var message = MessageList.GetPlanUpgradedMessage(member.FirstName, plan.Title, payment.MemberShipStartDate,
-                payment.MemberShipEndDate);
+            var message = MessageList.GetPlanUpgradedMessage(member.FirstName, plan.Title, latestPayment.MemberShipStartDate,
+                latestPayment.MemberShipEndDate);
             await _smsService.SendSingleMessageAsync(member.Phone!, message, cancellationToken);
 
 
@@ -609,9 +658,9 @@ public class MembershipService : IMembershipService
                 MembershipPlanId = member.MembershipPlanId,
                 MembershipPlanTitle = plan.Title,
                 MembershipPlanPrice = plan.Price,
-                MembershipStartDate = payment.MemberShipStartDate,
-                MembershipEndDate = payment.MemberShipEndDate,
-                PaymentStatus = payment.PaymentStatus,
+                MembershipStartDate = latestPayment.MemberShipStartDate,
+                MembershipEndDate = latestPayment.MemberShipEndDate,
+                PaymentStatus = latestPayment.PaymentStatus,
                 MembershipPlanDurationInDays = plan.DurationInDays,
                 IdentityUserId = member.IdentityUserId,
                 IsSavedFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
@@ -757,5 +806,34 @@ public class MembershipService : IMembershipService
             "staff" => "GYM-STA",
             _ => "GYM-UNK"
         };
+    }
+
+    public async Task<Result> AssignTrainerAsync(Guid memberId, Guid trainerId, CancellationToken cancellationToken = default)
+    {
+        if (memberId == Guid.Empty)
+            return Result.Failure("Member id cannot be empty");
+
+        if (trainerId == Guid.Empty)
+            return Result.Failure("Trainer id cannot be empty");
+
+        try
+        {
+            var member = await _db.Memberships.FindAsync(memberId);
+            if (member == null)
+                return Result.Failure("Member not found");
+
+            var trainer = await _db.Set<Trainer>().FindAsync(trainerId);
+            if (trainer == null)
+                return Result.Failure("Trainer not found");
+
+            member.TrainerId = trainerId;
+            await _db.SaveChangesAsync(cancellationToken);
+
+            return Result.Success("Trainer assigned successfully");
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure($"Failed to assign trainer: {ex.Message}");
+        }
     }
 }

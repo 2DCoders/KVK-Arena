@@ -5,8 +5,11 @@ import {
   TikTokOutlined,
   FacebookOutlined,
 } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 
 export default function GymFooter() {
+  const navigate = useNavigate();
+
   return (
     <footer className="relative overflow-hidden bg-[#f5f5f5] py-16 md:py-24">
       {/* Background Text */}
@@ -79,6 +82,10 @@ export default function GymFooter() {
                     <li>
                       <a
                         href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigate("/gym");
+                        }}
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
                         Gym
@@ -88,6 +95,10 @@ export default function GymFooter() {
                     <li>
                       <a
                         href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigate("/badminton");
+                        }}
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
                         Badminton
@@ -97,6 +108,10 @@ export default function GymFooter() {
                     <li>
                       <a
                         href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigate("/gaming");
+                        }}
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
                         Gaming
@@ -106,6 +121,10 @@ export default function GymFooter() {
                     <li>
                       <a
                         href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigate("/carwash");
+                        }}
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
                         Carwash
@@ -115,6 +134,10 @@ export default function GymFooter() {
                     <li>
                       <a
                         href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigate("/cafe");
+                        }}
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
                         Cafe
