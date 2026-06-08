@@ -26,7 +26,7 @@ export default function BadmintonHeader() {
                 className={
                     isScrolled
                         ? "relative mx-auto flex h-16 max-w-295 items-center justify-between overflow-hidden rounded-full border border-black/30 bg-black/60 px-4 py-1.5 shadow-lg backdrop-blur-md lg:h-20 lg:px-8 lg:py-2"
-                        : "relative mx-auto flex h-16 max-w-295 items-center justify-between overflow-hidden rounded-full border border-white/14 bg-[linear-gradient(135deg,rgba(6,12,28,0.78),rgba(15,23,42,0.52),rgba(8,16,32,0.72))] px-4 py-1.5 shadow-[0_18px_50px_rgba(2,6,23,0.45)] backdrop-blur-2xl lg:h-20 lg:px-8 lg:py-2"
+                        : "relative mx-auto flex h-16 max-w-295 items-center justify-between overflow-hidden rounded-full border border-white/14 bg-[linear-gradient(135deg,rgba(92,45,20,0.75),rgba(92,45,20,0.75),rgba(180,95,40,0.55))] px-4 py-1.5 shadow-[0_18px_50px_rgba(2,6,23,0.45)] backdrop-blur-2xl lg:h-20 lg:px-8 lg:py-2"
                 }
             >
                 {/* glow */}

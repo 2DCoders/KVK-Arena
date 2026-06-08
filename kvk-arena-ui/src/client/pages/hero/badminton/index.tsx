@@ -1,9 +1,9 @@
-import hero_bg from "@/assets/hero/badminton_hero.png";
+import hero_bg from "@/assets/hero/badminton_hero1.png";
 import { Badge } from "lucide-react";
 
 export default function BadmintonHero() {
   return (
-    <section className="relative isolate overflow-hidden min-h-[90vh] flex items-center py-28">
+    <section className="relative isolate overflow-hidden min-h-[85vh] flex items-center py-25">
       {/* Background */}
       <div
         aria-hidden="true"
@@ -27,7 +27,7 @@ export default function BadmintonHero() {
             <span className="block text-5xl sm:text-6xl lg:text-6xl">
               Train
             </span>
-            <span className="block text-5xl sm:text-6xl lg:text-6xl text-[#2d86fc]">
+            <span className="block text-5xl sm:text-6xl lg:text-6xl text-[#D98B4D]">
               Play
             </span>
             <span className="block text-5xl sm:text-6xl lg:text-6xl">
@@ -68,7 +68,7 @@ export default function BadmintonHero() {
 
           {/* Event Card */}
           <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-4 flex items-center gap-4">
-            <div className="h-14 w-14 rounded-xl bg-[#2d86fc] flex items-center justify-center">
+            <div className="h-14 w-14 rounded-xl bg-[#A65A2A] flex items-center justify-center">
               <Badge className="h-7 w-7 text-white" />
             </div>
 

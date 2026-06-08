@@ -48,7 +48,7 @@ export default function BadmintonBookings() {
             <div className="mx-auto max-w-7xl px-4">
                 {/* Header */}
                 <div className="mb-12 text-center">
-                    <h2 data-aos="fade-up" className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl bg-linear-to-r from-[#000000] via-[#2d86fc] to-[#2d86fc] bg-clip-text text-transparent">
+                    <h2 data-aos="fade-up" className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl bg-linear-to-r from-[#000000] via-[#A65A2A] to-[#C9773A] bg-clip-text text-transparent">
                         Book Your Time
                     </h2>
 
@@ -57,14 +57,14 @@ export default function BadmintonBookings() {
                     </p>
                 </div>
 
-                <div className="mb-10 overflow-x-auto">
+                <div className="mb-10 overflow-x-auto p-3">
                     <div className="flex gap-6 pb-2" data-aos="fade-up" data-aos-delay="150">
                         {courts.map((courtItem, index) => (
                             <button
                                 key={courtItem.id}
                                 onClick={() => setSelectedCourt(index)}
                                 className={`relative cursor-pointer min-w-[320px] overflow-hidden rounded-xl transition-all ${selectedCourt === index
-                                        ? "ring-4 ring-blue-500"
+                                        ? "ring-4 ring-[#D98B4D]"
                                         : "hover:scale-[1.02]"
                                     }`}
                             >
@@ -78,7 +78,7 @@ export default function BadmintonBookings() {
                                     {courtItem.id}
                                 </div>
 
-                                <div className="absolute right-4 top-4 rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white">
+                                <div className="absolute right-4 top-4 rounded-full bg-[#C9773A] px-3 py-1 text-xs font-semibold text-white">
                                     Available
                                 </div>
                             </button>
@@ -138,7 +138,7 @@ export default function BadmintonBookings() {
                         {courts[selectedCourt].id} ({slots[selectedSlot]})
                     </h3>
 
-                    <button className="rounded-md cursor-pointer bg-blue-600 px-10 py-4 font-semibold text-white transition hover:bg-blue-700">
+                    <button className="rounded-md cursor-pointer bg-[#A65A2A] px-10 py-4 font-semibold text-white transition hover:bg-[#C9773A]">
                         Book Now
                     </button>
                 </div>
