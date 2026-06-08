@@ -47,7 +47,10 @@ export default function BadmintonHome() {
       <BadmintonHeader />
       <BadmintonHero />
       {/* <StatsBadminton /> */}
-      <BadmintonBookings />
+
+      <section id="bookings" className="relative overflow-hidden">
+        <BadmintonBookings />
+      </section>
 
       <section id="courts" className="relative overflow-hidden">
         <Courts />

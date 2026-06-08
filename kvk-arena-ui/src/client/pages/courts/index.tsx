@@ -165,7 +165,7 @@ export default function Courts() {
                     </div>
                   ))}
                 </div>
-
+<a href="#bookings" className="text-white">
                 <button
                   className="
                     mt-8
@@ -186,9 +186,11 @@ export default function Courts() {
                     hover:shadow-[0_15px_40px_rgba(201,119,58,0.4)]
                   "
                 >
-                  Book Court
+                 
+                            Book Court
                   <ArrowRight size={18} />
                 </button>
+                        </a>
               </div>
             </div>
           ))}

@@ -74,10 +74,12 @@ export default function Journey() {
             tournaments, and a thriving community designed to elevate your game.
           </p>
 
+        <a href="#bookings" className="text-slate-900">
           <button className="mt-8 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-primary px-8 py-4 font-semibold text-white transition-all hover:scale-105">
             Start Your Journey
             <ArrowRight size={18} />
           </button>
+          </a>
         </div>
 
         {/* Curved Cards */}
