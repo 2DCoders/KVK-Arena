@@ -26,7 +26,7 @@ export default function GamingHeader() {
         className={
           isScrolled
             ? "relative mx-auto flex h-16 max-w-295 items-center justify-between overflow-hidden rounded-full border border-black/30 bg-black/60 px-4 py-1.5 shadow-lg backdrop-blur-md lg:h-20 lg:px-8 lg:py-2"
-            : "relative mx-auto flex h-16 max-w-295 items-center justify-between overflow-hidden rounded-full border border-white/14 bg-[linear-gradient(135deg,rgba(90,15,15,0.80),rgba(90,15,15,0.80),rgba(180,30,30,0.55))] px-4 py-1.5 shadow-[0_18px_50px_rgba(2,6,23,0.45)] backdrop-blur-2xl lg:h-20 lg:px-8 lg:py-2"
+            : "relative mx-auto flex h-16 max-w-295 items-center justify-between overflow-hidden rounded-full border border-white/30 bg-[linear-gradient(135deg,rgba(0,0,0,0),rgba(90,15,15,0.80),rgba(180,30,30,0.55))] px-4 py-1.5 shadow-[0_18px_50px_rgba(2,6,23,0.45)] backdrop-blur-2xl lg:h-20 lg:px-8 lg:py-2"
         }
       >
         {/* glow */}
@@ -34,11 +34,9 @@ export default function GamingHeader() {
           className={
             isScrolled
               ? "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,0,0,0.22),transparent_28%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.03),transparent_30%)]"
-              : "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.22),transparent_38%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_30%)]"
+              : "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,0,0,0),transparent_38%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_30%)]"
           }
         />
-        <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/20" />
-
         {/* LEFT NAV */}
         <nav className="relative z-10 hidden items-center gap-8 lg:flex">
           <a
