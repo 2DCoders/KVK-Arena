@@ -43,7 +43,7 @@ export default function BadmintonHome() {
         <>
             <BadmintonHeader />
             <BadmintonHero />
-            <StatsBadminton />
+            {/* <StatsBadminton /> */}
             <BadmintonBookings />
             <Courts />
             <BadmintonServices />
