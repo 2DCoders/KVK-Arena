@@ -4,7 +4,6 @@ import { useLayoutEffect, useState, useEffect } from "react";
 import BadmintonHeader from "@/components/header/badminton";
 import BadmintonHero from "../../hero/badminton";
 import BadmintonServices from "../../services/badminton";
-import StatsBadminton from "../../stats/badminton";
 import BadmintonBookings from "../../bookings/badminton";
 import Courts from "../../courts";
 import Journey from "../../journey";
@@ -46,7 +45,6 @@ export default function BadmintonHome() {
     <>
       <BadmintonHeader />
       <BadmintonHero />
-      {/* <StatsBadminton /> */}
 
       <section id="bookings" className="relative overflow-hidden">
         <BadmintonBookings />

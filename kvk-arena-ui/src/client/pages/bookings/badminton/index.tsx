@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import court from "@/assets/court.png";
-import { CalendarDays, Clock3, MapPin, Check } from "lucide-react";
+import { CalendarDays, Clock3 } from "lucide-react";
 
 export default function BadmintonBookings() {
   const courts = [
