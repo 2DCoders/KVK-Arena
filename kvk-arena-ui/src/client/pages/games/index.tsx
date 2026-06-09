@@ -26,47 +26,50 @@ const games = [
       "Miles Morales embraces his role as Spider-Man when a threat puts his home and city in danger.",
     background: spidermanBg,
     character: spiderman,
+    glowColor: "rgba(239,68,68,0.25)", // Red
   },
   {
     id: 2,
     title: "Hogwarts Legacy",
     genre: "PC Game",
     description:
-      "**Hogwarts Legacy** is an open-world action RPG where you play a Hogwarts student in the 1800s, uncovering a powerful secret that could change the wizarding world forever.",
+      "Hogwarts Legacy is an open-world action RPG where you play a Hogwarts student in the 1800s.",
     background: hogwartsBg,
     character: hogwarts,
+    glowColor: "rgba(96,165,250,0.25)", // Light Blue
   },
   {
     id: 3,
     title: "Call of Duty: Black Ops 7",
     genre: "PS5 Game",
     description:
-      "Continue the intense, high-stakes action of the Call of Duty franchise with the latest installment.",
+      "Continue the intense, high-stakes action of the Call of Duty franchise.",
     background: codBg,
     character: cod,
+    glowColor: "rgba(251,146,60,0.25)", // Orange
   },
   {
     id: 4,
     title: "The Last of Us Part II",
     genre: "PS5 Game",
-    description:
-      "Joel and Ellie must navigate a post-apocalyptic world filled with infected creatures and hostile human factions.",
+    description: "Joel and Ellie must navigate a post-apocalyptic world.",
     background: lastofusBg,
     character: lastofus,
+    glowColor: "rgba(74,222,128,0.25)", // Green
   },
   {
     id: 5,
     title: "Uncharted 4: A Thief's End",
     genre: "PS5 Game",
-    description:
-      "Join Nathan Drake on his final adventure as he searches for the lost city of Isla de Muerta.",
+    description: "Join Nathan Drake on his final adventure.",
     background: unchartedBg,
     character: uncharted,
+    glowColor: "rgba(192,132,252,0.25)", // Purple
   },
 ];
+
 export default function Games() {
   const swiperRef = useRef<SwiperType | null>(null);
-  const [activeCharacter, setActiveCharacter] = useState(0);
 
   return (
     <section className="relative overflow-hidden bg-[#050812] py-28">
@@ -88,63 +91,66 @@ export default function Games() {
             swiperRef.current = swiper;
           }}
         >
-          {games.map((game, gameIndex) => (
+          {games.map((game) => (
             <SwiperSlide key={game.id}>
-  <div className="relative min-h-[750px] overflow-hidden rounded-[40px]">
-    
-    {/* Game Background */}
-    <img
-      src={game.background}
-      alt=""
-      className="absolute inset-0 w-full h-full object-cover"
-    />
+              <div className="relative min-h-[750px] overflow-hidden rounded-[40px]">
+                {/* Game Background */}
+                <img
+                  src={game.background}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
 
-    {/* Dark Overlay */}
-    <div className="absolute inset-0 bg-black/70" />
+                {/* Dark Overlay */}
+                <div className="absolute inset-0 bg-black/70" />
 
-    {/* Left Side Darker */}
-    <div className="absolute inset-0 bg-gradient-to-r from-[#050812] via-[#050812]/85 to-transparent" />
+                {/* Left Side Darker */}
+                <div className="absolute inset-0 bg-gradient-to-r from-[#050812] via-[#050812]/85 to-transparent" />
 
-    {/* Content */}
-    <div className="relative z-10 container mx-auto px-8 lg:px-16 min-h-[750px] flex items-center justify-between">
-      
-      {/* Left Content */}
-      <div className="max-w-xl">
-        <div className="inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-5 py-2">
-          <span className="h-2 w-2 rounded-full bg-red-500" />
-          <span className="text-sm font-medium text-red-400">
-            {game.genre}
-          </span>
-        </div>
+                {/* Content */}
+                <div className="relative z-10 container mx-auto px-8 lg:px-16 min-h-[750px] flex items-center justify-between">
+                  {/* Left Content */}
+                  <div className="max-w-xl">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-5 py-2">
+                      <span className="h-2 w-2 rounded-full bg-red-500" />
+                      <span className="text-sm font-medium text-red-400">
+                        {game.genre}
+                      </span>
+                    </div>
 
-        <h2 className="mt-8 text-5xl lg:text-7xl font-black text-white uppercase">
-          {game.title}
-        </h2>
+                    <h2 className="mt-8 text-5xl lg:text-7xl font-black text-white uppercase">
+                      {game.title}
+                    </h2>
 
-        <p className="mt-6 text-lg text-gray-300">
-          {game.description}
-        </p>
-      </div>
+                    <p className="mt-6 text-lg text-gray-300">
+                      {game.description}
+                    </p>
+                  </div>
 
-      {/* Character */}
-      <div className="relative">
-        {/* Red Glow */}
-        <div className="absolute inset-0 scale-125 rounded-full bg-red-600/20 blur-[120px]" />
+                  {/* Character */}
+                  <div className="relative">
+                    <div
+                      className="absolute inset-0 scale-110 rounded-full"
+                      style={{
+                        backgroundColor: game.glowColor,
+                        filter: "blur(60px)",
+                      }}
+                    />
 
-        <img
-          src={game.character}
-          alt={game.title}
-          className="
-            relative z-10
-            h-[700px]
-            object-contain
-            drop-shadow-[0_30px_100px_rgba(239,68,68,0.6)]
-          "
-        />
-      </div>
-    </div>
-  </div>
-</SwiperSlide>
+                    <img
+                      src={game.character}
+                      alt={game.title}
+                      className="
+                        relative z-10
+                        h-[700px]
+                        object-contain
+                        drop-shadow-[0_20px_60px_rgba(255,255,255,0.15)]
+                    "
+                    />
+                  </div>
+                </div>
+              </div>
+            </SwiperSlide>
           ))}
         </Swiper>
 
