@@ -7,6 +7,13 @@ import type { Swiper as SwiperType } from "swiper";
 import "swiper/css";
 
 import spiderman from "@/assets/spiderman.png";
+import spidermanBg from "@/assets/spiderman_bg.jpeg";
+import hogwarts from "@/assets/hogwarts.png";
+import hogwartsBg from "@/assets/hogwarts_bg.jpg";
+import cod from "@/assets/cod.png";
+import codBg from "@/assets/cod_bg.jpg";
+import lastofus from "@/assets/lastofus.png";
+import lastofusBg from "@/assets/lastofus_bg.jpg";
 
 const games = [
   {
@@ -15,18 +22,37 @@ const games = [
     genre: "PC Game",
     description:
       "Miles Morales embraces his role as Spider-Man when a threat puts his home and city in danger.",
-    characters: Array(5).fill(spiderman),
+    background: spidermanBg,
+    character: spiderman,
   },
   {
     id: 2,
-    title: "Marvel’s Spider-Man: Miles Morales",
+    title: "Hogwarts Legacy",
     genre: "PC Game",
     description:
-      "Miles Morales embraces his role as Spider-Man when a threat puts his home and city in danger.",
-    characters: Array(5).fill(spiderman),
+      "**Hogwarts Legacy** is an open-world action RPG where you play a Hogwarts student in the 1800s, uncovering a powerful secret that could change the wizarding world forever.",
+    background: hogwartsBg,
+    character: hogwarts,
+  },
+  {
+    id: 3,
+    title: "Call of Duty: Black Ops 7",
+    genre: "PS5 Game",
+    description:
+      "Continue the intense, high-stakes action of the Call of Duty franchise with the latest installment.",
+    background: codBg,
+    character: cod,
+  },
+  {
+    id: 4,
+    title: "The Last of Us Part II",
+    genre: "PS5 Game",
+    description:
+      "Joel and Ellie must navigate a post-apocalyptic world filled with infected creatures and hostile human factions.",
+    background: lastofusBg,
+    character: lastofus,
   },
 ];
-
 export default function Games() {
   const swiperRef = useRef<SwiperType | null>(null);
   const [activeCharacter, setActiveCharacter] = useState(0);
@@ -53,46 +79,61 @@ export default function Games() {
         >
           {games.map((game, gameIndex) => (
             <SwiperSlide key={game.id}>
-              <div className="relative min-h-[700px] flex flex-col lg:flex-row items-center justify-between gap-12">
-                {/* Huge Background Number */}
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 text-[180px] lg:text-[260px] font-black text-white/[0.03] select-none pointer-events-none">
-                  0{gameIndex + 1}
-                </div>
+  <div className="relative min-h-[750px] overflow-hidden rounded-[40px]">
+    
+    {/* Game Background */}
+    <img
+      src={game.background}
+      alt=""
+      className="absolute inset-0 w-full h-full object-cover"
+    />
 
-                {/* Left Content */}
-                <div className="relative z-10 max-w-xl">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-5 py-2">
-                    <span className="h-2 w-2 rounded-full bg-red-500" />
-                    <span className="text-sm font-medium text-red-400">
-                      {game.genre}
-                    </span>
-                  </div>
+    {/* Dark Overlay */}
+    <div className="absolute inset-0 bg-black/70" />
 
-                  <h2 className="mt-8 text-5xl lg:text-6xl font-black text-white leading-tight uppercase">
-                    {game.title}
-                  </h2>
+    {/* Left Side Darker */}
+    <div className="absolute inset-0 bg-gradient-to-r from-[#050812] via-[#050812]/85 to-transparent" />
 
-                  <p className="mt-6 text-lg leading-relaxed text-gray-400">
-                    {game.description}
-                  </p>
-                </div>
+    {/* Content */}
+    <div className="relative z-10 container mx-auto px-8 lg:px-16 min-h-[750px] flex items-center justify-between">
+      
+      {/* Left Content */}
+      <div className="max-w-xl">
+        <div className="inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-5 py-2">
+          <span className="h-2 w-2 rounded-full bg-red-500" />
+          <span className="text-sm font-medium text-red-400">
+            {game.genre}
+          </span>
+        </div>
 
-                {/* Character Image */}
-                <div className="relative flex flex-1 justify-center">
-                  <div className="absolute h-[500px] w-[500px] rounded-full bg-red-600/20 blur-[140px]" />
+        <h2 className="mt-8 text-5xl lg:text-7xl font-black text-white uppercase">
+          {game.title}
+        </h2>
 
-                  <div className="absolute h-[550px] w-[550px] rounded-full border border-red-500/10" />
+        <p className="mt-6 text-lg text-gray-300">
+          {game.description}
+        </p>
+      </div>
 
-                  <div className="absolute h-[650px] w-[650px] rounded-full border border-white/[0.04]" />
+      {/* Character */}
+      <div className="relative">
+        {/* Red Glow */}
+        <div className="absolute inset-0 scale-125 rounded-full bg-red-600/20 blur-[120px]" />
 
-                  <img
-                    src={game.characters[activeCharacter]}
-                    alt={game.title}
-                    className="relative z-10 h-[550px] lg:h-[700px] object-contain drop-shadow-[0_25px_80px_rgba(239,68,68,0.55)] transition-all duration-700 hover:scale-105"
-                  />
-                </div>
-              </div>
-            </SwiperSlide>
+        <img
+          src={game.character}
+          alt={game.title}
+          className="
+            relative z-10
+            h-[700px]
+            object-contain
+            drop-shadow-[0_30px_100px_rgba(239,68,68,0.6)]
+          "
+        />
+      </div>
+    </div>
+  </div>
+</SwiperSlide>
           ))}
         </Swiper>
 
