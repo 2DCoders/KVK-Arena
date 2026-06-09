@@ -14,6 +14,8 @@ import cod from "@/assets/cod.png";
 import codBg from "@/assets/cod_bg.jpg";
 import lastofus from "@/assets/lastofus.png";
 import lastofusBg from "@/assets/lastofus_bg.jpg";
+import uncharted from "@/assets/uncharted.png";
+import unchartedBg from "@/assets/uncharted_bg.jpg";
 
 const games = [
   {
@@ -51,6 +53,15 @@ const games = [
       "Joel and Ellie must navigate a post-apocalyptic world filled with infected creatures and hostile human factions.",
     background: lastofusBg,
     character: lastofus,
+  },
+  {
+    id: 5,
+    title: "Uncharted 4: A Thief's End",
+    genre: "PS5 Game",
+    description:
+      "Join Nathan Drake on his final adventure as he searches for the lost city of Isla de Muerta.",
+    background: unchartedBg,
+    character: uncharted,
   },
 ];
 export default function Games() {
