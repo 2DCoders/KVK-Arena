@@ -72,9 +72,9 @@ export default function Games() {
   const swiperRef = useRef<SwiperType | null>(null);
 
   return (
-    <section className="relative overflow-hidden bg-[#050812] py-28">
+    <section className="relative overflow-hidden bg-[#050812] py-5">
       {/* Background Glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(220,38,38,0.15),transparent_40%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_50%,rgba(220,38,38,0.15),transparent_60%)]" />
 
       {/* Grid Pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
@@ -102,7 +102,7 @@ export default function Games() {
                 />
 
                 {/* Dark Overlay */}
-                <div className="absolute inset-0 bg-black/70" />
+                <div className="absolute inset-0 bg-black/50" />
 
                 {/* Left Side Darker */}
                 <div className="absolute inset-0 bg-gradient-to-r from-[#050812] via-[#050812]/85 to-transparent" />
@@ -125,6 +125,50 @@ export default function Games() {
                     <p className="mt-6 text-lg text-gray-300">
                       {game.description}
                     </p>
+
+                    {/* Game Info */}
+                    <div className="mt-8 flex flex-wrap gap-3">
+                      <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-gray-300">
+                        Action
+                      </span>
+
+                      <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-gray-300">
+                        Multiplayer
+                      </span>
+
+                      <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-gray-300">
+                        4K Support
+                      </span>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="mt-8 flex gap-10">
+                      <div>
+                        <p className="text-3xl font-bold text-white">4.9</p>
+                        <p className="text-sm text-gray-400">Rating</p>
+                      </div>
+
+                      <div>
+                        <p className="text-3xl font-bold text-white">50+</p>
+                        <p className="text-sm text-gray-400">Hours</p>
+                      </div>
+
+                      <div>
+                        <p className="text-3xl font-bold text-white">PS5</p>
+                        <p className="text-sm text-gray-400">Platform</p>
+                      </div>
+                    </div>
+
+                    {/* Buttons */}
+                    <div className="mt-10 flex gap-4">
+                      <button className="rounded-xl bg-red-600 px-8 py-4 font-semibold text-white transition hover:bg-red-500">
+                        Book Now
+                      </button>
+
+                      <button className="rounded-xl border border-white/10 bg-white/5 px-8 py-4 font-semibold text-white backdrop-blur-md transition hover:border-white/30">
+                        View Details
+                      </button>
+                    </div>
                   </div>
 
                   {/* Character */}
