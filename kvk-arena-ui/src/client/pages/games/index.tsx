@@ -105,7 +105,7 @@ export default function Games() {
                 <div className="absolute inset-0 bg-black/50" />
 
                 {/* Left Side Darker */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#050812] via-[#050812]/85 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#050812] via-[#050812]/75 to-transparent" />
 
                 {/* Content */}
                 <div className="relative z-10 container mx-auto px-8 lg:px-16 min-h-[750px] flex items-center justify-between">
