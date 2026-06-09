@@ -4,6 +4,8 @@ import { useLayoutEffect, useState, useEffect } from "react";
 import GamingHeader from "@/components/header/gaming";
 import GamingHero from "../../hero/gaming";
 import GamingSlider from "../../brands-slider/gaming";
+import GamingServices from "../../services/gaming";
+import Games from "../../games";
 
 export default function GamingHome() {
   useLayoutEffect(() => {
@@ -42,6 +44,8 @@ export default function GamingHome() {
       <GamingHeader />
       <GamingHero />
       <GamingSlider />
+      <GamingServices />
+      <Games />
 
       <div className="fixed bottom-6 right-4 z-50 flex items-end gap-3 sm:bottom-8 sm:right-6">
         <div className="flex min-w-18 flex-col items-center rounded-full border border-white/30 bg-slate-950/85 px-3 py-2 text-white shadow-[0_18px_45px_rgba(15,23,42,0.32)] backdrop-blur-md">
@@ -58,7 +62,7 @@ export default function GamingHome() {
             type="button"
             onClick={scrollToTop}
             aria-label="Scroll back to top"
-            className="flex cursor-pointer h-13 w-13 items-center justify-center rounded-full bg-[#A65A2A] text-white shadow-[0_18px_45px_rgba(41,107,225,0.35)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_55px_rgba(41,107,225,0.42)]"
+            className="flex cursor-pointer h-13 w-13 items-center justify-center rounded-full bg-red-600 text-white shadow-[0_18px_45px_rgba(41,107,225,0.35)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_55px_rgba(41,107,225,0.42)]"
           >
             <svg
               viewBox="0 0 24 24"
