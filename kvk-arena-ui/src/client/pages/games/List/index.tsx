@@ -31,7 +31,7 @@ export default function GamesList() {
       <div className="absolute right-0 bottom-0 h-96 w-96 rounded-full bg-pink-500/10 blur-[120px]" />
       <div className="container mx-auto px-4 lg:px-8 relative">
         {/* Header */}
-        <div className="mb-8 flex items-start justify-between">
+        <div className="mb-8 flex items-start justify-between" data-aos="fade-up">
           {/* Left */}
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.3em] text-red-600">
@@ -114,6 +114,8 @@ export default function GamesList() {
         >
           {games.map((game) => (
             <div
+                key={game.id}
+                data-aos="fade-up"
               className="
                 group
                 min-w-[280px]

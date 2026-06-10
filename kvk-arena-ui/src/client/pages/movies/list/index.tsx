@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import thumbnail from "@/assets/spiderman_bg.jpeg";
 
-const games = Array.from({ length: 10 }).map((_, i) => ({
+const movies = Array.from({ length: 10 }).map((_, i) => ({
   id: i + 1,
   title: `Movie ${i + 1}`,
   platform: i % 2 === 0 ? "PC" : "PS5",
@@ -25,13 +25,12 @@ export default function MoviesList() {
 
   return (
     <section className="relative bg-[linear-gradient(180deg,#ffffff,#f8fafc,#eef2ff)] py-20">
-      {" "}
       {/* Background Glow */}
       <div className="absolute left-0 top-0 h-96 w-96 rounded-full bg-red-500/10 blur-[120px]" />
       <div className="absolute right-0 bottom-0 h-96 w-96 rounded-full bg-pink-500/10 blur-[120px]" />
       <div className="container mx-auto px-4 lg:px-8 relative">
         {/* Header */}
-        <div className="mb-8 flex items-start justify-between">
+        <div className="mb-8 flex items-start justify-between" data-aos="fade-up">
           {/* Left */}
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.3em] text-red-600">
@@ -112,8 +111,10 @@ export default function MoviesList() {
             pb-10
           "
         >
-          {games.map((game) => (
+          {movies.map((movie) => (
             <div
+                key={movie.id}
+              data-aos="fade-up"
               className="
                 group
                 min-w-[280px]
@@ -133,7 +134,7 @@ export default function MoviesList() {
               <div className="relative p-3 pb-0">
                 <div className="overflow-hidden rounded-[18px]">
                   <img
-                    src={game.image}
+                    src={movie.image}
                     alt=""
                     className="
                     aspect-[3/2]
@@ -156,7 +157,7 @@ export default function MoviesList() {
               {/* Content */}
               <div className="p-5">
                 <h3 className="line-clamp-2 text-lg font-bold text-slate-900">
-                  {game.title}
+                  {movie.title}
                 </h3>
 
                 <p className="mt-2 text-sm text-slate-500">
