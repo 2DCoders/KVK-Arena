@@ -31,7 +31,8 @@ export default function GamesList() {
       <div className="absolute right-0 bottom-0 h-96 w-96 rounded-full bg-pink-500/10 blur-[120px]" />
       <div className="container mx-auto px-4 lg:px-8 relative">
         {/* Header */}
-        <div className="mb-5 flex items-end justify-between">
+        <div className="mb-8 flex items-start justify-between">
+          {/* Left */}
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.3em] text-red-600">
               Explore
@@ -46,40 +47,60 @@ export default function GamesList() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* Right */}
+          <div className="flex flex-col items-end gap-5">
+            {/* Align with Explore */}
             <button
               className="
-                group
-                rounded-full
-                px-0
-                py-1
-                font-semibold
-                text-red-500
-                transition-all
-                cursor-pointer
-                hover:underline
-            "
+        text-red-500
+        font-semibold
+        hover:text-red-600
+        hover:underline
+        transition
+      "
             >
               View More Games
             </button>
+
+            {/* Align with Popular Games */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => scroll("left")}
+                className="
+          flex h-12 w-12 items-center justify-center
+          rounded-full
+          border border-slate-200
+          bg-white
+          shadow-lg
+          transition-all
+          hover:-translate-y-1
+          hover:border-red-500
+          hover:text-red-600
+          cursor-pointer
+        "
+              >
+                <ChevronLeft size={20} />
+              </button>
+
+              <button
+                onClick={() => scroll("right")}
+                className="
+          flex h-12 w-12 items-center justify-center
+          rounded-full
+          border border-slate-200
+          bg-white
+          shadow-lg
+          transition-all
+          hover:-translate-y-1
+          hover:border-red-500
+          hover:text-red-600
+          cursor-pointer
+        "
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
           </div>
-        </div>
-
-        {/* Controls */}
-        <div className="mb-6 flex justify-end gap-3">
-          <button
-            onClick={() => scroll("left")}
-            className="flex h-12 w-12 items-center cursor-pointer justify-center rounded-full border border-slate-200 bg-white shadow-lg transition hover:border-red-500 hover:text-red-600"
-          >
-            <ChevronLeft size={20} />
-          </button>
-
-          <button
-            onClick={() => scroll("right")}
-            className="flex h-12 w-12 items-center cursor-pointer justify-center rounded-full border border-slate-200 bg-white shadow-lg transition hover:border-red-500 hover:text-red-600"
-          >
-            <ChevronRight size={20} />
-          </button>
         </div>
 
         {/* Cards */}
