@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
@@ -161,12 +161,12 @@ export default function Games() {
 
                     {/* Buttons */}
                     <div className="mt-10 flex gap-4">
-                      <button className="rounded-xl bg-red-600 px-8 py-4 font-semibold text-white transition hover:bg-red-500">
+                      <button className="rounded-xl cursor-pointer bg-red-600 px-8 py-4 font-semibold text-white transition hover:bg-red-500">
                         Book Now
                       </button>
 
-                      <button className="rounded-xl border border-white/10 bg-white/5 px-8 py-4 font-semibold text-white backdrop-blur-md transition hover:border-white/30">
-                        View Details
+                      <button className="rounded-xl cursor-pointer border border-white/10 bg-white/5 px-8 py-4 font-semibold text-white backdrop-blur-md transition hover:border-white/30">
+                        View More
                       </button>
                     </div>
                   </div>
@@ -207,14 +207,14 @@ export default function Games() {
           <div className="ml-8 flex gap-3">
             <button
               onClick={() => swiperRef.current?.slidePrev()}
-              className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white backdrop-blur-xl transition-all hover:border-red-500/50 hover:bg-red-500/10"
+              className="flex h-12 w-12 items-center cursor-pointer justify-center rounded-full border border-white/10 bg-white/5 text-white backdrop-blur-xl transition-all hover:border-red-500/50 hover:bg-red-500/10"
             >
               <ChevronLeft size={20} />
             </button>
 
             <button
               onClick={() => swiperRef.current?.slideNext()}
-              className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white backdrop-blur-xl transition-all hover:border-red-500/50 hover:bg-red-500/10"
+              className="flex h-12 w-12 items-center cursor-pointer justify-center rounded-full border border-white/10 bg-white/5 text-white backdrop-blur-xl transition-all hover:border-red-500/50 hover:bg-red-500/10"
             >
               <ChevronRight size={20} />
             </button>
