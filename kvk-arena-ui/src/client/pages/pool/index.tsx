@@ -7,23 +7,23 @@ export default function Pool() {
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
         {/* Left Content */}
         <div>
-          <span className="inline-block px-4 py-1 rounded-full bg-red-500/10 text-red-500 text-sm font-semibold border border-red-500/20">
+          <span className="inline-block px-4 py-1 rounded-full bg-red-500/10 text-red-500 text-sm font-semibold border border-red-500/20" data-aos="fade-up">
             POOL
           </span>
 
-          <h2 className="mt-6 text-4xl md:text-5xl font-bold text-white leading-tight">
+          <h2 className="mt-6 text-4xl md:text-5xl font-bold text-white leading-tight" data-aos="fade-up" data-aos-delay="100">
             Experience Premium
             <span className="text-red-500"> Pool Gaming</span>
           </h2>
 
-          <p className="mt-6 text-gray-400 text-lg max-w-xl leading-relaxed">
+          <p className="mt-6 text-gray-400 text-lg max-w-xl leading-relaxed" data-aos="fade-up" data-aos-delay="200">
             Challenge friends, sharpen your skills, and enjoy professional
             billiards tables in a premium gaming atmosphere designed for both
             casual and competitive players.
           </p>
 
           {/* Features */}
-          <div className="mt-12 grid sm:grid-cols-2 gap-8">
+          <div className="mt-12 grid sm:grid-cols-2 gap-8" data-aos="fade-up" data-aos-delay="300">
             <div>
               <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
                 <Clock3 className="w-6 h-6 text-red-500" />
@@ -57,7 +57,7 @@ export default function Pool() {
         </div>
 
         {/* Right Image */}
-        <div className="relative">
+        <div className="relative" data-aos="fade-up">
           <div className="overflow-hidden rounded-3xl border border-white/10">
             <img
               src={poolImage}
