@@ -21,7 +21,7 @@ const movies = [
       "The RIP follows the story of a group of friends who become entangled in a web of mystery and danger.",
     background: movie5,
     rating: 4.3,
-    imdb: 7.6,
+    imdb: 6.8,
   },
   {
     id: 2,
@@ -31,7 +31,7 @@ const movies = [
       "Peter Parker's life is turned upside down when a new villain emerges, threatening New York City and his loved ones.",
     background: movie1,
     rating: 4,
-    imdb: 8.7,
+    imdb: 0.0,
   },
   {
     id: 3,
@@ -41,7 +41,7 @@ const movies = [
       "Mickey 17 is a heartwarming tale of friendship and adventure.",
     background: movie2,
     rating: 4,
-    imdb: 8.2,
+    imdb: 6.7,
   },  
   {
     id: 4,
@@ -51,7 +51,7 @@ const movies = [
       "Dhurandhar The Revenge is a thrilling action film that follows the story of a man seeking justice and revenge.",
     background: movie3,
     rating: 4.5,
-    imdb: 8.9,
+    imdb: 8.3,
   },  
   {
     id: 5,
@@ -61,7 +61,7 @@ const movies = [
       "Back in Action is a high-octane thriller that follows the story of a former special forces operative who must go on the run to clear his name.",
     background: movie4,
     rating: 4.2,
-    imdb: 8.5,
+    imdb: 5.9,
   },
 ];
 
