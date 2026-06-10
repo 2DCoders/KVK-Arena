@@ -28,6 +28,8 @@ public class GymDbContext : AppDbContextBase
     public DbSet<SystemSetting> SystemSettings { get; set; } = null!;
     
     public DbSet<Trainer> Trainers { get; set; } = null!;
+    
+    public DbSet<TrainerApprovalRequests> TrainerApprovalRequests { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
