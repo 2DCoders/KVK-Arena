@@ -15,7 +15,6 @@ public class Membership : User
     
     public MemberType MemberType { get; set; }
     
-    public Gender Gender { get; set; }
 
     public MembershipStatus MembershipStatus { get; set; } = MembershipStatus.Inactive;
     

@@ -27,5 +27,13 @@ public class User : AuditableEntity
 
     [MaxLength(25)]
     public required string Status { get; set; }
+    
+    public Gender Gender { get; set; }
+
+}
+public enum Gender
+{
+    Male = 1,
+    Female = 2
 }
 

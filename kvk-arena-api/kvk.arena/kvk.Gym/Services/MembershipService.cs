@@ -856,7 +856,7 @@ public class MembershipService : IMembershipService
     private async Task<string> GetNextMembershipTokenAsync(string memberTypeName, int year,
         CancellationToken cancellationToken)
     {
-        var prefix = GetMembershipPrefix(memberTypeName);
+        var prefix = MembershipNumberFormatter.GetMembershipPrefix(memberTypeName);
         var yearPrefix = $"{prefix}-{year}";
 
         var latestNumber = await _db.Memberships
@@ -877,16 +877,7 @@ public class MembershipService : IMembershipService
         return nextToken.ToString("D4");
     }
 
-    private static string GetMembershipPrefix(string memberTypeName)
-    {
-        return memberTypeName?.ToLowerInvariant() switch
-        {
-            "client" => "GYM-MEM",
-            "trainer" => "GYM-TRA",
-            "staff" => "GYM-STA",
-            _ => "GYM-UNK"
-        };
-    }
+
 
     public async Task<Result> AssignTrainerAsync(Guid memberId, Guid trainerId,
         CancellationToken cancellationToken = default)
