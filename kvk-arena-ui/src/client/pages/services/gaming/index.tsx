@@ -22,9 +22,9 @@ const services = [
     color: "bg-red-500",
   },
   {
-    title: "Billiards",
+    title: "Pool",
     description:
-      "Challenge your friends on professional billiard tables in a stylish and competitive environment.",
+      "Challenge your friends on professional pool tables in a stylish and competitive environment.",
     icon: Trophy,
     color: "bg-blue-500",
   },
@@ -64,7 +64,7 @@ export default function GamingServices() {
             return (
               <div
                 key={index}
-                className="group bg-white rounded-[28px] p-8 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-3"
+                className="group relative bg-white rounded-[28px] p-8 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-3"
               >
                 {/* Icon */}
                 <div
@@ -78,12 +78,12 @@ export default function GamingServices() {
                   {service.title}
                 </h3>
 
-                <p className="text-gray-500 leading-relaxed mb-8">
+                <p className="text-gray-500 leading-relaxed mb-15">
                   {service.description}
                 </p>
 
                 {/* Button */}
-                <button className="group/btn cursor-pointer inline-flex items-center gap-2 border border-gray-300 rounded-full px-5 py-2.5 text-sm font-semibold text-gray-800 hover:bg-black hover:text-white hover:border-black transition-all">
+                <button className="group/btn absolute bottom-8 left-1/3 transform -translate-x-1/2 cursor-pointer inline-flex items-center gap-2 border border-gray-300 rounded-full px-5 py-2.5 text-sm font-semibold text-gray-800 hover:bg-black hover:text-white hover:border-black transition-all">
                   View More
                   <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
                 </button>
