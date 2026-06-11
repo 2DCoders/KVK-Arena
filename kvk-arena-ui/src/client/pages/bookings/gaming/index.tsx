@@ -83,6 +83,19 @@ export default function BookingGaming() {
     }
   };
 
+  const duration = selectedSlots.length;
+
+  const selectedTimeRange = useMemo(() => {
+    if (selectedSlots.length === 0) return "-";
+
+    const sorted = [...selectedSlots].sort((a, b) => a - b);
+
+    const firstSlot = slots[sorted[0]];
+    const lastSlot = slots[sorted[sorted.length - 1]];
+
+    return `${formatHour(firstSlot.start)} - ${formatHour(lastSlot.end)}`;
+  }, [selectedSlots]);
+
   const dates = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date();
@@ -110,10 +123,10 @@ export default function BookingGaming() {
   const total = useMemo(() => {
     if (!selectedService) return 0;
 
-    let amount = selectedService.price;
+    let amount = selectedService.price * selectedSlots.length;
 
     if (selectedService.id === "ps5") {
-      amount += extraConsoles * 500;
+      amount += extraConsoles * 500 * selectedSlots.length;
     }
 
     return amount;
@@ -154,7 +167,7 @@ export default function BookingGaming() {
                       onClick={() => {
                         setSelectedService(service);
                         setSelectedDate(null);
-                        setSelectedSlot("");
+                        setSelectedSlots([]);
                         setExtraConsoles(0);
                       }}
                       className={`text-left cursor-pointer rounded-2xl border-2 p-4 transition-all ${
@@ -196,7 +209,10 @@ export default function BookingGaming() {
                 {dates.map((date, index) => (
                   <button
                     key={index}
-                    onClick={() => setSelectedDate(index)}
+                    onClick={() => {
+                      setSelectedDate(index);
+                      setSelectedSlots([]);
+                    }}
                     className={`h-20 cursor-pointer rounded-xl border-2 flex flex-col items-center justify-center transition ${
                       selectedDate === index
                         ? "border-red-500 bg-red-500 text-white"
@@ -262,7 +278,9 @@ export default function BookingGaming() {
             {selectedService?.id === "ps5" && (
               <div
                 className={`bg-white border cursor-pointer border-gray-200 rounded-2xl p-4 transition-all ${
-                  !selectedSlot ? "opacity-40 pointer-events-none" : ""
+                  selectedSlots.length === 0
+                    ? "opacity-40 pointer-events-none"
+                    : ""
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -284,7 +302,7 @@ export default function BookingGaming() {
                     onClick={() =>
                       setExtraConsoles(Math.max(0, extraConsoles - 1))
                     }
-                    className="w-9 h-9 rounded-lg border flex items-center justify-center"
+                    className="w-9 h-9 cursor-pointer rounded-lg border flex items-center justify-center"
                   >
                     <Minus size={16} />
                   </button>
@@ -297,7 +315,7 @@ export default function BookingGaming() {
                     onClick={() =>
                       setExtraConsoles(Math.min(2, extraConsoles + 1))
                     }
-                    className="w-9 h-9 rounded-lg border flex items-center justify-center"
+                    className="w-9 h-9 cursor-pointer rounded-lg border flex items-center justify-center"
                   >
                     <Plus size={16} />
                   </button>
@@ -333,8 +351,15 @@ export default function BookingGaming() {
                 </div>
 
                 <div>
-                  <p className="text-xs text-gray-500">Time Slot</p>
-                  <p className="font-semibold">{selectedSlot || "-"}</p>
+                  <p className="text-xs text-gray-500">Time Range</p>
+                  <p className="font-semibold">{selectedTimeRange}</p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-gray-500">Duration</p>
+                  <p className="font-semibold">
+                    {duration > 0 ? `${duration} Hour(s)` : "-"}
+                  </p>
                 </div>
 
                 {selectedService?.id === "ps5" && (
@@ -356,9 +381,11 @@ export default function BookingGaming() {
 
                 <button
                   disabled={
-                    !selectedService || selectedDate === null || !selectedSlot
+                    !selectedService ||
+                    selectedDate === null ||
+                    selectedSlots.length === 0
                   }
-                  className="w-full h-12 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  className="w-full cursor-pointer h-12 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
                   Confirm Booking
                 </button>
