@@ -1,7 +1,8 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import thumbnail from "@/assets/spiderman_bg.jpeg";
+import GameLibraryModal from "@/components/games-list";
 
 const games = Array.from({ length: 10 }).map((_, i) => ({
   id: i + 1,
@@ -13,6 +14,8 @@ const games = Array.from({ length: 10 }).map((_, i) => ({
 
 export default function GamesList() {
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const [showGames, setShowGames] = useState(false);
 
   const scroll = (direction: "left" | "right") => {
     if (!scrollRef.current) return;
@@ -31,7 +34,10 @@ export default function GamesList() {
       <div className="absolute right-0 bottom-0 h-96 w-96 rounded-full bg-pink-500/10 blur-[120px]" />
       <div className="container mx-auto px-4 lg:px-8 relative">
         {/* Header */}
-        <div className="mb-8 flex items-start justify-between" data-aos="fade-up">
+        <div
+          className="mb-8 flex items-start justify-between"
+          data-aos="fade-up"
+        >
           {/* Left */}
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.3em] text-red-600">
@@ -47,10 +53,16 @@ export default function GamesList() {
             </p>
           </div>
 
+          <GameLibraryModal
+            isOpen={showGames}
+            onClose={() => setShowGames(false)}
+          />
+
           {/* Right */}
           <div className="flex flex-col items-end gap-5">
             {/* Align with Explore */}
             <button
+            onClick={() => setShowGames(true)}
               className="
         text-red-500
         font-semibold
@@ -115,8 +127,8 @@ export default function GamesList() {
         >
           {games.map((game) => (
             <div
-                key={game.id}
-                data-aos="fade-up"
+              key={game.id}
+              data-aos="fade-up"
               className="
                 group
                 min-w-[280px]
