@@ -1,12 +1,5 @@
 import { useMemo, useState } from "react";
-import {
-  Monitor,
-  Gamepad2,
-  Trophy,
-  Film,
-  Minus,
-  Plus,
-} from "lucide-react";
+import { Monitor, Gamepad2, Trophy, Film, Minus, Plus } from "lucide-react";
 
 const services = [
   {
@@ -40,25 +33,55 @@ const services = [
 ];
 
 const slots = [
-  "09:00",
-  "10:00",
-  "11:00",
-  "12:00",
-  "13:00",
-  "14:00",
-  "15:00",
-  "16:00",
-  "17:00",
-  "18:00",
-  "19:00",
-  "20:00",
+  { start: 9, end: 10 },
+  { start: 10, end: 11 },
+  { start: 11, end: 12 },
+  { start: 12, end: 13 },
+  { start: 13, end: 14 },
+  { start: 14, end: 15 },
+  { start: 15, end: 16 },
+  { start: 16, end: 17 },
+  { start: 17, end: 18 },
+  { start: 18, end: 19 },
+  { start: 19, end: 20 },
+  { start: 20, end: 21 },
 ];
+
+const formatHour = (hour: number) => {
+  const period = hour >= 12 ? "PM" : "AM";
+  const displayHour = hour > 12 ? hour - 12 : hour;
+  return `${displayHour}.00 ${period}`;
+};
 
 export default function BookingGaming() {
   const [selectedService, setSelectedService] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [selectedSlot, setSelectedSlot] = useState("");
   const [extraConsoles, setExtraConsoles] = useState(0);
+  const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
+
+  const toggleSlot = (index: number) => {
+    if (selectedSlots.length === 0) {
+      setSelectedSlots([index]);
+      return;
+    }
+
+    const sorted = [...selectedSlots].sort((a, b) => a - b);
+
+    const min = sorted[0];
+    const max = sorted[sorted.length - 1];
+
+    // Remove selected slot
+    if (selectedSlots.includes(index)) {
+      setSelectedSlots(selectedSlots.filter((i) => i !== index));
+      return;
+    }
+
+    // Only allow adjacent extension
+    if (index === min - 1 || index === max + 1) {
+      setSelectedSlots([...selectedSlots, index]);
+    }
+  };
 
   const dates = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => {
@@ -67,6 +90,22 @@ export default function BookingGaming() {
       return d;
     });
   }, []);
+
+  const isSlotDisabled = (slotHour: number, dateIndex: number | null) => {
+    if (dateIndex !== 0) return false;
+
+    const now = new Date();
+
+    const sriLankaHour = Number(
+      now.toLocaleString("en-US", {
+        hour: "numeric",
+        hour12: false,
+        timeZone: "Asia/Colombo",
+      }),
+    );
+
+    return slotHour <= sriLankaHour;
+  };
 
   const total = useMemo(() => {
     if (!selectedService) return 0;
@@ -103,9 +142,7 @@ export default function BookingGaming() {
           <div className="space-y-6">
             {/* Services */}
             <div>
-              <h3 className="text-lg font-semibold mb-3">
-                Select Service
-              </h3>
+              <h3 className="text-lg font-semibold mb-3">Select Service</h3>
 
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {services.map((service) => {
@@ -150,14 +187,10 @@ export default function BookingGaming() {
             {/* Dates */}
             <div
               className={`transition-all ${
-                !selectedService
-                  ? "opacity-40 pointer-events-none"
-                  : ""
+                !selectedService ? "opacity-40 pointer-events-none" : ""
               }`}
             >
-              <h3 className="text-lg font-semibold mb-3">
-                Select Date
-              </h3>
+              <h3 className="text-lg font-semibold mb-3">Select Date</h3>
 
               <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
                 {dates.map((date, index) => (
@@ -176,9 +209,7 @@ export default function BookingGaming() {
                       })}
                     </p>
 
-                    <p className="text-lg font-bold">
-                      {date.getDate()}
-                    </p>
+                    <p className="text-lg font-bold">{date.getDate()}</p>
 
                     <p className="text-[10px]">
                       {date.toLocaleDateString("en-US", {
@@ -193,29 +224,37 @@ export default function BookingGaming() {
             {/* Slots */}
             <div
               className={`transition-all ${
-                selectedDate === null
-                  ? "opacity-40 pointer-events-none"
-                  : ""
+                selectedDate === null ? "opacity-40 pointer-events-none" : ""
               }`}
             >
-              <h3 className="text-lg font-semibold mb-3">
-                Select Time Slot
-              </h3>
+              <h3 className="text-lg font-semibold mb-3">Select Time Slot</h3>
 
               <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                {slots.map((slot) => (
-                  <button
-                    key={slot}
-                    onClick={() => setSelectedSlot(slot)}
-                    className={`h-10 cursor-pointer rounded-lg border text-sm font-medium transition ${
-                      selectedSlot === slot
-                        ? "border-red-500 bg-red-500 text-white"
-                        : "border-gray-200 bg-white hover:border-red-300"
-                    }`}
-                  >
-                    {slot}
-                  </button>
-                ))}
+                {slots.map((slot, index) => {
+                  const disabled = isSlotDisabled(slot.start, selectedDate);
+
+                  const selected = selectedSlots.includes(index);
+
+                  return (
+                    <button
+                      key={index}
+                      disabled={disabled}
+                      onClick={() => toggleSlot(index)}
+                      className={`h-12 cursor-pointer rounded-lg border text-xs font-medium transition
+          ${
+            selected
+              ? "bg-red-500 border-red-500 text-white"
+              : "bg-white border-gray-200"
+          }
+          ${disabled ? "opacity-30 cursor-not-allowed" : "hover:border-red-300"}
+        `}
+                    >
+                      {formatHour(slot.start)}
+                      <br />
+                      {formatHour(slot.end)}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -223,16 +262,12 @@ export default function BookingGaming() {
             {selectedService?.id === "ps5" && (
               <div
                 className={`bg-white border cursor-pointer border-gray-200 rounded-2xl p-4 transition-all ${
-                  !selectedSlot
-                    ? "opacity-40 pointer-events-none"
-                    : ""
+                  !selectedSlot ? "opacity-40 pointer-events-none" : ""
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold">
-                      Additional Consoles
-                    </h3>
+                    <h3 className="font-semibold">Additional Consoles</h3>
 
                     <p className="text-xs text-gray-500">
                       2 Consoles Included Free
@@ -247,9 +282,7 @@ export default function BookingGaming() {
                 <div className="flex items-center gap-3 mt-4">
                   <button
                     onClick={() =>
-                      setExtraConsoles(
-                        Math.max(0, extraConsoles - 1)
-                      )
+                      setExtraConsoles(Math.max(0, extraConsoles - 1))
                     }
                     className="w-9 h-9 rounded-lg border flex items-center justify-center"
                   >
@@ -262,9 +295,7 @@ export default function BookingGaming() {
 
                   <button
                     onClick={() =>
-                      setExtraConsoles(
-                        Math.min(2, extraConsoles + 1)
-                      )
+                      setExtraConsoles(Math.min(2, extraConsoles + 1))
                     }
                     className="w-9 h-9 rounded-lg border flex items-center justify-center"
                   >
@@ -282,15 +313,11 @@ export default function BookingGaming() {
           {/* SUMMARY */}
           <div>
             <div className="sticky top-24 bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-              <h3 className="text-xl font-bold mb-5">
-                Booking Summary
-              </h3>
+              <h3 className="text-xl font-bold mb-5">Booking Summary</h3>
 
               <div className="space-y-4">
                 <div>
-                  <p className="text-xs text-gray-500">
-                    Service
-                  </p>
+                  <p className="text-xs text-gray-500">Service</p>
                   <p className="font-semibold">
                     {selectedService?.title || "-"}
                   </p>
@@ -306,30 +333,20 @@ export default function BookingGaming() {
                 </div>
 
                 <div>
-                  <p className="text-xs text-gray-500">
-                    Time Slot
-                  </p>
-                  <p className="font-semibold">
-                    {selectedSlot || "-"}
-                  </p>
+                  <p className="text-xs text-gray-500">Time Slot</p>
+                  <p className="font-semibold">{selectedSlot || "-"}</p>
                 </div>
 
                 {selectedService?.id === "ps5" && (
                   <div>
-                    <p className="text-xs text-gray-500">
-                      Additional Consoles
-                    </p>
-                    <p className="font-semibold">
-                      {extraConsoles}
-                    </p>
+                    <p className="text-xs text-gray-500">Additional Consoles</p>
+                    <p className="font-semibold">{extraConsoles}</p>
                   </div>
                 )}
 
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">
-                      Total Amount
-                    </span>
+                    <span className="font-medium">Total Amount</span>
 
                     <span className="text-xl font-bold text-red-600">
                       Rs. {total}
@@ -339,9 +356,7 @@ export default function BookingGaming() {
 
                 <button
                   disabled={
-                    !selectedService ||
-                    selectedDate === null ||
-                    !selectedSlot
+                    !selectedService || selectedDate === null || !selectedSlot
                   }
                   className="w-full h-12 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
