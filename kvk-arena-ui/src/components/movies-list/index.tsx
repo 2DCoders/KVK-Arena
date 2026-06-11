@@ -10,20 +10,19 @@ interface GameLibraryModalProps {
 const sampleImage =
   "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200";
 
-const games = Array.from({ length: 60 }).map((_, i) => ({
+const movies = Array.from({ length: 60 }).map((_, i) => ({
   id: i + 1,
-  title: `Game ${i + 1}`,
-  platform: i % 2 === 0 ? "PC" : "PS5",
+  title: `Movie ${i + 1}`,
+  platform: i % 2 === 0 ? "Netflix" : "Prime Video",
   image: sampleImage,
-  genres: ["Action", "Multiplayer"],
   rating: 4.9,
-}));[
-    
-]
+  imdb: 8.5,
+}));
+[];
 
 const ITEMS_PER_PAGE = 20;
 
-export default function GameLibraryModal({
+export default function MovieLibraryModal({
   isOpen,
   onClose,
 }: GameLibraryModalProps) {
@@ -54,14 +53,14 @@ export default function GameLibraryModal({
     setPage(1);
   }, [search, platform]);
 
-  const filteredGames = useMemo(() => {
-    return games.filter((game) => {
-      const matchesSearch = game.title
+  const filteredMovies = useMemo(() => {
+    return movies.filter((movie) => {
+      const matchesSearch = movie.title
         .toLowerCase()
         .includes(search.toLowerCase());
 
       const matchesPlatform =
-        platform === "all" ? true : game.platform.toLowerCase() === platform;
+        platform === "all" ? true : movie.platform.toLowerCase() === platform;
 
       return matchesSearch && matchesPlatform;
     });
@@ -69,10 +68,10 @@ export default function GameLibraryModal({
 
   const totalPages = Math.max(
     1,
-    Math.ceil(filteredGames.length / ITEMS_PER_PAGE),
+    Math.ceil(filteredMovies.length / ITEMS_PER_PAGE),
   );
 
-  const paginatedGames = filteredGames.slice(
+  const paginatedMovies = filteredMovies.slice(
     (page - 1) * ITEMS_PER_PAGE,
     page * ITEMS_PER_PAGE,
   );
@@ -111,9 +110,9 @@ export default function GameLibraryModal({
         {/* Header */}
         <div className="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Game Library</h2>
+            <h2 className="text-xl font-bold text-gray-900">Movie Library</h2>
 
-            <p className="text-sm text-gray-500 mt-1">Browse available games</p>
+            <p className="text-sm text-gray-500 mt-1">Browse available movies</p>
           </div>
 
           <button
@@ -135,13 +134,13 @@ export default function GameLibraryModal({
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search games..."
+              placeholder="Search movies..."
               className="w-full h-11 pl-10 pr-4 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-red-500 text-sm"
             />
           </div>
 
           <div className="flex gap-2">
-            {["all", "pc", "ps5"].map((item) => (
+            {["all", "netflix", "prime video"].map((item) => (
               <button
                 key={item}
                 onClick={() => setPlatform(item)}
@@ -161,7 +160,7 @@ export default function GameLibraryModal({
         <div className="flex-1 overflow-y-auto px-6 py-5">
           <div className="flex items-center justify-between mb-5">
             <p className="text-sm text-gray-500">
-              {filteredGames.length} Games Found
+              {filteredMovies.length} Movies Found
             </p>
 
             <p className="text-sm text-gray-500">
@@ -170,26 +169,26 @@ export default function GameLibraryModal({
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
-            {paginatedGames.map((game) => (
+            {paginatedMovies.map((movie) => (
               <div
-                key={game.id}
+                key={movie.id}
                 className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
               >
                 {/* Image */}
                 <div className="p-3 pb-0">
                   <div className="relative">
                     <img
-                      src={game.image}
-                      alt={game.title}
+                      src={movie.image}
+                      alt={movie.title}
                       className="w-full h-40 object-cover rounded-2xl"
                     />
 
                     <span
                       className={`absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-semibold text-white ${
-                        game.platform === "PC" ? "bg-blue-600" : "bg-purple-600"
+                        movie.platform === "PC" ? "bg-blue-600" : "bg-purple-600"
                       }`}
                     >
-                      {game.platform}
+                      {movie.platform}
                     </span>
                   </div>
                 </div>
@@ -197,29 +196,22 @@ export default function GameLibraryModal({
                 {/* Content */}
                 <div className="p-4">
                   <h3 className="font-bold text-lg text-gray-900">
-                    {game.title}
+                    {movie.title}
                   </h3>
 
                   <p className="text-sm text-gray-500 mt-1">
-                    Available for gaming sessions
+                    Available for streaming
                   </p>
 
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {game.genres.map((genre) => (
-                      <span
-                        key={genre}
-                        className="px-3 py-1 rounded-full bg-gray-100 text-xs text-gray-700"
-                      >
-                        {genre}
-                      </span>
-                    ))}
-                  </div>
+                  <p className="text-[11px] text-gray-400 mt-2">
+                    IMDB: {movie.imdb}
+                  </p>
 
                   <div className="border-t border-gray-100 mt-4 pt-3 flex justify-between">
                     <div>
                       <p className="text-[11px] text-gray-400">Platform</p>
 
-                      <p className="font-semibold text-sm">{game.platform}</p>
+                      <p className="font-semibold text-sm">{movie.platform}</p>
                     </div>
 
                     <div className="text-right">
@@ -228,7 +220,7 @@ export default function GameLibraryModal({
                       <div className="flex items-center gap-1 text-amber-500 justify-end">
                         <Star size={14} fill="currentColor" />
                         <span className="font-semibold text-sm">
-                          {game.rating}
+                          {movie.rating}
                         </span>
                       </div>
                     </div>

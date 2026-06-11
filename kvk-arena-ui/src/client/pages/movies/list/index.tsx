@@ -1,7 +1,8 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import thumbnail from "@/assets/spiderman_bg.jpeg";
+import MovieLibraryModal from "@/components/movies-list";
 
 const movies = Array.from({ length: 10 }).map((_, i) => ({
   id: i + 1,
@@ -13,6 +14,8 @@ const movies = Array.from({ length: 10 }).map((_, i) => ({
 
 export default function MoviesList() {
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const [showMovies, setShowMovies] = useState(false);
 
   const scroll = (direction: "left" | "right") => {
     if (!scrollRef.current) return;
@@ -46,10 +49,16 @@ export default function MoviesList() {
             </p>
           </div>
 
+          <MovieLibraryModal
+  isOpen={showMovies}
+  onClose={() => setShowMovies(false)}
+/>
+
           {/* Right */}
           <div className="flex flex-col items-end gap-5">
             {/* Align with Explore */}
             <button
+            onClick={() => setShowMovies(true)}
               className="
         text-red-500
         font-semibold
