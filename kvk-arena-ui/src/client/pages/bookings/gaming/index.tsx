@@ -207,7 +207,7 @@ export default function BookingGaming() {
   }, [selectedService, extraConsoles]);
 
   return (
-    <section className="bg-gray-50 py-12">
+    <section className="bg-gray-50 pt-25 pb-10">
       <div className="max-w-7xl mx-auto px-4 lg:px-6">
         {/* Header */}
         <div className="text-center mb-10">
@@ -340,19 +340,19 @@ export default function BookingGaming() {
                         setSelectedResources([]);
                       }}
                       className={`h-16 cursor-pointer rounded-lg border text-xs font-medium transition
-  ${
-    selected
-      ? "bg-red-500 border-red-500 text-white"
-      : availability.full
-        ? "bg-gray-200 border-gray-300 text-gray-500"
-        : "bg-white border-gray-200 hover:border-red-300"
-  }
-  ${
-    disabled
-      ? "opacity-40 cursor-not-allowed"
-      : ""
-  }
-`}
+                      ${
+                        selected
+                          ? "bg-red-500 border-red-500 text-white"
+                          : availability.full
+                            ? "bg-gray-200 border-gray-300 text-gray-500"
+                            : "bg-white border-gray-200 hover:border-red-300"
+                      }
+                      ${
+                        disabled
+                          ? "opacity-40 cursor-not-allowed"
+                          : ""
+                      }
+                    `}
                     >
                       <div className="leading-tight">
                         <div>{formatHour(slot.start)}</div>
@@ -406,17 +406,17 @@ export default function BookingGaming() {
                           }
                         }}
                         className={`h-12 cursor-pointer rounded-xl border font-medium transition
-              ${
-                selected
-                  ? "bg-red-500 text-white border-red-500"
-                  : "bg-white border-gray-200"
-              }
-              ${
-                !allSelectedSlotsAvailable
-                  ? "opacity-40 cursor-not-allowed"
-                  : ""
-              }
-            `}
+                        ${
+                          selected
+                            ? "bg-red-500 text-white border-red-500"
+                            : "bg-white border-gray-200"
+                        }
+                        ${
+                          !allSelectedSlotsAvailable
+                            ? "opacity-40 cursor-not-allowed"
+                            : ""
+                        }
+                      `}
                       >
                         {resource}
                       </button>

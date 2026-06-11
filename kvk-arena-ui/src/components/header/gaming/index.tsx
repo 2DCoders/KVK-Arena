@@ -169,15 +169,19 @@ export default function GamingHeader() {
             </a>
 
             {/* JOIN BUTTON */}
-            <button
-              onClick={() => {
-                closeMobileMenu();
-                setIsOpenSignup(true);
-              }}
-              className="mt-6 cursor-pointer rounded-xl bg-[#296BE1] px-5 py-3 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#2158bc] hover:shadow-[0_16px_36px_rgba(41,107,225,0.35)]"
+            <a
+              href="#bookings"
+              onClick={closeMobileMenu}
             >
-              Book Now
-            </button>
+              <button
+                onClick={() => {
+                  closeMobileMenu();
+                }}
+                className="mt-6 cursor-pointer rounded-xl bg-[#296BE1] px-5 py-3 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#2158bc] hover:shadow-[0_16px_36px_rgba(41,107,225,0.35)]"
+              >
+                Book Now
+              </button>
+            </a>
           </nav>
         </div>
       </div>
