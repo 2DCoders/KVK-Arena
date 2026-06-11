@@ -7,28 +7,32 @@ const services = [
     title: "PC Games",
     icon: Monitor,
     price: 1000,
-    description: "High-end gaming PCs",
+    description: "High-end gaming PCs with latest titles",
+    resources: ["PC 1", "PC 2"],
   },
   {
     id: "ps5",
     title: "PS5 Games",
     icon: Gamepad2,
     price: 1500,
-    description: "2 Consoles Included",
+    description: "2 PS5 consoles with popular games",
+    resources: ["PS5 1", "PS5 2", "PS5 3"],
   },
   {
     id: "pool",
     title: "Pool Table",
     icon: Trophy,
     price: 1200,
-    description: "Professional billiards tables",
+    description: "Enjoy a game of pool with friends",
+    resources: ["Table 1", "Table 2"],
   },
   {
     id: "movie",
     title: "Movie Room",
     icon: Film,
     price: 2500,
-    description: "Private cinema experience",
+    description: "Private movie room with big screen and surround sound",
+    resources: ["Room 1", "Room 2"],
   },
 ];
 
@@ -47,6 +51,28 @@ const slots = [
   { start: 20, end: 21 },
 ];
 
+const existingBookings = [
+  {
+    serviceId: "pc",
+    resourceId: "PC 1",
+    date: "2026-06-11",
+    slotIndex: 1,
+  },
+  {
+    serviceId: "pc",
+    resourceId: "PC 2",
+    date: "2026-06-11",
+    slotIndex: 1,
+  },
+
+  {
+    serviceId: "ps5",
+    resourceId: "PS5 1",
+    date: "2026-06-11",
+    slotIndex: 3,
+  },
+];
+
 const formatHour = (hour: number) => {
   const period = hour >= 12 ? "PM" : "AM";
   const displayHour = hour > 12 ? hour - 12 : hour;
@@ -56,11 +82,17 @@ const formatHour = (hour: number) => {
 export default function BookingGaming() {
   const [selectedService, setSelectedService] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState("");
   const [extraConsoles, setExtraConsoles] = useState(0);
   const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
+  const [selectedResources, setSelectedResources] = useState<string[]>([]);
 
   const toggleSlot = (index: number) => {
+    const availability = getSlotAvailability(index);
+
+    if (availability.full) {
+      return;
+    }
+
     if (selectedSlots.length === 0) {
       setSelectedSlots([index]);
       return;
@@ -104,6 +136,11 @@ export default function BookingGaming() {
     });
   }, []);
 
+  const selectedDateString =
+    selectedDate !== null
+      ? dates[selectedDate].toISOString().split("T")[0]
+      : null;
+
   const isSlotDisabled = (slotHour: number, dateIndex: number | null) => {
     if (dateIndex !== 0) return false;
 
@@ -120,10 +157,41 @@ export default function BookingGaming() {
     return slotHour <= sriLankaHour;
   };
 
+  const getSlotAvailability = (slotIndex: number) => {
+    if (!selectedService || !selectedDateString) {
+      return {
+        availableResources: [],
+        full: false,
+      };
+    }
+
+    const availableResources = selectedService.resources.filter(
+      (resource: string) => {
+        const booking = existingBookings.find(
+          (b) =>
+            b.serviceId === selectedService.id &&
+            b.resourceId === resource &&
+            b.date === selectedDateString &&
+            b.slotIndex === slotIndex,
+        );
+
+        return !booking;
+      },
+    );
+
+    return {
+      availableResources,
+      full: availableResources.length === 0,
+    };
+  };
+
   const total = useMemo(() => {
     if (!selectedService) return 0;
 
-    let amount = selectedService.price * selectedSlots.length;
+    let amount =
+      selectedService.price *
+      selectedSlots.length *
+      Math.max(selectedResources.length, 1);
 
     if (selectedService.id === "ps5") {
       amount += extraConsoles * 500 * selectedSlots.length;
@@ -169,6 +237,7 @@ export default function BookingGaming() {
                         setSelectedDate(null);
                         setSelectedSlots([]);
                         setExtraConsoles(0);
+                        setSelectedResources([]);
                       }}
                       className={`text-left cursor-pointer rounded-2xl border-2 p-4 transition-all ${
                         selectedService?.id === service.id
@@ -212,6 +281,7 @@ export default function BookingGaming() {
                     onClick={() => {
                       setSelectedDate(index);
                       setSelectedSlots([]);
+                      setSelectedResources([]);
                     }}
                     className={`h-20 cursor-pointer rounded-xl border-2 flex flex-col items-center justify-center transition ${
                       selectedDate === index
@@ -247,7 +317,11 @@ export default function BookingGaming() {
 
               <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
                 {slots.map((slot, index) => {
-                  const disabled = isSlotDisabled(slot.start, selectedDate);
+                  const availability = getSlotAvailability(index);
+
+                  const disabled =
+                    isSlotDisabled(slot.start, selectedDate) ||
+                    availability.full;
 
                   const selected = selectedSlots.includes(index);
 
@@ -255,24 +329,91 @@ export default function BookingGaming() {
                     <button
                       key={index}
                       disabled={disabled}
-                      onClick={() => toggleSlot(index)}
-                      className={`h-12 cursor-pointer rounded-lg border text-xs font-medium transition
+                      onClick={() => {
+                        toggleSlot(index);
+                        setSelectedResources([]);
+                      }}
+                      className={`h-16 rounded-lg border text-xs font-medium transition
           ${
             selected
               ? "bg-red-500 border-red-500 text-white"
-              : "bg-white border-gray-200"
+              : availability.full
+                ? "bg-gray-200 border-gray-300 text-gray-500"
+                : "bg-white border-gray-200 hover:border-red-300"
           }
-          ${disabled ? "opacity-30 cursor-not-allowed" : "hover:border-red-300"}
         `}
                     >
-                      {formatHour(slot.start)}
-                      <br />
-                      {formatHour(slot.end)}
+                      <div className="leading-tight">
+                        <div>{formatHour(slot.start)}</div>
+
+                        <div>{formatHour(slot.end)}</div>
+
+                        <div className="text-[10px] mt-1 font-semibold">
+                          {availability.full
+                            ? "Unavailable"
+                            : `Available: ${availability.availableResources.length}`}
+                        </div>
+                      </div>
                     </button>
                   );
                 })}
               </div>
             </div>
+
+            {selectedService && selectedSlots.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Select Resource</h3>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {selectedService.resources.map((resource: string) => {
+                    const allSelectedSlotsAvailable = selectedSlots.every(
+                      (slotIndex) => {
+                        const availability = getSlotAvailability(slotIndex);
+
+                        return availability.availableResources.includes(
+                          resource,
+                        );
+                      },
+                    );
+
+                    const selected = selectedResources.includes(resource);
+
+                    return (
+                      <button
+                        key={resource}
+                        disabled={!allSelectedSlotsAvailable}
+                        onClick={() => {
+                          if (selected) {
+                            setSelectedResources(
+                              selectedResources.filter((r) => r !== resource),
+                            );
+                          } else {
+                            setSelectedResources([
+                              ...selectedResources,
+                              resource,
+                            ]);
+                          }
+                        }}
+                        className={`h-12 rounded-xl border font-medium transition
+              ${
+                selected
+                  ? "bg-red-500 text-white border-red-500"
+                  : "bg-white border-gray-200"
+              }
+              ${
+                !allSelectedSlotsAvailable
+                  ? "opacity-40 cursor-not-allowed"
+                  : ""
+              }
+            `}
+                      >
+                        {resource}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* PS5 Extras */}
             {selectedService?.id === "ps5" && (
@@ -330,7 +471,7 @@ export default function BookingGaming() {
 
           {/* SUMMARY */}
           <div>
-            <div className="sticky top-24 bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+            <div className="sticky top-24 bg-white rounded-2xl border border-gray-200 p-6 shadow-sm mt-10">
               <h3 className="text-xl font-bold mb-5">Booking Summary</h3>
 
               <div className="space-y-4">
@@ -338,6 +479,16 @@ export default function BookingGaming() {
                   <p className="text-xs text-gray-500">Service</p>
                   <p className="font-semibold">
                     {selectedService?.title || "-"}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-gray-500">Selected Resources</p>
+
+                  <p className="font-semibold">
+                    {selectedResources.length > 0
+                      ? selectedResources.join(", ")
+                      : "-"}
                   </p>
                 </div>
 
