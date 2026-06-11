@@ -32,7 +32,7 @@ const services = [
   },
   {
     id: "movie",
-    title: "Private Movie Room",
+    title: "Movie Room",
     icon: Film,
     price: 2500,
     description: "Private cinema experience",
@@ -40,24 +40,24 @@ const services = [
 ];
 
 const slots = [
-  "09:00 AM",
-  "10:00 AM",
-  "11:00 AM",
-  "12:00 PM",
-  "01:00 PM",
-  "02:00 PM",
-  "03:00 PM",
-  "04:00 PM",
-  "05:00 PM",
-  "06:00 PM",
-  "07:00 PM",
-  "08:00 PM",
+  "09:00",
+  "10:00",
+  "11:00",
+  "12:00",
+  "13:00",
+  "14:00",
+  "15:00",
+  "16:00",
+  "17:00",
+  "18:00",
+  "19:00",
+  "20:00",
 ];
 
 export default function BookingGaming() {
   const [selectedService, setSelectedService] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState<string>("");
+  const [selectedSlot, setSelectedSlot] = useState("");
   const [extraConsoles, setExtraConsoles] = useState(0);
 
   const dates = useMemo(() => {
@@ -81,34 +81,33 @@ export default function BookingGaming() {
   }, [selectedService, extraConsoles]);
 
   return (
-    <section className="bg-gray-50 py-20">
+    <section className="bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 lg:px-6">
         {/* Header */}
-        <div className="text-center mb-14">
-          <span className="inline-block px-4 py-2 rounded-full bg-red-100 text-red-600 font-medium">
+        <div className="text-center mb-10">
+          <span className="inline-block px-4 py-2 rounded-full bg-red-100 text-red-600 font-medium text-sm">
             Reservation
           </span>
 
-          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mt-5">
+          <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mt-4">
             Book Your Experience
           </h2>
 
-          <p className="text-gray-500 mt-4 max-w-2xl mx-auto">
-            Select a service, choose a date and time slot, then confirm your
-            reservation.
+          <p className="text-gray-500 mt-3 max-w-xl mx-auto text-sm">
+            Select your service, date and time slot to complete booking.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_380px] gap-8">
-          {/* Left */}
-          <div className="space-y-10">
-            {/* Service Selection */}
+        <div className="grid lg:grid-cols-[1fr_340px] gap-6">
+          {/* LEFT */}
+          <div className="space-y-6">
+            {/* Services */}
             <div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-5">
+              <h3 className="text-lg font-semibold mb-3">
                 Select Service
               </h3>
 
-              <div className="grid md:grid-cols-2 gap-5">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {services.map((service) => {
                   const Icon = service.icon;
 
@@ -121,26 +120,26 @@ export default function BookingGaming() {
                         setSelectedSlot("");
                         setExtraConsoles(0);
                       }}
-                      className={`group text-left rounded-3xl border-2 p-6 transition-all duration-300 hover:-translate-y-1 ${
+                      className={`text-left cursor-pointer rounded-2xl border-2 p-4 transition-all ${
                         selectedService?.id === service.id
-                          ? "border-red-500 bg-red-50 shadow-lg"
+                          ? "border-red-500 bg-red-50 shadow-md"
                           : "border-gray-200 bg-white hover:border-red-300"
                       }`}
                     >
-                      <div className="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center mb-4">
-                        <Icon className="w-7 h-7 text-red-600" />
+                      <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center mb-3">
+                        <Icon className="w-5 h-5 text-red-600" />
                       </div>
 
-                      <h4 className="font-bold text-xl text-gray-900">
+                      <h4 className="font-bold text-sm text-gray-900">
                         {service.title}
                       </h4>
 
-                      <p className="text-gray-500 mt-2">
+                      <p className="text-xs text-gray-500 mt-1">
                         {service.description}
                       </p>
 
-                      <div className="mt-4 font-semibold text-red-600">
-                        Rs. {service.price}/hour
+                      <div className="mt-2 font-semibold text-red-600 text-sm">
+                        Rs. {service.price}
                       </div>
                     </button>
                   );
@@ -149,136 +148,156 @@ export default function BookingGaming() {
             </div>
 
             {/* Dates */}
-            {selectedService && (
-              <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-5">
-                  Select Date
-                </h3>
+            <div
+              className={`transition-all ${
+                !selectedService
+                  ? "opacity-40 pointer-events-none"
+                  : ""
+              }`}
+            >
+              <h3 className="text-lg font-semibold mb-3">
+                Select Date
+              </h3>
 
-                <div className="flex gap-4 overflow-x-auto pb-2">
-                  {dates.map((date, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedDate(index)}
-                      className={`min-w-[100px] rounded-2xl border-2 p-4 transition ${
-                        selectedDate === index
-                          ? "border-red-500 bg-red-500 text-white"
-                          : "border-gray-200 bg-white"
-                      }`}
-                    >
-                      <p className="text-xs">
-                        {date.toLocaleDateString("en-US", {
-                          weekday: "short",
-                        })}
-                      </p>
+              <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
+                {dates.map((date, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedDate(index)}
+                    className={`h-20 cursor-pointer rounded-xl border-2 flex flex-col items-center justify-center transition ${
+                      selectedDate === index
+                        ? "border-red-500 bg-red-500 text-white"
+                        : "border-gray-200 bg-white"
+                    }`}
+                  >
+                    <p className="text-[10px]">
+                      {date.toLocaleDateString("en-US", {
+                        weekday: "short",
+                      })}
+                    </p>
 
-                      <p className="text-2xl font-bold">
-                        {date.getDate()}
-                      </p>
+                    <p className="text-lg font-bold">
+                      {date.getDate()}
+                    </p>
 
-                      <p className="text-xs">
-                        {date.toLocaleDateString("en-US", {
-                          month: "short",
-                        })}
-                      </p>
-                    </button>
-                  ))}
-                </div>
+                    <p className="text-[10px]">
+                      {date.toLocaleDateString("en-US", {
+                        month: "short",
+                      })}
+                    </p>
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
 
             {/* Slots */}
-            {selectedDate !== null && (
-              <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-5">
-                  Select Time Slot
-                </h3>
+            <div
+              className={`transition-all ${
+                selectedDate === null
+                  ? "opacity-40 pointer-events-none"
+                  : ""
+              }`}
+            >
+              <h3 className="text-lg font-semibold mb-3">
+                Select Time Slot
+              </h3>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {slots.map((slot) => (
-                    <button
-                      key={slot}
-                      onClick={() => setSelectedSlot(slot)}
-                      className={`h-14 rounded-xl border-2 font-medium transition ${
-                        selectedSlot === slot
-                          ? "border-red-500 bg-red-500 text-white"
-                          : "border-gray-200 bg-white hover:border-red-300"
-                      }`}
-                    >
-                      {slot}
-                    </button>
-                  ))}
-                </div>
+              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                {slots.map((slot) => (
+                  <button
+                    key={slot}
+                    onClick={() => setSelectedSlot(slot)}
+                    className={`h-10 cursor-pointer rounded-lg border text-sm font-medium transition ${
+                      selectedSlot === slot
+                        ? "border-red-500 bg-red-500 text-white"
+                        : "border-gray-200 bg-white hover:border-red-300"
+                    }`}
+                  >
+                    {slot}
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
 
-            {/* PS5 Consoles */}
-            {selectedService?.id === "ps5" && selectedSlot && (
-              <div className="bg-white border border-gray-200 rounded-3xl p-6">
-                <div className="flex items-center justify-between mb-5">
+            {/* PS5 Extras */}
+            {selectedService?.id === "ps5" && (
+              <div
+                className={`bg-white border cursor-pointer border-gray-200 rounded-2xl p-4 transition-all ${
+                  !selectedSlot
+                    ? "opacity-40 pointer-events-none"
+                    : ""
+                }`}
+              >
+                <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold text-lg">
+                    <h3 className="font-semibold">
                       Additional Consoles
                     </h3>
 
-                    <p className="text-gray-500 text-sm">
-                      2 consoles included free
+                    <p className="text-xs text-gray-500">
+                      2 Consoles Included Free
                     </p>
                   </div>
 
-                  <div className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm">
+                  <div className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs">
                     Max +2
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 mt-4">
                   <button
                     onClick={() =>
-                      setExtraConsoles(Math.max(0, extraConsoles - 1))
+                      setExtraConsoles(
+                        Math.max(0, extraConsoles - 1)
+                      )
                     }
-                    className="w-11 h-11 rounded-xl border border-gray-300 flex items-center justify-center"
+                    className="w-9 h-9 rounded-lg border flex items-center justify-center"
                   >
-                    <Minus size={18} />
+                    <Minus size={16} />
                   </button>
 
-                  <div className="text-2xl font-bold w-10 text-center">
+                  <span className="text-xl font-bold w-8 text-center">
                     {extraConsoles}
-                  </div>
+                  </span>
 
                   <button
                     onClick={() =>
-                      setExtraConsoles(Math.min(2, extraConsoles + 1))
+                      setExtraConsoles(
+                        Math.min(2, extraConsoles + 1)
+                      )
                     }
-                    className="w-11 h-11 rounded-xl border border-gray-300 flex items-center justify-center"
+                    className="w-9 h-9 rounded-lg border flex items-center justify-center"
                   >
-                    <Plus size={18} />
+                    <Plus size={16} />
                   </button>
                 </div>
 
-                <p className="text-gray-500 text-sm mt-4">
+                <p className="text-xs text-gray-500 mt-3">
                   Rs. 500 per additional console
                 </p>
               </div>
             )}
           </div>
 
-          {/* Summary */}
+          {/* SUMMARY */}
           <div>
-            <div className="sticky top-24 bg-white rounded-3xl border border-gray-200 p-8 shadow-sm">
-              <h3 className="text-2xl font-bold mb-6">
+            <div className="sticky top-24 bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+              <h3 className="text-xl font-bold mb-5">
                 Booking Summary
               </h3>
 
-              <div className="space-y-5">
+              <div className="space-y-4">
                 <div>
-                  <p className="text-gray-500 text-sm">Service</p>
+                  <p className="text-xs text-gray-500">
+                    Service
+                  </p>
                   <p className="font-semibold">
                     {selectedService?.title || "-"}
                   </p>
                 </div>
 
                 <div>
-                  <p className="text-gray-500 text-sm">Date</p>
+                  <p className="text-xs text-gray-500">Date</p>
                   <p className="font-semibold">
                     {selectedDate !== null
                       ? dates[selectedDate].toLocaleDateString()
@@ -287,7 +306,9 @@ export default function BookingGaming() {
                 </div>
 
                 <div>
-                  <p className="text-gray-500 text-sm">Time Slot</p>
+                  <p className="text-xs text-gray-500">
+                    Time Slot
+                  </p>
                   <p className="font-semibold">
                     {selectedSlot || "-"}
                   </p>
@@ -295,18 +316,22 @@ export default function BookingGaming() {
 
                 {selectedService?.id === "ps5" && (
                   <div>
-                    <p className="text-gray-500 text-sm">
+                    <p className="text-xs text-gray-500">
                       Additional Consoles
                     </p>
-                    <p className="font-semibold">{extraConsoles}</p>
+                    <p className="font-semibold">
+                      {extraConsoles}
+                    </p>
                   </div>
                 )}
 
-                <div className="border-t pt-5">
-                  <div className="flex justify-between text-lg">
-                    <span>Total Amount</span>
+                <div className="border-t pt-4">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">
+                      Total Amount
+                    </span>
 
-                    <span className="font-bold text-red-600">
+                    <span className="text-xl font-bold text-red-600">
                       Rs. {total}
                     </span>
                   </div>
@@ -318,7 +343,7 @@ export default function BookingGaming() {
                     selectedDate === null ||
                     !selectedSlot
                   }
-                  className="w-full h-14 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  className="w-full h-12 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
                   Confirm Booking
                 </button>
