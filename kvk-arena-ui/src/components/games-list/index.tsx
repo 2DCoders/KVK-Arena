@@ -1,12 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import {
-  Search,
-  X,
-  ChevronLeft,
-  ChevronRight,
-  Star,
-} from "lucide-react";
+import { Search, X, ChevronLeft, ChevronRight, Star } from "lucide-react";
 
 interface GameLibraryModalProps {
   isOpen: boolean;
@@ -34,6 +28,15 @@ export default function GameLibraryModal({
   const [search, setSearch] = useState("");
   const [platform, setPlatform] = useState("all");
   const [page, setPage] = useState(1);
+  const [animate, setAnimate] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => setAnimate(true), 10);
+    } else {
+      setAnimate(false);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -56,9 +59,7 @@ export default function GameLibraryModal({
         .includes(search.toLowerCase());
 
       const matchesPlatform =
-        platform === "all"
-          ? true
-          : game.platform.toLowerCase() === platform;
+        platform === "all" ? true : game.platform.toLowerCase() === platform;
 
       return matchesSearch && matchesPlatform;
     });
@@ -66,12 +67,12 @@ export default function GameLibraryModal({
 
   const totalPages = Math.max(
     1,
-    Math.ceil(filteredGames.length / ITEMS_PER_PAGE)
+    Math.ceil(filteredGames.length / ITEMS_PER_PAGE),
   );
 
   const paginatedGames = filteredGames.slice(
     (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE
+    page * ITEMS_PER_PAGE,
   );
 
   if (!isOpen) return null;
@@ -81,21 +82,36 @@ export default function GameLibraryModal({
       {/* Overlay */}
       <div
         onClick={onClose}
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className={`absolute inset-0 backdrop-blur-sm transition-all duration-300 ${
+          animate ? "bg-black/40 opacity-100" : "bg-black/0 opacity-0"
+        }`}
       />
 
       {/* Modal */}
-      <div className="absolute inset-4 bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+      <div
+        className={`
+    absolute inset-4
+    bg-white
+    rounded-3xl
+    overflow-hidden
+    shadow-2xl
+    flex flex-col
+    transition-all
+    duration-500
+    ease-[cubic-bezier(0.16,1,0.3,1)]
+    ${
+      animate
+        ? "opacity-100 translate-y-0 scale-100"
+        : "opacity-0 translate-y-10 scale-[0.98]"
+    }
+  `}
+      >
         {/* Header */}
         <div className="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">
-              Game Library
-            </h2>
+            <h2 className="text-xl font-bold text-gray-900">Game Library</h2>
 
-            <p className="text-sm text-gray-500 mt-1">
-              Browse available games
-            </p>
+            <p className="text-sm text-gray-500 mt-1">Browse available games</p>
           </div>
 
           <button
@@ -168,9 +184,7 @@ export default function GameLibraryModal({
 
                     <span
                       className={`absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-semibold text-white ${
-                        game.platform === "PC"
-                          ? "bg-blue-600"
-                          : "bg-purple-600"
+                        game.platform === "PC" ? "bg-blue-600" : "bg-purple-600"
                       }`}
                     >
                       {game.platform}
@@ -201,19 +215,13 @@ export default function GameLibraryModal({
 
                   <div className="border-t border-gray-100 mt-4 pt-3 flex justify-between">
                     <div>
-                      <p className="text-[11px] text-gray-400">
-                        Platform
-                      </p>
+                      <p className="text-[11px] text-gray-400">Platform</p>
 
-                      <p className="font-semibold text-sm">
-                        {game.platform}
-                      </p>
+                      <p className="font-semibold text-sm">{game.platform}</p>
                     </div>
 
                     <div className="text-right">
-                      <p className="text-[11px] text-gray-400">
-                        Rating
-                      </p>
+                      <p className="text-[11px] text-gray-400">Rating</p>
 
                       <div className="flex items-center gap-1 text-amber-500 justify-end">
                         <Star size={14} fill="currentColor" />
@@ -239,22 +247,21 @@ export default function GameLibraryModal({
                 <ChevronLeft size={16} />
               </button>
 
-              {Array.from(
-                { length: totalPages },
-                (_, i) => i + 1
-              ).map((num) => (
-                <button
-                  key={num}
-                  onClick={() => setPage(num)}
-                  className={`w-9 h-9 cursor-pointer rounded-xl text-sm font-medium transition ${
-                    page === num
-                      ? "bg-red-500 text-white"
-                      : "text-gray-700 hover:bg-white"
-                  }`}
-                >
-                  {num}
-                </button>
-              ))}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (num) => (
+                  <button
+                    key={num}
+                    onClick={() => setPage(num)}
+                    className={`w-9 h-9 cursor-pointer rounded-xl text-sm font-medium transition ${
+                      page === num
+                        ? "bg-red-500 text-white"
+                        : "text-gray-700 hover:bg-white"
+                    }`}
+                  >
+                    {num}
+                  </button>
+                ),
+              )}
 
               <button
                 disabled={page === totalPages}
@@ -268,6 +275,6 @@ export default function GameLibraryModal({
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
