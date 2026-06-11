@@ -10,16 +10,6 @@ interface GameLibraryModalProps {
 const sampleImage =
   "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200";
 
-const movies = Array.from({ length: 60 }).map((_, i) => ({
-  id: i + 1,
-  title: `Movie ${i + 1}`,
-  platform: i % 2 === 0 ? "Netflix" : "Prime Video",
-  image: sampleImage,
-  rating: 4.9,
-  imdb: 8.5,
-}));
-[];
-
 const ITEMS_PER_PAGE = 20;
 
 export default function MovieLibraryModal({
@@ -30,6 +20,51 @@ export default function MovieLibraryModal({
   const [platform, setPlatform] = useState("all");
   const [page, setPage] = useState(1);
   const [animate, setAnimate] = useState(false);
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [loading, setLoading] = useState(false);
+  interface Movie {
+    id: number;
+    title: string;
+    image: string;
+    platform: string;
+    imdb: number;
+    rating: number;
+  }
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const fetchMovies = async () => {
+      try {
+        setLoading(true);
+
+        const response = await fetch(
+          "https://api.themoviedb.org/3/discover/movie?api_key=ea74295f9cddcb6bece48d18bc65ef7d&with_watch_providers=8|9&watch_region=US&page=1",
+        );
+
+        const data = await response.json();
+
+        const formattedMovies = data.results.map((movie: any) => ({
+          id: movie.id,
+          title: movie.title,
+          image: movie.poster_path
+            ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+            : sampleImage,
+          platform: Math.random() > 0.5 ? "Netflix" : "Prime Video",
+          imdb: Number(movie.vote_average.toFixed(1)),
+          rating: Number(movie.vote_average.toFixed(1)),
+        }));
+
+        setMovies(formattedMovies);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMovies();
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -60,7 +95,8 @@ export default function MovieLibraryModal({
         .includes(search.toLowerCase());
 
       const matchesPlatform =
-        platform === "all" ? true : movie.platform.toLowerCase() === platform;
+        platform === "all" ||
+        movie.platform.toLowerCase() === platform.toLowerCase();
 
       return matchesSearch && matchesPlatform;
     });
@@ -112,7 +148,9 @@ export default function MovieLibraryModal({
           <div>
             <h2 className="text-xl font-bold text-gray-900">Movie Library</h2>
 
-            <p className="text-sm text-gray-500 mt-1">Browse available movies</p>
+            <p className="text-sm text-gray-500 mt-1">
+              Browse available movies
+            </p>
           </div>
 
           <button
@@ -168,67 +206,67 @@ export default function MovieLibraryModal({
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
-            {paginatedMovies.map((movie) => (
-              <div
-                key={movie.id}
-                className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-              >
-                {/* Image */}
-                <div className="p-3 pb-0">
-                  <div className="relative">
-                    <img
-                      src={movie.image}
-                      alt={movie.title}
-                      className="w-full h-40 object-cover rounded-2xl"
-                    />
-
-                    <span
-                      className={`absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-semibold text-white ${
-                        movie.platform === "PC" ? "bg-blue-600" : "bg-purple-600"
-                      }`}
-                    >
-                      {movie.platform}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-4">
-                  <h3 className="font-bold text-lg text-gray-900">
-                    {movie.title}
-                  </h3>
-
-                  <p className="text-sm text-gray-500 mt-1">
-                    Available for streaming
-                  </p>
-
-                  <p className="text-[11px] text-gray-400 mt-2">
-                    IMDB: {movie.imdb}
-                  </p>
-
-                  <div className="border-t border-gray-100 mt-4 pt-3 flex justify-between">
-                    <div>
-                      <p className="text-[11px] text-gray-400">Platform</p>
-
-                      <p className="font-semibold text-sm">{movie.platform}</p>
+          {loading ? (
+            <div className="flex justify-center py-20">
+              <div className="h-10 w-10 border-4 border-red-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
+              {paginatedMovies.map((movie) => (
+                <div
+                  key={movie.id}
+                  className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                >
+                  {/* Image */}
+                  <div className="p-3 pb-0">
+                    <div className="relative">
+                      <img
+                        src={movie.image}
+                        alt={movie.title}
+                        className="w-full h-40 object-cover rounded-2xl"
+                      />
                     </div>
+                  </div>
 
-                    <div className="text-right">
-                      <p className="text-[11px] text-gray-400">Rating</p>
+                  {/* Content */}
+                  <div className="p-4">
+                    <h3 className="font-bold text-lg text-gray-900">
+                      {movie.title}
+                    </h3>
 
-                      <div className="flex items-center gap-1 text-amber-500 justify-end">
-                        <Star size={14} fill="currentColor" />
-                        <span className="font-semibold text-sm">
-                          {movie.rating}
-                        </span>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Available for streaming
+                    </p>
+
+                    <p className="text-[11px] text-gray-400 mt-2">
+                      IMDB: {movie.imdb}
+                    </p>
+
+                    <div className="border-t border-gray-100 mt-4 pt-3 flex justify-between">
+                      <div>
+                        <p className="text-[11px] text-gray-400">Platform</p>
+
+                        <p className="font-semibold text-sm">
+                          {movie.platform}
+                        </p>
+                      </div>
+
+                      <div className="text-right">
+                        <p className="text-[11px] text-gray-400">Rating</p>
+
+                        <div className="flex items-center gap-1 text-amber-500 justify-end">
+                          <Star size={14} fill="currentColor" />
+                          <span className="font-semibold text-sm">
+                            {movie.rating}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           {/* Pagination */}
           <div className="flex justify-center mt-8">
