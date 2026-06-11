@@ -141,20 +141,26 @@ export default function BookingGaming() {
       ? dates[selectedDate].toISOString().split("T")[0]
       : null;
 
-  const isSlotDisabled = (slotHour: number, dateIndex: number | null) => {
+  const isSlotDisabled = (
+    slotStart: number,
+    dateIndex: number | null,
+  ) => {
+    // Only disable for today
     if (dateIndex !== 0) return false;
 
-    const now = new Date();
-
-    const sriLankaHour = Number(
-      now.toLocaleString("en-US", {
-        hour: "numeric",
-        hour12: false,
+    const nowInSriLanka = new Date(
+      new Date().toLocaleString("en-US", {
         timeZone: "Asia/Colombo",
       }),
     );
 
-    return slotHour <= sriLankaHour;
+    const currentHour = nowInSriLanka.getHours();
+    const currentMinute = nowInSriLanka.getMinutes();
+
+    const currentTime = currentHour + currentMinute / 60;
+
+    // Disable if slot already started
+    return slotStart <= currentTime;
   };
 
   const getSlotAvailability = (slotIndex: number) => {
@@ -333,15 +339,20 @@ export default function BookingGaming() {
                         toggleSlot(index);
                         setSelectedResources([]);
                       }}
-                      className={`h-16 rounded-lg border text-xs font-medium transition
-          ${
-            selected
-              ? "bg-red-500 border-red-500 text-white"
-              : availability.full
-                ? "bg-gray-200 border-gray-300 text-gray-500"
-                : "bg-white border-gray-200 hover:border-red-300"
-          }
-        `}
+                      className={`h-16 cursor-pointer rounded-lg border text-xs font-medium transition
+  ${
+    selected
+      ? "bg-red-500 border-red-500 text-white"
+      : availability.full
+        ? "bg-gray-200 border-gray-300 text-gray-500"
+        : "bg-white border-gray-200 hover:border-red-300"
+  }
+  ${
+    disabled
+      ? "opacity-40 cursor-not-allowed"
+      : ""
+  }
+`}
                     >
                       <div className="leading-tight">
                         <div>{formatHour(slot.start)}</div>
@@ -394,7 +405,7 @@ export default function BookingGaming() {
                             ]);
                           }
                         }}
-                        className={`h-12 rounded-xl border font-medium transition
+                        className={`h-12 cursor-pointer rounded-xl border font-medium transition
               ${
                 selected
                   ? "bg-red-500 text-white border-red-500"
