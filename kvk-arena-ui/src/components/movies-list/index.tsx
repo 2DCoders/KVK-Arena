@@ -17,7 +17,6 @@ export default function MovieLibraryModal({
   onClose,
 }: GameLibraryModalProps) {
   const [search, setSearch] = useState("");
-  const [platform, setPlatform] = useState("all");
   const [page, setPage] = useState(1);
   const [animate, setAnimate] = useState(false);
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -30,40 +29,49 @@ export default function MovieLibraryModal({
     imdb: number;
     rating: number;
   }
+  const fetchMovies = async () => {
+    try {
+      setLoading(true);
+
+      const response = await fetch(
+        "https://api.themoviedb.org/3/discover/movie?api_key=ea74295f9cddcb6bece48d18bc65ef7d&with_watch_providers=8|9&watch_region=US&page=1",
+      );
+
+      const data = await response.json();
+
+      const formattedMovies = data.results.map((movie: any) => ({
+        id: movie.id,
+        title: movie.title,
+        image: movie.poster_path
+          ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+          : sampleImage,
+        platform: "Netflix",
+        imdb: Number(movie.vote_average.toFixed(1)),
+        rating: Number(movie.vote_average.toFixed(1)),
+      }));
+
+      setMovies(formattedMovies);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+  fetchMovies();
+}, []);
 
   useEffect(() => {
     if (!isOpen) return;
 
-    const fetchMovies = async () => {
-      try {
-        setLoading(true);
-
-        const response = await fetch(
-          "https://api.themoviedb.org/3/discover/movie?api_key=ea74295f9cddcb6bece48d18bc65ef7d&with_watch_providers=8|9&watch_region=US&page=1",
-        );
-
-        const data = await response.json();
-
-        const formattedMovies = data.results.map((movie: any) => ({
-          id: movie.id,
-          title: movie.title,
-          image: movie.poster_path
-            ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-            : sampleImage,
-          platform: Math.random() > 0.5 ? "Netflix" : "Prime Video",
-          imdb: Number(movie.vote_average.toFixed(1)),
-          rating: Number(movie.vote_average.toFixed(1)),
-        }));
-
-        setMovies(formattedMovies);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchMovies();
+
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
   }, [isOpen]);
 
   useEffect(() => {
@@ -75,32 +83,14 @@ export default function MovieLibraryModal({
   }, [isOpen]);
 
   useEffect(() => {
-    if (!isOpen) return;
-
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
     setPage(1);
-  }, [search, platform]);
+  }, [search]);
 
   const filteredMovies = useMemo(() => {
-    return movies.filter((movie) => {
-      const matchesSearch = movie.title
-        .toLowerCase()
-        .includes(search.toLowerCase());
-
-      const matchesPlatform =
-        platform === "all" ||
-        movie.platform.toLowerCase() === platform.toLowerCase();
-
-      return matchesSearch && matchesPlatform;
-    });
-  }, [search, platform]);
+    return movies.filter((movie) =>
+      movie.title.toLowerCase().includes(search.toLowerCase()),
+    );
+  }, [movies, search]);
 
   const totalPages = Math.max(
     1,
@@ -176,22 +166,6 @@ export default function MovieLibraryModal({
               className="w-full h-11 pl-10 pr-4 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-red-500 text-sm"
             />
           </div>
-
-          <div className="flex gap-2">
-            {["all", "netflix", "prime video"].map((item) => (
-              <button
-                key={item}
-                onClick={() => setPlatform(item)}
-                className={`h-10 cursor-pointer px-4 rounded-xl text-sm font-medium transition capitalize ${
-                  platform === item
-                    ? "bg-red-500 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Content */}
@@ -211,7 +185,7 @@ export default function MovieLibraryModal({
               <div className="h-10 w-10 border-4 border-red-500 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-4">
               {paginatedMovies.map((movie) => (
                 <div
                   key={movie.id}
@@ -219,11 +193,11 @@ export default function MovieLibraryModal({
                 >
                   {/* Image */}
                   <div className="p-3 pb-0">
-                    <div className="relative">
+                    <div className="aspect-[2/3] overflow-hidden rounded-2xl">
                       <img
                         src={movie.image}
                         alt={movie.title}
-                        className="w-full h-40 object-cover rounded-2xl"
+                        className="w-full h-full object-cover"
                       />
                     </div>
                   </div>
