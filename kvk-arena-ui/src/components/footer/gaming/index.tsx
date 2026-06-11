@@ -164,10 +164,10 @@ export default function GamingFooter() {
 
                     <li>
                       <a
-                        href="#courts"
+                        href="#games"
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
-                        Courts
+                        Games
                       </a>
                     </li>
 

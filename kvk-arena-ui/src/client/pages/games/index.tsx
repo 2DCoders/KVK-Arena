@@ -161,9 +161,12 @@ export default function Games() {
 
                     {/* Buttons */}
                     <div className="mt-10 flex gap-4">
-                      <button className="rounded-xl cursor-pointer bg-red-600 px-8 py-4 font-semibold text-white transition hover:bg-red-500">
-                        Book Now
-                      </button>
+                      
+                      <a href="#bookings">
+                        <button className="rounded-xl cursor-pointer bg-red-600 px-8 py-4 font-semibold text-white transition hover:bg-red-500">
+                          Book Now
+                        </button>
+                      </a>
 
                       <button className="rounded-xl cursor-pointer border border-white/10 bg-white/5 px-8 py-4 font-semibold text-white backdrop-blur-md transition hover:border-white/30">
                         View More

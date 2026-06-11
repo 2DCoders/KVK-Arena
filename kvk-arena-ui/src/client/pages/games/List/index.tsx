@@ -57,6 +57,7 @@ export default function GamesList() {
         hover:text-red-600
         hover:underline
         transition
+        cursor-pointer
       "
             >
               View More Games
