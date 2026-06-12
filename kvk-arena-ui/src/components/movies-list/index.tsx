@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { Search, X, ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { Search, X, Star } from "lucide-react";
 
 interface GameLibraryModalProps {
   isOpen: boolean;
