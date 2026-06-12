@@ -152,9 +152,7 @@ public class MembershipService : IMembershipService
                     Email = member.Email,
                     Status = "Active",
                     PasswordHash = member.PasswordHash,
-                    Phone = member.Phone,
-                    Specialization = request.Specialization,
-                    YearsOfExperience = (int)request.YearsOfExperience!
+                    Phone = member.Phone
                 };
 
                 _db.Trainers.Add(trainer);
