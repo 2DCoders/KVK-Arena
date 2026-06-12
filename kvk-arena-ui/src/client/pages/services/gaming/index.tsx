@@ -43,8 +43,8 @@ export default function GamingServices() {
       <div className="container mx-auto px-6">
         {/* Heading */}
         <div className="text-center max-w-2xl mx-auto mb-16" data-aos="fade-up">
-            <span className="inline-flex rounded-full border border-red-500/20 bg-red-500/5 px-4 py-2 text-sm font-medium text-red-500">
-                Our Services
+          <span className="inline-flex rounded-full border border-red-500/20 bg-red-500/5 px-4 py-2 text-sm font-medium text-red-500">
+            Our Services
           </span>
           <h2 className="mt-5 bg-gradient-to-r from-black via-red-500 to-red-400 bg-clip-text text-5xl font-black text-transparent">
             What We Offer
@@ -66,7 +66,20 @@ export default function GamingServices() {
                 data-aos="fade-up"
                 data-aos-delay={index * 100}
                 key={index}
-                className="group relative bg-white rounded-[28px] p-8 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-3"
+                className="
+                group
+                relative
+                bg-white
+                rounded-[28px]
+                p-8
+                shadow-md
+                transition-all
+                duration-700
+                ease-[cubic-bezier(0.16,1,0.3,1)]
+                hover:-translate-y-1.5
+                hover:scale-[1.02]
+                hover:shadow-2xl
+              "
               >
                 {/* Icon */}
                 <div

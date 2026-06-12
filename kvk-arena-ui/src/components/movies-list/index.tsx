@@ -21,6 +21,7 @@ export default function MovieLibraryModal({
   const [animate, setAnimate] = useState(false);
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(false);
+  const [apiPage, setApiPage] = useState(1);
   interface Movie {
     id: number;
     title: string;
@@ -29,18 +30,24 @@ export default function MovieLibraryModal({
     imdb: number;
     rating: number;
   }
-  const fetchMovies = async () => {
+  const fetchMovies = async (pageNumber = 1) => {
     try {
       setLoading(true);
 
-      const response = await fetch(
-        "https://api.themoviedb.org/3/discover/movie?api_key=ea74295f9cddcb6bece48d18bc65ef7d&with_watch_providers=8|9&watch_region=US&page=1",
-      );
+      const [netflixRes, primeRes] = await Promise.all([
+        fetch(
+          `https://api.themoviedb.org/3/discover/movie?api_key=ea74295f9cddcb6bece48d18bc65ef7d&with_watch_providers=8&watch_region=US&page=${pageNumber}`,
+        ),
+        fetch(
+          `https://api.themoviedb.org/3/discover/movie?api_key=ea74295f9cddcb6bece48d18bc65ef7d&with_watch_providers=9&watch_region=US&page=${pageNumber}`,
+        ),
+      ]);
 
-      const data = await response.json();
+      const netflixData = await netflixRes.json();
+      const primeData = await primeRes.json();
 
-      const formattedMovies = data.results.map((movie: any) => ({
-        id: movie.id,
+      const netflixMovies = netflixData.results.map((movie: any) => ({
+        id: `netflix-${movie.id}`,
         title: movie.title,
         image: movie.poster_path
           ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
@@ -50,7 +57,23 @@ export default function MovieLibraryModal({
         rating: Number(movie.vote_average.toFixed(1)),
       }));
 
-      setMovies(formattedMovies);
+      const primeMovies = primeData.results.map((movie: any) => ({
+        id: `prime-${movie.id}`,
+        title: movie.title,
+        image: movie.poster_path
+          ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+          : sampleImage,
+        platform: "Prime Video",
+        imdb: Number(movie.vote_average.toFixed(1)),
+        rating: Number(movie.vote_average.toFixed(1)),
+      }));
+
+      // Merge and shuffle
+      const combined = [...netflixMovies, ...primeMovies].sort(
+        () => Math.random() - 0.5,
+      );
+
+      setMovies(combined);
     } catch (error) {
       console.error(error);
     } finally {
@@ -59,23 +82,20 @@ export default function MovieLibraryModal({
   };
 
   useEffect(() => {
-  fetchMovies();
-}, []);
-
-  useEffect(() => {
     if (!isOpen) return;
 
-    fetchMovies();
+    fetchMovies(apiPage);
 
     document.body.style.overflow = "hidden";
 
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, [isOpen]);
+  }, [isOpen, apiPage]);
 
   useEffect(() => {
     if (isOpen) {
+      setApiPage(1);
       setTimeout(() => setAnimate(true), 10);
     } else {
       setAnimate(false);
@@ -243,40 +263,35 @@ export default function MovieLibraryModal({
           )}
 
           {/* Pagination */}
-          <div className="flex justify-center mt-8">
-            <div className="flex items-center gap-1 bg-gray-100 rounded-2xl p-1">
-              <button
-                disabled={page === 1}
-                onClick={() => setPage(page - 1)}
-                className="w-9 cursor-pointer h-9 rounded-xl flex items-center justify-center disabled:opacity-40"
-              >
-                <ChevronLeft size={16} />
-              </button>
+          <div className="flex justify-center gap-3 mt-8">
+            <button
+              disabled={apiPage === 1}
+              onClick={() => {
+                setApiPage((prev) => prev - 1)
+                // scroll to top of content
+                const content = document.querySelector(".flex-1")
+                if (content) {
+                  content.scrollTo({ top: 0, behavior: "smooth" })
+                }
+              }}
+              className="px-5 py-2 cursor-pointer rounded-xl bg-gray-100 hover:bg-gray-200 disabled:opacity-40"
+            >
+              Prev
+            </button>
 
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (num) => (
-                  <button
-                    key={num}
-                    onClick={() => setPage(num)}
-                    className={`w-9 h-9 cursor-pointer rounded-xl text-sm font-medium transition ${
-                      page === num
-                        ? "bg-red-500 text-white"
-                        : "text-gray-700 hover:bg-white"
-                    }`}
-                  >
-                    {num}
-                  </button>
-                ),
-              )}
-
-              <button
-                disabled={page === totalPages}
-                onClick={() => setPage(page + 1)}
-                className="w-9 h-9 cursor-pointer rounded-xl flex items-center justify-center disabled:opacity-40"
-              >
-                <ChevronRight size={16} />
-              </button>
-            </div>
+            <button
+              onClick={() => {
+                setApiPage((prev) => prev + 1)
+                // scroll to top of content
+                const content = document.querySelector(".flex-1")
+                if (content) {
+                  content.scrollTo({ top: 0, behavior: "smooth" })
+                }
+              }}
+              className="px-5 py-2 cursor-pointer rounded-xl bg-red-500 text-white hover:bg-red-600"
+            >
+              Next
+            </button>
           </div>
         </div>
       </div>
