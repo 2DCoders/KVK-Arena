@@ -55,10 +55,10 @@ export default function GamingHeader() {
           </a>
 
           <a
-            href="#services"
+            href="#movies"
             className="rounded-full px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"
           >
-            Services
+            Movies
           </a>
         </nav>
 
@@ -161,11 +161,11 @@ export default function GamingHeader() {
             </a>
 
             <a
-              href="#services"
+              href="#movies"
               onClick={closeMobileMenu}
               className="rounded-xl px-3 py-2 text-[15px] font-medium text-slate-300 transition hover:bg-white/10 hover:text-white hover:pl-4"
             >
-              Services
+              Movies
             </a>
 
             {/* JOIN BUTTON */}

@@ -203,8 +203,8 @@ export default function MoviesList() {
                 data-aos="fade-up"
                 className="
                 group
-                min-w-[280px]
-                max-w-[280px]
+                min-w-[230px]
+                max-w-[230px]
                 overflow-hidden
                 rounded-[24px]
                 bg-white
@@ -223,7 +223,7 @@ export default function MoviesList() {
                       src={movie.image}
                       alt=""
                       className="
-                    aspect-[3/2]
+                    aspect-[2/3]
                     w-full
                     object-cover
                     transition-transform

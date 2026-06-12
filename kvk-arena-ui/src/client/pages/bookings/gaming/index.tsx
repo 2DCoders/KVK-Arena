@@ -358,12 +358,6 @@ export default function BookingGaming() {
                         <div>{formatHour(slot.start)}</div>
 
                         <div>{formatHour(slot.end)}</div>
-
-                        <div className="text-[10px] mt-1 font-semibold">
-                          {availability.full
-                            ? "Unavailable"
-                            : `Available: ${availability.availableResources.length}`}
-                        </div>
                       </div>
                     </button>
                   );

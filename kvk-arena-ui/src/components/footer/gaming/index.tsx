@@ -173,10 +173,10 @@ export default function GamingFooter() {
 
                     <li>
                       <a
-                        href="#services"
+                        href="#movies"
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
-                        Services
+                        Movies
                       </a>
                     </li>
                   </ul>

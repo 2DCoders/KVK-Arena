@@ -54,14 +54,18 @@ export default function GamingHome() {
       <section id="services" className="relative isolate overflow-hidden">
         <GamingServices />
       </section>
-
+      <Games />
       <section id="games" className="relative isolate overflow-hidden">
-        <Games />
+        <GamesList />
       </section>
 
-      <GamesList />
       <Movies />
-      <MoviesList />
+
+      <section id="movies" className="relative isolate overflow-hidden">
+        <MoviesList />
+      </section>
+
+      
       <Pool />
 
       <section id="bookings" className="relative isolate overflow-hidden">
