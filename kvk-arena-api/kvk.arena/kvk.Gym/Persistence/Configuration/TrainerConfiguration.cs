@@ -13,5 +13,10 @@ public class TrainerConfiguration : IEntityTypeConfiguration<Trainer>
         builder.Property(t => t.YearsOfExperience).HasDefaultValue(0);
         
         builder.HasIndex(t => t.Email).IsUnique();
+        
+        builder.HasMany(x => x.ApprovalRequests)
+            .WithOne(x => x.Trainer)
+            .HasForeignKey(x => x.TrainerId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -33,7 +33,7 @@ public class GymModuleInitializer : IModuleInitializer
         services.AddScoped<IDayPassMemberService, DayPassMemberService>();
         services.AddScoped<IGymPaymentGatewayService, GymPaymentGatewayService>();
         services.AddScoped<IHashService, HashService>();
-        services.AddScoped<TrainerService>();
+        services.AddScoped<TrainerApprovalRequestService>();
         // Use module adapter that wires the generic DayEnd service to GymDbContext
         services.AddScoped<IDayEndService, GymDayEndService>();
         // Register integrator event handlers (building-blocks contract)

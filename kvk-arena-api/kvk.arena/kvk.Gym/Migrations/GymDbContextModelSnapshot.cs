@@ -533,6 +533,12 @@ namespace kvk.Gym.Migrations
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime>("DateOfBirth")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -542,6 +548,12 @@ namespace kvk.Gym.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
+
+                    b.Property<int>("Gender")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<DateTime>("LastModifiedAt")
                         .HasColumnType("timestamp without time zone");
@@ -601,7 +613,110 @@ namespace kvk.Gym.Migrations
                     b.HasIndex("TenantId", "CreatedAt")
                         .HasDatabaseName("IX_Trainer_TenantId_CreatedAt");
 
-                    b.ToTable("Trainer", "gym");
+                    b.ToTable("Trainers", "gym");
+                });
+
+            modelBuilder.Entity("kvk.Gym.Domain.TrainerApprovalRequests", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ApprovalDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ApprovalStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ApprovedBy")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("DateOfBirth")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("Gender")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastModifiedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(25)
+                        .HasColumnType("character varying(25)");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Specialization")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(25)
+                        .HasColumnType("character varying(25)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("TrainerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("YearsOfExperience")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_TrainerApprovalRequests_TenantId");
+
+                    b.HasIndex("TrainerId");
+
+                    b.HasIndex("TenantId", "CreatedAt")
+                        .HasDatabaseName("IX_TrainerApprovalRequests_TenantId_CreatedAt");
+
+                    b.ToTable("TrainerApprovalRequests", "gym");
                 });
 
             modelBuilder.Entity("kvk.Gym.Domain.DayPassMember", b =>
@@ -663,11 +778,26 @@ namespace kvk.Gym.Migrations
                     b.Navigation("Membership");
                 });
 
+            modelBuilder.Entity("kvk.Gym.Domain.TrainerApprovalRequests", b =>
+                {
+                    b.HasOne("kvk.Gym.Domain.Trainer", "Trainer")
+                        .WithMany("ApprovalRequests")
+                        .HasForeignKey("TrainerId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Trainer");
+                });
+
             modelBuilder.Entity("kvk.Gym.Domain.Membership", b =>
                 {
                     b.Navigation("MemberAttendances");
 
                     b.Navigation("MemberPayments");
+                });
+
+            modelBuilder.Entity("kvk.Gym.Domain.Trainer", b =>
+                {
+                    b.Navigation("ApprovalRequests");
                 });
 #pragma warning restore 612, 618
         }

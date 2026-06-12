@@ -2,6 +2,8 @@ namespace kvk.BuildingBlocks.Common;
 
 public static class MembershipNumberFormatter
 {
+    
+    
     /// <summary>
     /// Format a display-only membership number. Accepts a member type name (e.g. "Client", "Trainer", "Staff").
     /// This formatter is cosmetic only; the persisted entity uses a GUID as the primary key.
@@ -20,6 +22,19 @@ public static class MembershipNumberFormatter
         // Example: GYM-MEM-20260001
         return $"{prefix}-{year}{token}";
     }
+    
+
+    public static string GetMembershipPrefix(string memberTypeName)
+    {
+        return memberTypeName?.ToLowerInvariant() switch
+        {
+            "client" => "GYM-MEM",
+            "trainer" => "GYM-TRA",
+            "staff" => "GYM-STA",
+            _ => "GYM-UNK"
+        };
+    }
+
 }
 
 

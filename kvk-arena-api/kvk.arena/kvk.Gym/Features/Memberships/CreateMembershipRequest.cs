@@ -1,3 +1,5 @@
+using kvk.BuildingBlocks.Common;
+
 namespace kvk.Gym.Features.Memberships;
 
 public class CreateMembershipRequest
@@ -11,8 +13,11 @@ public class CreateMembershipRequest
     public string? Phone { get; set; }
     public DateTime DateOfBirth { get; set; }
     public kvk.Gym.Enums.MemberType MemberType { get; set; }
-    public kvk.Gym.Enums.Gender Gender { get; set; }
+    public Gender Gender { get; set; }
     public Guid? MembershipPlanId { get; set; }
     public string? DeviceFingerprintId1 { get; set; }
     public string? DeviceFingerprintId2 { get; set; }
+    
+    public string? Specialization { get; set; }
+    public int? YearsOfExperience { get; set; }
 }

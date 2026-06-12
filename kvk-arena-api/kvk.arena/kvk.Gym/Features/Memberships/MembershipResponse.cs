@@ -1,5 +1,6 @@
 using kvk.Gym.Domain;
 using kvk.Gym.Enums;
+using Gender = kvk.BuildingBlocks.Common.Gender;
 
 namespace kvk.Gym.Features.Memberships;
 
