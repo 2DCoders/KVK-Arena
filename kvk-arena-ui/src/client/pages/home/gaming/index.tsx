@@ -6,7 +6,7 @@ import GamingHero from "../../hero/gaming";
 import GamingSlider from "../../brands-slider/gaming";
 import GamingServices from "../../services/gaming";
 import Games from "../../games";
-import GamesList from "../../games/List";
+import GamesList from "../../games/list";
 import Movies from "../../movies";
 import MoviesList from "../../movies/list";
 import Pool from "../../pool";
