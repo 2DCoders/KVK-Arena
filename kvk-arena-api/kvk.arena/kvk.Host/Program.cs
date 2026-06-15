@@ -11,6 +11,7 @@ using kvk.Gym.Domain;
 using kvk.Gym.Options;
 using kvk.Gym.Services;
 using kvk.Financial;
+using kvk.Badminton;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Microsoft.Extensions.Options;
@@ -125,7 +126,7 @@ builder.Services.AddHangfire(config =>
 
 builder.Services.AddHangfireServer();
 
-// Register module services]]]]]]]]]]]]]]
+// Register module services
 var identityInitializer = new IdentityModuleInitializer();
 identityInitializer.RegisterModule(builder.Services, builder.Configuration);
 
@@ -134,6 +135,11 @@ gymInitializer.RegisterModule(builder.Services, builder.Configuration);
 
 var financialInitializer = new FinancialModuleInitializer();
 financialInitializer.RegisterModule(builder.Services, builder.Configuration);
+
+var badmintonInitializer = new BadmintonModuleInitializer();
+badmintonInitializer.RegisterModule(builder.Services, builder.Configuration);
+
+
 
 
 var app = builder.Build();

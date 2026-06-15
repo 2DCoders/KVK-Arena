@@ -29,6 +29,7 @@
 
     <ItemGroup>
         <!-- Project References -->
+        <ProjectReference Include="..\kvk.Badminton\kvk.Badminton.csproj" />
         <ProjectReference Include="..\kvk.BuildingBlocks\kvk.BuildingBlocks.csproj" />
         <ProjectReference Include="..\kvk.Gym\kvk.Gym.csproj" />
         <ProjectReference Include="..\kvk.Identity\kvk.Identity.csproj" />
