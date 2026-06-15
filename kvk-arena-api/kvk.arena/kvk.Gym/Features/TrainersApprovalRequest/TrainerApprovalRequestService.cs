@@ -1,11 +1,10 @@
 using kvk.BuildingBlocks.Common;
 using kvk.Gym.Domain;
 using kvk.Gym.Enums;
-using kvk.Gym.Features.TrainersApprovalRequest;
-using kvk.Gym.Persistence;
+using kvk.Gym.Features.Trainers;
 using Microsoft.EntityFrameworkCore;
 
-namespace kvk.Gym.Features.Trainers;
+namespace kvk.Gym.Features.TrainersApprovalRequest;
 
 public class TrainerApprovalRequestService
 {
@@ -46,6 +45,9 @@ public class TrainerApprovalRequestService
                 ApprovedBy = string.Empty,
                 ApprovalDate = DateTime.MaxValue,
                 TrainerId = Guid.Empty,
+                ProfilePicture = request.ProfilePicture,
+                Role = request.Role,
+                IsFreelance = request.IsFreelance,
             };
 
             _db.Set<TrainerApprovalRequests>().Add(entity);
@@ -100,6 +102,9 @@ public class TrainerApprovalRequestService
                     ApprovedBy = string.Empty,
                     ApprovalDate = DateTime.MaxValue,
                     TrainerId = Guid.Empty,
+                    ProfilePicture = request.ProfilePicture,
+                    Role = request.Role,
+                    IsFreelance = request.IsFreelance,
                 };
 
                 _db.Set<TrainerApprovalRequests>().Add(newEntity);
@@ -157,6 +162,15 @@ public class TrainerApprovalRequestService
 
                     if (request.Gender != null)
                         entity.Gender = request.Gender.Value;
+
+                    if (request.ProfilePicture != null)
+                        entity.ProfilePicture = request.ProfilePicture;
+
+                    if (request.Role != null)
+                        entity.Role = request.Role;
+
+                    if (request.IsFreelance)
+                        entity.IsFreelance = request.IsFreelance;
                     
                     entity.TrainerId = trainerId.Id;
                 }
@@ -227,6 +241,9 @@ public class TrainerApprovalRequestService
                 Specialization = entity.Specialization,
                 YearsOfExperience = entity.YearsOfExperience,
                 Rating = entity.Rating,
+                ProfilePicture = entity.ProfilePicture,
+                Role = entity.Role,
+                IsFreelance = entity.IsFreelance,
                 CreatedAt = entity.CreatedAt,
                 LastModifiedAt = entity.LastModifiedAt,
                 ApprovalStatus = entity.ApprovalStatus,
@@ -308,6 +325,9 @@ public class TrainerApprovalRequestService
                         PasswordHash = entity.PasswordHash,
                         Status = "Active",
                         Rating = entity.Rating,
+                        ProfilePicture = entity.ProfilePicture,
+                        Role = entity.Role,
+                        IsFreelance = entity.IsFreelance,
                     };
                     
                     _db.Set<Trainer>().Add(trainer);
@@ -328,6 +348,8 @@ public class TrainerApprovalRequestService
                         Status = "Active",
                         DateOfBirth = entity.DateOfBirth,
                         Gender = entity.Gender,
+                        // ProfilePicture = entity.ProfilePicture,
+                        // Role = entity.Role,
                         MembershipNumber = MembershipNumberFormatter.Format(nameof(MemberType.Trainer),
                             DateTime.UtcNow.Year, memberToken)
                     };
@@ -359,6 +381,9 @@ public class TrainerApprovalRequestService
                     trainer.PasswordHash = entity.PasswordHash;
                     trainer.Status = "Active";
                     trainer.Rating = entity.Rating;
+                    trainer.ProfilePicture = entity.ProfilePicture;
+                    trainer.Role = entity.Role;
+                    trainer.IsFreelance = entity.IsFreelance;
                     
                     //and then again update member table
                     

@@ -13,11 +13,14 @@ public class TrainerApprovalRequestResponse
     public int YearsOfExperience { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime LastModifiedAt { get; set; }
-    
+
+    public byte[]? ProfilePicture { get; set; }
+    public string? Role { get; set; }
+    public bool IsFreelance { get; set; }
+
     public ApprovalStatus ApprovalStatus { get; set; }
-    
+
     public DateTime ApprovalDate { get; set; }
-    
+
     public string ApprovedBy { get; set; } = string.Empty;
 }
-

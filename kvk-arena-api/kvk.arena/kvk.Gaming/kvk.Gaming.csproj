@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Domain\" />
       <Folder Include="Enums\" />
       <Folder Include="EventHandlers\" />
       <Folder Include="Features\" />

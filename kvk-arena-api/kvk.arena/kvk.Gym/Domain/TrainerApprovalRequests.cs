@@ -29,6 +29,16 @@ public class TrainerApprovalRequests : User
     public Trainer Trainer { get; set; } = default!;
     
     public DateTime DateOfBirth { get; set; }
+    
+    public byte[]? ProfilePicture { get; set; }
+    
+    [MaxLength(20)]
+    public string? Role { get; set; }
+    
+    public bool IsFreelance { get; set; }
+    
+    
+    
 
     
 }

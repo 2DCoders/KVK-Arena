@@ -225,8 +225,8 @@ public class PaymentService : IPaymentService
         try
         {
             // default to last 30 days when no range provided
-            var fromDate = from ?? DateTime.UtcNow.AddDays(-30);
-            var toDate = to ?? DateTime.UtcNow;
+            var fromDate = from ?? DateTime.Now.AddDays(-30);
+            var toDate = to ?? DateTime.Now;
 
             var payments = await _db.PaymentRecords
                 .AsNoTracking()
