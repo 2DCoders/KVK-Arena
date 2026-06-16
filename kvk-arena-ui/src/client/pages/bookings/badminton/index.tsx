@@ -448,9 +448,9 @@ const total = subtotal + serviceFee;
                   overflow-hidden
                   rounded-2xl
                   bg-gradient-to-r
-                  from-amber-600
-                  via-orange-600
-                  to-amber-500
+                  from-[#A65A2A]
+                  via-[#D4A76A]
+                  to-[#A65A2A]
                   px-8
                   py-4
                   font-bold
