@@ -1,3 +1,6 @@
+using kvk.Badminton.Features.Court;
+using kvk.Badminton.Features.CourtSlotConfiguration;
+using kvk.Badminton.Interfaces;
 using kvk.BuildingBlocks.Interfaces;
 using kvk.BuildingBlocks.Persistence;
 using Microsoft.AspNetCore.Http;
@@ -18,5 +21,14 @@ public class BadmintonModuleInitializer : IModuleInitializer
         if (string.IsNullOrWhiteSpace(connectionString))
             throw new InvalidOperationException("A connection string named 'GymConnection' or 'DefaultConnection' is required.");
 
-        services.AddDbContext<BadmintonDbContext>(options => options.UseNpgsql(connectionString));    }
+        services.AddDbContext<BadmintonDbContext>(options => options.UseNpgsql(connectionString));    
+        services.AddScoped<ICourtService, CourtService>();
+        services.AddScoped<ICourtSlotConfigurationService, CourtSlotConfigurationService>();
+
+        
+            
+            
+            
+            
+    }
 }
