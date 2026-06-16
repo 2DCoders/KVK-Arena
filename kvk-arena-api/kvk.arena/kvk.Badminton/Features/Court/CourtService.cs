@@ -19,6 +19,7 @@ public class CourtService : ICourtService
     {
         return await _db.Courts
             .AsNoTracking()
+            .OrderBy(c => c.CreatedAt)
             .Select(c => new CourtResponse
             {
                 Id = c.Id,
