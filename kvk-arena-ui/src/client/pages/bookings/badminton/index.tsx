@@ -128,7 +128,6 @@ export default function BadmintonBookings() {
         <div className="grid gap-8 lg:grid-cols-[450px_1fr]">
           {/* LEFT SIDE */}
           <div className="space-y-5 lg:sticky lg:top-24 lg:h-fit">
-            <h3 className="text-2xl font-black">Select Court</h3>
 
             {courts.map((courtItem, index) => (
               <button
@@ -148,7 +147,7 @@ export default function BadmintonBookings() {
                   cursor-pointer
                   ${
                     selectedCourt === index
-                      ? "border-amber-500 shadow-2xl ring-4 ring-amber-100 scale-[1.02]"
+                      ? "border-amber-500 shadow-2xl ring-4 ring-amber-200 scale-[1.02]"
                       : "border-gray-200 hover:-translate-y-1 hover:border-amber-300 hover:shadow-xl"
                   }
                 `}
@@ -194,7 +193,7 @@ export default function BadmintonBookings() {
           {/* RIGHT SIDE */}
           <div className="space-y-6">
             {/* DATE */}
-            <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm ">
               <div className="mb-5 flex items-center gap-2">
                 <CalendarDays className="text-amber-600" />
                 <h3 className="font-black text-lg">Select Date</h3>
@@ -215,7 +214,7 @@ export default function BadmintonBookings() {
                       cursor-pointer
                       ${
                         selectedDate === index
-                          ? "scale-105 border-amber-500 bg-gradient-to-br from-amber-600 to-orange-500 text-white shadow-xl"
+                          ? "scale-105 border-amber-500 bg-[#A65A2A] text-white shadow-xl"
                           : "border-gray-200 bg-white hover:border-amber-300"
                       }
                     `}
@@ -261,7 +260,7 @@ export default function BadmintonBookings() {
                         !slot.available || isPastSlot(slot.time, selectedDate)
                           ? "cursor-not-allowed border-red-200 bg-red-50 opacity-60"
                           : selectedSlot === index
-                            ? "border-amber-500 bg-amber-500 text-white shadow-lg"
+                            ? "border-amber-500 bg-[#A65A2A] text-white shadow-lg"
                             : "border-gray-200 hover:border-amber-300 hover:shadow-md"
                       }
                     `}
@@ -369,6 +368,7 @@ export default function BadmintonBookings() {
                   duration-300
                   hover:scale-[1.02]
                   hover:shadow-[0_15px_40px_rgba(201,119,58,0.35)]
+                  cursor-pointer
                 "
               >
                 <span className="relative z-10">Proceed To Payment</span>
