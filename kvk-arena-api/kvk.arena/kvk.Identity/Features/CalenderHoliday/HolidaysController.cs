@@ -2,7 +2,7 @@ using kvk.BuildingBlocks.Common;
 using kvk.BuildingBlocks.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-namespace kvk.Identity.Controllers;
+namespace kvk.Identity.Features.CalenderHoliday;
 
 [ApiController]
 [Route("api/identity/holidays")]
@@ -21,6 +21,18 @@ public class HolidaysController : ControllerBase
         if (year <= 0) return BadRequest("Year is required");
         var list = await _holidayService.GetHolidaysAsync(year);
         return Ok(list);
+    }
+
+    [HttpGet("next-working-days")]
+    public async Task<IActionResult> GetNextSevenWorkingDays([FromQuery] DateTime startDate, [FromQuery] int count = 7,
+        CancellationToken cancellationToken = default)
+    {
+        if (count is <= 0 or > 100)
+            return BadRequest(Result.Failure("Count must be between 1 and 100."));
+
+        var result = await _holidayService.GetNextWorkingDaysAsync(startDate, count, cancellationToken);
+
+        return Ok(result);
     }
 
     [HttpPost("import")]
@@ -68,4 +80,3 @@ public class HolidaysController : ControllerBase
         return NoContent();
     }
 }
-
