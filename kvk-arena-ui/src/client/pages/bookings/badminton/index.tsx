@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import court from "@/assets/court.png";
+import { useEffect, useMemo, useState } from "react";
+import courtImg from "@/assets/court.png";
 import {
   CalendarDays,
   Clock3,
@@ -8,24 +8,42 @@ import {
   Users,
   Trophy,
 } from "lucide-react";
+import { getCourts } from "@/services/court-api";
 
 export default function BadmintonBookings() {
-  const courts = [
+  const [courts, setCourts] = useState<
     {
-      id: "COURT 01",
-      price: 2500,
-      image: court,
-      features: ["AC", "LED Lighting", "Premium Flooring"],
-      status: "Available",
-    },
-    {
-      id: "COURT 02",
-      price: 3000,
-      image: court,
-      features: ["VIP Court", "LED Lighting", "Tournament Ready"],
-      status: "Available",
-    },
-  ];
+      id: string;
+      name: string;
+      price: number;
+      status: number;
+      image: string;
+      features: string[];
+    }[]
+  >([]);
+
+  useEffect(() => {
+    handleGetCourts();
+  }, []);
+
+  const handleGetCourts = async () => {
+    try {
+      const response = await getCourts();
+
+      const mappedCourts = response.map((court: any) => ({
+        id: court.id,
+        name: court.name,
+        price: court.pricePerSlot,
+        status: court.status,
+        image: courtImg,
+        features: ["Premium Court", "Clean Environment", "Online Booking"],
+      }));
+
+      setCourts(mappedCourts);
+    } catch (error) {
+      console.error("Error fetching courts:", error);
+    }
+  };
 
   const isPastSlot = (slotTime: string, selectedDateIndex: number) => {
     // Future dates should never be disabled
@@ -77,12 +95,53 @@ export default function BadmintonBookings() {
     { time: "06:00 PM - 07:00 PM", available: true },
   ];
 
-  const [selectedCourt, setSelectedCourt] = useState(0);
+  const [selectedCourts, setSelectedCourts] = useState<number[]>([]);
   const [selectedDate, setSelectedDate] = useState(0);
-  const [selectedSlot, setSelectedSlot] = useState(0);
+  const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
+
+  const toggleCourt = (index: number) => {
+    const court = courts[index];
+
+    if (court.status === 2) return;
+
+    setSelectedCourts((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index],
+    );
+  };
+
+  const toggleSlot = (index: number) => {
+    if (selectedSlots.length === 0) {
+      setSelectedSlots([index]);
+      return;
+    }
+
+    if (selectedSlots.includes(index)) {
+      setSelectedSlots(selectedSlots.filter((s) => s !== index));
+      return;
+    }
+
+    const sorted = [...selectedSlots].sort((a, b) => a - b);
+
+    const min = sorted[0];
+    const max = sorted[sorted.length - 1];
+
+    const isAdjacent = index === min - 1 || index === max + 1;
+
+    if (isAdjacent) {
+      setSelectedSlots([...selectedSlots, index]);
+    }
+  };
 
   const serviceFee = 100;
-  const total = courts[selectedCourt].price + serviceFee;
+  const selectedCourtObjects = selectedCourts.map((index) => courts[index]);
+
+  const courtFee = selectedCourtObjects.reduce(
+  (sum, court) => sum + court.price,
+  0
+);
+
+const subtotal = courtFee * selectedSlots.length;
+const total = subtotal + serviceFee;
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-[#fafafa] via-white to-[#fafafa] py-20">
@@ -97,7 +156,7 @@ export default function BadmintonBookings() {
             🏸 Online Court Booking
           </span>
 
-          <h1 className="mt-5 bg-gradient-to-r from-black via-[#A65A2A] to-[#D48A52] bg-clip-text text-5xl font-black text-transparent md:text-6xl">
+          <h1 className="mt-5 bg-gradient-to-r from-black via-[#A65A2A] to-[#D48A52] bg-clip-text text-5xl font-black text-transparent md:text-5xl">
             Book Your Court
           </h1>
 
@@ -128,11 +187,11 @@ export default function BadmintonBookings() {
         <div className="grid gap-8 lg:grid-cols-[450px_1fr]">
           {/* LEFT SIDE */}
           <div className="space-y-5 lg:sticky lg:top-24 lg:h-fit">
-
             {courts.map((courtItem, index) => (
               <button
+                disabled={courtItem.status === 2}
                 key={courtItem.id}
-                onClick={() => setSelectedCourt(index)}
+                onClick={() => toggleCourt(index)}
                 className={`
                   group
                   relative
@@ -146,27 +205,49 @@ export default function BadmintonBookings() {
                   duration-500
                   cursor-pointer
                   ${
-                    selectedCourt === index
+                    selectedCourts.includes(index)
                       ? "border-amber-500 shadow-2xl ring-4 ring-amber-200 scale-[1.02]"
                       : "border-gray-200 hover:-translate-y-1 hover:border-amber-300 hover:shadow-xl"
+                  }
+                  ${
+                    courtItem.status === 2
+                      ? "cursor-not-allowed opacity-60 grayscale"
+                      : selectedCourts.includes(index)
+                        ? "border-amber-500 shadow-2xl ring-4 ring-amber-200 scale-[1.02]"
+                        : "border-gray-200 hover:-translate-y-1 hover:border-amber-300 hover:shadow-xl"
                   }
                 `}
               >
                 <div className="relative h-52 overflow-hidden">
+                  <div className="absolute top-4 left-4 z-20">
+                    <input
+                      type="checkbox"
+                      checked={selectedCourts.includes(index)}
+                      onChange={() => toggleCourt(index)}
+                      disabled={courtItem.status === 2}
+                      className="h-5 w-5 cursor-pointer accent-amber-600"
+                    />
+                  </div>
                   <img
                     src={courtItem.image}
-                    alt={courtItem.id}
+                    alt={courtItem.name}
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
 
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
 
-                  <span className="absolute top-4 right-4 rounded-full bg-green-500 px-3 py-1 text-xs font-bold text-white">
-                    Available
+                  <span
+                    className={`absolute top-4 right-4 rounded-full px-3 py-1 text-xs font-bold text-white ${
+                      courtItem.status === 2 ? "bg-red-500" : "bg-green-500"
+                    }`}
+                  >
+                    {courtItem.status === 2
+                      ? "Temporarily Closed"
+                      : "Available"}
                   </span>
 
                   <div className="absolute bottom-4 left-4 text-white">
-                    <h4 className="text-2xl font-black">{courtItem.id}</h4>
+                    <h4 className="text-2xl font-black">{courtItem.name}</h4>
 
                     <p className="text-lg font-bold">
                       LKR {courtItem.price.toLocaleString()}
@@ -247,7 +328,7 @@ export default function BadmintonBookings() {
                     disabled={
                       !slot.available || isPastSlot(slot.time, selectedDate)
                     }
-                    onClick={() => setSelectedSlot(index)}
+                    onClick={() => toggleSlot(index)}
                     className={`
                       rounded-2xl
                       border
@@ -259,7 +340,7 @@ export default function BadmintonBookings() {
                       ${
                         !slot.available || isPastSlot(slot.time, selectedDate)
                           ? "cursor-not-allowed border-red-200 bg-red-50 opacity-60"
-                          : selectedSlot === index
+                          : selectedSlots.includes(index)
                             ? "border-amber-500 bg-[#A65A2A] text-white shadow-lg"
                             : "border-gray-200 hover:border-amber-300 hover:shadow-md"
                       }
@@ -270,14 +351,17 @@ export default function BadmintonBookings() {
                     <p
                       className={`mt-2 text-xs font-bold ${
                         slot.available
-                          ? selectedSlot === index
+                          ? selectedSlots.includes(index)
                             ? "text-white"
                             : "text-green-600"
                           : "text-red-500"
                       }`}
                     >
-                      {isPastSlot(slot.time, selectedDate) ? "Expired" :
-                      slot.available ? "Available" : "Booked"}
+                      {isPastSlot(slot.time, selectedDate)
+                        ? "Expired"
+                        : slot.available
+                          ? "Available"
+                          : "Booked"}
                     </p>
                   </button>
                 ))}
@@ -306,9 +390,12 @@ export default function BadmintonBookings() {
 
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Court</span>
-                  <span className="font-semibold">
-                    {courts[selectedCourt].id}
+                  <span className="text-gray-500">Courts</span>
+
+                  <span className="font-semibold text-right">
+                    {selectedCourtObjects.length
+                      ? selectedCourtObjects.map((c) => c.name).join(", ")
+                      : "Select Courts"}
                   </span>
                 </div>
 
@@ -320,18 +407,22 @@ export default function BadmintonBookings() {
                 </div>
 
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Time</span>
-                  <span className="font-semibold">
-                    {slots[selectedSlot].time}
+                  <span className="text-gray-500">Slots</span>
+
+                  <span className="font-semibold text-right">
+                    {selectedSlots.length
+                      ? selectedSlots
+                          .sort((a, b) => a - b)
+                          .map((i) => slots[i].time)
+                          .join(", ")
+                      : "Select Slots"}
                   </span>
                 </div>
 
                 <div className="border-t pt-3">
                   <div className="flex justify-between text-sm">
                     <span>Court Fee</span>
-                    <span>
-                      LKR {courts[selectedCourt].price.toLocaleString()}
-                    </span>
+                    <span>LKR {courtFee}</span>
                   </div>
 
                   <div className="mt-2 flex justify-between text-sm">
