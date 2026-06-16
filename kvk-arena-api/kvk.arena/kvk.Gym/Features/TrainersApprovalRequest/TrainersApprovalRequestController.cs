@@ -16,7 +16,7 @@ public class TrainersApprovalRequestController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] TrainerApprovalRequestCreateRequest request, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Create([FromForm] TrainerApprovalRequestCreateRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _approvalRequestService.CreateAsync(request, cancellationToken);
 
@@ -49,7 +49,7 @@ public class TrainersApprovalRequestController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] TrainerApprovalRequstUpdateRequest request, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Update(Guid id, [FromForm] TrainerApprovalRequstUpdateRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _approvalRequestService.UpdateAsync(id, request, cancellationToken);
 

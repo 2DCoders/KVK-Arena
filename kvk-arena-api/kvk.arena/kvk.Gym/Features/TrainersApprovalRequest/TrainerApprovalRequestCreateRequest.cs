@@ -1,4 +1,5 @@
 using kvk.Gym.Domain;
+using Microsoft.AspNetCore.Http;
 
 namespace kvk.Gym.Features.TrainersApprovalRequest;
 
@@ -12,7 +13,7 @@ public class TrainerApprovalRequestCreateRequest
     public string PhoneNumber { get; set; } = string.Empty;
     public string? Specialization { get; set; }
     public int YearsOfExperience { get; set; }
-    public byte[]? ProfilePicture { get; set; }
+    public IFormFile? ProfilePicture { get; set; }
     public string? Role { get; set; }
     public bool IsFreelance { get; set; }
 }

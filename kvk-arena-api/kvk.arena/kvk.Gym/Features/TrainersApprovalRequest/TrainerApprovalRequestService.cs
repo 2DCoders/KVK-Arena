@@ -28,6 +28,14 @@ public class TrainerApprovalRequestService
         if (string.IsNullOrWhiteSpace(request.Email))
             return Result.Failure("Email is required");
 
+        byte[]? profilePictureByteArray = null;
+        if (request.ProfilePicture != null)
+        {
+            using var memoryStream = new MemoryStream();
+            await request.ProfilePicture.CopyToAsync(memoryStream, cancellationToken);
+            profilePictureByteArray = memoryStream.ToArray();
+        }
+
         try
         {
             var entity = new TrainerApprovalRequests
@@ -45,7 +53,7 @@ public class TrainerApprovalRequestService
                 ApprovedBy = string.Empty,
                 ApprovalDate = DateTime.MaxValue,
                 TrainerId = Guid.Empty,
-                ProfilePicture = request.ProfilePicture,
+                ProfilePicture = profilePictureByteArray,
                 Role = request.Role,
                 IsFreelance = request.IsFreelance,
             };
@@ -84,6 +92,13 @@ public class TrainerApprovalRequestService
 
         try
         {
+            byte[]? profilePictureByteArray = null;
+            if (request.ProfilePicture != null)
+            {
+                using var memoryStream = new MemoryStream();
+                await request.ProfilePicture.CopyToAsync(memoryStream, cancellationToken);
+                profilePictureByteArray = memoryStream.ToArray();
+            }
 
             if (id == null || id == Guid.Empty)
             {
@@ -102,7 +117,7 @@ public class TrainerApprovalRequestService
                     ApprovedBy = string.Empty,
                     ApprovalDate = DateTime.MaxValue,
                     TrainerId = Guid.Empty,
-                    ProfilePicture = request.ProfilePicture,
+                    ProfilePicture = profilePictureByteArray,
                     Role = request.Role,
                     IsFreelance = request.IsFreelance,
                 };
@@ -143,7 +158,7 @@ public class TrainerApprovalRequestService
                         entity.LastName = request.LastName;
 
                     if (request.Email != null)
-                        entity.LastName = request.Email;
+                        entity.Email = request.Email;
 
                     if (request.PhoneNumber != null)
                         entity.Phone = request.PhoneNumber;
@@ -163,8 +178,8 @@ public class TrainerApprovalRequestService
                     if (request.Gender != null)
                         entity.Gender = request.Gender.Value;
 
-                    if (request.ProfilePicture != null)
-                        entity.ProfilePicture = request.ProfilePicture;
+                    if (profilePictureByteArray != null)
+                        entity.ProfilePicture = profilePictureByteArray;
 
                     if (request.Role != null)
                         entity.Role = request.Role;

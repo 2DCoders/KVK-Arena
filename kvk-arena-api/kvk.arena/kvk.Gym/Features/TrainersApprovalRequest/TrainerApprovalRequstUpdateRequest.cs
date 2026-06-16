@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using kvk.BuildingBlocks.Common;
+using Microsoft.AspNetCore.Http;
 
 namespace kvk.Gym.Features.Trainers;
 
@@ -22,7 +23,7 @@ public class TrainerApprovalRequstUpdateRequest
 
     public Guid TrainerId { get; set; }
     
-    public byte[]? ProfilePicture { get; set; }
+    public IFormFile? ProfilePicture { get; set; }
     
     [MaxLength(20)]
     public string? Role { get; set; }
