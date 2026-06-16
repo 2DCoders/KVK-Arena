@@ -20,6 +20,11 @@ public interface IHolidayService
     /// The returned DateTime should be DateKind Unspecified local-midnight.
     /// </summary>
     Task<DateTime> GetNextWorkingDayAsync(DateTime startExclusive, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns a list of the next N working days (excluding weekends and holidays).
+    /// </summary>
+    Task<List<DateTime>> GetNextWorkingDaysAsync(DateTime startDate, int count, CancellationToken cancellationToken = default);
 }
 
 
