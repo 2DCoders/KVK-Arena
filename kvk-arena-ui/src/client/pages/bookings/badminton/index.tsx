@@ -136,12 +136,12 @@ export default function BadmintonBookings() {
   const selectedCourtObjects = selectedCourts.map((index) => courts[index]);
 
   const courtFee = selectedCourtObjects.reduce(
-  (sum, court) => sum + court.price,
-  0
-);
+    (sum, court) => sum + court.price,
+    0,
+  );
 
-const subtotal = courtFee * selectedSlots.length;
-const total = subtotal + serviceFee;
+  const subtotal = courtFee * selectedSlots.length;
+  const total = subtotal + serviceFee;
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-[#fafafa] via-white to-[#fafafa] py-20">
@@ -181,6 +181,46 @@ const total = subtotal + serviceFee;
               <Users size={18} className="text-amber-600" />
               <span className="font-semibold">500+ Players</span>
             </div>
+          </div>
+        </div>
+
+        {/* DATE */}
+        <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm mb-10">
+          <div className="mb-5 flex items-center gap-2">
+            <CalendarDays className="text-amber-600" />
+            <h3 className="font-black text-lg">Select Date</h3>
+          </div>
+
+          <div className="grid grid-cols-7 gap-4 p-2">
+            {dates.map((item, index) => (
+              <button
+                key={index}
+                onClick={() => setSelectedDate(index)}
+                className={`
+                      rounded-2xl
+                      border
+                      p-4
+                      transition-all
+                      duration-300
+                      cursor-pointer
+                      ${
+                        selectedDate === index
+                          ? "scale-105 border-amber-500 bg-[#A65A2A] text-white shadow-xl"
+                          : "border-gray-200 bg-white hover:border-amber-300"
+                      }
+                    `}
+              >
+                {item.isToday && (
+                  <div className="mb-2 text-[10px] font-bold">TODAY</div>
+                )}
+
+                <p className="text-xs font-bold">{item.day}</p>
+
+                <p className="text-3xl font-black">{item.date}</p>
+
+                <p className="text-xs">{item.month}</p>
+              </button>
+            ))}
           </div>
         </div>
 
@@ -273,47 +313,6 @@ const total = subtotal + serviceFee;
 
           {/* RIGHT SIDE */}
           <div className="space-y-6">
-            {/* DATE */}
-            <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm ">
-              <div className="mb-5 flex items-center gap-2">
-                <CalendarDays className="text-amber-600" />
-                <h3 className="font-black text-lg">Select Date</h3>
-              </div>
-
-              <div className="flex gap-3 overflow-x-auto p-2">
-                {dates.map((item, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedDate(index)}
-                    className={`
-                      min-w-[100px]
-                      rounded-2xl
-                      border
-                      p-4
-                      transition-all
-                      duration-300
-                      cursor-pointer
-                      ${
-                        selectedDate === index
-                          ? "scale-105 border-amber-500 bg-[#A65A2A] text-white shadow-xl"
-                          : "border-gray-200 bg-white hover:border-amber-300"
-                      }
-                    `}
-                  >
-                    {item.isToday && (
-                      <div className="mb-2 text-[10px] font-bold">TODAY</div>
-                    )}
-
-                    <p className="text-xs font-bold">{item.day}</p>
-
-                    <p className="text-3xl font-black">{item.date}</p>
-
-                    <p className="text-xs">{item.month}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* SLOTS */}
             <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
               <div className="mb-5 flex items-center gap-2">
