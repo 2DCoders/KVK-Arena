@@ -4,7 +4,7 @@ using Gender = kvk.BuildingBlocks.Common.Gender;
 
 namespace kvk.Gym.Features.Memberships;
 
-public class MembershipResponse
+public class MembershipResponse : TrainerSpecializedResponse
 {
     public Guid Id { get; set; }
     public string MembershipNumber { get; set; } = string.Empty;
@@ -34,4 +34,5 @@ public class MembershipResponse
     public bool IsDeleted { get; set; }
     
     public DateTime? CreatedDate { get; set; }
+
 }

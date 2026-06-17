@@ -195,7 +195,8 @@ public class MembershipService : IMembershipService
         try
         {
             var membership = await _db.Set<Membership>()
-                .SingleOrDefaultAsync(s => s.UserName == request.Username && s.MemberType != MemberType.Staff, cancellationToken);
+                .SingleOrDefaultAsync(s => s.UserName == request.Username && s.MemberType != MemberType.Staff,
+                    cancellationToken);
 
             if (membership == null)
                 throw new Exception("Invalid username or password");
@@ -359,11 +360,10 @@ public class MembershipService : IMembershipService
         }
     }
 
-    public async Task<Result> GetMemberAsync(Guid memberId, CancellationToken cancellationToken = default)
+    public async Task<MembershipResponse> GetMemberAsync(Guid memberId, CancellationToken cancellationToken = default)
     {
         if (memberId == Guid.Empty)
-            return Result.Failure("Member id cannot be empty");
-
+            throw new ArgumentException("Member id cannot be empty", nameof(memberId));
         try
         {
             var member = await _db.Memberships
@@ -372,7 +372,7 @@ public class MembershipService : IMembershipService
                 .SingleOrDefaultAsync(m => m.Id == memberId && !m.IsDeleted, cancellationToken);
 
             if (member == null)
-                return Result.Failure("Member not found");
+                throw new Exception("Member not found");
 
             var latestPayment = await _db.MemberPayments
                 .AsNoTracking()
@@ -381,11 +381,27 @@ public class MembershipService : IMembershipService
                 .FirstOrDefaultAsync(cancellationToken);
 
             Trainer trainer = null;
+            TrainerSpecializedResponse trainerSpecializedResponse = null;
             if (member.TrainerId.HasValue)
             {
-                trainer = await _db.Trainers.Where(t => t.Id == member.TrainerId)
-                    .FirstOrDefaultAsync(cancellationToken);
+                trainer = (await _db.Trainers.Where(t => t.Id == member.TrainerId)
+                    .FirstOrDefaultAsync(cancellationToken))!;
             }
+
+            if (member.MemberType == MemberType.Trainer)
+            {
+                //get the trainer details
+                trainerSpecializedResponse = (await _db.Trainers.Where(t => t.Id == member.Id)
+                    .Select(x => new TrainerSpecializedResponse
+                    {
+                        Specialization = x.Specialization,
+                        Rating = x.Rating,
+                        YearsOfExperience = x.YearsOfExperience,
+                        ProfilePicture = x.ProfilePicture
+                    })
+                    .FirstOrDefaultAsync(cancellationToken))!;
+            }
+
 
             var memberPayment = await _db.MemberPayments.Where(p => p.MembershipId == member.Id)
                 .OrderByDescending(p => p.CreatedAt)
@@ -416,14 +432,18 @@ public class MembershipService : IMembershipService
                 IdentityUserId = member.IdentityUserId,
                 CreatedDate = member.CreatedAt,
                 IsSavedFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
-                                      !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2)
+                                      !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2),
+                Specialization = trainerSpecializedResponse?.Specialization,
+                YearsOfExperience = trainerSpecializedResponse?.YearsOfExperience ?? 0,
+                ProfilePicture = trainerSpecializedResponse?.ProfilePicture,
+                Rating = trainerSpecializedResponse?.Rating ?? 0
             };
 
-            return Result.Success().WithData("response", response);
+            return response;
         }
         catch (Exception ex)
         {
-            return Result.Failure($"Failed to fetch member: {ex.Message}");
+            throw new Exception($"Failed to fetch member: {ex.Message}");
         }
     }
 
@@ -764,7 +784,8 @@ public class MembershipService : IMembershipService
     }
 
 
-    public async Task<Result> ReverseSoftDeleteMemberAsync(Guid memberId, CancellationToken cancellationToken = default)
+    public async Task<Result> ReverseSoftDeleteMemberAsync(Guid memberId,
+        CancellationToken cancellationToken = default)
     {
         if (memberId == Guid.Empty)
             return Result.Failure("Member id cannot be empty");
@@ -801,7 +822,8 @@ public class MembershipService : IMembershipService
     }
 
 
-    public async Task<Result> PermanentlyDeleteMemberAsync(Guid memberId, CancellationToken cancellationToken = default)
+    public async Task<Result> PermanentlyDeleteMemberAsync(Guid memberId,
+        CancellationToken cancellationToken = default)
     {
         if (memberId == Guid.Empty)
             return Result.Failure("Member id cannot be empty");
@@ -874,7 +896,6 @@ public class MembershipService : IMembershipService
         var nextToken = lastToken + 1;
         return nextToken.ToString("D4");
     }
-
 
 
     public async Task<Result> AssignTrainerAsync(Guid memberId, Guid trainerId,

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using kvk.Gym.Interfaces;
+
 namespace kvk.Gym.Features.Memberships;
 
 [ApiController]
@@ -14,7 +15,8 @@ public class MembershipsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateMembershipRequest request, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Create([FromBody] CreateMembershipRequest request,
+        CancellationToken cancellationToken = default)
     {
         var result = await _service.CreateMemberAsync(request, cancellationToken);
         if (!result.Succeeded)
@@ -31,11 +33,13 @@ public class MembershipsController : ControllerBase
         var result = await _service.LoginAsync(request, cancellationToken);
         return Ok(result);
     }
-    
+
     [HttpPut("change-password")]
-    public async Task<IActionResult> ChangePassword(Guid memberId,[FromBody] ChangeGymPasswordRequest request, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> ChangePassword(Guid memberId, [FromBody] ChangeGymPasswordRequest request,
+        CancellationToken cancellationToken = default)
     {
-        var result = await _service.ChangePasswordAsync(memberId, request.OldPassword, request.NewPassword, cancellationToken);
+        var result =
+            await _service.ChangePasswordAsync(memberId, request.OldPassword, request.NewPassword, cancellationToken);
         if (!result.Succeeded)
             return BadRequest(result);
 
@@ -44,7 +48,8 @@ public class MembershipsController : ControllerBase
 
 
     [HttpPut("{id:guid}/fingerprints")]
-    public async Task<IActionResult> UpdateFingerprints(Guid id, [FromBody] UpdateFingerprintsRequest request, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> UpdateFingerprints(Guid id, [FromBody] UpdateFingerprintsRequest request,
+        CancellationToken cancellationToken = default)
     {
         var result = await _service.UpdateFingerprintsAsync(id, request, cancellationToken);
         if (!result.Succeeded)
@@ -54,7 +59,8 @@ public class MembershipsController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Edit(Guid id, [FromBody] EditMembershipRequest request, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Edit(Guid id, [FromBody] EditMembershipRequest request,
+        CancellationToken cancellationToken = default)
     {
         var result = await _service.EditMemberAsync(id, request, cancellationToken);
         if (!result.Succeeded)
@@ -64,7 +70,8 @@ public class MembershipsController : ControllerBase
     }
 
     [HttpPost("{id:guid}/upgrade")]
-    public async Task<IActionResult> Upgrade(Guid id, [FromBody] UpgradeMembershipPlanRequest request, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Upgrade(Guid id, [FromBody] UpgradeMembershipPlanRequest request,
+        CancellationToken cancellationToken = default)
     {
         var result = await _service.UpgradeMembershipPlanAsync(id, request, cancellationToken);
         if (!result.Succeeded)
@@ -72,7 +79,7 @@ public class MembershipsController : ControllerBase
 
         return Ok(result);
     }
-    
+
     [HttpGet]
     public async Task<IActionResult> Get(CancellationToken cancellationToken = default)
     {
@@ -85,9 +92,6 @@ public class MembershipsController : ControllerBase
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _service.GetMemberAsync(id, cancellationToken);
-        if (!result.Succeeded)
-            return NotFound(result);
-
         return Ok(result);
     }
 
@@ -100,7 +104,7 @@ public class MembershipsController : ControllerBase
 
         return NoContent();
     }
-    
+
     [HttpPost("{id:guid}/reverse-soft-delete")]
     public async Task<IActionResult> ReverseSoftDelete(Guid id, CancellationToken cancellationToken = default)
     {
@@ -110,7 +114,7 @@ public class MembershipsController : ControllerBase
 
         return NoContent();
     }
-    
+
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> PermanentlyDelete(Guid id, CancellationToken cancellationToken = default)
@@ -121,9 +125,10 @@ public class MembershipsController : ControllerBase
 
         return NoContent();
     }
-    
+
     [HttpPost("{id:guid}/assign-trainer")]
-    public async Task<IActionResult> AssignTrainer(Guid id, [FromBody] AssignTrainerRequest request, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> AssignTrainer(Guid id, [FromBody] AssignTrainerRequest request,
+        CancellationToken cancellationToken = default)
     {
         var result = await _service.AssignTrainerAsync(id, request.TrainerId, cancellationToken);
         if (!result.Succeeded)

@@ -17,7 +17,7 @@ public interface IMembershipService
     
     Task<List<MembershipResponse>> GetAllMembersAsync(CancellationToken cancellationToken = default);
     
-    Task<Result> GetMemberAsync(Guid memberId, CancellationToken cancellationToken = default);
+    Task<MembershipResponse> GetMemberAsync(Guid memberId, CancellationToken cancellationToken = default);
     
     // Soft delete a member (marks IsDeleted = true)
     Task<Result> SoftDeleteMemberAsync(Guid memberId, CancellationToken cancellationToken = default);
