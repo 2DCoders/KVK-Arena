@@ -56,6 +56,21 @@ export default function UserProfileModal({
     confirmPassword: "",
     oldPassword: "",
   });
+  const [showEditTrainerModal, setShowEditTrainerModal] = useState(false);
+
+const [trainerForm, setTrainerForm] = useState({
+  email: "",
+  phoneNumber: "",
+  specialization: "",
+  yearsOfExperience: 0,
+  rating: 0,
+  firstName: "",
+  lastName: "",
+  gender: 1,
+  trainerId: "",
+  profilePicture: "",
+  role: "",
+});
 
   const memberId = localStorage.getItem("memberId") || "N/A";
   const memberName = localStorage.getItem("memberName") || "N/A";
@@ -87,6 +102,24 @@ export default function UserProfileModal({
     result.setDate(result.getDate() + days);
     return result;
   };
+
+  const handleEditTrainer = () => {
+  setTrainerForm({
+    email: memberData?.email || "",
+    phoneNumber: memberData?.phoneNumber || "",
+    specialization: memberData?.specialization || "",
+    yearsOfExperience: memberData?.yearsOfExperience || 0,
+    rating: memberData?.rating || 0,
+    firstName: memberData?.firstName || "",
+    lastName: memberData?.lastName || "",
+    gender: memberData?.gender || 1,
+    trainerId: memberData?.id,
+    profilePicture: memberData?.profilePicture || "",
+    role: memberData?.role || "",
+  });
+
+  setShowEditTrainerModal(true);
+};
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -294,6 +327,175 @@ export default function UserProfileModal({
         onClick={onClose}
       />
 
+      {showUpgradeModal && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/80"
+            onClick={() => setShowUpgradeModal(false)}
+          />
+
+          {/* Modal */}
+          <div className="relative w-[95%] md:w-[80%] lg:w-[60%] h-[80vh] bg-white rounded-3xl shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="flex justify-between items-center p-6 border-b">
+              <h2 className="text-2xl font-bold">Upgrade Your Plan</h2>
+
+              <button
+                onClick={() => setShowUpgradeModal(false)}
+                className="p-2 cursor-pointer rounded-full hover:bg-slate-100"
+              >
+                <X />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 overflow-y-auto h-[calc(80vh-80px)]">
+              <div className="w-full flex justify-between items-center rounded-2xl border border-blue-500/20 bg-white-900/60 backdrop-blur-md px-6 py-5 mb-6">
+                <div>
+                  <p className="text-slate-600">
+                    Choose a new membership plan below.
+                  </p>
+                  {selectedPlan && (
+                    <div className="text-slate-600 text-sm mt-2">
+                      <p>
+                        Start Date:{" "}
+                        <span className="font-semibold">
+                          {isPlanEnd ||
+                          !memberData?.memberPayment?.memberShipEndDate
+                            ? new Date().toLocaleDateString()
+                            : new Date(
+                                memberData.memberPayment.memberShipEndDate,
+                              ).toLocaleDateString()}
+                        </span>
+                      </p>
+
+                      <p>
+                        End Date:{" "}
+                        <span className="font-semibold text-blue-600">
+                          {calculatedEndDate
+                            ? new Date(calculatedEndDate).toLocaleDateString()
+                            : "-"}
+                        </span>
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <button
+                    onClick={() => setSelectedPlan(null)}
+                    disabled={selectedPlan === null}
+                    className={`group relative cursor-pointer w-full text-left rounded-2xl p-4 transition-all duration-300
+                                                                ${
+                                                                  selectedPlan ===
+                                                                  null
+                                                                    ? "bg-white border cursor-not-allowed border-slate-200"
+                                                                    : "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30"
+                                                                }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <h4
+                        onClick={handleInitPayment}
+                        className={`font-semibold ${selectedPlan !== null ? "text-white" : "text-slate-900"}`}
+                      >
+                        Pay Now
+                      </h4>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2 mt-6">
+                {plans
+                  .filter((p) => p.isActive === 1)
+                  .map((plan) => {
+                    const isSelected = selectedPlan === plan.id;
+
+                    return (
+                      <button
+                        key={plan.id}
+                        onClick={() => {
+                          setSelectedPlan(plan.id);
+
+                          const baseDate =
+                            isPlanEnd ||
+                            !memberData?.memberPayment?.memberShipEndDate
+                              ? new Date()
+                              : new Date(
+                                  memberData.memberPayment.memberShipEndDate,
+                                );
+
+                          const newEnd = calculateEndDate(
+                            baseDate,
+                            plan.durationInDays,
+                          );
+
+                          setCalculatedEndDate(newEnd.toISOString());
+                        }}
+                        className={`text-left cursor-pointer rounded-2xl border p-4 transition-all duration-200 hover:shadow-md ${
+                          isSelected
+                            ? "border-[#296BE1] bg-[#296BE1]/5 shadow-lg"
+                            : "border-slate-200 bg-white"
+                        }`}
+                      >
+                        {/* TITLE */}
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h4 className="font-bold text-slate-900">
+                              {plan.title}
+                            </h4>
+
+                            <p className="text-xs text-slate-500 mt-1">
+                              {plan.durationInDays === 1
+                                ? "1 Day"
+                                : plan.durationInDays === 30
+                                  ? "1 Month"
+                                  : plan.durationInDays === 90
+                                    ? "3 Months"
+                                    : plan.durationInDays === 365
+                                      ? "1 Year"
+                                      : `${plan.durationInDays} Days`}
+                            </p>
+                          </div>
+
+                          <div className="text-[#296BE1] font-black text-lg">
+                            LKR{" "}
+                            {Number(plan.price).toLocaleString("en-LK", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </div>
+                        </div>
+
+                        {/* DESCRIPTION */}
+                        <p className="mt-3 text-xs text-slate-500 line-clamp-2">
+                          {plan.description}
+                        </p>
+
+                        {/* FEATURES PREVIEW */}
+                        <div className="mt-3 flex flex-wrap gap-1">
+                          {plan.features
+                            .split(",")
+                            .slice(0, 3)
+                            .map((f: string) => (
+                              <span
+                                key={f}
+                                className="text-[10px] px-2 py-1 rounded-full bg-slate-100 text-slate-600"
+                              >
+                                {f.trim()}
+                              </span>
+                            ))}
+                        </div>
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal */}
 
       {memberType === "1" ? (
@@ -332,188 +534,6 @@ export default function UserProfileModal({
                       </span>
                     </div>
                   </div>
-
-                  {showUpgradeModal && (
-                    <div className="fixed inset-0 z-[10000] flex items-center justify-center">
-                      {/* Backdrop */}
-                      <div
-                        className="absolute inset-0 bg-black/80"
-                        onClick={() => setShowUpgradeModal(false)}
-                      />
-
-                      {/* Modal */}
-                      <div className="relative w-[95%] md:w-[80%] lg:w-[60%] h-[80vh] bg-white rounded-3xl shadow-2xl overflow-hidden">
-                        {/* Header */}
-                        <div className="flex justify-between items-center p-6 border-b">
-                          <h2 className="text-2xl font-bold">
-                            Upgrade Your Plan
-                          </h2>
-
-                          <button
-                            onClick={() => setShowUpgradeModal(false)}
-                            className="p-2 cursor-pointer rounded-full hover:bg-slate-100"
-                          >
-                            <X />
-                          </button>
-                        </div>
-
-                        {/* Content */}
-                        <div className="p-6 overflow-y-auto h-[calc(80vh-80px)]">
-                          <div className="w-full flex justify-between items-center rounded-2xl border border-blue-500/20 bg-white-900/60 backdrop-blur-md px-6 py-5 mb-6">
-                            <div>
-                              <p className="text-slate-600">
-                                Choose a new membership plan below.
-                              </p>
-                              {selectedPlan && (
-                                <div className="text-slate-600 text-sm mt-2">
-                                  <p>
-                                    Start Date:{" "}
-                                    <span className="font-semibold">
-                                      {isPlanEnd ||
-                                      !memberData?.memberPayment
-                                        ?.memberShipEndDate
-                                        ? new Date().toLocaleDateString()
-                                        : new Date(
-                                            memberData.memberPayment
-                                              .memberShipEndDate,
-                                          ).toLocaleDateString()}
-                                    </span>
-                                  </p>
-
-                                  <p>
-                                    End Date:{" "}
-                                    <span className="font-semibold text-blue-600">
-                                      {calculatedEndDate
-                                        ? new Date(
-                                            calculatedEndDate,
-                                          ).toLocaleDateString()
-                                        : "-"}
-                                    </span>
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-
-                            <div>
-                              <button
-                                onClick={() => setSelectedPlan(null)}
-                                disabled={selectedPlan === null}
-                                className={`group relative cursor-pointer w-full text-left rounded-2xl p-4 transition-all duration-300
-                                                                ${
-                                                                  selectedPlan ===
-                                                                  null
-                                                                    ? "bg-white border cursor-not-allowed border-slate-200"
-                                                                    : "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30"
-                                                                }`}
-                              >
-                                <div className="flex items-center justify-between">
-                                  <h4
-                                    onClick={handleInitPayment}
-                                    className={`font-semibold ${selectedPlan !== null ? "text-white" : "text-slate-900"}`}
-                                  >
-                                    Pay Now
-                                  </h4>
-                                </div>
-                              </button>
-                            </div>
-                          </div>
-
-                          <div className="grid gap-3 md:grid-cols-2 mt-6">
-                            {plans
-                              .filter((p) => p.isActive === 1)
-                              .map((plan) => {
-                                const isSelected = selectedPlan === plan.id;
-
-                                return (
-                                  <button
-                                    key={plan.id}
-                                    onClick={() => {
-                                      setSelectedPlan(plan.id);
-
-                                      const baseDate =
-                                        isPlanEnd ||
-                                        !memberData?.memberPayment
-                                          ?.memberShipEndDate
-                                          ? new Date()
-                                          : new Date(
-                                              memberData.memberPayment
-                                                .memberShipEndDate,
-                                            );
-
-                                      const newEnd = calculateEndDate(
-                                        baseDate,
-                                        plan.durationInDays,
-                                      );
-
-                                      setCalculatedEndDate(
-                                        newEnd.toISOString(),
-                                      );
-                                    }}
-                                    className={`text-left cursor-pointer rounded-2xl border p-4 transition-all duration-200 hover:shadow-md ${
-                                      isSelected
-                                        ? "border-[#296BE1] bg-[#296BE1]/5 shadow-lg"
-                                        : "border-slate-200 bg-white"
-                                    }`}
-                                  >
-                                    {/* TITLE */}
-                                    <div className="flex items-start justify-between">
-                                      <div>
-                                        <h4 className="font-bold text-slate-900">
-                                          {plan.title}
-                                        </h4>
-
-                                        <p className="text-xs text-slate-500 mt-1">
-                                          {plan.durationInDays === 1
-                                            ? "1 Day"
-                                            : plan.durationInDays === 30
-                                              ? "1 Month"
-                                              : plan.durationInDays === 90
-                                                ? "3 Months"
-                                                : plan.durationInDays === 365
-                                                  ? "1 Year"
-                                                  : `${plan.durationInDays} Days`}
-                                        </p>
-                                      </div>
-
-                                      <div className="text-[#296BE1] font-black text-lg">
-                                        LKR{" "}
-                                        {Number(plan.price).toLocaleString(
-                                          "en-LK",
-                                          {
-                                            minimumFractionDigits: 2,
-                                            maximumFractionDigits: 2,
-                                          },
-                                        )}
-                                      </div>
-                                    </div>
-
-                                    {/* DESCRIPTION */}
-                                    <p className="mt-3 text-xs text-slate-500 line-clamp-2">
-                                      {plan.description}
-                                    </p>
-
-                                    {/* FEATURES PREVIEW */}
-                                    <div className="mt-3 flex flex-wrap gap-1">
-                                      {plan.features
-                                        .split(",")
-                                        .slice(0, 3)
-                                        .map((f: string) => (
-                                          <span
-                                            key={f}
-                                            className="text-[10px] px-2 py-1 rounded-full bg-slate-100 text-slate-600"
-                                          >
-                                            {f.trim()}
-                                          </span>
-                                        ))}
-                                    </div>
-                                  </button>
-                                );
-                              })}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
 
                   <h1 className="mt-5 text-4xl md:text-6xl font-bold text-white">
                     {memberData?.firstName + " " + memberData?.lastName ||
@@ -953,9 +973,38 @@ export default function UserProfileModal({
                         memberName}
                     </h1>
 
-                    <p className="text-orange-100 mt-2">
-                      {memberData?.specialization || "Fitness Trainer"}
-                    </p>
+                    <div className="flex flex-wrap gap-3 mt-4">
+                      <span
+                        className="
+                        px-4 py-2
+                        rounded-full
+                        bg-amber-500/10
+                        border border-amber-500/20
+                        text-amber-300
+                        text-sm font-medium
+                        "
+                      >
+                        💼 {memberData?.role || "Trainer"}
+                      </span>
+
+                      <span
+                        className={`
+                        px-4 py-2
+                        rounded-full
+                        text-sm font-medium
+                        border
+                        ${
+                            memberData?.isFreelance
+                            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300"
+                            : "bg-sky-500/10 border-sky-500/20 text-sky-300"
+                        }
+                        `}
+                      >
+                        {memberData?.isFreelance
+                          ? "🚀 Freelance Trainer"
+                          : "🏢 Staff Trainer"}
+                      </span>
+                    </div>
 
                     <div className="flex flex-wrap gap-6 mt-4 text-orange-100">
                       <div className="flex items-center gap-2">
@@ -972,7 +1021,7 @@ export default function UserProfileModal({
                 </div>
 
                 <button
-                  onClick={() => setIsEditing(true)}
+                  onClick={handleEditTrainer}
                   className="cursor-pointer flex items-center gap-2 px-5 py-3 rounded-2xl bg-white text-orange-700 font-semibold shadow-lg hover:scale-105 transition"
                 >
                   <Pencil size={18} />
@@ -1291,41 +1340,24 @@ export default function UserProfileModal({
                       <div className="mt-8 flex flex-wrap gap-4">
                         <button
                           className="
-        cursor-pointer
-        px-6
-        py-3
-        rounded-2xl
-        bg-gradient-to-r
-        from-amber-500
-        via-amber-600
-        to-orange-700
-        text-white
-        font-semibold
-        shadow-lg
-        hover:scale-105
-        transition-all
-        duration-300
-        "
+                            cursor-pointer
+                            px-6
+                            py-3
+                            rounded-2xl
+                            bg-gradient-to-r
+                            from-amber-500
+                            via-amber-600
+                            to-orange-700
+                            text-white
+                            font-semibold
+                            shadow-lg
+                            hover:scale-105
+                            transition-all
+                            duration-300
+                            "
+                          onClick={() => setShowUpgradeModal(true)}
                         >
                           Upgrade Plan
-                        </button>
-
-                        <button
-                          className="
-        cursor-pointer
-        px-6
-        py-3
-        rounded-2xl
-        border
-        border-slate-200
-        bg-white
-        text-slate-700
-        font-medium
-        hover:bg-slate-50
-        transition-all
-        "
-                        >
-                          View Plan Details
                         </button>
                       </div>
                     </div>
@@ -1419,6 +1451,238 @@ export default function UserProfileModal({
           </div>
         </div>
       )}
+
+      {showEditTrainerModal && (
+  <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6">
+
+    <div className="w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-[32px] bg-white shadow-2xl">
+
+      {/* Header */}
+      <div className="sticky top-0 bg-white border-b px-8 py-6 flex items-center justify-between z-10">
+
+        <div>
+          <h2 className="text-3xl font-black">
+            Edit Trainer Profile
+          </h2>
+
+          <p className="text-slate-500 mt-1">
+            Update trainer information
+          </p>
+        </div>
+
+        <button
+          onClick={() => setShowEditTrainerModal(false)}
+          className="h-12 w-12 rounded-2xl cursor-pointer bg-slate-100 hover:bg-slate-200 flex items-center justify-center"
+        >
+          <X />
+        </button>
+
+      </div>
+
+      <div className="p-8 space-y-8">
+
+        {/* Personal Information */}
+        <div>
+          <h3 className="text-xl font-bold mb-5">
+            Personal Information
+          </h3>
+
+          <div className="grid md:grid-cols-2 gap-5">
+
+            <div>
+              <label className="text-sm text-slate-500">
+                First Name
+              </label>
+
+              <input
+                value={trainerForm.firstName}
+                onChange={(e) =>
+                  setTrainerForm({
+                    ...trainerForm,
+                    firstName: e.target.value,
+                  })
+                }
+                className="w-full mt-2 p-4 rounded-2xl border"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm text-slate-500">
+                Last Name
+              </label>
+
+              <input
+                value={trainerForm.lastName}
+                onChange={(e) =>
+                  setTrainerForm({
+                    ...trainerForm,
+                    lastName: e.target.value,
+                  })
+                }
+                className="w-full mt-2 p-4 rounded-2xl border"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm text-slate-500">
+                Email
+              </label>
+
+              <input
+                value={trainerForm.email}
+                onChange={(e) =>
+                  setTrainerForm({
+                    ...trainerForm,
+                    email: e.target.value,
+                  })
+                }
+                className="w-full mt-2 p-4 rounded-2xl border"
+              />
+            </div>
+
+          </div>
+        </div>
+
+        {/* Contact */}
+        <div>
+          <h3 className="text-xl font-bold mb-5">
+            Contact
+          </h3>
+
+          <div className="grid md:grid-cols-2 gap-5">
+
+            <div>
+              <label>Phone Number</label>
+
+              <input
+                value={trainerForm.phoneNumber}
+                onChange={(e) =>
+                  setTrainerForm({
+                    ...trainerForm,
+                    phoneNumber: e.target.value,
+                  })
+                }
+                className="w-full mt-2 p-4 rounded-2xl border"
+              />
+            </div>
+
+          </div>
+        </div>
+
+        {/* Professional */}
+        <div>
+          <h3 className="text-xl font-bold mb-5">
+            Professional Details
+          </h3>
+
+          <div className="grid md:grid-cols-2 gap-5">
+
+            <div>
+              <label>Role</label>
+
+              <input
+                value={trainerForm.role}
+                onChange={(e) =>
+                  setTrainerForm({
+                    ...trainerForm,
+                    role: e.target.value,
+                  })
+                }
+                className="w-full mt-2 p-4 rounded-2xl border"
+              />
+            </div>
+
+            <div>
+              <label>Experience (Years)</label>
+
+              <input
+                type="number"
+                value={trainerForm.yearsOfExperience}
+                onChange={(e) =>
+                  setTrainerForm({
+                    ...trainerForm,
+                    yearsOfExperience: Number(
+                      e.target.value
+                    ),
+                  })
+                }
+                className="w-full mt-2 p-4 rounded-2xl border"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label>Specialization</label>
+
+              <textarea
+                rows={4}
+                value={trainerForm.specialization}
+                onChange={(e) =>
+                  setTrainerForm({
+                    ...trainerForm,
+                    specialization: e.target.value,
+                  })
+                }
+                placeholder="Weight Loss, Strength Training, Yoga"
+                className="w-full mt-2 p-4 rounded-2xl border"
+              />
+            </div>
+
+            <div>
+              <label>Gender</label>
+
+              <select
+                value={trainerForm.gender}
+                onChange={(e) =>
+                  setTrainerForm({
+                    ...trainerForm,
+                    gender: Number(e.target.value),
+                  })
+                }
+                className="w-full mt-2 p-4 rounded-2xl border cursor-pointer"
+              >
+                <option value={1}>Male</option>
+                <option value={2}>Female</option>
+              </select>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      {/* Footer */}
+      <div className="sticky bottom-0 bg-white border-t p-6 flex justify-end gap-4">
+
+        <button
+          onClick={() => setShowEditTrainerModal(false)}
+          className="px-6 py-3 cursor-pointer rounded-2xl border"
+        >
+          Cancel
+        </button>
+
+        <button
+        //   onClick={handleUpdateTrainer}
+          className="
+          px-8 py-3
+          rounded-2xl
+          bg-gradient-to-r
+          from-amber-500
+          via-amber-600
+          to-orange-700
+          text-white
+          cursor-pointer
+          font-semibold
+          "
+        >
+          Update Trainer
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
     </div>
   );
 }
