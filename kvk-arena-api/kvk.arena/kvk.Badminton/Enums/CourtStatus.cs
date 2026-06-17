@@ -14,3 +14,11 @@ public enum BookingStatus
     Cancelled = 3,
     Completed = 4
 }
+
+public enum BookingHoldStatus
+{
+    Pending = 1,
+    Confirmed = 2,
+    Expired = 3,
+    Released = 4
+}

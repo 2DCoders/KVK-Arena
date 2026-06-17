@@ -17,6 +17,7 @@ public class BadmintonDbContext(
     public DbSet<Domain.CourtSlotConfiguration> CourtSlotConfigurations => Set<Domain.CourtSlotConfiguration>();
     public DbSet<Domain.CourtSlot> CourtSlots => Set<Domain.CourtSlot>();
     public DbSet<Domain.CourtBooking> CourtBookings => Set<Domain.CourtBooking>();
+    public DbSet<Domain.BookingHold> BookingHolds => Set<Domain.BookingHold>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -3,7 +3,7 @@ using kvk.BuildingBlocks.Common;
 
 namespace kvk.Badminton.Domain;
 
-public class CourtBooking : AuditableEntity
+public class CourtBooking : AuditableEntity, ICustomerDetails
 {
     public Guid CourtId { get; set; }
 
@@ -15,12 +15,12 @@ public class CourtBooking : AuditableEntity
 
     public DateOnly BookingDate { get; set; }
 
-    public Guid CustomerId { get; set; }
-
     public decimal BookingAmount { get; set; }
 
     public BookingStatus Status { get; set; }
 
     public string? Notes { get; set; }
-    
+
+    public required string CustomerName { get; set; }
+    public required string PhoneNumber { get; set; }
 }
