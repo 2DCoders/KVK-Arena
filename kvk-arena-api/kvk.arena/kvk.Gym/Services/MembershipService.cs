@@ -397,7 +397,9 @@ public class MembershipService : IMembershipService
                         Specialization = x.Specialization,
                         Rating = x.Rating,
                         YearsOfExperience = x.YearsOfExperience,
-                        ProfilePicture = x.ProfilePicture
+                        ProfilePicture = x.ProfilePicture,
+                        IsFreelance = x.IsFreelance,
+                        Role = x.Role
                     })
                     .FirstOrDefaultAsync(cancellationToken))!;
             }
