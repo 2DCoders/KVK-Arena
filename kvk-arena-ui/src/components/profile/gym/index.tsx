@@ -16,6 +16,8 @@ import {
   Fingerprint,
   Phone,
   Briefcase,
+  Plus,
+  Camera,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -137,6 +139,18 @@ export default function UserProfileModal({
     });
 
     setShowEditTrainerModal(true);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const validTypes = ["image/png", "image/jpeg", "image/jpg"];
+      if (!validTypes.includes(file.type)) {
+        alert("Only PNG, JPG, and JPEG files are allowed.");
+        return;
+      }
+      setTrainerForm((prev) => ({ ...prev, profilePicture: file }));
+    }
   };
 
   const handleGetRequestById = async () => {
@@ -1555,6 +1569,44 @@ export default function UserProfileModal({
             </div>
 
             <div className="p-8 space-y-8">
+              {/* Profile Picture Upload Section */}
+              <div className="flex flex-col items-center justify-center border-b pb-8">
+                <div className="relative group">
+                  <input
+                    type="file"
+                    id="trainer-photo-upload"
+                    className="hidden"
+                    accept=".png,.jpg,.jpeg"
+                    onChange={handleFileChange}
+                  />
+                  <label
+                    htmlFor="trainer-photo-upload"
+                    className="relative flex items-center justify-center w-40 h-40 rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 overflow-hidden cursor-pointer transition-all hover:border-amber-500 hover:bg-amber-50"
+                  >
+                    {trainerForm.profilePicture ? (
+                      <>
+                        <img
+                          src={
+                            trainerForm.profilePicture instanceof File
+                              ? URL.createObjectURL(trainerForm.profilePicture)
+                              : (trainerForm.profilePicture as string)
+                          }
+                          alt="Profile Preview"
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                          <Camera className="text-white" size={32} />
+                        </div>
+                      </>
+                    ) : (
+                      <Plus className="text-slate-400 group-hover:text-amber-600" size={32} />
+                    )}
+                  </label>
+                </div>
+                <p className="mt-3 text-sm font-medium text-slate-500">Profile Picture</p>
+                <p className="text-xs text-slate-400 mt-1">PNG, JPG or JPEG (Square recommended)</p>
+              </div>
+
               {/* Personal Information */}
               <div>
                 <h3 className="text-xl font-bold mb-5">Personal Information</h3>
