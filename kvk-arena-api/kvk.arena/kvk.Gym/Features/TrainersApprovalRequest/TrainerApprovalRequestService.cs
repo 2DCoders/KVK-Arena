@@ -117,7 +117,7 @@ public class TrainerApprovalRequestService
                     ApprovalStatus = ApprovalStatus.Pending,
                     ApprovedBy = string.Empty,
                     ApprovalDate = DateTime.MaxValue,
-                    TrainerId = Guid.Empty,
+                    TrainerId = id,
                     ProfilePicture = profilePictureByteArray,
                     Role = request.Role,
                     IsFreelance = request.IsFreelance,
@@ -133,7 +133,7 @@ public class TrainerApprovalRequestService
                 var entity = await _db.Set<TrainerApprovalRequests>()
                     .SingleAsync(
                         x =>
-                            x.Id == id
+                            x.TrainerId == id
                             && x.ApprovalStatus == ApprovalStatus.Pending,
                         cancellationToken);
 

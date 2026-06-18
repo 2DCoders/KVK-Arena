@@ -3,7 +3,7 @@ import { getEnv } from "@/env";
 import { changePassword, getMember, updateMember } from "@/services/auth-api";
 import { getMembershipPlans } from "@/services/memberships-api";
 import { createPayment } from "@/services/pay-api";
-import { createRequest, getRequestById } from "@/services/trainers-api";
+import { createRequest, getRequestById, updateRequest } from "@/services/trainers-api";
 import {
   X,
   Calendar,
@@ -188,46 +188,64 @@ export default function UserProfileModal({
   }, [pendingRequestData]);
 
   const handleUpdateTrainer = async () => {
-    try {
-      const formdata = new FormData();
-      formdata.append("Id", trainerForm.trainerId);
-      formdata.append("UserName", trainerForm.email);
-      formdata.append("FirstName", trainerForm.firstName);
-      formdata.append("LastName", trainerForm.lastName);
-      formdata.append("Email", trainerForm.email);
-      formdata.append("PhoneNumber", trainerForm.phoneNumber);
-      formdata.append("Specialization", trainerForm.specialization);
-      formdata.append(
-        "YearsOfExperience",
-        String(trainerForm.yearsOfExperience),
-      );
-      formdata.append("Role", trainerForm.role);
-      formdata.append("IsFreelance", String(trainerForm.isFreelance));
+    const formdata = new FormData();
+    formdata.append("UserName", trainerForm.email);
+    formdata.append("FirstName", trainerForm.firstName);
+    formdata.append("LastName", trainerForm.lastName);
+    formdata.append("Email", trainerForm.email);
+    formdata.append("PhoneNumber", trainerForm.phoneNumber);
+    formdata.append("Specialization", trainerForm.specialization);
+    formdata.append("YearsOfExperience", String(trainerForm.yearsOfExperience));
+    formdata.append("Role", trainerForm.role);
+    formdata.append("IsFreelance", String(trainerForm.isFreelance));
 
-      if (trainerForm.profilePicture instanceof File) {
-        formdata.append("ProfilePicture", trainerForm.profilePicture);
+    if (trainerForm.profilePicture instanceof File) {
+      formdata.append("ProfilePicture", trainerForm.profilePicture);
+    }
+
+    if (isViewingPendingRequest) {
+      try {
+        await updateRequest(memberId, formdata, memberToken);
+
+        setPageAlert({
+          visible: true,
+          variant: "success",
+          title: "Success",
+          description: "Pending request updated successfully."
+        });
+        setShowEditTrainerModal(false);
+        handleGetMember();
+        handleGetRequestById();
+      } catch (error) {
+        setPageAlert({
+          visible: true,
+          variant: "error",
+          title: "Error",
+          description: "Failed to update profile update request.",
+        });
       }
+    } else {
+      try {
+        formdata.append("Id", memberId);
+        await createRequest(formdata, memberToken);
 
-      await createRequest(formdata, memberToken);
-
-      setPageAlert({
-        visible: true,
-        variant: "success",
-        title: "Success",
-        description: isViewingPendingRequest
-          ? "Pending request updated successfully."
-          : "Profile update request sent successfully. Please wait for admin approval.",
-      });
-      setShowEditTrainerModal(false);
-      handleGetMember();
-      handleGetRequestById();
-    } catch (error) {
-      setPageAlert({
-        visible: true,
-        variant: "error",
-        title: "Error",
-        description: "Failed to send profile update request.",
-      });
+        setPageAlert({
+          visible: true,
+          variant: "success",
+          title: "Success",
+          description: "Profile update request sent successfully. Please wait for admin approval.",
+        });
+        setShowEditTrainerModal(false);
+        handleGetMember();
+        handleGetRequestById();
+      } catch (error) {
+        setPageAlert({
+          visible: true,
+          variant: "error",
+          title: "Error",
+          description: "Failed to send profile update request.",
+        });
+      }
     }
   };
 
@@ -1590,10 +1608,15 @@ export default function UserProfileModal({
             {/* Header */}
             <div className="sticky top-0 bg-white border-b px-8 py-6 flex items-center justify-between z-10">
               <div>
-                <h2 className="text-3xl font-black">Edit Trainer Profile {isViewingPendingRequest && "(Pending Request)"}</h2>
+                <h2 className="text-3xl font-black">
+                  Edit Trainer Profile{" "}
+                  {isViewingPendingRequest && "(Pending Request)"}
+                </h2>
 
                 <p className="text-slate-500 mt-1">
-                 {isViewingPendingRequest ? "You can make changes before admin approval." : "Update trainer information" } 
+                  {isViewingPendingRequest
+                    ? "You can make changes before admin approval."
+                    : "Update trainer information"}
                 </p>
               </div>
 
@@ -1623,14 +1646,14 @@ export default function UserProfileModal({
                     {trainerForm.profilePicture ? (
                       <>
                         <img
-  src={
-    trainerForm.profilePicture instanceof File
-      ? URL.createObjectURL(trainerForm.profilePicture)
-      : `data:image/jpeg;base64,${trainerForm.profilePicture}`
-  }
-  alt="Profile Preview"
-  className="w-full h-full object-cover"
-/>
+                          src={
+                            trainerForm.profilePicture instanceof File
+                              ? URL.createObjectURL(trainerForm.profilePicture)
+                              : `data:image/jpeg;base64,${trainerForm.profilePicture}`
+                          }
+                          alt="Profile Preview"
+                          className="w-full h-full object-cover"
+                        />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                           <Camera className="text-white" size={32} />
                         </div>

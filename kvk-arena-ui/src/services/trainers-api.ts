@@ -17,6 +17,20 @@ export const createRequest = async (data: FormData, token: string) => {
     }    
 };
 
+export const updateRequest = async (id: string, data: FormData, token: string) => {
+    try {
+        const response = await axios.put(`${API_BASE_URL}/${id}`, data, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+        }
+    });
+    return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const getRequestById = async (id: string, token: string) => {
     try {
         const response = await axios.get(`${API_BASE_URL}/${id}`, {
