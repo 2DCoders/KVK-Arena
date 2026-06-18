@@ -3,6 +3,7 @@ import { getEnv } from "@/env";
 import { changePassword, getMember, updateMember } from "@/services/auth-api";
 import { getMembershipPlans } from "@/services/memberships-api";
 import { createPayment } from "@/services/pay-api";
+import { createRequest } from "@/services/trainers-api";
 import {
   X,
   Calendar,
@@ -58,19 +59,33 @@ export default function UserProfileModal({
   });
   const [showEditTrainerModal, setShowEditTrainerModal] = useState(false);
 
-const [trainerForm, setTrainerForm] = useState({
-  email: "",
-  phoneNumber: "",
-  specialization: "",
-  yearsOfExperience: 0,
-  rating: 0,
-  firstName: "",
-  lastName: "",
-  gender: 1,
-  trainerId: "",
-  profilePicture: "",
-  role: "",
-});
+  const [trainerForm, setTrainerForm] = useState<{
+    email: string;
+    phoneNumber: string;
+    specialization: string;
+    yearsOfExperience: number;
+    rating: number;
+    firstName: string;
+    lastName: string;
+    gender: number;
+    trainerId: string;
+    profilePicture: string | File;
+    role: string;
+    isFreelance: boolean;
+  }>({
+    email: "",
+    phoneNumber: "",
+    specialization: "",
+    yearsOfExperience: 0,
+    rating: 0,
+    firstName: "",
+    lastName: "",
+    gender: 1,
+    trainerId: "",
+    profilePicture: "",
+    role: "",
+    isFreelance: false,
+  });
 
   const memberId = localStorage.getItem("memberId") || "N/A";
   const memberName = localStorage.getItem("memberName") || "N/A";
@@ -104,22 +119,62 @@ const [trainerForm, setTrainerForm] = useState({
   };
 
   const handleEditTrainer = () => {
-  setTrainerForm({
-    email: memberData?.email || "",
-    phoneNumber: memberData?.phoneNumber || "",
-    specialization: memberData?.specialization || "",
-    yearsOfExperience: memberData?.yearsOfExperience || 0,
-    rating: memberData?.rating || 0,
-    firstName: memberData?.firstName || "",
-    lastName: memberData?.lastName || "",
-    gender: memberData?.gender || 1,
-    trainerId: memberData?.id,
-    profilePicture: memberData?.profilePicture || "",
-    role: memberData?.role || "",
-  });
+    setTrainerForm({
+      email: memberData?.email || "",
+      phoneNumber: memberData?.phoneNumber || "",
+      specialization: memberData?.specialization || "",
+      yearsOfExperience: memberData?.yearsOfExperience || 0,
+      rating: memberData?.rating || 0,
+      firstName: memberData?.firstName || "",
+      lastName: memberData?.lastName || "",
+      gender: memberData?.gender || 1,
+      trainerId: memberData?.id,
+      profilePicture: memberData?.profilePicture || "",
+      role: memberData?.role || "",
+      isFreelance: memberData?.isFreelance || false,
+    });
 
-  setShowEditTrainerModal(true);
-};
+    setShowEditTrainerModal(true);
+  };
+
+  const handleUpdateTrainer = async () => {
+    try {
+      const formdata = new FormData();
+      formdata.append("Id", trainerForm.trainerId);
+      formdata.append("UserName", trainerForm.email);
+      formdata.append("FirstName", trainerForm.firstName);
+      formdata.append("LastName", trainerForm.lastName);
+      formdata.append("Email", trainerForm.email);
+      formdata.append("PhoneNumber", trainerForm.phoneNumber);
+      formdata.append("Specialization", trainerForm.specialization);
+      formdata.append("YearsOfExperience", String(trainerForm.yearsOfExperience));
+      formdata.append("Role", trainerForm.role);
+      formdata.append("IsFreelance", String(trainerForm.isFreelance));
+
+      if (trainerForm.profilePicture instanceof File) {
+        formdata.append("ProfilePicture", trainerForm.profilePicture);
+      }
+
+      await createRequest(formdata, memberToken);
+
+      setPageAlert({
+        visible: true,
+        variant: "success",
+        title: "Success",
+        description: "Profile update request sent successfully. Please wait for admin approval.",
+      });
+      setShowEditTrainerModal(false);
+      handleGetMember();
+    } catch (error) {
+      console.error("Error updating trainer:", error);
+      setPageAlert({
+        visible: true,
+        variant: "error",
+        title: "Error",
+        description: "Failed to send profile update request",
+      });
+    }
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -994,7 +1049,7 @@ const [trainerForm, setTrainerForm] = useState({
                         text-sm font-medium
                         border
                         ${
-                            memberData?.isFreelance
+                          memberData?.isFreelance
                             ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300"
                             : "bg-sky-500/10 border-sky-500/20 text-sky-300"
                         }
@@ -1453,236 +1508,204 @@ const [trainerForm, setTrainerForm] = useState({
       )}
 
       {showEditTrainerModal && (
-  <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6">
+        <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6">
+          <div className="w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-[32px] bg-white shadow-2xl">
+            {/* Header */}
+            <div className="sticky top-0 bg-white border-b px-8 py-6 flex items-center justify-between z-10">
+              <div>
+                <h2 className="text-3xl font-black">Edit Trainer Profile</h2>
 
-    <div className="w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-[32px] bg-white shadow-2xl">
+                <p className="text-slate-500 mt-1">
+                  Update trainer information
+                </p>
+              </div>
 
-      {/* Header */}
-      <div className="sticky top-0 bg-white border-b px-8 py-6 flex items-center justify-between z-10">
-
-        <div>
-          <h2 className="text-3xl font-black">
-            Edit Trainer Profile
-          </h2>
-
-          <p className="text-slate-500 mt-1">
-            Update trainer information
-          </p>
-        </div>
-
-        <button
-          onClick={() => setShowEditTrainerModal(false)}
-          className="h-12 w-12 rounded-2xl cursor-pointer bg-slate-100 hover:bg-slate-200 flex items-center justify-center"
-        >
-          <X />
-        </button>
-
-      </div>
-
-      <div className="p-8 space-y-8">
-
-        {/* Personal Information */}
-        <div>
-          <h3 className="text-xl font-bold mb-5">
-            Personal Information
-          </h3>
-
-          <div className="grid md:grid-cols-2 gap-5">
-
-            <div>
-              <label className="text-sm text-slate-500">
-                First Name
-              </label>
-
-              <input
-                value={trainerForm.firstName}
-                onChange={(e) =>
-                  setTrainerForm({
-                    ...trainerForm,
-                    firstName: e.target.value,
-                  })
-                }
-                className="w-full mt-2 p-4 rounded-2xl border"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm text-slate-500">
-                Last Name
-              </label>
-
-              <input
-                value={trainerForm.lastName}
-                onChange={(e) =>
-                  setTrainerForm({
-                    ...trainerForm,
-                    lastName: e.target.value,
-                  })
-                }
-                className="w-full mt-2 p-4 rounded-2xl border"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm text-slate-500">
-                Email
-              </label>
-
-              <input
-                value={trainerForm.email}
-                onChange={(e) =>
-                  setTrainerForm({
-                    ...trainerForm,
-                    email: e.target.value,
-                  })
-                }
-                className="w-full mt-2 p-4 rounded-2xl border"
-              />
-            </div>
-
-          </div>
-        </div>
-
-        {/* Contact */}
-        <div>
-          <h3 className="text-xl font-bold mb-5">
-            Contact
-          </h3>
-
-          <div className="grid md:grid-cols-2 gap-5">
-
-            <div>
-              <label>Phone Number</label>
-
-              <input
-                value={trainerForm.phoneNumber}
-                onChange={(e) =>
-                  setTrainerForm({
-                    ...trainerForm,
-                    phoneNumber: e.target.value,
-                  })
-                }
-                className="w-full mt-2 p-4 rounded-2xl border"
-              />
-            </div>
-
-          </div>
-        </div>
-
-        {/* Professional */}
-        <div>
-          <h3 className="text-xl font-bold mb-5">
-            Professional Details
-          </h3>
-
-          <div className="grid md:grid-cols-2 gap-5">
-
-            <div>
-              <label>Role</label>
-
-              <input
-                value={trainerForm.role}
-                onChange={(e) =>
-                  setTrainerForm({
-                    ...trainerForm,
-                    role: e.target.value,
-                  })
-                }
-                className="w-full mt-2 p-4 rounded-2xl border"
-              />
-            </div>
-
-            <div>
-              <label>Experience (Years)</label>
-
-              <input
-                type="number"
-                value={trainerForm.yearsOfExperience}
-                onChange={(e) =>
-                  setTrainerForm({
-                    ...trainerForm,
-                    yearsOfExperience: Number(
-                      e.target.value
-                    ),
-                  })
-                }
-                className="w-full mt-2 p-4 rounded-2xl border"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label>Specialization</label>
-
-              <textarea
-                rows={4}
-                value={trainerForm.specialization}
-                onChange={(e) =>
-                  setTrainerForm({
-                    ...trainerForm,
-                    specialization: e.target.value,
-                  })
-                }
-                placeholder="Weight Loss, Strength Training, Yoga"
-                className="w-full mt-2 p-4 rounded-2xl border"
-              />
-            </div>
-
-            <div>
-              <label>Gender</label>
-
-              <select
-                value={trainerForm.gender}
-                onChange={(e) =>
-                  setTrainerForm({
-                    ...trainerForm,
-                    gender: Number(e.target.value),
-                  })
-                }
-                className="w-full mt-2 p-4 rounded-2xl border cursor-pointer"
+              <button
+                onClick={() => setShowEditTrainerModal(false)}
+                className="h-12 w-12 rounded-2xl cursor-pointer bg-slate-100 hover:bg-slate-200 flex items-center justify-center"
               >
-                <option value={1}>Male</option>
-                <option value={2}>Female</option>
-              </select>
+                <X />
+              </button>
             </div>
 
+            <div className="p-8 space-y-8">
+              {/* Personal Information */}
+              <div>
+                <h3 className="text-xl font-bold mb-5">Personal Information</h3>
+
+                <div className="grid md:grid-cols-2 gap-5">
+                  <div>
+                    <label className="text-sm text-slate-500">First Name</label>
+
+                    <input
+                      value={trainerForm.firstName}
+                      onChange={(e) =>
+                        setTrainerForm({
+                          ...trainerForm,
+                          firstName: e.target.value,
+                        })
+                      }
+                      className="w-full mt-2 p-4 rounded-2xl border"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm text-slate-500">Last Name</label>
+
+                    <input
+                      value={trainerForm.lastName}
+                      onChange={(e) =>
+                        setTrainerForm({
+                          ...trainerForm,
+                          lastName: e.target.value,
+                        })
+                      }
+                      className="w-full mt-2 p-4 rounded-2xl border"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm text-slate-500">Email</label>
+
+                    <input
+                      value={trainerForm.email}
+                      onChange={(e) =>
+                        setTrainerForm({
+                          ...trainerForm,
+                          email: e.target.value,
+                        })
+                      }
+                      className="w-full mt-2 p-4 rounded-2xl border"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact */}
+              <div>
+                <h3 className="text-xl font-bold mb-5">Contact</h3>
+
+                <div className="grid md:grid-cols-2 gap-5">
+                  <div>
+                    <label>Phone Number</label>
+
+                    <input
+                      value={trainerForm.phoneNumber}
+                      onChange={(e) =>
+                        setTrainerForm({
+                          ...trainerForm,
+                          phoneNumber: e.target.value,
+                        })
+                      }
+                      className="w-full mt-2 p-4 rounded-2xl border"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Professional */}
+              <div>
+                <h3 className="text-xl font-bold mb-5">Professional Details</h3>
+
+                <div className="grid md:grid-cols-2 gap-5">
+                  <div>
+                    <label>Role</label>
+
+                    <input
+                      value={trainerForm.role}
+                      onChange={(e) =>
+                        setTrainerForm({
+                          ...trainerForm,
+                          role: e.target.value,
+                        })
+                      }
+                      className="w-full mt-2 p-4 rounded-2xl border"
+                    />
+                  </div>
+
+                  <div>
+                    <label>Experience (Years)</label>
+
+                    <input
+                      type="number"
+                      value={trainerForm.yearsOfExperience}
+                      onChange={(e) =>
+                        setTrainerForm({
+                          ...trainerForm,
+                          yearsOfExperience: Number(e.target.value),
+                        })
+                      }
+                      className="w-full mt-2 p-4 rounded-2xl border"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label>Specialization</label>
+
+                    <textarea
+                      rows={4}
+                      value={trainerForm.specialization}
+                      onChange={(e) =>
+                        setTrainerForm({
+                          ...trainerForm,
+                          specialization: e.target.value,
+                        })
+                      }
+                      placeholder="Weight Loss, Strength Training, Yoga"
+                      className="w-full mt-2 p-4 rounded-2xl border"
+                    />
+                  </div>
+
+                  <div>
+                    <label>Gender</label>
+
+                    <select
+                      value={trainerForm.gender}
+                      onChange={(e) =>
+                        setTrainerForm({
+                          ...trainerForm,
+                          gender: Number(e.target.value),
+                        })
+                      }
+                      className="w-full mt-2 p-4 rounded-2xl border cursor-pointer"
+                    >
+                      <option value={1}>Male</option>
+                      <option value={2}>Female</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="sticky bottom-0 bg-white border-t p-6 flex justify-end gap-4">
+              <button
+                onClick={() => setShowEditTrainerModal(false)}
+                className="px-6 py-3 cursor-pointer rounded-2xl border"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleUpdateTrainer}
+                className="
+                px-8 py-3
+                rounded-2xl
+                bg-gradient-to-r
+                from-amber-500
+                via-amber-600
+                to-orange-700
+                text-white
+                cursor-pointer
+                font-semibold
+                "
+              >
+                Update Trainer
+              </button>
+            </div>
           </div>
         </div>
-
-      </div>
-
-      {/* Footer */}
-      <div className="sticky bottom-0 bg-white border-t p-6 flex justify-end gap-4">
-
-        <button
-          onClick={() => setShowEditTrainerModal(false)}
-          className="px-6 py-3 cursor-pointer rounded-2xl border"
-        >
-          Cancel
-        </button>
-
-        <button
-        //   onClick={handleUpdateTrainer}
-          className="
-          px-8 py-3
-          rounded-2xl
-          bg-gradient-to-r
-          from-amber-500
-          via-amber-600
-          to-orange-700
-          text-white
-          cursor-pointer
-          font-semibold
-          "
-        >
-          Update Trainer
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
-)}
+      )}
     </div>
   );
 }

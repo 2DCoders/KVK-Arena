@@ -52,7 +52,7 @@ public class TrainerApprovalRequestService
                 ApprovalStatus = ApprovalStatus.Pending,
                 ApprovedBy = string.Empty,
                 ApprovalDate = DateTime.MaxValue,
-                TrainerId = Guid.Empty,
+                TrainerId = request.Id,
                 ProfilePicture = profilePictureByteArray,
                 Role = request.Role,
                 IsFreelance = request.IsFreelance,
