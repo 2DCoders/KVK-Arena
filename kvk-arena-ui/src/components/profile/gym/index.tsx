@@ -1091,129 +1091,238 @@ export default function UserProfileModal({
         </div>
       ) : (
         <div className="relative h-screen overflow-y-auto">
-          {/* Hero */}
-          <div
-            className="relative overflow-hidden bg-gradient-to-r bg-gradient-to-r
-            from-black
-            via-zinc-900
-            to-neutral-950"
-          >
-            <div className="max-w-7xl mx-auto px-6 py-12">
-              <div className="flex flex-col lg:flex-row justify-between items-center gap-8">
-                <div className="flex items-center gap-6">
-                  <div className="h-28 w-28 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
-                    {memberData?.profilePicture ? (
-                      <img
-                        src={
-                          trainerForm.profilePicture instanceof File
-                            ? URL.createObjectURL(memberData?.profilePicture)
-                            : `data:image/jpeg;base64,${memberData?.profilePicture}`
-                        }
-                        alt="Profile"
-                        className="h-full w-full object-cover rounded-full"
-                      />
+          {/* HERO */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-black">
+            {/* Background Effects */}
+            <div className="absolute inset-0">
+              <div className="absolute top-0 left-1/4 h-72 w-72 rounded-full bg-amber-500/10 blur-3xl" />
+              <div className="absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-orange-500/10 blur-3xl" />
+            </div>
+
+            {/* Close Button */}
+            <button
+              onClick={onClose}
+              className="
+      fixed
+      right-6
+      top-6
+      z-50
+      flex
+      h-11
+      w-11
+      items-center
+      justify-center
+      rounded-full
+      bg-white/10
+      backdrop-blur-xl
+      border
+      border-white/10
+      text-white
+      hover:bg-white/20
+      transition-all
+      duration-300
+      cursor-pointer
+    "
+            >
+              <X size={20} />
+            </button>
+
+            <div className="relative max-w-7xl mx-auto px-6 py-8 lg:py-10">
+              <div
+                className="
+        rounded-[32px]
+        border
+        border-white/10
+        bg-white/5
+        backdrop-blur-xl
+        p-6 lg:p-8
+      "
+              >
+                <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
+                  {/* LEFT */}
+                  <div className="flex flex-col sm:flex-row gap-6">
+                    {/* Profile */}
+                    <div
+                      className="
+              relative
+              h-24
+              w-24
+              rounded-2xl
+              overflow-hidden
+              border
+              border-white/10
+              bg-white/10
+              shadow-2xl
+            "
+                    >
+                      {memberData?.profilePicture ? (
+                        <img
+                          src={
+                            trainerForm.profilePicture instanceof File
+                              ? URL.createObjectURL(memberData?.profilePicture)
+                              : `data:image/jpeg;base64,${memberData?.profilePicture}`
+                          }
+                          alt="Profile"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center">
+                          <User size={40} className="text-white" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Details */}
+                    <div>
+                      <h1 className="text-3xl lg:text-4xl font-black text-white">
+                        {memberData?.firstName + " " + memberData?.lastName ||
+                          memberName}
+                      </h1>
+
+                      <p className="mt-1 text-slate-400 font-medium">
+                        {memberData?.role || "Trainer"}
+                      </p>
+
+                      {/* Tags */}
+                      <div className="flex flex-wrap gap-2 mt-4">
+                        <span
+                          className="
+                  px-3 py-1.5
+                  rounded-full
+                  bg-amber-500/10
+                  border border-amber-500/20
+                  text-amber-300
+                  text-xs font-semibold
+                "
+                        >
+                          💼 {memberData?.role || "Trainer"}
+                        </span>
+
+                        <span
+                          className={`
+                  px-3 py-1.5
+                  rounded-full
+                  text-xs
+                  font-semibold
+                  border
+                  ${
+                    memberData?.isFreelance
+                      ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300"
+                      : "bg-sky-500/10 border-sky-500/20 text-sky-300"
+                  }
+                `}
+                        >
+                          {memberData?.isFreelance
+                            ? "🚀 Freelance Trainer"
+                            : "🏢 Staff Trainer"}
+                        </span>
+                      </div>
+
+                      {/* Stats */}
+                      <div className="flex flex-wrap gap-5 mt-5">
+                        <div
+                          className="
+                  flex items-center gap-2
+                  px-4 py-2
+                  rounded-2xl
+                  bg-white/5
+                  border border-white/10
+                "
+                        >
+                          <Star
+                            size={16}
+                            className="text-amber-400 fill-amber-400"
+                          />
+                          <span className="text-white font-semibold">
+                            {memberData?.rating || 0}
+                          </span>
+                          <span className="text-slate-400 text-sm">Rating</span>
+                        </div>
+
+                        <div
+                          className="
+                  flex items-center gap-2
+                  px-4 py-2
+                  rounded-2xl
+                  bg-white/5
+                  border border-white/10
+                "
+                        >
+                          <Award size={16} className="text-orange-400" />
+
+                          <span className="text-white font-semibold">
+                            {memberData?.yearsOfExperience || 0}
+                          </span>
+
+                          <span className="text-slate-400 text-sm">
+                            Years Experience
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* RIGHT */}
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    {!isExistRequest ? (
+                      <button
+                        onClick={handleEditTrainer}
+                        className="
+                group
+                cursor-pointer
+                flex items-center gap-2
+                px-6 py-3
+                rounded-2xl
+                bg-white
+                text-slate-900
+                font-semibold
+                shadow-lg
+                hover:shadow-xl
+                hover:-translate-y-0.5
+                transition-all
+                duration-300
+              "
+                      >
+                        <Pencil
+                          size={18}
+                          className="group-hover:rotate-12 transition-transform"
+                        />
+                        Edit Profile
+                      </button>
                     ) : (
-                      <User size={48} className="text-white" />
+                      <button
+                        onClick={handleViewPendingRequest}
+                        className="
+                group
+                cursor-pointer
+                flex items-center gap-3
+                px-6 py-3
+                rounded-2xl
+                bg-gradient-to-r
+                from-amber-500
+                via-amber-600
+                to-orange-700
+                text-white
+                font-semibold
+                shadow-lg shadow-orange-500/30
+                hover:shadow-xl hover:shadow-orange-500/40
+                hover:-translate-y-0.5
+                transition-all duration-300
+              "
+                      >
+                        <Pencil
+                          size={18}
+                          className="
+                  transition-transform
+                  duration-300
+                  group-hover:rotate-12
+                "
+                        />
+                        Pending Requests
+                      </button>
                     )}
                   </div>
-
-                  {/* Close Button */}
-                  <button
-                    onClick={onClose}
-                    className="fixed cursor-pointer right-6 top-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-black/80 text-white backdrop-blur-lg transition hover:bg-white/20"
-                  >
-                    <X size={22} />
-                  </button>
-
-                  <div>
-                    <h1 className="mt-5 text-4xl md:text-5xl font-bold text-white">
-                      {memberData?.firstName + " " + memberData?.lastName ||
-                        memberName}
-                    </h1>
-
-                    <div className="flex flex-wrap gap-3 mt-4">
-                      <span
-                        className="
-                        px-4 py-2
-                        rounded-full
-                        bg-amber-500/10
-                        border border-amber-500/20
-                        text-amber-300
-                        text-sm font-medium
-                        "
-                      >
-                        💼 {memberData?.role || "Trainer"}
-                      </span>
-
-                      <span
-                        className={`
-                        px-4 py-2
-                        rounded-full
-                        text-sm font-medium
-                        border
-                        ${
-                          memberData?.isFreelance
-                            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300"
-                            : "bg-sky-500/10 border-sky-500/20 text-sky-300"
-                        }
-                        `}
-                      >
-                        {memberData?.isFreelance
-                          ? "🚀 Freelance Trainer"
-                          : "🏢 Staff Trainer"}
-                      </span>
-                    </div>
-
-                    <div className="flex flex-wrap gap-6 mt-4 text-orange-100">
-                      <div className="flex items-center gap-2">
-                        <Star size={18} />
-                        {memberData?.rating || 0} Rating
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <Award size={18} />
-                        {memberData?.yearsOfExperience || 0} Years Experience
-                      </div>
-                    </div>
-                  </div>
                 </div>
-
-                {!isExistRequest ? (
-                  <button
-                    onClick={handleEditTrainer}
-                    className="cursor-pointer flex items-center gap-2 px-5 py-3 rounded-2xl bg-white text-orange-700 font-semibold shadow-lg hover:scale-105 transition"
-                  >
-                    <Pencil size={18} />
-                    Edit Profile
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleViewPendingRequest}
-                    className="
-                    group
-                    cursor-pointer
-                    flex items-center gap-3
-                    px-6 py-3
-                    rounded-2xl
-                    bg-gradient-to-r
-                    from-amber-500
-                    via-amber-600
-                    to-orange-700
-                    text-white
-                    font-semibold
-                    shadow-lg shadow-orange-500/30
-                    hover:shadow-xl hover:shadow-orange-500/40
-                    hover:-translate-y-0.5
-                    transition-all duration-300
-                  "
-                  >
-                    <Pencil
-                      size={18}
-                      className="transition-transform duration-300 group-hover:rotate-12"
-                    />
-                    Pending Requests
-                  </button>
-                )}
               </div>
             </div>
           </div>
@@ -1224,12 +1333,26 @@ export default function UserProfileModal({
               <div className="grid lg:grid-cols-3 gap-8">
                 {/* LEFT */}
                 <div className="space-y-6">
-                  <div className="bg-white rounded-3xl p-8 shadow-xl border">
-                    <div className="flex justify-between mb-6">
-                      <h3 className="text-2xl font-bold">Trainer Profile</h3>
-                    </div>
+                  <div
+  className="
+    rounded-[28px]
+    bg-white
+    border border-slate-200
+    shadow-sm
+    overflow-hidden
+  "
+>
+                    <div className="px-8 py-6 border-b border-slate-100">
+    <h3 className="text-xl font-bold text-slate-900">
+      Trainer Profile
+    </h3>
 
-                    <div className="grid md:grid-cols-2 gap-6">
+    <p className="text-sm text-slate-500 mt-1">
+      Personal information
+    </p>
+  </div>
+
+                    <div className="p-8">
                       <div>
                         <label className="text-sm text-slate-500">
                           First Name
@@ -1274,7 +1397,7 @@ export default function UserProfileModal({
 
                   {/* PASSWORD + LOGOUT */}
                   <div className="bg-white rounded-3xl p-8 shadow-xl border">
-                    <h3 className="text-2xl font-bold mb-6">
+                    <h3 className="text-xl font-bold mb-6">
                       Account Security
                     </h3>
 
