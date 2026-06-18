@@ -318,7 +318,7 @@ public class TrainerApprovalRequestService
         {
             var entity = await _db.Set<TrainerApprovalRequests>()
                 .SingleAsync(
-                    x => x.Id == id && x.ApprovalStatus == ApprovalStatus.Pending,
+                    x => x.TrainerId == id && x.ApprovalStatus == ApprovalStatus.Pending,
                     cancellationToken);
 
 
@@ -425,6 +425,14 @@ public class TrainerApprovalRequestService
                     break;
                 }
             }
+            
+            await _db.SaveChangesAsync(cancellationToken);
+            
+            var existingRequest = _db.TrainerApprovalRequests.Where(t => t.TrainerId == entity.TrainerId)
+                .FirstOrDefaultAsync(cancellationToken);
+            
+            if (existingRequest != null)
+                _db.TrainerApprovalRequests.Remove(await existingRequest);
             
             await _db.SaveChangesAsync(cancellationToken);
             

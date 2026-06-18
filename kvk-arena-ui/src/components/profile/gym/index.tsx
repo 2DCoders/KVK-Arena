@@ -59,6 +59,7 @@ export default function UserProfileModal({
   });
   const [showEditTrainerModal, setShowEditTrainerModal] = useState(false);
   const [isExistRequest, setIsExistRequest] = useState(false);
+  const [pendingRequestData, setPendingRequestData] = useState<any>(null);
 
   const [trainerForm, setTrainerForm] = useState<{
     email: string;
@@ -142,8 +143,10 @@ export default function UserProfileModal({
     try {
       const data = await getRequestById(memberId, memberToken);
       console.log("Trainer Request Data:", data);
+      setPendingRequestData(data?.additionalData?.response || null);
       setIsExistRequest(true);
     } catch (error) {
+      setPendingRequestData(null);
       setIsExistRequest(false);
     }
   };
