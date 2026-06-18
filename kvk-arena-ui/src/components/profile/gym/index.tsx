@@ -62,7 +62,7 @@ export default function UserProfileModal({
   const [showEditTrainerModal, setShowEditTrainerModal] = useState(false);
   const [isExistRequest, setIsExistRequest] = useState(false);
   const [pendingRequestData, setPendingRequestData] = useState<any>(null);
-
+  const [isViewingPendingRequest, setIsViewingPendingRequest] = useState(false);
   const [trainerForm, setTrainerForm] = useState<{
     email: string;
     phoneNumber: string;
@@ -94,6 +94,7 @@ export default function UserProfileModal({
   const memberId = localStorage.getItem("memberId") || "N/A";
   const memberName = localStorage.getItem("memberName") || "N/A";
   const memberEmail = localStorage.getItem("memberEmail") || "N/A";
+  // Ensure memberToken is always a string, default to empty string if null/undefined
   const memberToken = localStorage.getItem("memberToken") || "";
   const memberType = localStorage.getItem("memberType") || "N/A";
 
@@ -136,6 +137,7 @@ export default function UserProfileModal({
       profilePicture: memberData?.profilePicture || "",
       role: memberData?.role || "",
       isFreelance: memberData?.isFreelance || false,
+      // Not a pending request
     });
 
     setShowEditTrainerModal(true);
@@ -146,11 +148,27 @@ export default function UserProfileModal({
     if (file) {
       const validTypes = ["image/png", "image/jpeg", "image/jpg"];
       if (!validTypes.includes(file.type)) {
-        alert("Only PNG, JPG, and JPEG files are allowed.");
+        setPageAlert({
+          visible: true,
+          variant: "warning",
+          title: "Invalid File Type",
+          description: "Only PNG, JPG, and JPEG files are allowed.",
+        });
         return;
       }
       setTrainerForm((prev) => ({ ...prev, profilePicture: file }));
     }
+  };
+
+  const handleViewPendingRequest = () => {
+    setIsViewingPendingRequest(true); // This is a pending request
+    if (pendingRequestData) {
+      setTrainerForm({
+        ...pendingRequestData, // Populate with pending request data
+        profilePicture: pendingRequestData.profilePicture || "", // Ensure profilePicture is handled
+      });
+    }
+    setShowEditTrainerModal(true);
   };
 
   const handleGetRequestById = async () => {
@@ -164,6 +182,10 @@ export default function UserProfileModal({
       setIsExistRequest(false);
     }
   };
+
+  useEffect(() => {
+    setIsExistRequest(!!pendingRequestData);
+  }, [pendingRequestData]);
 
   const handleUpdateTrainer = async () => {
     try {
@@ -192,8 +214,9 @@ export default function UserProfileModal({
         visible: true,
         variant: "success",
         title: "Success",
-        description:
-          "Profile update request sent successfully. Please wait for admin approval.",
+        description: isViewingPendingRequest
+          ? "Pending request updated successfully."
+          : "Profile update request sent successfully. Please wait for admin approval.",
       });
       setShowEditTrainerModal(false);
       handleGetMember();
@@ -203,7 +226,7 @@ export default function UserProfileModal({
         visible: true,
         variant: "error",
         title: "Error",
-        description: "Failed to send profile update request",
+        description: "Failed to send profile update request.",
       });
     }
   };
@@ -233,7 +256,7 @@ export default function UserProfileModal({
   useEffect(() => {
     fetchMembershipPlans();
     handleGetRequestById();
-  }, []);
+  }, [memberId, memberToken]); // Add memberId and memberToken as dependencies
 
   const handleChangePassword = async () => {
     try {
@@ -251,13 +274,19 @@ export default function UserProfileModal({
         title: "Success",
         description: "Password changed successfully",
       });
-    } catch (error) {
+      setPasswordForm({
+        newPassword: "",
+        confirmPassword: "",
+        oldPassword: "",
+      }); // Clear form fields after successful change
+    } catch (error: any) {
       console.error("Error changing password:", error);
       setPageAlert({
         visible: true,
         variant: "error",
         title: "Error",
-        description: "Failed to change password",
+        description:
+          error.response?.data?.message || "Failed to change password",
       });
     }
   };
@@ -346,6 +375,7 @@ export default function UserProfileModal({
     localStorage.removeItem("memberName");
     localStorage.removeItem("memberEmail");
     localStorage.removeItem("memberToken");
+    localStorage.removeItem("memberType"); // Also remove memberType
     window.location.reload();
   };
 
@@ -374,7 +404,7 @@ export default function UserProfileModal({
 
   useEffect(() => {
     handleGetMember();
-  }, []);
+  }, [memberId, memberToken]); // Add memberId and memberToken as dependencies
 
   useEffect(() => {
     if (memberData) {
@@ -387,15 +417,6 @@ export default function UserProfileModal({
       });
     }
   }, [memberData]);
-
-  const handleChange = (e: any) => {
-    const { name, value } = e.target;
-
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
 
   return (
     <div className="fixed inset-0 z-[9999]">
@@ -472,7 +493,7 @@ export default function UserProfileModal({
 
                 <div>
                   <button
-                    onClick={() => setSelectedPlan(null)}
+                    onClick={handleInitPayment} // This button should trigger payment
                     disabled={selectedPlan === null}
                     className={`group relative cursor-pointer w-full text-left rounded-2xl p-4 transition-all duration-300
                                                                 ${
@@ -484,7 +505,6 @@ export default function UserProfileModal({
                   >
                     <div className="flex items-center justify-between">
                       <h4
-                        onClick={handleInitPayment}
                         className={`font-semibold ${selectedPlan !== null ? "text-white" : "text-slate-900"}`}
                       >
                         Pay Now
@@ -790,7 +810,6 @@ export default function UserProfileModal({
                       <input
                         name="firstName"
                         value={form.firstName}
-                        onChange={handleChange}
                         disabled={!isEditing}
                         className="w-full p-3 rounded-xl border bg-slate-50 disabled:bg-slate-100"
                         placeholder="First Name"
@@ -800,7 +819,6 @@ export default function UserProfileModal({
                       <input
                         name="lastName"
                         value={form.lastName}
-                        onChange={handleChange}
                         disabled={!isEditing}
                         className="w-full p-3 rounded-xl border bg-slate-50 disabled:bg-slate-100"
                         placeholder="Last Name"
@@ -810,7 +828,6 @@ export default function UserProfileModal({
                       <input
                         name="email"
                         value={form.email}
-                        onChange={handleChange}
                         disabled={!isEditing}
                         className="w-full p-3 rounded-xl border bg-slate-50 disabled:bg-slate-100"
                         placeholder="Email"
@@ -820,7 +837,6 @@ export default function UserProfileModal({
                       <input
                         name="phoneNumber"
                         value={form.phoneNumber}
-                        onChange={handleChange}
                         disabled={!isEditing}
                         className="w-full p-3 rounded-xl border bg-slate-50 disabled:bg-slate-100"
                         placeholder="Phone Number"
@@ -830,7 +846,6 @@ export default function UserProfileModal({
                       <select
                         name="gender"
                         value={form.gender}
-                        onChange={handleChange}
                         disabled={!isEditing}
                         className="w-full p-3 rounded-xl border bg-slate-50 disabled:bg-slate-100"
                       >
@@ -1117,8 +1132,30 @@ export default function UserProfileModal({
                     Edit Profile
                   </button>
                 ) : (
-                  <button className="cursor-pointer flex items-center gap-2 px-5 py-3 rounded-2xl bg-white text-orange-700 font-semibold shadow-lg hover:scale-105 transition">
-                    <Pencil size={18} />
+                  <button
+                    onClick={handleViewPendingRequest}
+                    className="
+                    group
+                    cursor-pointer
+                    flex items-center gap-3
+                    px-6 py-3
+                    rounded-2xl
+                    bg-gradient-to-r
+                    from-amber-500
+                    via-amber-600
+                    to-orange-700
+                    text-white
+                    font-semibold
+                    shadow-lg shadow-orange-500/30
+                    hover:shadow-xl hover:shadow-orange-500/40
+                    hover:-translate-y-0.5
+                    transition-all duration-300
+                  "
+                  >
+                    <Pencil
+                      size={18}
+                      className="transition-transform duration-300 group-hover:rotate-12"
+                    />
                     Pending Requests
                   </button>
                 )}
@@ -1553,10 +1590,10 @@ export default function UserProfileModal({
             {/* Header */}
             <div className="sticky top-0 bg-white border-b px-8 py-6 flex items-center justify-between z-10">
               <div>
-                <h2 className="text-3xl font-black">Edit Trainer Profile</h2>
+                <h2 className="text-3xl font-black">Edit Trainer Profile {isViewingPendingRequest && "(Pending Request)"}</h2>
 
                 <p className="text-slate-500 mt-1">
-                  Update trainer information
+                 {isViewingPendingRequest ? "You can make changes before admin approval." : "Update trainer information" } 
                 </p>
               </div>
 
@@ -1586,25 +1623,32 @@ export default function UserProfileModal({
                     {trainerForm.profilePicture ? (
                       <>
                         <img
-                          src={
-                            trainerForm.profilePicture instanceof File
-                              ? URL.createObjectURL(trainerForm.profilePicture)
-                              : (trainerForm.profilePicture as string)
-                          }
-                          alt="Profile Preview"
-                          className="w-full h-full object-cover"
-                        />
+  src={
+    trainerForm.profilePicture instanceof File
+      ? URL.createObjectURL(trainerForm.profilePicture)
+      : `data:image/jpeg;base64,${trainerForm.profilePicture}`
+  }
+  alt="Profile Preview"
+  className="w-full h-full object-cover"
+/>
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                           <Camera className="text-white" size={32} />
                         </div>
                       </>
                     ) : (
-                      <Plus className="text-slate-400 group-hover:text-amber-600" size={32} />
+                      <Plus
+                        className="text-slate-400 group-hover:text-amber-600"
+                        size={32}
+                      />
                     )}
                   </label>
                 </div>
-                <p className="mt-3 text-sm font-medium text-slate-500">Profile Picture</p>
-                <p className="text-xs text-slate-400 mt-1">PNG, JPG or JPEG (Square recommended)</p>
+                <p className="mt-3 text-sm font-medium text-slate-500">
+                  Profile Picture
+                </p>
+                <p className="text-xs text-slate-400 mt-1">
+                  PNG, JPG or JPEG (Square recommended)
+                </p>
               </div>
 
               {/* Personal Information */}
