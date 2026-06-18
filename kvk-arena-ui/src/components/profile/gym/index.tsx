@@ -3,7 +3,11 @@ import { getEnv } from "@/env";
 import { changePassword, getMember, updateMember } from "@/services/auth-api";
 import { getMembershipPlans } from "@/services/memberships-api";
 import { createPayment } from "@/services/pay-api";
-import { createRequest, getRequestById, updateRequest } from "@/services/trainers-api";
+import {
+  createRequest,
+  getRequestById,
+  updateRequest,
+} from "@/services/trainers-api";
 import {
   X,
   Calendar,
@@ -59,6 +63,7 @@ export default function UserProfileModal({
     confirmPassword: "",
     oldPassword: "",
   });
+  const [loading, setLoading] = useState(false);
   const [showEditTrainerModal, setShowEditTrainerModal] = useState(false);
   const [isExistRequest, setIsExistRequest] = useState(false);
   const [pendingRequestData, setPendingRequestData] = useState<any>(null);
@@ -203,6 +208,8 @@ export default function UserProfileModal({
       formdata.append("ProfilePicture", trainerForm.profilePicture);
     }
 
+    setLoading(true);
+
     if (isViewingPendingRequest) {
       try {
         await updateRequest(memberId, formdata, memberToken);
@@ -211,7 +218,7 @@ export default function UserProfileModal({
           visible: true,
           variant: "success",
           title: "Success",
-          description: "Pending request updated successfully."
+          description: "Pending request updated successfully.",
         });
         setShowEditTrainerModal(false);
         handleGetMember();
@@ -223,6 +230,9 @@ export default function UserProfileModal({
           title: "Error",
           description: "Failed to update profile update request.",
         });
+      } finally {
+        setIsViewingPendingRequest(false);
+        setLoading(false);
       }
     } else {
       try {
@@ -233,7 +243,8 @@ export default function UserProfileModal({
           visible: true,
           variant: "success",
           title: "Success",
-          description: "Profile update request sent successfully. Please wait for admin approval.",
+          description:
+            "Profile update request sent successfully. Please wait for admin approval.",
         });
         setShowEditTrainerModal(false);
         handleGetMember();
@@ -245,6 +256,8 @@ export default function UserProfileModal({
           title: "Error",
           description: "Failed to send profile update request.",
         });
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -367,6 +380,7 @@ export default function UserProfileModal({
   };
 
   const handleGetMember = async () => {
+    setLoading(true);
     try {
       const memberData = await getMember(memberId, memberToken);
       setMemberData(memberData);
@@ -385,6 +399,8 @@ export default function UserProfileModal({
       }
     } catch (error) {
       console.error("Error fetching member data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -453,6 +469,15 @@ export default function UserProfileModal({
         className="absolute inset-0 bg-black/80 backdrop-blur-md"
         onClick={onClose}
       />
+
+      {loading && (
+        <div className="fixed inset-0 z-[9999999999] flex items-center justify-center bg-black/60 backdrop-blur-md">
+          <div className="flex flex-col items-center gap-3">
+            <div className="h-14 w-14 animate-spin rounded-full border-4 border-white/30 border-t-white"></div>
+            <p className="text-sm text-white font-medium">Loading</p>
+          </div>
+        </div>
+      )}
 
       {showUpgradeModal && (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center">
@@ -1077,7 +1102,19 @@ export default function UserProfileModal({
               <div className="flex flex-col lg:flex-row justify-between items-center gap-8">
                 <div className="flex items-center gap-6">
                   <div className="h-28 w-28 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
-                    <User size={48} className="text-white" />
+                    {memberData?.profilePicture ? (
+                      <img
+                        src={
+                          trainerForm.profilePicture instanceof File
+                            ? URL.createObjectURL(memberData?.profilePicture)
+                            : `data:image/jpeg;base64,${memberData?.profilePicture}`
+                        }
+                        alt="Profile"
+                        className="h-full w-full object-cover rounded-full"
+                      />
+                    ) : (
+                      <User size={48} className="text-white" />
+                    )}
                   </div>
 
                   {/* Close Button */}
@@ -1089,7 +1126,7 @@ export default function UserProfileModal({
                   </button>
 
                   <div>
-                    <h1 className="mt-5 text-4xl md:text-6xl font-bold text-white">
+                    <h1 className="mt-5 text-4xl md:text-5xl font-bold text-white">
                       {memberData?.firstName + " " + memberData?.lastName ||
                         memberName}
                     </h1>
@@ -1845,7 +1882,7 @@ export default function UserProfileModal({
                 font-semibold
                 "
               >
-                Update Trainer
+                {isViewingPendingRequest ? "Update Request" : "Send Request"}
               </button>
             </div>
           </div>

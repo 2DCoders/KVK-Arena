@@ -438,7 +438,9 @@ public class MembershipService : IMembershipService
                 Specialization = trainerSpecializedResponse?.Specialization,
                 YearsOfExperience = trainerSpecializedResponse?.YearsOfExperience ?? 0,
                 ProfilePicture = trainerSpecializedResponse?.ProfilePicture,
-                Rating = trainerSpecializedResponse?.Rating ?? 0
+                Rating = trainerSpecializedResponse?.Rating ?? 0,
+                IsFreelance = trainerSpecializedResponse?.IsFreelance ?? false,
+                Role = trainerSpecializedResponse?.Role
             };
 
             return response;

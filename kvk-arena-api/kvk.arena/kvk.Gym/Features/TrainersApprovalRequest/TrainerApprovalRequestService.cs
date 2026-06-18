@@ -401,7 +401,6 @@ public class TrainerApprovalRequestService
                     trainer.YearsOfExperience = entity.YearsOfExperience;
                     trainer.FirstName = entity.FirstName;
                     trainer.LastName = entity.LastName;
-                    trainer.PasswordHash = entity.PasswordHash;
                     trainer.Status = "Active";
                     trainer.Rating = entity.Rating;
                     trainer.ProfilePicture = entity.ProfilePicture;
@@ -418,7 +417,6 @@ public class TrainerApprovalRequestService
                     member.Phone = entity.Phone;
                     member.FirstName = entity.FirstName;
                     member.LastName = entity.LastName;
-                    member.PasswordHash = entity.PasswordHash;
                     member.Status = "Active";
                     member.DateOfBirth = member.DateOfBirth;
                     member.Gender = entity.Gender;
