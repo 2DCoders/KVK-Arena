@@ -1334,23 +1334,23 @@ export default function UserProfileModal({
                 {/* LEFT */}
                 <div className="space-y-6">
                   <div
-  className="
+                    className="
     rounded-[28px]
     bg-white
     border border-slate-200
     shadow-sm
     overflow-hidden
   "
->
+                  >
                     <div className="px-8 py-6 border-b border-slate-100">
-    <h3 className="text-xl font-bold text-slate-900">
-      Trainer Profile
-    </h3>
+                      <h3 className="text-xl font-bold text-slate-900">
+                        Trainer Profile
+                      </h3>
 
-    <p className="text-sm text-slate-500 mt-1">
-      Personal information
-    </p>
-  </div>
+                      <p className="text-sm text-slate-500 mt-1">
+                        Personal information
+                      </p>
+                    </div>
 
                     <div className="p-8">
                       <div>
@@ -1396,10 +1396,8 @@ export default function UserProfileModal({
                   </div>
 
                   {/* PASSWORD + LOGOUT */}
-                  <div className="bg-white rounded-3xl p-8 shadow-xl border">
-                    <h3 className="text-xl font-bold mb-6">
-                      Account Security
-                    </h3>
+                  <div className="bg-white rounded-3xl p-8 shadow-xl">
+                    <h3 className="text-xl font-bold mb-6">Account Security</h3>
 
                     <div className="space-y-4">
                       <input
@@ -1478,194 +1476,304 @@ export default function UserProfileModal({
                 {/* RIGHT */}
                 <div className="lg:col-span-2 space-y-8">
                   {/* Bento Dashboard */}
-                  <div className="grid lg:grid-cols-3 gap-6">
+                  <div className="grid lg:grid-cols-3 gap-5">
                     {/* Rating */}
                     <div
                       className="
-                        relative overflow-hidden
-                        rounded-[32px]
-                        p-7
-                        text-white
-                        bg-gradient-to-br
-                        from-yellow-400
-                        via-amber-500
-                        to-orange-600
-                        shadow-2xl
-                        "
+      group
+      relative
+      overflow-hidden
+      rounded-[28px]
+      border border-slate-200
+      bg-white
+      p-6
+      shadow-sm
+      hover:shadow-xl
+      hover:-translate-y-1
+      transition-all
+      duration-300
+    "
                     >
-                      <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-white/10 -translate-y-10 translate-x-10" />
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-slate-500">
+                            Trainer Rating
+                          </p>
 
-                      <Star size={36} />
+                          <h2 className="mt-3 text-4xl font-black text-slate-900">
+                            {memberData?.rating || 0}
+                          </h2>
 
-                      <p className="mt-6 text-white/80 font-medium">
-                        Trainer Rating
-                      </p>
+                          <p className="mt-2 text-sm text-amber-600 font-medium">
+                            Excellent Performance
+                          </p>
+                        </div>
 
-                      <h2 className="text-5xl font-black mt-2">
-                        {memberData?.rating || 0}
-                      </h2>
+                        <div
+                          className="
+          h-14 w-14
+          rounded-2xl
+          bg-amber-50
+          text-amber-600
+          flex items-center justify-center
+          group-hover:scale-110
+          transition-transform
+        "
+                        >
+                          <Star size={24} />
+                        </div>
+                      </div>
                     </div>
 
                     {/* Experience */}
                     <div
                       className="
-                        relative overflow-hidden
-                        rounded-[32px]
-                        p-7
-                        text-white
-                        bg-gradient-to-br
-                        from-green-400
-                        via-emerald-500
-                        to-teal-600
-                        shadow-2xl
-                        "
+      group
+      relative
+      overflow-hidden
+      rounded-[28px]
+      border border-slate-200
+      bg-white
+      p-6
+      shadow-sm
+      hover:shadow-xl
+      hover:-translate-y-1
+      transition-all
+      duration-300
+    "
                     >
-                      <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-white/10 -translate-y-10 translate-x-10" />
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-slate-500">
+                            Experience
+                          </p>
 
-                      <Briefcase size={36} />
+                          <h2 className="mt-3 text-4xl font-black text-slate-900">
+                            {memberData?.yearsOfExperience || 0}
+                          </h2>
 
-                      <p className="mt-6 text-white/80 font-medium">
-                        Experience
-                      </p>
+                          <p className="mt-2 text-sm text-emerald-600 font-medium">
+                            Years in Industry
+                          </p>
+                        </div>
 
-                      <h2 className="text-5xl font-black mt-2">
-                        {memberData?.yearsOfExperience || 0}
-                      </h2>
-
-                      <p className="mt-1 text-white/80">Years</p>
+                        <div
+                          className="
+          h-14 w-14
+          rounded-2xl
+          bg-emerald-50
+          text-emerald-600
+          flex items-center justify-center
+          group-hover:scale-110
+          transition-transform
+        "
+                        >
+                          <Briefcase size={24} />
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Fingerprint */}
+                    {/* Biometric */}
                     <div
                       className="
-                        relative overflow-hidden
-                        rounded-[32px]
-                        p-7
-                        text-white
-                        bg-gradient-to-br
-                        from-sky-400
-                        via-blue-500
-                        to-indigo-600
-                        shadow-2xl
-                        "
+      group
+      relative
+      overflow-hidden
+      rounded-[28px]
+      border border-slate-200
+      bg-white
+      p-6
+      shadow-sm
+      hover:shadow-xl
+      hover:-translate-y-1
+      transition-all
+      duration-300
+    "
                     >
-                      <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-white/10 -translate-y-10 translate-x-10" />
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-slate-500">
+                            Biometric Access
+                          </p>
 
-                      <Fingerprint size={36} />
+                          <h2 className="mt-3 text-2xl font-black text-slate-900">
+                            {memberData?.isSavedFingerprints
+                              ? "Enrolled"
+                              : "Pending"}
+                          </h2>
 
-                      <p className="mt-6 text-white/80 font-medium">
-                        Biometric Access
-                      </p>
+                          <div className="mt-3">
+                            <span
+                              className={`
+              px-3 py-1
+              rounded-full
+              text-xs
+              font-semibold
+              ${
+                memberData?.isSavedFingerprints
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-amber-100 text-amber-700"
+              }
+            `}
+                            >
+                              {memberData?.isSavedFingerprints
+                                ? "Active"
+                                : "Action Required"}
+                            </span>
+                          </div>
+                        </div>
 
-                      <h2 className="text-2xl font-bold mt-2">
-                        {memberData?.isSavedFingerprints
-                          ? "Enrolled"
-                          : "Pending"}
-                      </h2>
+                        <div
+                          className="
+                          h-14 w-14
+                          rounded-2xl
+                          bg-blue-50
+                          text-blue-600
+                          flex items-center justify-center
+                          group-hover:scale-110
+                          transition-transform
+                        "
+                        >
+                          <Fingerprint size={24} />
+                        </div>
+                      </div>
                     </div>
                   </div>
 
                   <div
                     className="
-                    relative
-                    overflow-hidden
-                    rounded-[32px]
-                    bg-white
-                    border
-                    shadow-[0_20px_60px_rgba(0,0,0,0.08)]
-                    p-8
-                    "
+    relative
+    overflow-hidden
+    rounded-[32px]
+    border border-slate-200
+    bg-white
+    p-8
+    shadow-[0_10px_40px_rgba(0,0,0,0.06)]
+  "
                   >
-                    {/* Decorative Glow */}
-                    <div
-                      className="
-                        absolute
-                        -top-20
-                        -right-20
-                        h-64
-                        w-64
-                        rounded-full
-                        blur-3xl
-                        border
-                        "
-                    />
+                    {/* Soft Accent */}
+                    <div className="absolute top-0 left-0 h-1.5 w-full" />
 
-                    <div className="relative z-10">
-                      <div className="flex items-start justify-between">
+                    <div className="relative">
+                      {/* Header */}
+                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                         <div>
-                          <p className="text-xs uppercase tracking-[3px] text-amber-600 font-semibold">
+                          <span
+                            className="
+            inline-flex
+            items-center
+            rounded-full
+            bg-amber-50
+            px-3 py-1
+            text-xs
+            font-semibold
+            text-amber-700
+          "
+                          >
                             Active Membership
-                          </p>
+                          </span>
 
-                          <h2 className="mt-3 text-3xl font-black text-slate-900">
+                          <h2 className="mt-4 text-3xl font-black text-slate-900">
                             {memberData?.membershipPlanTitle}
                           </h2>
 
-                          <p className="mt-2 text-slate-500">
+                          <p className="mt-1 text-slate-500">
                             Premium Trainer Membership
                           </p>
                         </div>
 
                         <div
                           className="
-                            px-4 py-2
-                            rounded-full
-                            bg-green-100
-                            text-green-700
-                            font-semibold
-                            text-sm
-                            "
+          flex items-center gap-2
+          rounded-full
+          bg-emerald-50
+          px-4 py-2
+          text-sm
+          font-semibold
+          text-emerald-700
+          border border-emerald-100
+          w-fit
+        "
                         >
+                          <div className="h-2 w-2 rounded-full bg-emerald-500" />
                           Active
                         </div>
                       </div>
 
-                      <div className="mt-8 grid md:grid-cols-3 gap-6">
-                        <div>
-                          <p className="text-slate-500 text-sm">Monthly Fee</p>
+                      {/* Membership Stats */}
+                      <div className="grid md:grid-cols-3 gap-5 mt-8">
+                        <div
+                          className="
+          rounded-3xl
+          border border-slate-200
+          bg-slate-50
+          p-5
+        "
+                        >
+                          <p className="text-sm text-slate-500">Monthly Fee</p>
 
-                          <h3 className="mt-1 text-3xl font-black text-amber-600">
+                          <h3 className="mt-2 text-3xl font-black text-amber-600">
                             Rs.{" "}
                             {memberData?.membershipPlanPrice?.toLocaleString()}
                           </h3>
                         </div>
 
-                        <div>
-                          <p className="text-slate-500 text-sm">Duration</p>
+                        <div
+                          className="
+          rounded-3xl
+          border border-slate-200
+          bg-slate-50
+          p-5
+        "
+                        >
+                          <p className="text-sm text-slate-500">Duration</p>
 
-                          <h3 className="mt-1 text-xl font-bold text-slate-900">
+                          <h3 className="mt-2 text-2xl font-bold text-slate-900">
                             {memberData?.membershipPlanDurationInDays} Days
                           </h3>
                         </div>
 
-                        <div>
-                          <p className="text-slate-500 text-sm">Expiry Date</p>
+                        <div
+                          className="
+          rounded-3xl
+          border border-slate-200
+          bg-slate-50
+          p-5
+        "
+                        >
+                          <p className="text-sm text-slate-500">Expiry Date</p>
 
-                          <h3 className="mt-1 text-xl font-bold text-slate-900">
+                          <h3 className="mt-2 text-xl font-bold text-slate-900">
                             {formatDate(memberData?.membershipEndDate)}
                           </h3>
                         </div>
                       </div>
 
-                      <div className="mt-8 flex flex-wrap gap-4">
+                      {/* Footer */}
+                      <div className="mt-8 flex justify-between items-center">
+                        <p className="text-sm text-slate-500">
+                          Your membership is currently active.
+                        </p>
+
                         <button
-                          className="
-                            cursor-pointer
-                            px-6
-                            py-3
-                            rounded-2xl
-                            bg-gradient-to-r
-                            from-amber-500
-                            via-amber-600
-                            to-orange-700
-                            text-white
-                            font-semibold
-                            shadow-lg
-                            hover:scale-105
-                            transition-all
-                            duration-300
-                            "
                           onClick={() => setShowUpgradeModal(true)}
+                          className="
+          cursor-pointer
+          rounded-2xl
+          bg-gradient-to-r
+          from-amber-500
+          via-amber-600
+          to-orange-700
+          px-6
+          py-3
+          font-semibold
+          text-white
+          shadow-lg
+          hover:shadow-xl
+          hover:-translate-y-0.5
+          transition-all
+          duration-300
+        "
                         >
                           Upgrade Plan
                         </button>
@@ -1680,7 +1788,6 @@ export default function UserProfileModal({
                     rounded-[32px]
                     p-8
                     shadow-xl
-                    border
                     "
                   >
                     <h3 className="text-2xl font-bold mb-6">Specializations</h3>
@@ -1720,7 +1827,6 @@ export default function UserProfileModal({
                     rounded-[32px]
                     p-8
                     shadow-xl
-                    border
                     "
                   >
                     <h3 className="text-2xl font-bold mb-6">
