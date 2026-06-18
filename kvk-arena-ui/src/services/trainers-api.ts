@@ -16,3 +16,16 @@ export const createRequest = async (data: FormData, token: string) => {
         throw error;
     }    
 };
+
+export const getRequestById = async (id: string, token: string) => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/${id}`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    return response.data;
+    } catch (error) {
+        throw error;
+    }
+}

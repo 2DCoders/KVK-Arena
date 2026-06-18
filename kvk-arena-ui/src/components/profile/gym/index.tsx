@@ -3,7 +3,7 @@ import { getEnv } from "@/env";
 import { changePassword, getMember, updateMember } from "@/services/auth-api";
 import { getMembershipPlans } from "@/services/memberships-api";
 import { createPayment } from "@/services/pay-api";
-import { createRequest } from "@/services/trainers-api";
+import { createRequest, getRequestById } from "@/services/trainers-api";
 import {
   X,
   Calendar,
@@ -58,6 +58,7 @@ export default function UserProfileModal({
     oldPassword: "",
   });
   const [showEditTrainerModal, setShowEditTrainerModal] = useState(false);
+  const [isExistRequest, setIsExistRequest] = useState(false);
 
   const [trainerForm, setTrainerForm] = useState<{
     email: string;
@@ -137,6 +138,16 @@ export default function UserProfileModal({
     setShowEditTrainerModal(true);
   };
 
+  const handleGetRequestById = async () => {
+    try {
+      const data = await getRequestById(memberId, memberToken);
+      console.log("Trainer Request Data:", data);
+      setIsExistRequest(true);
+    } catch (error) {
+      setIsExistRequest(false);
+    }
+  };
+
   const handleUpdateTrainer = async () => {
     try {
       const formdata = new FormData();
@@ -147,7 +158,10 @@ export default function UserProfileModal({
       formdata.append("Email", trainerForm.email);
       formdata.append("PhoneNumber", trainerForm.phoneNumber);
       formdata.append("Specialization", trainerForm.specialization);
-      formdata.append("YearsOfExperience", String(trainerForm.yearsOfExperience));
+      formdata.append(
+        "YearsOfExperience",
+        String(trainerForm.yearsOfExperience),
+      );
       formdata.append("Role", trainerForm.role);
       formdata.append("IsFreelance", String(trainerForm.isFreelance));
 
@@ -161,12 +175,13 @@ export default function UserProfileModal({
         visible: true,
         variant: "success",
         title: "Success",
-        description: "Profile update request sent successfully. Please wait for admin approval.",
+        description:
+          "Profile update request sent successfully. Please wait for admin approval.",
       });
       setShowEditTrainerModal(false);
       handleGetMember();
+      handleGetRequestById();
     } catch (error) {
-      console.error("Error updating trainer:", error);
       setPageAlert({
         visible: true,
         variant: "error",
@@ -200,6 +215,7 @@ export default function UserProfileModal({
 
   useEffect(() => {
     fetchMembershipPlans();
+    handleGetRequestById();
   }, []);
 
   const handleChangePassword = async () => {
@@ -1075,13 +1091,20 @@ export default function UserProfileModal({
                   </div>
                 </div>
 
-                <button
-                  onClick={handleEditTrainer}
-                  className="cursor-pointer flex items-center gap-2 px-5 py-3 rounded-2xl bg-white text-orange-700 font-semibold shadow-lg hover:scale-105 transition"
-                >
-                  <Pencil size={18} />
-                  Edit Profile
-                </button>
+                {!isExistRequest ? (
+                  <button
+                    onClick={handleEditTrainer}
+                    className="cursor-pointer flex items-center gap-2 px-5 py-3 rounded-2xl bg-white text-orange-700 font-semibold shadow-lg hover:scale-105 transition"
+                  >
+                    <Pencil size={18} />
+                    Edit Profile
+                  </button>
+                ) : (
+                  <button className="cursor-pointer flex items-center gap-2 px-5 py-3 rounded-2xl bg-white text-orange-700 font-semibold shadow-lg hover:scale-105 transition">
+                    <Pencil size={18} />
+                    Pending Requests
+                  </button>
+                )}
               </div>
             </div>
           </div>

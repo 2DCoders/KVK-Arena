@@ -14,7 +14,6 @@ public class TrainerApprovalRequestService
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
     }
-    //this is for request for creating 
 
     public async Task<Result> CreateAsync(TrainerApprovalRequestCreateRequest request,
         CancellationToken cancellationToken = default)
@@ -64,7 +63,9 @@ public class TrainerApprovalRequestService
             var response = new TrainerApprovalRequestResponse
             {
                 Id = entity.Id,
-                Name = entity.UserName,
+                FirstName = entity.FirstName,
+                LastName = entity.LastName,
+                UserName = entity.UserName,
                 Email = entity.Email,
                 PhoneNumber = entity.Phone,
                 Specialization = entity.Specialization,
@@ -213,7 +214,7 @@ public class TrainerApprovalRequestService
             var entity = await _db.Set<TrainerApprovalRequests>()
                 .AsNoTracking()
                 .Where(x => x.ApprovalStatus == ApprovalStatus.Pending)
-                .SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+                .SingleOrDefaultAsync(x => x.TrainerId == id, cancellationToken);
 
             if (entity == null)
                 return Result.Failure("Not found");
@@ -221,9 +222,14 @@ public class TrainerApprovalRequestService
             var response = new TrainerApprovalRequestResponse
             {
                 Id = entity.Id,
-                Name = entity.UserName,
+                FirstName = entity.FirstName,
+                LastName = entity.LastName,
+                UserName = entity.UserName,
                 Email = entity.Email,
                 PhoneNumber = entity.Phone,
+                ProfilePicture = entity.ProfilePicture,
+                Role = entity.Role,
+                IsFreelance = entity.IsFreelance,
                 Specialization = entity.Specialization,
                 YearsOfExperience = entity.YearsOfExperience,
                 Rating = entity.Rating,
@@ -250,7 +256,9 @@ public class TrainerApprovalRequestService
             var response = entities.Select(entity => new TrainerApprovalRequestResponse
             {
                 Id = entity.Id,
-                Name = entity.UserName,
+                FirstName = entity.FirstName,
+                LastName = entity.LastName,
+                UserName = entity.UserName,
                 Email = entity.Email,
                 PhoneNumber = entity.Phone,
                 Specialization = entity.Specialization,
