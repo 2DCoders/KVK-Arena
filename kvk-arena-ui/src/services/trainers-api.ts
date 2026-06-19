@@ -44,14 +44,10 @@ export const getRequestById = async (id: string, token: string) => {
     }
 }
 
-export const getTrainers = async (token: string) => {
+export const getTrainers = async () => {
     try {
-        const response = await axios.get(getEnv().API_URL + "gym/members/trainers", {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    });
-    return response.data;
+        const response = await axios.get(getEnv().API_URL + "gym/members/trainers");
+        return response.data;
     } catch (error) {
         throw error;
     }
