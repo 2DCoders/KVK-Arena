@@ -43,3 +43,16 @@ export const getRequestById = async (id: string, token: string) => {
         throw error;
     }
 }
+
+export const getTrainers = async (token: string) => {
+    try {
+        const response = await axios.get(getEnv().API_URL + "gym/members/trainers", {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
