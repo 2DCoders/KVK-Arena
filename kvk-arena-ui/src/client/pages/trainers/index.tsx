@@ -139,11 +139,21 @@ export default function Trainers() {
               >
                 {/* Image */}
                 <div className="relative aspect-square overflow-hidden">
-                  <img
-                    src={`data:image/jpeg;base64,${trainer.profilePicture}`}
-                    alt={`${trainer.firstName} ${trainer.lastName}`}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
+                  {trainer.profilePicture ? (
+                    <img
+                      src={`data:image/jpeg;base64,${trainer.profilePicture}`}
+                      alt={`${trainer.firstName} ${trainer.lastName}`}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-slate-100">
+                      <img
+                        src="/anonymous-avatar.png"
+                        alt="Anonymous Trainer"
+                        className="w-32 h-32 opacity-70"
+                      />
+                    </div>
+                  )}
 
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
@@ -294,11 +304,20 @@ export default function Trainers() {
               </button>
 
               <div className="absolute -bottom-16 left-8">
-                <img
-                  src={`data:image/jpeg;base64,${selectedTrainer.profilePicture}`}
-                  alt={`${selectedTrainer.firstName} ${selectedTrainer.lastName}`}
-                  className="w-32 h-32 rounded-full border-4 border-white object-cover shadow-lg"
-                />
+                {selectedTrainer.profilePicture ? (
+                  <img
+                    src={`data:image/jpeg;base64,${selectedTrainer.profilePicture}`}
+                    alt={`${selectedTrainer.firstName} ${selectedTrainer.lastName}`}
+                    className="w-32 h-32 rounded-full border-4 border-white object-cover shadow-lg"
+                  />
+                ) : (
+                  <div className="w-32 h-32 rounded-full border-4 border-white bg-slate-100 flex items-center justify-center shadow-lg">
+                    <span className="text-4xl font-bold text-slate-400">
+                      {selectedTrainer.firstName?.charAt(0)}
+                      {selectedTrainer.lastName?.charAt(0)}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
