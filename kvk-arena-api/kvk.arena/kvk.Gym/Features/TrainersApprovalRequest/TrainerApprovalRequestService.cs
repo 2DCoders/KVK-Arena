@@ -403,9 +403,11 @@ public class TrainerApprovalRequestService
                     trainer.LastName = entity.LastName;
                     trainer.Status = "Active";
                     trainer.Rating = entity.Rating;
-                    trainer.ProfilePicture = entity.ProfilePicture;
                     trainer.Role = entity.Role;
                     trainer.IsFreelance = entity.IsFreelance;
+                    
+                    if (entity.ProfilePicture != null)
+                        trainer.ProfilePicture = entity.ProfilePicture;
                     
                     //and then again update member table
                     

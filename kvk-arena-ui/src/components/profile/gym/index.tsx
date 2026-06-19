@@ -1791,6 +1791,7 @@ export default function UserProfileModal({
                     "
                   >
                     <h3 className="text-2xl font-bold mb-6">Specializations</h3>
+                    {/*  */}
 
                     <div className="flex flex-wrap gap-3">
                       {specializations.length > 0 ? (
@@ -2040,6 +2041,8 @@ export default function UserProfileModal({
                     <input
                       type="number"
                       value={trainerForm.yearsOfExperience}
+                      onFocus={(e) => e.target.select()}
+                      onClick={(e) => e.currentTarget.select()}
                       onChange={(e) =>
                         setTrainerForm({
                           ...trainerForm,
@@ -2056,13 +2059,13 @@ export default function UserProfileModal({
                     <textarea
                       rows={4}
                       value={trainerForm.specialization}
+                      placeholder="Weight Loss, Strength Training, Yoga"
                       onChange={(e) =>
                         setTrainerForm({
                           ...trainerForm,
                           specialization: e.target.value,
                         })
                       }
-                      placeholder="Weight Loss, Strength Training, Yoga"
                       className="w-full mt-2 p-4 rounded-2xl border"
                     />
                   </div>
