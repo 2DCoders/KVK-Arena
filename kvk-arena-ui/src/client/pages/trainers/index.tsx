@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, Eye, Star } from "lucide-react";
 import { getTrainers } from "@/services/trainers-api";
 
 interface Trainer {
-  id: number;
+  id: string;
   firstName: string;
   lastName: string;
   role: string;
@@ -12,12 +12,27 @@ interface Trainer {
   profilePicture: string;
   email: string;
   phoneNumber: string;
+  specialization?: string;
+  yearsOfExperience?: number;
+  approvalStatus?: number;
 }
 
 export default function Trainers() {
   const token = localStorage.getItem("token") || "";
 
   const [trainers, setTrainers] = useState<Trainer[]>([]);
+  const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openTrainerModal = (trainer: Trainer) => {
+    setSelectedTrainer(trainer);
+    setIsModalOpen(true);
+  };
+
+  const closeTrainerModal = () => {
+    setSelectedTrainer(null);
+    setIsModalOpen(false);
+  };
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const handleGetTrainers = async () => {
@@ -104,6 +119,7 @@ export default function Trainers() {
           {topTrainers.map((trainer) => (
             <div
               key={trainer.id}
+              onClick={() => openTrainerModal(trainer)}
               className="group flex-shrink-0 w-[260px] sm:w-[280px] cursor-pointer"
             >
               <div
@@ -119,7 +135,7 @@ export default function Trainers() {
                   hover:-translate-y-3
                   transition-all
                   duration-500
-                  "                             
+                  "
               >
                 {/* Image */}
                 <div className="relative aspect-square overflow-hidden">
@@ -259,6 +275,102 @@ export default function Trainers() {
           </div>
         </div>
       </div>
+      {isModalOpen && selectedTrainer && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={closeTrainerModal}
+        >
+          <div
+            className="bg-white rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="relative h-44 bg-gradient-to-r from-[#296BE1] to-blue-500">
+              <button
+                onClick={closeTrainerModal}
+                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 text-white hover:bg-white/30 transition cursor-pointer flex items-center justify-center"
+              >
+                ✕
+              </button>
+
+              <div className="absolute -bottom-16 left-8">
+                <img
+                  src={`data:image/jpeg;base64,${selectedTrainer.profilePicture}`}
+                  alt={`${selectedTrainer.firstName} ${selectedTrainer.lastName}`}
+                  className="w-32 h-32 rounded-full border-4 border-white object-cover shadow-lg"
+                />
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="pt-20 px-8 pb-8">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <h2 className="text-3xl font-bold text-slate-900">
+                    {selectedTrainer.firstName} {selectedTrainer.lastName}
+                  </h2>
+
+                  <p className="text-[#296BE1] font-medium mt-1">
+                    {selectedTrainer.role}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 bg-amber-50 px-4 py-2 rounded-full">
+                  <Star size={18} className="fill-amber-500 text-amber-500" />
+                  <span className="font-semibold">
+                    {selectedTrainer.rating ?? 0}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6 mt-8">
+                <div>
+                  <p className="text-sm text-slate-500 mb-1">Email</p>
+                  <p className="font-medium">{selectedTrainer.email}</p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-slate-500 mb-1">Phone</p>
+                  <p className="font-medium">{selectedTrainer.phoneNumber}</p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-slate-500 mb-1">Experience</p>
+                  <p className="font-medium">
+                    {selectedTrainer.yearsOfExperience ?? 0} Years
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-slate-500 mb-1">Trainer Type</p>
+                  <p className="font-medium">
+                    {selectedTrainer.isFreelance
+                      ? "Freelance Trainer"
+                      : "Gym Trainer"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold mb-3">Specializations</h3>
+
+                <div className="flex flex-wrap gap-2">
+                  {selectedTrainer.specialization
+                    ?.split(",")
+                    .map((item, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-2 rounded-full bg-blue-50 text-[#296BE1] text-sm font-medium"
+                      >
+                        {item.trim()}
+                      </span>
+                    ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
