@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Eye, Star } from "lucide-react";
 import { getTrainers } from "@/services/trainers-api";
+import TrainerLibraryModal from "@/components/trainers-list";
 
 interface Trainer {
   id: string;
@@ -23,6 +24,7 @@ export default function Trainers() {
   const [trainers, setTrainers] = useState<Trainer[]>([]);
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTrainerLibraryOpen, setIsTrainerLibraryOpen] = useState(false);
 
   const openTrainerModal = (trainer: Trainer) => {
     setSelectedTrainer(trainer);
@@ -82,18 +84,18 @@ export default function Trainers() {
                 Professional Trainers
               </h2>
               <button
+                onClick={() => setIsTrainerLibraryOpen(true)}
                 className="
-                py-3
-                rounded-xl
-                text-[#296BE1]
-                font-medium
-                cursor-pointer
-                transition-all
-                duration-300
-                hover:underline
-                flex items-center gap-2
+                    py-3
+                    rounded-xl
+                    text-[#296BE1]
+                    font-medium
+                    cursor-pointer
+                    transition-all
+                    duration-300
+                    hover:underline
+                    flex items-center gap-2
                 "
-                // onClick={() => navigate('/trainers')}
               >
                 View More Trainers
               </button>
@@ -297,7 +299,7 @@ export default function Trainers() {
                     hover:bg-[#1f5dcc]
                     transition-all
                 "
-                //   onClick={() => navigate('/trainers')}
+                onClick={() => setIsTrainerLibraryOpen(true)}
               >
                 View More
               </button>
@@ -305,9 +307,20 @@ export default function Trainers() {
           </div>
         </div>
       </div>
+
+      <TrainerLibraryModal
+        isOpen={isTrainerLibraryOpen}
+        onClose={() => setIsTrainerLibraryOpen(false)}
+        trainers={sortedTrainers}
+        onSelectTrainer={(trainer) => {
+          setSelectedTrainer(trainer);
+          setIsModalOpen(true);
+        }}
+      />
+
       {isModalOpen && selectedTrainer && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-5000000 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
           onClick={closeTrainerModal}
         >
           <div
