@@ -28,4 +28,6 @@ public interface IMembershipService
     Task<Result> PermanentlyDeleteMemberAsync(Guid memberId, CancellationToken cancellationToken = default);
     Task<Result> EnsureMembershipForStaffAsync(string identityUserId, string email, string fullName, CancellationToken cancellationToken = default);
     Task<Result> AssignTrainerAsync(Guid memberId, Guid trainerId, CancellationToken cancellationToken = default);
+
+    Task<List<TrainerResponse>> GetAllTrainersAsync(CancellationToken cancellationToken = default);
 }

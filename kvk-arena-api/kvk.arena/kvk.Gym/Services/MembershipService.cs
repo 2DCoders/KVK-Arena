@@ -931,4 +931,40 @@ public class MembershipService : IMembershipService
             return Result.Failure($"Failed to assign trainer: {ex.Message}");
         }
     }
+    
+    
+    public async Task<List<TrainerResponse>> GetAllTrainersAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var trainers = await _db.Trainers
+                .AsNoTracking()
+                .Where(t => !t.IsDeleted)
+                .ToListAsync(cancellationToken);
+
+            var response = trainers.Select(t => new TrainerResponse
+            {
+                Id = t.Id,
+                FirstName = t.FirstName,
+                LastName = t.LastName,
+                UserName = t.UserName,
+                Email = t.Email,
+                PhoneNumber = t.Phone,
+                Specialization = t.Specialization,
+                Rating = t.Rating,
+                YearsOfExperience = t.YearsOfExperience,
+                CreatedAt = t.CreatedAt,
+                LastModifiedAt = t.LastModifiedAt,
+                ProfilePicture = t.ProfilePicture,
+                Role = t.Role,
+                IsFreelance = t.IsFreelance,
+            }).ToList();
+
+            return response;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Failed to fetch trainers: {ex.Message}");
+        }
+    }
 }
