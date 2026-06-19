@@ -136,4 +136,12 @@ public class MembershipsController : ControllerBase
 
         return Ok(result);
     }
+    
+    
+    [HttpGet("trainers")]
+    public async Task<IActionResult> GetAllTrainers(CancellationToken cancellationToken = default)
+    {
+        var result = await _service.GetAllTrainersAsync(cancellationToken);
+        return Ok(result);
+    }
 }
