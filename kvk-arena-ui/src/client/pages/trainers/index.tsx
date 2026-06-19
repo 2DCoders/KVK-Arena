@@ -72,41 +72,61 @@ export default function Trainers() {
       <div className="max-w-7xl mx-auto px-5 lg:px-8 relative z-10">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
-          <div className="max-w-2xl">
-            <h2
-              data-aos="fade-up"
-              data-aos-delay="100"
-              className="text-3xl font-extrabold sm:text-4xl lg:text-5xl bg-linear-to-r from-black via-[#2d86fc] to-[#2d86fc] bg-clip-text text-transparent"
-            >
-              Professional Trainers
-            </h2>
+          <div className="">
+            <div className="flex items-center justify-between">
+              <h2
+                data-aos="fade-up"
+                data-aos-delay="100"
+                className="text-3xl font-extrabold sm:text-4xl lg:text-5xl bg-linear-to-r from-black via-[#2d86fc] to-[#2d86fc] bg-clip-text text-transparent"
+              >
+                Professional Trainers
+              </h2>
+              <button
+                className="
+                py-3
+                rounded-xl
+                text-[#296BE1]
+                font-medium
+                cursor-pointer
+                transition-all
+                duration-300
+                hover:underline
+                flex items-center gap-2
+                "
+                // onClick={() => navigate('/trainers')}
+              >
+                View More Trainers
+              </button>
+            </div>
 
-            <p
-              data-aos="fade-up"
-              data-aos-delay="150"
-              className="mt-4 text-base text-slate-500"
-            >
-              Train alongside experienced fitness professionals dedicated to
-              helping you build strength, improve performance, and achieve
-              lasting results through expert guidance and personalized support.
-            </p>
-          </div>
+            <div className="flex items-center justify-between">
+              <p
+                data-aos="fade-up"
+                data-aos-delay="150"
+                className="mt-4 text-base text-slate-500 pr-20 lg:pr-50"
+              >
+                Train alongside experienced fitness professionals dedicated to
+                helping you build strength, improve performance, and achieve
+                lasting results through expert guidance and personalized
+                support.
+              </p>
+              {/* Arrows */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => scroll("left")}
+                  className="w-12 h-12 cursor-pointer rounded-full backdrop-blur-xl bg-white/80 border border-white shadow-lg hover:bg-[#296BE1] hover:text-white transition-all duration-300 flex items-center justify-center"
+                >
+                  <ChevronLeft size={20} />
+                </button>
 
-          {/* Arrows */}
-          <div className="flex gap-3">
-            <button
-              onClick={() => scroll("left")}
-              className="w-12 h-12 cursor-pointer rounded-full backdrop-blur-xl bg-white/80 border border-white shadow-lg hover:bg-[#296BE1] hover:text-white transition-all duration-300 flex items-center justify-center"
-            >
-              <ChevronLeft size={20} />
-            </button>
-
-            <button
-              onClick={() => scroll("right")}
-              className="w-12 h-12 cursor-pointer rounded-full backdrop-blur-xl bg-white/80 border border-white shadow-lg hover:bg-[#296BE1] hover:text-white transition-all duration-300 flex items-center justify-center"
-            >
-              <ChevronRight size={20} />
-            </button>
+                <button
+                  onClick={() => scroll("right")}
+                  className="w-12 h-12 cursor-pointer rounded-full backdrop-blur-xl bg-white/80 border border-white shadow-lg hover:bg-[#296BE1] hover:text-white transition-all duration-300 flex items-center justify-center"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
