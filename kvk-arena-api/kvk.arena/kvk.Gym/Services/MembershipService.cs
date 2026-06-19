@@ -152,9 +152,7 @@ public class MembershipService : IMembershipService
                     Email = member.Email,
                     Status = "Active",
                     PasswordHash = member.PasswordHash,
-                    Phone = member.Phone,
-                    Specialization = request.Specialization,
-                    YearsOfExperience = (int)request.YearsOfExperience!
+                    Phone = member.Phone
                 };
 
                 _db.Trainers.Add(trainer);
@@ -197,7 +195,8 @@ public class MembershipService : IMembershipService
         try
         {
             var membership = await _db.Set<Membership>()
-                .SingleOrDefaultAsync(s => s.UserName == request.Username && s.MemberType != MemberType.Staff, cancellationToken);
+                .SingleOrDefaultAsync(s => s.UserName == request.Username && s.MemberType != MemberType.Staff,
+                    cancellationToken);
 
             if (membership == null)
                 throw new Exception("Invalid username or password");
@@ -361,11 +360,10 @@ public class MembershipService : IMembershipService
         }
     }
 
-    public async Task<Result> GetMemberAsync(Guid memberId, CancellationToken cancellationToken = default)
+    public async Task<MembershipResponse> GetMemberAsync(Guid memberId, CancellationToken cancellationToken = default)
     {
         if (memberId == Guid.Empty)
-            return Result.Failure("Member id cannot be empty");
-
+            throw new ArgumentException("Member id cannot be empty", nameof(memberId));
         try
         {
             var member = await _db.Memberships
@@ -374,7 +372,7 @@ public class MembershipService : IMembershipService
                 .SingleOrDefaultAsync(m => m.Id == memberId && !m.IsDeleted, cancellationToken);
 
             if (member == null)
-                return Result.Failure("Member not found");
+                throw new Exception("Member not found");
 
             var latestPayment = await _db.MemberPayments
                 .AsNoTracking()
@@ -383,11 +381,29 @@ public class MembershipService : IMembershipService
                 .FirstOrDefaultAsync(cancellationToken);
 
             Trainer trainer = null;
+            TrainerSpecializedResponse trainerSpecializedResponse = null;
             if (member.TrainerId.HasValue)
             {
-                trainer = await _db.Trainers.Where(t => t.Id == member.TrainerId)
-                    .FirstOrDefaultAsync(cancellationToken);
+                trainer = (await _db.Trainers.Where(t => t.Id == member.TrainerId)
+                    .FirstOrDefaultAsync(cancellationToken))!;
             }
+
+            if (member.MemberType == MemberType.Trainer)
+            {
+                //get the trainer details
+                trainerSpecializedResponse = (await _db.Trainers.Where(t => t.Id == member.Id)
+                    .Select(x => new TrainerSpecializedResponse
+                    {
+                        Specialization = x.Specialization,
+                        Rating = x.Rating,
+                        YearsOfExperience = x.YearsOfExperience,
+                        ProfilePicture = x.ProfilePicture,
+                        IsFreelance = x.IsFreelance,
+                        Role = x.Role
+                    })
+                    .FirstOrDefaultAsync(cancellationToken))!;
+            }
+
 
             var memberPayment = await _db.MemberPayments.Where(p => p.MembershipId == member.Id)
                 .OrderByDescending(p => p.CreatedAt)
@@ -418,14 +434,20 @@ public class MembershipService : IMembershipService
                 IdentityUserId = member.IdentityUserId,
                 CreatedDate = member.CreatedAt,
                 IsSavedFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
-                                      !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2)
+                                      !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2),
+                Specialization = trainerSpecializedResponse?.Specialization,
+                YearsOfExperience = trainerSpecializedResponse?.YearsOfExperience ?? 0,
+                ProfilePicture = trainerSpecializedResponse?.ProfilePicture,
+                Rating = trainerSpecializedResponse?.Rating ?? 0,
+                IsFreelance = trainerSpecializedResponse?.IsFreelance ?? false,
+                Role = trainerSpecializedResponse?.Role
             };
 
-            return Result.Success().WithData("response", response);
+            return response;
         }
         catch (Exception ex)
         {
-            return Result.Failure($"Failed to fetch member: {ex.Message}");
+            throw new Exception($"Failed to fetch member: {ex.Message}");
         }
     }
 
@@ -766,7 +788,8 @@ public class MembershipService : IMembershipService
     }
 
 
-    public async Task<Result> ReverseSoftDeleteMemberAsync(Guid memberId, CancellationToken cancellationToken = default)
+    public async Task<Result> ReverseSoftDeleteMemberAsync(Guid memberId,
+        CancellationToken cancellationToken = default)
     {
         if (memberId == Guid.Empty)
             return Result.Failure("Member id cannot be empty");
@@ -803,7 +826,8 @@ public class MembershipService : IMembershipService
     }
 
 
-    public async Task<Result> PermanentlyDeleteMemberAsync(Guid memberId, CancellationToken cancellationToken = default)
+    public async Task<Result> PermanentlyDeleteMemberAsync(Guid memberId,
+        CancellationToken cancellationToken = default)
     {
         if (memberId == Guid.Empty)
             return Result.Failure("Member id cannot be empty");
@@ -878,7 +902,6 @@ public class MembershipService : IMembershipService
     }
 
 
-
     public async Task<Result> AssignTrainerAsync(Guid memberId, Guid trainerId,
         CancellationToken cancellationToken = default)
     {
@@ -906,6 +929,42 @@ public class MembershipService : IMembershipService
         catch (Exception ex)
         {
             return Result.Failure($"Failed to assign trainer: {ex.Message}");
+        }
+    }
+    
+    
+    public async Task<List<TrainerResponse>> GetAllTrainersAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var trainers = await _db.Trainers
+                .AsNoTracking()
+                .Where(t => !t.IsDeleted)
+                .ToListAsync(cancellationToken);
+
+            var response = trainers.Select(t => new TrainerResponse
+            {
+                Id = t.Id,
+                FirstName = t.FirstName,
+                LastName = t.LastName,
+                UserName = t.UserName,
+                Email = t.Email,
+                PhoneNumber = t.Phone,
+                Specialization = t.Specialization,
+                Rating = t.Rating,
+                YearsOfExperience = t.YearsOfExperience,
+                CreatedAt = t.CreatedAt,
+                LastModifiedAt = t.LastModifiedAt,
+                ProfilePicture = t.ProfilePicture,
+                Role = t.Role,
+                IsFreelance = t.IsFreelance,
+            }).ToList();
+
+            return response;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Failed to fetch trainers: {ex.Message}");
         }
     }
 }

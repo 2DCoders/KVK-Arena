@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Domain\" />
       <Folder Include="Enums\" />
       <Folder Include="EventHandlers\" />
       <Folder Include="Features\" />
@@ -22,6 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\kvk.Badminton\kvk.Badminton.csproj" />
       <ProjectReference Include="..\kvk.BuildingBlocks\kvk.BuildingBlocks.csproj" />
     </ItemGroup>
 

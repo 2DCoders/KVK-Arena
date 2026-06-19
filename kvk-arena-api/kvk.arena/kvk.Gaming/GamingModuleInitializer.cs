@@ -1,4 +1,3 @@
-using kvk.Badminton;
 using kvk.BuildingBlocks.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

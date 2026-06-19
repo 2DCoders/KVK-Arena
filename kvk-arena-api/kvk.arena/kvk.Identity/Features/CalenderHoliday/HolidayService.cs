@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.RegularExpressions;
 using kvk.BuildingBlocks.Common;
 using kvk.BuildingBlocks.Interfaces;
@@ -168,6 +169,39 @@ public class HolidayService : IHolidayService
                 return DateTime.SpecifyKind(candidate.Date, DateTimeKind.Unspecified);
 
             candidate = DateTime.SpecifyKind(candidate.AddDays(1).Date, DateTimeKind.Unspecified);
+        }
+    }
+    
+    public async Task<List<DateTime>> GetNextWorkingDaysAsync(DateTime currentDate, int count, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var workingDays = new List<DateTime>();
+            var candidate = DateTime.SpecifyKind(currentDate.Date.AddDays(1), DateTimeKind.Unspecified);
+
+            while (workingDays.Count < count)
+            {
+                var year = candidate.Year.ToString();
+                var month = candidate.Month.ToString("D2");
+                var day = candidate.Day.ToString("D2");
+
+                var isHoliday = await _db.CalenderHolidays
+                    .AsNoTracking()
+                    .AnyAsync(h => h.Year == year && h.Month == month && h.Day == day && h.IsActive, cancellationToken);
+
+                if (!isHoliday)
+                {
+                    workingDays.Add(candidate);
+                }
+
+                candidate = candidate.AddDays(1);
+            }
+
+            return workingDays;
+        }
+        catch (Exception ex)
+        {
+            throw new EncoderFallbackException("Failed to get next working days", ex);
         }
     }
 

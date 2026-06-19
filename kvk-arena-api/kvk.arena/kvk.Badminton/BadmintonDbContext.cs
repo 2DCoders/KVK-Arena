@@ -13,6 +13,12 @@ public class BadmintonDbContext(
     IHttpContextAccessor? httpContextAccessor = null)
     : AppDbContextBase(options, tenantService, logger, httpContextAccessor)
 {
+    public DbSet<Domain.Court> Courts => Set<Domain.Court>();
+    public DbSet<Domain.CourtSlotConfiguration> CourtSlotConfigurations => Set<Domain.CourtSlotConfiguration>();
+    public DbSet<Domain.CourtSlot> CourtSlots => Set<Domain.CourtSlot>();
+    public DbSet<Domain.CourtBooking> CourtBookings => Set<Domain.CourtBooking>();
+    public DbSet<Domain.BookingHold> BookingHolds => Set<Domain.BookingHold>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("badminton");

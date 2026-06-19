@@ -246,6 +246,9 @@ namespace kvk.Identity.Persistence.Migrations.IdentityRbacInitial
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<int>("Gender")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("LastModifiedAt")
                         .HasColumnType("timestamp without time zone");
 

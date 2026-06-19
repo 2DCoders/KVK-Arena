@@ -555,6 +555,9 @@ namespace kvk.Gym.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsFreelance")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime>("LastModifiedAt")
                         .HasColumnType("timestamp without time zone");
 
@@ -575,10 +578,17 @@ namespace kvk.Gym.Migrations
                         .HasMaxLength(25)
                         .HasColumnType("character varying(25)");
 
+                    b.Property<byte[]>("ProfilePicture")
+                        .HasColumnType("bytea");
+
                     b.Property<int>("Rating")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
                         .HasDefaultValue(0);
+
+                    b.Property<string>("Role")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("Specialization")
                         .HasMaxLength(500)
@@ -661,6 +671,9 @@ namespace kvk.Gym.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsFreelance")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime>("LastModifiedAt")
                         .HasColumnType("timestamp without time zone");
 
@@ -681,8 +694,15 @@ namespace kvk.Gym.Migrations
                         .HasMaxLength(25)
                         .HasColumnType("character varying(25)");
 
+                    b.Property<byte[]>("ProfilePicture")
+                        .HasColumnType("bytea");
+
                     b.Property<int>("Rating")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Role")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("Specialization")
                         .HasColumnType("text");

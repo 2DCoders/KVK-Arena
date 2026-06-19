@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using kvk.BuildingBlocks.Common;
 using kvk.Gym.Enums;
 
@@ -14,6 +15,13 @@ public class Trainer : User
     
     
     public DateTime DateOfBirth { get; set; }
+    
+    public byte[]? ProfilePicture { get; set; }
+    
+    [MaxLength(20)]
+    public string? Role { get; set; }
+    
+    public bool IsFreelance { get; set; }
 
 
     public bool IsDeleted { get; set; }

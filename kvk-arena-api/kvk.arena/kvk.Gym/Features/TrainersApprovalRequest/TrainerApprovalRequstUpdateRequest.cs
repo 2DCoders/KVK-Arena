@@ -1,4 +1,6 @@
+using System.ComponentModel.DataAnnotations;
 using kvk.BuildingBlocks.Common;
+using Microsoft.AspNetCore.Http;
 
 namespace kvk.Gym.Features.Trainers;
 
@@ -20,6 +22,13 @@ public class TrainerApprovalRequstUpdateRequest
     public Gender? Gender { get; set; }
 
     public Guid TrainerId { get; set; }
+    
+    public IFormFile? ProfilePicture { get; set; }
+    
+    [MaxLength(20)]
+    public string? Role { get; set; }
+    
+    public bool IsFreelance { get; set; } = false;
     
     
 }

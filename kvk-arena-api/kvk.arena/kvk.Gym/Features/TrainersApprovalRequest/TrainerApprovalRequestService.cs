@@ -1,11 +1,10 @@
 using kvk.BuildingBlocks.Common;
 using kvk.Gym.Domain;
 using kvk.Gym.Enums;
-using kvk.Gym.Features.TrainersApprovalRequest;
-using kvk.Gym.Persistence;
+using kvk.Gym.Features.Trainers;
 using Microsoft.EntityFrameworkCore;
 
-namespace kvk.Gym.Features.Trainers;
+namespace kvk.Gym.Features.TrainersApprovalRequest;
 
 public class TrainerApprovalRequestService
 {
@@ -15,7 +14,6 @@ public class TrainerApprovalRequestService
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
     }
-    //this is for request for creating 
 
     public async Task<Result> CreateAsync(TrainerApprovalRequestCreateRequest request,
         CancellationToken cancellationToken = default)
@@ -28,6 +26,14 @@ public class TrainerApprovalRequestService
 
         if (string.IsNullOrWhiteSpace(request.Email))
             return Result.Failure("Email is required");
+
+        byte[]? profilePictureByteArray = null;
+        if (request.ProfilePicture != null)
+        {
+            using var memoryStream = new MemoryStream();
+            await request.ProfilePicture.CopyToAsync(memoryStream, cancellationToken);
+            profilePictureByteArray = memoryStream.ToArray();
+        }
 
         try
         {
@@ -45,7 +51,10 @@ public class TrainerApprovalRequestService
                 ApprovalStatus = ApprovalStatus.Pending,
                 ApprovedBy = string.Empty,
                 ApprovalDate = DateTime.MaxValue,
-                TrainerId = Guid.Empty,
+                TrainerId = request.Id,
+                ProfilePicture = profilePictureByteArray,
+                Role = request.Role,
+                IsFreelance = request.IsFreelance,
             };
 
             _db.Set<TrainerApprovalRequests>().Add(entity);
@@ -54,7 +63,9 @@ public class TrainerApprovalRequestService
             var response = new TrainerApprovalRequestResponse
             {
                 Id = entity.Id,
-                Name = entity.UserName,
+                FirstName = entity.FirstName,
+                LastName = entity.LastName,
+                UserName = entity.UserName,
                 Email = entity.Email,
                 PhoneNumber = entity.Phone,
                 Specialization = entity.Specialization,
@@ -82,6 +93,13 @@ public class TrainerApprovalRequestService
 
         try
         {
+            byte[]? profilePictureByteArray = null;
+            if (request.ProfilePicture != null)
+            {
+                using var memoryStream = new MemoryStream();
+                await request.ProfilePicture.CopyToAsync(memoryStream, cancellationToken);
+                profilePictureByteArray = memoryStream.ToArray();
+            }
 
             if (id == null || id == Guid.Empty)
             {
@@ -99,7 +117,10 @@ public class TrainerApprovalRequestService
                     ApprovalStatus = ApprovalStatus.Pending,
                     ApprovedBy = string.Empty,
                     ApprovalDate = DateTime.MaxValue,
-                    TrainerId = Guid.Empty,
+                    TrainerId = id,
+                    ProfilePicture = profilePictureByteArray,
+                    Role = request.Role,
+                    IsFreelance = request.IsFreelance,
                 };
 
                 _db.Set<TrainerApprovalRequests>().Add(newEntity);
@@ -112,7 +133,7 @@ public class TrainerApprovalRequestService
                 var entity = await _db.Set<TrainerApprovalRequests>()
                     .SingleAsync(
                         x =>
-                            x.Id == id
+                            x.TrainerId == id
                             && x.ApprovalStatus == ApprovalStatus.Pending,
                         cancellationToken);
 
@@ -138,7 +159,7 @@ public class TrainerApprovalRequestService
                         entity.LastName = request.LastName;
 
                     if (request.Email != null)
-                        entity.LastName = request.Email;
+                        entity.Email = request.Email;
 
                     if (request.PhoneNumber != null)
                         entity.Phone = request.PhoneNumber;
@@ -157,6 +178,15 @@ public class TrainerApprovalRequestService
 
                     if (request.Gender != null)
                         entity.Gender = request.Gender.Value;
+
+                    if (profilePictureByteArray != null)
+                        entity.ProfilePicture = profilePictureByteArray;
+
+                    if (request.Role != null)
+                        entity.Role = request.Role;
+
+                    if (request.IsFreelance)
+                        entity.IsFreelance = request.IsFreelance;
                     
                     entity.TrainerId = trainerId.Id;
                 }
@@ -184,7 +214,7 @@ public class TrainerApprovalRequestService
             var entity = await _db.Set<TrainerApprovalRequests>()
                 .AsNoTracking()
                 .Where(x => x.ApprovalStatus == ApprovalStatus.Pending)
-                .SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+                .SingleOrDefaultAsync(x => x.TrainerId == id, cancellationToken);
 
             if (entity == null)
                 return Result.Failure("Not found");
@@ -192,9 +222,14 @@ public class TrainerApprovalRequestService
             var response = new TrainerApprovalRequestResponse
             {
                 Id = entity.Id,
-                Name = entity.UserName,
+                FirstName = entity.FirstName,
+                LastName = entity.LastName,
+                UserName = entity.UserName,
                 Email = entity.Email,
                 PhoneNumber = entity.Phone,
+                ProfilePicture = entity.ProfilePicture,
+                Role = entity.Role,
+                IsFreelance = entity.IsFreelance,
                 Specialization = entity.Specialization,
                 YearsOfExperience = entity.YearsOfExperience,
                 Rating = entity.Rating,
@@ -221,12 +256,17 @@ public class TrainerApprovalRequestService
             var response = entities.Select(entity => new TrainerApprovalRequestResponse
             {
                 Id = entity.Id,
-                Name = entity.UserName,
+                FirstName = entity.FirstName,
+                LastName = entity.LastName,
+                UserName = entity.UserName,
                 Email = entity.Email,
                 PhoneNumber = entity.Phone,
                 Specialization = entity.Specialization,
                 YearsOfExperience = entity.YearsOfExperience,
                 Rating = entity.Rating,
+                ProfilePicture = entity.ProfilePicture,
+                Role = entity.Role,
+                IsFreelance = entity.IsFreelance,
                 CreatedAt = entity.CreatedAt,
                 LastModifiedAt = entity.LastModifiedAt,
                 ApprovalStatus = entity.ApprovalStatus,
@@ -278,7 +318,7 @@ public class TrainerApprovalRequestService
         {
             var entity = await _db.Set<TrainerApprovalRequests>()
                 .SingleAsync(
-                    x => x.Id == id && x.ApprovalStatus == ApprovalStatus.Pending,
+                    x => x.TrainerId == id && x.ApprovalStatus == ApprovalStatus.Pending,
                     cancellationToken);
 
 
@@ -308,6 +348,9 @@ public class TrainerApprovalRequestService
                         PasswordHash = entity.PasswordHash,
                         Status = "Active",
                         Rating = entity.Rating,
+                        ProfilePicture = entity.ProfilePicture,
+                        Role = entity.Role,
+                        IsFreelance = entity.IsFreelance,
                     };
                     
                     _db.Set<Trainer>().Add(trainer);
@@ -328,6 +371,8 @@ public class TrainerApprovalRequestService
                         Status = "Active",
                         DateOfBirth = entity.DateOfBirth,
                         Gender = entity.Gender,
+                        // ProfilePicture = entity.ProfilePicture,
+                        // Role = entity.Role,
                         MembershipNumber = MembershipNumberFormatter.Format(nameof(MemberType.Trainer),
                             DateTime.UtcNow.Year, memberToken)
                     };
@@ -356,9 +401,13 @@ public class TrainerApprovalRequestService
                     trainer.YearsOfExperience = entity.YearsOfExperience;
                     trainer.FirstName = entity.FirstName;
                     trainer.LastName = entity.LastName;
-                    trainer.PasswordHash = entity.PasswordHash;
                     trainer.Status = "Active";
                     trainer.Rating = entity.Rating;
+                    trainer.Role = entity.Role;
+                    trainer.IsFreelance = entity.IsFreelance;
+                    
+                    if (entity.ProfilePicture != null)
+                        trainer.ProfilePicture = entity.ProfilePicture;
                     
                     //and then again update member table
                     
@@ -370,13 +419,20 @@ public class TrainerApprovalRequestService
                     member.Phone = entity.Phone;
                     member.FirstName = entity.FirstName;
                     member.LastName = entity.LastName;
-                    member.PasswordHash = entity.PasswordHash;
                     member.Status = "Active";
                     member.DateOfBirth = member.DateOfBirth;
                     member.Gender = entity.Gender;
                     break;
                 }
             }
+            
+            await _db.SaveChangesAsync(cancellationToken);
+            
+            var existingRequest = _db.TrainerApprovalRequests.Where(t => t.TrainerId == entity.TrainerId)
+                .FirstOrDefaultAsync(cancellationToken);
+            
+            if (existingRequest != null)
+                _db.TrainerApprovalRequests.Remove(await existingRequest);
             
             await _db.SaveChangesAsync(cancellationToken);
             
