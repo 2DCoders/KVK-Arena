@@ -13,11 +13,11 @@ export default function GymHero() {
   const memberToken = localStorage.getItem("memberToken") || null;
 
   return (
-    <div>            
-            <UserProfileModal
-              open={profileOpen}
-              onClose={() => setProfileOpen(false)}
-            />
+    <div>
+      <UserProfileModal
+        open={profileOpen}
+        onClose={() => setProfileOpen(false)}
+      />
       <SignupModal open={isOpenSignup} onClose={() => setIsOpenSignup(false)} />
       <section className="relative isolate overflow-hidden py-16 sm:py-20 lg:py-38">
         <div
