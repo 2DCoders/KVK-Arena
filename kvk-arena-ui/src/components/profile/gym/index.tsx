@@ -369,6 +369,7 @@ export default function UserProfileModal({
       };
 
       window.payhere.startPayment(paymentDetails);
+      setShowUpgradeModal(false);
     } catch (error) {
       setPageAlert({
         visible: true,
