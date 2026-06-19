@@ -19,7 +19,6 @@ interface Trainer {
 }
 
 export default function Trainers() {
-  const token = localStorage.getItem("token") || "";
 
   const [trainers, setTrainers] = useState<Trainer[]>([]);
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
@@ -39,7 +38,7 @@ export default function Trainers() {
 
   const handleGetTrainers = async () => {
     try {
-      const res = await getTrainers(token);
+      const res = await getTrainers();
       setTrainers(res);
     } catch (error) {
       console.error("Error fetching trainers:", error);
