@@ -1000,7 +1000,7 @@ export default function UserProfileModal({
                 {/* RIGHT */}
                 <div className="lg:col-span-2 space-y-8">
                   {/* ATTENDANCE */}
-                  <div className="bg-white rounded-3xl p-8 shadow-xl border">
+                  {/* <div className="bg-white rounded-3xl p-8 shadow-xl border">
                     <div className="flex justify-between mb-6">
                       <h3 className="text-2xl font-bold">Attendance Report</h3>
                       <span className="text-slate-500">This Month</span>
@@ -1022,7 +1022,7 @@ export default function UserProfileModal({
                         </div>
                       ))}
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* BENEFITS */}
                   <div className="bg-white rounded-3xl p-6 shadow-xl border">

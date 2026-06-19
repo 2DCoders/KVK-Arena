@@ -736,7 +736,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                                                 <button
                                                     key={plan.id}
                                                     onClick={() => setSelectedPlan(plan.id)}
-                                                    className={`text-left rounded-2xl border p-4 transition-all duration-200 hover:shadow-md ${isSelected
+                                                    className={`text-left rounded-2xl border p-4 cursor-pointer transition-all duration-200 hover:shadow-md ${isSelected
                                                         ? "border-[#296BE1] bg-[#296BE1]/5 shadow-lg"
                                                         : "border-slate-200 bg-white"
                                                         }`}
@@ -795,13 +795,6 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
 
                                 {/* ACTIONS */}
                                 <div className="mt-6 flex gap-3">
-                                    <button
-                                        onClick={() => setStep(1)}
-                                        className="h-11 flex-1 rounded-xl border border-slate-300 text-sm font-semibold"
-                                    >
-                                        Back
-                                    </button>
-
                                     <button
                                         disabled={!selectedPlan || loading}
                                         onClick={async () => {
