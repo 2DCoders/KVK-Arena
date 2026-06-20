@@ -43,7 +43,7 @@ export default function Memberships() {
           <h2
             data-aos="fade-up"
             data-aos-delay="100"
-            className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-6xl"
+            className="text-2xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl"
           >
             <h2
               data-aos="fade-up"
@@ -56,14 +56,14 @@ export default function Memberships() {
           <p
             data-aos="fade-up"
             data-aos-delay="150"
-            className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg"
+            className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-slate-300 sm:text-lg"
           >
             Focused support designed to help you train better, move smarter, and
             reach your goals with confidence.
           </p>
         </div>
 
-        <div className="mt-5 flex items-center justify-end gap-3">
+        <div className="mt-5 hidden md:flex items-center justify-end gap-3">
           <button
             type="button"
             onClick={() => scrollRail("left")}
@@ -86,18 +86,30 @@ export default function Memberships() {
         <div
           ref={railRef}
           data-aos="fade-up"
-          className="mt-5 py-5 flex gap-6 overflow-x-auto scroll-smooth pb-6 pr-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="
+            mt-5
+            flex
+            gap-4
+            sm:gap-6
+            overflow-x-auto
+            scroll-smooth
+            pb-6
+            px-1
+            snap-x
+            snap-mandatory
+            [scrollbar-width:none]
+            [&::-webkit-scrollbar]:hidden
+          "
         >
           {plans
             .filter((plan) => plan.isActive === 1)
             .map((plan) => (
               <article
                 key={plan.id}
-                className={`group relative min-w-[320px] flex-1 basis-[320px] overflow-hidden rounded-2xl border p-6 shadow-[0_18px_50px_rgba(0,0,0,0.2)] transform-gpu transition duration-300 ease-out hover:z-20 hover:[transform:perspective(1200px)_translateY(-12px)_rotateX(7deg)_rotateY(-7deg)_scale(1.03)] hover:shadow-[0_28px_70px_rgba(0,0,0,0.35)] sm:min-w-[360px] sm:basis-[360px] ${
-                  plan.title === "Monthly Plan"
+                className={`group relative snap-center min-w-[280px] basis-[280px] sm:min-w-[320px] sm:basis-[320px] lg:min-w-[360px] lg:basis-[360px]  overflow-hidden rounded-2xl border p-6 shadow-[0_18px_50px_rgba(0,0,0,0.2)] transform-gpu transition duration-300 ease-out hover:z-20 hover:[transform:perspective(1200px)_translateY(-12px)_rotateX(7deg)_rotateY(-7deg)_scale(1.03)] hover:shadow-[0_28px_70px_rgba(0,0,0,0.35)] sm:min-w-[360px] sm:basis-[360px] ${plan.title === "Monthly Plan"
                     ? "border-[#296BE1] bg-[#000000] ring-1 ring-[#e6a79e]/30"
                     : "border-white/6 bg-white/6"
-                }`}
+                  }`}
               >
                 <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-white/15 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
@@ -115,16 +127,16 @@ export default function Memberships() {
                       maximumFractionDigits: 2,
                     })}
                   </span>
-                  <span className="pb-1 text-sm text-slate-400">
+                  <span className="pb-1 text-xs text-slate-400">
                     /
                     {plan.durationInDays === 1
-                      ? "1 day"
+                      ? "1 D"
                       : plan.durationInDays === 30
-                        ? "1 month"
+                        ? "1 M"
                         : plan.durationInDays === 90
-                          ? "3 months"
+                          ? "3 M"
                           : plan.durationInDays === 365
-                            ? "1 year"
+                            ? "1 Y"
                             : `${plan.durationInDays} days`}
                   </span>
                 </div>
@@ -139,11 +151,10 @@ export default function Memberships() {
 
                 <button
                   type="button"
-                  className={`mt-6 inline-flex cursor-pointer w-full items-center justify-center rounded-md px-5 py-3 text-sm font-semibold transition ${
-                    plan.featured
+                  className={`mt-6 inline-flex cursor-pointer w-full items-center justify-center rounded-md px-5 py-3 text-sm font-semibold transition ${plan.featured
                       ? "bg-white text-slate-950 hover:bg-slate-100"
                       : "bg-white/20 text-white hover:bg-white/30"
-                  }`}
+                    }`}
                   onClick={() => setIsOpenSignup(true)}
                 >
                   Book a Membership
