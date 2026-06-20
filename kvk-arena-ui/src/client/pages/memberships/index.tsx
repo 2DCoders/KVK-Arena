@@ -36,10 +36,10 @@ export default function Memberships() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-linear-to-b from-slate-950 to-slate-900 pt-25 pb-10">
+    <section className="relative overflow-hidden bg-linear-to-b from-slate-950 to-slate-900 pt-15 md:pt-25 pb-10">
       <SignupModal open={isOpenSignup} onClose={() => setIsOpenSignup(false)} />
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center">
+        <div className="mx-auto max-w-3xl text-center pb-10 md:pb-0">
           <h2
             data-aos="fade-up"
             data-aos-delay="100"
@@ -114,7 +114,7 @@ export default function Memberships() {
                 <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-white/15 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
                 {plan.title === "Monthly Plan" && (
-                  <div className="absolute right-6 top-6 rounded-full border border-[#296BE1]/40 bg-[#e6a79e]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#296BE1]">
+                  <div className="absolute right-3 top-3 rounded-full border border-[#296BE1]/40 bg-[#e6a79e]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#296BE1]">
                     Recommended
                   </div>
                 )}
