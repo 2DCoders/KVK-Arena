@@ -219,25 +219,25 @@ export default function BookingGaming() {
     };
   };
 
-const total = useMemo(() => {
-  if (!selectedService) return 0;
+  const total = useMemo(() => {
+    if (!selectedService) return 0;
 
-  let amount =
-    selectedService.price *
-    selectedSlots.length *
-    Math.max(selectedResources.length, 1);
+    let amount =
+      selectedService.price *
+      selectedSlots.length *
+      Math.max(selectedResources.length, 1);
 
-  if (selectedService.id === "ps5") {
-    amount += extraConsoles * 500 * selectedSlots.length;
-  }
+    if (selectedService.id === "ps5") {
+      amount += extraConsoles * 500 * selectedSlots.length;
+    }
 
-  return amount;
-}, [
-  selectedService,
-  selectedSlots,
-  selectedResources,
-  extraConsoles,
-]);
+    return amount;
+  }, [
+    selectedService,
+    selectedSlots,
+    selectedResources,
+    extraConsoles,
+  ]);
 
   return (
     <section className="bg-gray-50 pt-25 pb-10">
@@ -279,8 +279,8 @@ const total = useMemo(() => {
                         setSelectedResources([]);
                       }}
                       className={`text-left cursor-pointer rounded-2xl border-2 p-4 transition-all ${selectedService?.id === service.id
-                          ? "border-red-500 bg-red-50 shadow-md"
-                          : "border-gray-200 bg-white hover:border-red-300"
+                        ? "border-red-500 bg-red-50 shadow-md"
+                        : "border-gray-200 bg-white hover:border-red-300"
                         }`}
                     >
                       <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center mb-3">
@@ -326,8 +326,8 @@ const total = useMemo(() => {
                         setSelectedResources([]);
                       }}
                       className={`h-20 cursor-pointer rounded-xl border-2 flex flex-col items-center justify-center transition ${selectedDate === index
-                          ? "border-red-500 bg-red-500 text-white"
-                          : "border-gray-200 bg-white hover:border-red-300"
+                        ? "border-red-500 bg-red-500 text-white"
+                        : "border-gray-200 bg-white hover:border-red-300"
                         }`}
                     >
                       {date.isToday && (
@@ -459,8 +459,8 @@ const total = useMemo(() => {
             {selectedService?.id === "ps5" && (
               <div
                 className={`bg-white border cursor-pointer border-gray-200 rounded-2xl p-4 transition-all ${selectedSlots.length === 0
-                    ? "opacity-40 pointer-events-none"
-                    : ""
+                  ? "opacity-40 pointer-events-none"
+                  : ""
                   }`}
               >
                 <div className="flex items-center justify-between">
