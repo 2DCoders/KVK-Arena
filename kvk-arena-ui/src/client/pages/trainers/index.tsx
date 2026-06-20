@@ -65,7 +65,7 @@ export default function Trainers() {
   const topTrainers = sortedTrainers.slice(0, 10);
 
   return (
-    <section className="relative bg-gradient-to-b from-slate-50 via-white to-blue-50/40 overflow-hidden pt-25">
+    <section className="relative bg-gradient-to-b from-slate-50 via-white to-blue-50/40 overflow-hidden pt-15">
       {/* Background Blobs */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-[#296BE1]/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#296BE1]/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
@@ -74,7 +74,7 @@ export default function Trainers() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
           <div className="">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <h2
                 data-aos="fade-up"
                 data-aos-delay="100"
@@ -83,6 +83,7 @@ export default function Trainers() {
                 Professional Trainers
               </h2>
               <button
+                data-aos="fade-up"
                 onClick={() => setIsTrainerLibraryOpen(true)}
                 className="
                     py-3
@@ -100,11 +101,16 @@ export default function Trainers() {
               </button>
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between" data-aos="fade-up" data-aos-delay="150">
               <p
-                data-aos="fade-up"
-                data-aos-delay="150"
-                className="mt-4 text-base text-slate-500 pr-20 lg:pr-50"
+                className="
+                mt-4
+                text-sm
+                sm:text-base
+                text-slate-500
+                pr-0
+                lg:pr-50
+              "
               >
                 Train alongside experienced fitness professionals dedicated to
                 helping you build strength, improve performance, and achieve
@@ -112,7 +118,7 @@ export default function Trainers() {
                 support.
               </p>
               {/* Arrows */}
-              <div className="flex gap-3">
+              <div className="hidden md:flex gap-3">
                 <button
                   onClick={() => scroll("left")}
                   className="w-12 h-12 cursor-pointer rounded-full backdrop-blur-xl bg-white/80 border border-white shadow-lg hover:bg-[#296BE1] hover:text-white transition-all duration-300 flex items-center justify-center"
@@ -135,7 +141,19 @@ export default function Trainers() {
         <div
           ref={scrollRef}
           data-aos="fade-up"
-          className="flex gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-15 pt-10"
+          className="
+            flex
+            gap-4
+            sm:gap-6
+            overflow-x-auto
+            scrollbar-hide
+            scroll-smooth
+            pb-10
+            pt-6
+            snap-x
+            snap-mandatory
+            px-1
+          "
         >
           {topTrainers.map((trainer) => (
             <div
@@ -237,11 +255,10 @@ export default function Trainers() {
                     </span>
 
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        trainer.isFreelance
-                          ? "bg-emerald-50 text-emerald-600"
-                          : "bg-orange-50 text-orange-600"
-                      }`}
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${trainer.isFreelance
+                        ? "bg-emerald-50 text-emerald-600"
+                        : "bg-orange-50 text-orange-600"
+                        }`}
                     >
                       {trainer.isFreelance ? "Freelance" : "Gym Trainer"}
                     </span>
@@ -323,27 +340,51 @@ export default function Trainers() {
           onClick={closeTrainerModal}
         >
           <div
-            className="bg-white rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl"
+            className="
+            bg-white
+            w-full
+            max-w-3xl
+            max-h-[95vh]
+            overflow-y-auto
+            rounded-2xl
+            md:rounded-3xl
+            shadow-2xl
+          "
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="relative h-44 bg-gradient-to-r from-[#296BE1] to-blue-500">
+            <div className="relative h-36 sm:h-44 bg-gradient-to-r from-[#296BE1] to-blue-500">
               <button
                 onClick={closeTrainerModal}
-                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 text-white hover:bg-white/30 transition cursor-pointer flex items-center justify-center"
-              >
+                className="
+                  absolute
+                  top-3
+                  right-3
+                  sm:top-4
+                  sm:right-4
+                  w-11
+                  h-11
+                  rounded-full
+                  bg-white/20
+                  text-white
+                  hover:bg-white/30
+                  transition
+                  cursor-pointer
+                  flex items-center justify-center
+                "              
+                >
                 ✕
               </button>
 
-              <div className="absolute -bottom-16 left-8">
+              <div className="absolute -bottom-12 sm:-bottom-16 left-1/2 -translate-x-1/2 sm:left-8 sm:translate-x-0">
                 {selectedTrainer.profilePicture ? (
                   <img
                     src={`data:image/jpeg;base64,${selectedTrainer.profilePicture}`}
                     alt={`${selectedTrainer.firstName} ${selectedTrainer.lastName}`}
-                    className="w-32 h-32 rounded-full border-4 border-white object-cover shadow-lg"
+                    className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-white object-cover shadow-lg"
                   />
                 ) : (
-                  <div className="w-32 h-32 rounded-full border-4 border-white bg-slate-100 flex items-center justify-center shadow-lg">
+                  <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-white bg-slate-100 flex items-center justify-center shadow-lg">
                     <span className="text-4xl font-bold text-slate-400">
                       {selectedTrainer.firstName?.charAt(0)}
                       {selectedTrainer.lastName?.charAt(0)}
@@ -354,10 +395,10 @@ export default function Trainers() {
             </div>
 
             {/* Content */}
-            <div className="pt-20 px-8 pb-8">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="pt-16 sm:pt-20 px-4 sm:px-8 pb-6 sm:pb-8">
+              <div className="flex flex-col items-center text-center md:text-left md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                  <h2 className="text-3xl font-bold text-slate-900">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">
                     {selectedTrainer.firstName} {selectedTrainer.lastName}
                   </h2>
 
@@ -374,10 +415,12 @@ export default function Trainers() {
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6 mt-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-8">
                 <div>
                   <p className="text-sm text-slate-500 mb-1">Email</p>
-                  <p className="font-medium">{selectedTrainer.email}</p>
+                  <p className="font-medium break-all">
+                    {selectedTrainer.email}
+                  </p>
                 </div>
 
                 <div>
@@ -411,7 +454,16 @@ export default function Trainers() {
                     .map((item, index) => (
                       <span
                         key={index}
-                        className="px-3 py-2 rounded-full bg-blue-50 text-[#296BE1] text-sm font-medium"
+                        className="
+  px-3
+  py-2
+  rounded-full
+  bg-blue-50
+  text-[#296BE1]
+  text-xs
+  sm:text-sm
+  font-medium
+"
                       >
                         {item.trim()}
                       </span>

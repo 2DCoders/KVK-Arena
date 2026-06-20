@@ -34,6 +34,14 @@ public class GymPaymentGatewayService : IGymPaymentGatewayService
         if (memberDetails == null) throw new Exception("Member not found");
 
         var orderId = $"ORD-{Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper()}";
+        var existingMember = await _db.Memberships.FindAsync(request.MemberId);
+
+        if (existingMember != null)
+        {
+            existingMember.MembershipPlanId = request.MembershipPlanId;
+        }
+        
+        _db.Memberships.Update(existingMember);
 
         var paymentRecord = new PaymentRecord
         {

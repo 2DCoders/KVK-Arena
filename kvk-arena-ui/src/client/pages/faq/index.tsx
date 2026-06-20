@@ -53,7 +53,7 @@ export default function FAQ() {
     const [openIndex, setOpenIndex] = useState(0)
 
     return (
-        <section className="relative overflow-hidden bg-linear-to-b from-slate-950 via-slate-950 to-slate-900 py-16 lg:py-24">
+        <section className="relative overflow-hidden bg-linear-to-b from-slate-950 via-slate-950 to-slate-900 py-12 sm:py-16 lg:py-24">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(45,134,252,0.16),_transparent_45%),radial-gradient(circle_at_bottom_right,_rgba(207,239,255,0.08),_transparent_35%)]" />
 
             <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -72,8 +72,8 @@ export default function FAQ() {
                     </p>
                 </div>
 
-                <div className="mt-12 grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
-                    <aside data-aos="fade-right" data-aos-delay="200" className="rounded-3xl border border-white/8 bg-white/6 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur-sm sm:p-8">
+                <div className="mt-12 grid gap-6 md:grid-cols-[0.9fr_1.1fr] lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+                    <aside data-aos="fade-right" data-aos-delay="200" className="rounded-3xl border border-white/8 bg-white/6 p-5 sm:p-6 lg:p-8 shadow-[0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur-sm sm:p-8">
                         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#8FC0FF]">
                             Support Snapshot
                         </p>
@@ -87,7 +87,7 @@ export default function FAQ() {
                         </p>
 
                         <div className="mt-8 space-y-4">
-                            <div className="rounded-2xl border border-white/8 bg-slate-900/60 p-4">
+                            <div className="rounded-2xl border border-white/8 bg-slate-900/60 p-3 sm:p-4">
                                 <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
                                     Best for
                                 </p>
@@ -145,11 +145,16 @@ export default function FAQ() {
                                     <button
                                         type="button"
                                         onClick={() => setOpenIndex(isOpen ? -1 : index)}
-                                        className="flex w-full cursor-pointer items-center justify-between gap-4 px-5 py-4 text-left sm:px-6"
-                                    >
+                                        className="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-4 text-left sm:px-6"                                    >
                                         <span
-                                            className={`text-sm font-medium sm:text-base ${isOpen ? "text-[#296BE1]" : "text-slate-100"
-                                                }`}
+                                            className={`
+                                                flex-1
+                                                pr-2
+                                                text-sm
+                                                font-medium
+                                                sm:text-base
+                                                ${isOpen ? "text-[#296BE1]" : "text-slate-100"}
+                                            `}
                                         >
                                             {item.question}
                                         </span>
@@ -169,7 +174,7 @@ export default function FAQ() {
                                         className={`overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
                                             }`}
                                     >
-                                        <div className="border-t border-[#8b6b1f]/35 px-5 py-4 sm:px-6">
+                                        <div className="border-t border-[#8b6b1f]/35 px-4 py-4 sm:px-6">
                                             <p className="text-sm leading-7 text-slate-300 sm:text-base">
                                                 {item.answer}
                                             </p>

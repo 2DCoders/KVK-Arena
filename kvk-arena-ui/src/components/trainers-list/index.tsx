@@ -69,33 +69,34 @@ export default function TrainerLibraryModal({
       {/* Overlay */}
       <div
         onClick={onClose}
-        className={`absolute inset-0 backdrop-blur-sm transition-all duration-300 ${
-          animate ? "bg-black/40 opacity-100" : "bg-black/0 opacity-0"
-        }`}
+        className={`absolute inset-0 backdrop-blur-sm transition-all duration-300 ${animate ? "bg-black/40 opacity-100" : "bg-black/0 opacity-0"
+          }`}
       />
 
       {/* Modal */}
       <div
         className={`
-          absolute inset-4
-          bg-white
-          rounded-3xl
+          absolute
+  inset-0
+  md:inset-4
+  bg-white
+  rounded-none
+  md:rounded-3xl
           overflow-hidden
           shadow-2xl
           flex flex-col
           transition-all duration-500
           ease-[cubic-bezier(0.16,1,0.3,1)]
-          ${
-            animate
-              ? "opacity-100 translate-y-0 scale-100"
-              : "opacity-0 translate-y-10 scale-[0.98]"
+          ${animate
+            ? "opacity-100 translate-y-0 scale-100"
+            : "opacity-0 translate-y-10 scale-[0.98]"
           }
         `}
       >
         {/* Header */}
-        <div className="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+        <div className="border-b border-gray-100 px-4 sm:px-6 py-4 flex items-start sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900">
               Trainers Library
             </h2>
             <p className="text-sm text-gray-500 mt-1">
@@ -105,15 +106,24 @@ export default function TrainerLibraryModal({
 
           <button
             onClick={onClose}
-            className="w-10 h-10 rounded-xl cursor-pointer bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"
+            className="
+w-11 h-11
+sm:w-10 sm:h-10
+rounded-xl
+cursor-pointer
+bg-gray-100
+hover:bg-gray-200
+flex items-center justify-center
+transition
+"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Search */}
-        <div className="px-6 py-4 border-b border-gray-100">
-          <div className="relative max-w-sm">
+        <div className="px-4 sm:px-6 py-4 border-b border-gray-100">
+          <div className="relative w-full sm:max-w-sm">
             <Search
               size={16}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -128,13 +138,13 @@ export default function TrainerLibraryModal({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5">
           <div className="flex justify-between mb-4 text-sm text-gray-500">
             <p>{filteredTrainers.length} Trainers Found</p>
           </div>
 
           {/* Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-5">
             {filteredTrainers.map((trainer) => (
               <div
                 key={trainer.id}
@@ -179,9 +189,9 @@ export default function TrainerLibraryModal({
                 </div>
 
                 {/* Content */}
-                <div className="p-4">
+                <div className="p-3 sm:p-4">
                   <div className="flex justify-between items-center">
-                    <h3 className="font-bold text-sm text-gray-900 truncate">
+                    <h3 className="font-bold text-sm sm:text-base text-gray-900 truncate">
                       {trainer.firstName} {trainer.lastName}
                     </h3>
 
@@ -217,7 +227,7 @@ export default function TrainerLibraryModal({
 
           {/* Empty state */}
           {filteredTrainers.length === 0 && (
-            <div className="text-center py-20 text-gray-400">
+            <div className="text-center py-12 sm:py-20 text-gray-400">
               No trainers found
             </div>
           )}

@@ -25,35 +25,34 @@ const features = [
 
 export default function GymFeatures() {
     return (
-        <section className="py-20 bg-white relative overflow-hidden">
+        <section className="py-12 sm:py-16 lg:py-20 bg-white relative overflow-hidden">
 
             {/* Background glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[#296BE1]/10 blur-3xl rounded-full" />
-
-            <div className="max-w-7xl mx-auto px-6 relative z-10">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[280px] h-[280px] sm:w-[400px] sm:h-[400px] lg:w-[500px] lg:h-[500px] bg-[#296BE1]/10 blur-3xl rounded-full" />
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
                 {/* Header */}
                 <div className="text-center max-w-3xl mx-auto mb-14">
                     <h2
                         data-aos="fade-up"
                         data-aos-delay="100"
-                        className="text-3xl font-extrabold sm:text-4xl lg:text-5xl bg-linear-to-r from-black via-[#2d86fc] to-[#2d86fc] bg-clip-text text-transparent"
+                        className="text-2xl sm:text-4xl lg:text-5xl font-extrabold bg-linear-to-r from-black via-[#2d86fc] to-[#2d86fc] bg-clip-text text-transparent"
                     >
-                        Strong, Reliable, and <br />
+                        Strong, Reliable, and
                         Constantly Supporting You
                     </h2>
 
                     <p
                         data-aos="fade-up"
                         data-aos-delay="150"
-                        className="mt-4 text-base text-slate-500"
+                        className="mt-4 text-sm sm:text-base text-slate-500 max-w-2xl mx-auto"
                     >
                         Reach fitness objectives through expert advice, smart tracking, and genuine, enduring results.
                     </p>
                 </div>
 
                 {/* Grid */}
-                <div data-aos="zoom-in" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div data-aos="zoom-in" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                     {features.map((item, index) => (
                         <div
                             key={index}
@@ -64,7 +63,7 @@ export default function GymFeatures() {
                                 backdrop-blur-xl
                                 border border-gray-100
                                 rounded-2xl
-                                p-6
+                                p-5 sm:p-6
                                 shadow-sm
                                 hover:shadow-[0_20px_50px_rgba(41,107,225,0.15)]
                                 hover:-translate-y-2
@@ -74,12 +73,12 @@ export default function GymFeatures() {
                         >
 
                             {/* Icon */}
-                            <div className="w-14 h-14 rounded-2xl bg-[#296BE1]/10 flex items-center justify-center mb-5 group-hover:bg-[#296BE1] transition">
-                                <item.icon className="text-[#296BE1] group-hover:text-white transition" />
+                            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#296BE1]/10 flex items-center justify-center mb-5 group-hover:bg-[#296BE1] transition">
+                                <item.icon className="w-5 h-5 sm:w-6 sm:h-6 text-[#296BE1] group-hover:text-white transition" />
                             </div>
 
                             {/* Title */}
-                            <h3 className="text-lg font-bold text-black mb-2">
+                            <h3 className="text-base sm:text-lg font-bold text-black mb-2">
                                 {item.title}
                             </h3>
 
