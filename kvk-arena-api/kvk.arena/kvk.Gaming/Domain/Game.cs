@@ -5,6 +5,8 @@ namespace kvk.Gaming.Domain;
 public class Game : AuditableEntity
 {
     public Guid GamingCategoryId { get; set; }
+    
+    public GamingCategory GamingCategory { get; set; } = null!;
 
     public string Name { get; set; }
 

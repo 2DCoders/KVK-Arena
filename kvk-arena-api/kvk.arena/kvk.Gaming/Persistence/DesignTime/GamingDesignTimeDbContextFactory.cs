@@ -52,7 +52,7 @@ public class GamingDesignTimeDbContextFactory : IDesignTimeDbContextFactory<Gami
                                ?? Environment.GetEnvironmentVariable("DefaultConnection");
         }
 
-        optionsBuilder.UseNpgsql(connectionString, b => b.MigrationsAssembly("kvk.Gym"));
+        optionsBuilder.UseNpgsql(connectionString, b => b.MigrationsAssembly("kvk.Gaming"));
 
         // Provide minimal services required by GamingDbContext constructor at design-time.
         var tenantService = new DesignTimeTenantService();
