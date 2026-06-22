@@ -12,6 +12,7 @@ using kvk.Gym.Options;
 using kvk.Gym.Services;
 using kvk.Financial;
 using kvk.Badminton;
+using kvk.Gaming;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Microsoft.Extensions.Options;
@@ -138,6 +139,9 @@ financialInitializer.RegisterModule(builder.Services, builder.Configuration);
 
 var badmintonInitializer = new BadmintonModuleInitializer();
 badmintonInitializer.RegisterModule(builder.Services, builder.Configuration);
+
+var gamingInitializer  = new GamingModuleInitializer();
+gamingInitializer.RegisterModule(builder.Services, builder.Configuration);
 
 
 

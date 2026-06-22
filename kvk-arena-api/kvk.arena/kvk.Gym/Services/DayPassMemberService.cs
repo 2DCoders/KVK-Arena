@@ -47,7 +47,7 @@ public class DayPassMemberService : IDayPassMemberService
             {
                 Name = request.Name,
                 MobileNumber = request.MobileNumber,
-                Date = request.Date,
+                Date = DateTime.UtcNow.Date,
                 Amount = request.Amount,
                 MembershipPlanId = request.MembershipPlanId,
                 PaymentType = request.PaymentType,

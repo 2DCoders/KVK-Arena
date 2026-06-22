@@ -16,6 +16,7 @@ public class GenericDayEndService<TContext, TEntity> : IDayEndService
     private readonly Func<TContext, DbSet<TEntity>> _setSelector;
     private readonly Func<DayEnd, TEntity> _toEntity;
     private readonly Func<TEntity, DayEnd> _toDto;
+    private readonly Func<TEntity, TEntity>? _preSaveEntityModifier;
     private readonly string _currentDatePropertyName;
 
     public GenericDayEndService(
@@ -23,28 +24,41 @@ public class GenericDayEndService<TContext, TEntity> : IDayEndService
         Func<TContext, DbSet<TEntity>> setSelector,
         Func<DayEnd, TEntity> toEntity,
         Func<TEntity, DayEnd> toDto,
-        string currentDatePropertyName = "CurrentDate")
+        string currentDatePropertyName = "CurrentDate",
+        Func<TEntity, TEntity>? preSaveEntityModifier = null)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
         _setSelector = setSelector ?? throw new ArgumentNullException(nameof(setSelector));
         _toEntity = toEntity ?? throw new ArgumentNullException(nameof(toEntity));
         _toDto = toDto ?? throw new ArgumentNullException(nameof(toDto));
         _currentDatePropertyName = currentDatePropertyName ?? throw new ArgumentNullException(nameof(currentDatePropertyName));
+        _preSaveEntityModifier = preSaveEntityModifier;
     }
 
     public async Task<Result> CreateDayEndAsync(DayEnd dayEnd, CancellationToken cancellationToken = default)
     {
-        // dayEnd is non-nullable in the contract; validate required fields
-        if (string.IsNullOrWhiteSpace(dayEnd.Remark))
-            return Result.Failure("Remark is required");
+        // Delete existing records for the current date before adding a new one
+        var existingRecords = await _setSelector(_db)
+            .ToListAsync(cancellationToken);
 
-        // compute discrepancy
-        dayEnd.Discrepancy = dayEnd.ActualCashCount - dayEnd.ExpectedCashTotal;
+        if (existingRecords.Any())
+        {
+            _setSelector(_db).RemoveRange(existingRecords);
+        }
 
         var entity = _toEntity(dayEnd);
         await _setSelector(_db).AddAsync(entity, cancellationToken);
-        await _db.SaveChangesAsync(cancellationToken);
 
+        try
+        {
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+      
         return Result.Success("Day end saved");
     }
 
@@ -64,6 +78,10 @@ public class GenericDayEndService<TContext, TEntity> : IDayEndService
 
         return list.Select(e => _toDto(e)).ToList();
     }
+    
+    
+    
+    
+    
+    
 }
-
-

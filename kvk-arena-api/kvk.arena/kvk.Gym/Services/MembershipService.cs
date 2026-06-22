@@ -110,9 +110,7 @@ public class MembershipService : IMembershipService
                     MembershipId = member.Id,
                     Amount = plan.Price,
                     PaymentType = kvk.Gym.Enums.PaymentType.Cash,
-                    PaymentStatus = kvk.Gym.Enums.PaymentStatus.Pending,
-                    MemberShipStartDate = startDate,
-                    MemberShipEndDate = startDate.AddDays(plan.DurationInDays)
+                    PaymentStatus = kvk.Gym.Enums.PaymentStatus.Pending
                 };
 
                 _db.MemberPayments.Add(payment);

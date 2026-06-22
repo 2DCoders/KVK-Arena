@@ -117,13 +117,9 @@ public class PaymentService : IPaymentService
                     await _db.MembershipPlans.FirstOrDefaultAsync(mp => mp.Id == member.MembershipPlanId,
                         cancellationToken);
 
-                if (request.StartDate == null)
-                {
-                    memberPayment.MemberShipStartDate = memberPayment.MemberShipEndDate;
-                    memberPayment.MemberShipEndDate =
-                        memberPayment.MemberShipStartDate?.AddDays(membershipPlan?.DurationInDays ?? 30);
-                    memberPayment.MemberShipRenewalDate = DateTime.UtcNow;
-                }
+                memberPayment.MemberShipStartDate = memberPayment.MemberShipEndDate ?? DateTime.UtcNow;
+                memberPayment.MemberShipEndDate = memberPayment.MemberShipStartDate?.AddDays(membershipPlan?.DurationInDays ?? 30);
+                memberPayment.MemberShipRenewalDate = DateTime.UtcNow;
 
                 memberPayment.PaymentType = request.PaymentType;
                 memberPayment.PaymentStatus = PaymentStatus.Paid;
@@ -230,7 +226,7 @@ public class PaymentService : IPaymentService
 
             var payments = await _db.PaymentRecords
                 .AsNoTracking()
-                .Where(p => p.CreatedAt >= fromDate && p.CreatedAt <= toDate)
+                .Where(p => p.CreatedAt.Date >= fromDate.Date && p.CreatedAt.Date <= toDate.Date && p.PaymentStatus == PaymentStatus.Paid)
                 .Include(p => p.Membership)
                 .OrderByDescending(p => p.CreatedAt)
                 .Select(p => new PaymentResponse

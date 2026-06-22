@@ -13,4 +13,7 @@ public class GamingCategory : AuditableEntity
 
     public bool HasGames { get; set; }
     
+    public bool IsActive { get; set; }
+
+    
 }

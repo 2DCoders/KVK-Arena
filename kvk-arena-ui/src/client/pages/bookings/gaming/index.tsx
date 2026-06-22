@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Monitor, Gamepad2, Trophy, Film, Minus, Plus } from "lucide-react";
+import { getNextWorkingDays } from "@/services/holidays-api";
 
 const services = [
   {
@@ -85,6 +86,41 @@ export default function BookingGaming() {
   const [extraConsoles, setExtraConsoles] = useState(0);
   const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
   const [selectedResources, setSelectedResources] = useState<string[]>([]);
+  const [workingDays, setWorkingDays] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchWorkingDays = async () => {
+      try {
+        const res = await getNextWorkingDays(new Date().toISOString().split("T")[0], 7);
+
+        const formattedDates = res.map(
+          (dateStr: string) => {
+            const date = new Date(dateStr);
+            const today = new Date();
+
+            return {
+              fullDate: dateStr,
+              day: date.toLocaleDateString("en-US", {
+                weekday: "short",
+              }),
+              date: date.getDate(),
+              month: date.toLocaleDateString("en-US", {
+                month: "short",
+              }),
+              isToday:
+                date.toDateString() === today.toDateString(),
+            };
+          }
+        );
+
+        setWorkingDays(formattedDates);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchWorkingDays();
+  }, []);
 
   const toggleSlot = (index: number) => {
     const availability = getSlotAvailability(index);
@@ -128,17 +164,9 @@ export default function BookingGaming() {
     return `${formatHour(firstSlot.start)} - ${formatHour(lastSlot.end)}`;
   }, [selectedSlots]);
 
-  const dates = useMemo(() => {
-    return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date();
-      d.setDate(d.getDate() + i);
-      return d;
-    });
-  }, []);
-
   const selectedDateString =
     selectedDate !== null
-      ? dates[selectedDate].toISOString().split("T")[0]
+      ? workingDays[selectedDate]?.fullDate.split("T")[0]
       : null;
 
   const isSlotDisabled = (
@@ -204,7 +232,12 @@ export default function BookingGaming() {
     }
 
     return amount;
-  }, [selectedService, extraConsoles]);
+  }, [
+    selectedService,
+    selectedSlots,
+    selectedResources,
+    extraConsoles,
+  ]);
 
   return (
     <section className="bg-gray-50 pt-25 pb-10">
@@ -245,11 +278,10 @@ export default function BookingGaming() {
                         setExtraConsoles(0);
                         setSelectedResources([]);
                       }}
-                      className={`text-left cursor-pointer rounded-2xl border-2 p-4 transition-all ${
-                        selectedService?.id === service.id
-                          ? "border-red-500 bg-red-50 shadow-md"
-                          : "border-gray-200 bg-white hover:border-red-300"
-                      }`}
+                      className={`text-left cursor-pointer rounded-2xl border-2 p-4 transition-all ${selectedService?.id === service.id
+                        ? "border-red-500 bg-red-50 shadow-md"
+                        : "border-gray-200 bg-white hover:border-red-300"
+                        }`}
                     >
                       <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center mb-3">
                         <Icon className="w-5 h-5 text-red-600" />
@@ -274,50 +306,57 @@ export default function BookingGaming() {
 
             {/* Dates */}
             <div
-              className={`transition-all ${
-                !selectedService ? "opacity-40 pointer-events-none" : ""
-              }`}
+              className={`transition-all ${!selectedService ? "opacity-40 pointer-events-none" : ""
+                }`}
             >
               <h3 className="text-lg font-semibold mb-3">Select Date</h3>
 
-              <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
-                {dates.map((date, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      setSelectedDate(index);
-                      setSelectedSlots([]);
-                      setSelectedResources([]);
-                    }}
-                    className={`h-20 cursor-pointer rounded-xl border-2 flex flex-col items-center justify-center transition ${
-                      selectedDate === index
+              {workingDays.length === 0 ? (
+                <div className="text-sm text-gray-500">
+                  Loading available dates...
+                </div>
+              ) : (
+                <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
+                  {workingDays.map((date, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        setSelectedDate(index);
+                        setSelectedSlots([]);
+                        setSelectedResources([]);
+                      }}
+                      className={`h-20 cursor-pointer rounded-xl border-2 flex flex-col items-center justify-center transition ${selectedDate === index
                         ? "border-red-500 bg-red-500 text-white"
-                        : "border-gray-200 bg-white"
-                    }`}
-                  >
-                    <p className="text-[10px]">
-                      {date.toLocaleDateString("en-US", {
-                        weekday: "short",
-                      })}
-                    </p>
+                        : "border-gray-200 bg-white hover:border-red-300"
+                        }`}
+                    >
+                      {date.isToday && (
+                        <div className="text-[9px] font-bold mb-1">
+                          TODAY
+                        </div>
+                      )}
 
-                    <p className="text-lg font-bold">{date.getDate()}</p>
+                      <p className="text-[10px] font-semibold">
+                        {date.day}
+                      </p>
 
-                    <p className="text-[10px]">
-                      {date.toLocaleDateString("en-US", {
-                        month: "short",
-                      })}
-                    </p>
-                  </button>
-                ))}
-              </div>
+                      <p className="text-lg font-bold">
+                        {date.date}
+                      </p>
+
+                      <p className="text-[10px]">
+                        {date.month}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Slots */}
             <div
-              className={`transition-all ${
-                selectedDate === null ? "opacity-40 pointer-events-none" : ""
-              }`}
+              className={`transition-all ${selectedDate === null ? "opacity-40 pointer-events-none" : ""
+                }`}
             >
               <h3 className="text-lg font-semibold mb-3">Select Time Slot</h3>
 
@@ -340,18 +379,16 @@ export default function BookingGaming() {
                         setSelectedResources([]);
                       }}
                       className={`h-16 cursor-pointer rounded-lg border text-xs font-medium transition
-                      ${
-                        selected
+                      ${selected
                           ? "bg-red-500 border-red-500 text-white"
                           : availability.full
                             ? "bg-gray-200 border-gray-300 text-gray-500"
                             : "bg-white border-gray-200 hover:border-red-300"
-                      }
-                      ${
-                        disabled
+                        }
+                      ${disabled
                           ? "opacity-40 cursor-not-allowed"
                           : ""
-                      }
+                        }
                     `}
                     >
                       <div className="leading-tight">
@@ -400,16 +437,14 @@ export default function BookingGaming() {
                           }
                         }}
                         className={`h-12 cursor-pointer rounded-xl border font-medium transition
-                        ${
-                          selected
+                        ${selected
                             ? "bg-red-500 text-white border-red-500"
                             : "bg-white border-gray-200"
-                        }
-                        ${
-                          !allSelectedSlotsAvailable
+                          }
+                        ${!allSelectedSlotsAvailable
                             ? "opacity-40 cursor-not-allowed"
                             : ""
-                        }
+                          }
                       `}
                       >
                         {resource}
@@ -423,11 +458,10 @@ export default function BookingGaming() {
             {/* PS5 Extras */}
             {selectedService?.id === "ps5" && (
               <div
-                className={`bg-white border cursor-pointer border-gray-200 rounded-2xl p-4 transition-all ${
-                  selectedSlots.length === 0
-                    ? "opacity-40 pointer-events-none"
-                    : ""
-                }`}
+                className={`bg-white border cursor-pointer border-gray-200 rounded-2xl p-4 transition-all ${selectedSlots.length === 0
+                  ? "opacity-40 pointer-events-none"
+                  : ""
+                  }`}
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -501,7 +535,9 @@ export default function BookingGaming() {
                   <p className="text-xs text-gray-500">Date</p>
                   <p className="font-semibold">
                     {selectedDate !== null
-                      ? dates[selectedDate].toLocaleDateString()
+                      ? new Date(
+                        workingDays[selectedDate]?.fullDate
+                      ).toLocaleDateString()
                       : "-"}
                   </p>
                 </div>
