@@ -1,6 +1,7 @@
 using kvk.BuildingBlocks.Common;
 using kvk.BuildingBlocks.Services;
 using kvk.Gym.Domain;
+using kvk.BuildingBlocks.Interfaces; // Added for IHolidayService
 
 namespace kvk.Gym.Services;
 
@@ -9,37 +10,37 @@ namespace kvk.Gym.Services;
 /// </summary>
 public class GymDayEndService : GenericDayEndService<GymDbContext, DayEndRecord>
 {
-	public GymDayEndService(GymDbContext db)
-		: base(
-			db,
-			ctx => ctx.Set<DayEndRecord>(),
-			dto => new DayEndRecord
-			{
-				CurrentDate = dto.CurrentDate.Date,
-				NextWorkingDate = dto.NextWorkingDate.Date,
-				CashFromPrevDay = dto.CashFromPrevDay,
-				ExpectedCashTotal = dto.ExpectedCashTotal,
-				ActualCashCount = dto.ActualCashCount,
-				// discrepancy will be set by the generic service before mapping, but keep mapping
-				Discrepancy = dto.Discrepancy,
-				Remark = dto.Remark,
-				HoldForNextDay = dto.HoldForNextDay,
-				CreatedAt = DateTime.UtcNow
-			},
-			entity => new DayEnd
-			{
-				CurrentDate = entity.CurrentDate,
-				NextWorkingDate = entity.NextWorkingDate,
-				CashFromPrevDay = entity.CashFromPrevDay,
-				ExpectedCashTotal = entity.ExpectedCashTotal,
-				ActualCashCount = entity.ActualCashCount,
-				Discrepancy = entity.Discrepancy,
-				Remark = entity.Remark,
-				HoldForNextDay = entity.HoldForNextDay
-			},
-			currentDatePropertyName: "CurrentDate")
-	{
-	}
+    private readonly IHolidayService _holidayService; // Declare private field
+
+    public GymDayEndService(GymDbContext db, IHolidayService holidayService) // Inject IHolidayService
+        : base(
+            db,
+            ctx => ctx.Set<DayEndRecord>(),
+            dto => new DayEndRecord
+            {
+                CurrentDate = holidayService.GetNextWorkingDayAsync(dto.CurrentDate).Result,
+                //get from identity.Holiday table
+                NextWorkingDate = holidayService
+                    .GetNextWorkingDayAsync(holidayService.GetNextWorkingDayAsync(dto.CurrentDate).Result).Result,
+                CashFromPrevDay = dto.HoldForNextDay,
+                ExpectedCashTotal = dto.ExpectedCashTotal,
+                ActualCashCount = dto.ActualCashCount,
+                Discrepancy = dto.Discrepancy,
+                Remark = dto.Remark ?? string.Empty,
+                HoldForNextDay = 0,
+                CreatedAt = DateTime.Now
+            },
+            entity => new DayEnd
+            {
+                CurrentDate = entity.CurrentDate,
+                ExpectedCashTotal = entity.ExpectedCashTotal,
+                ActualCashCount = entity.ActualCashCount,
+                Discrepancy = entity.Discrepancy,
+                Remark = entity.Remark,
+                HoldForNextDay = entity.HoldForNextDay
+            },
+            currentDatePropertyName: "CurrentDate")
+    {
+        _holidayService = holidayService; // Assign injected service
+    }
 }
-
-

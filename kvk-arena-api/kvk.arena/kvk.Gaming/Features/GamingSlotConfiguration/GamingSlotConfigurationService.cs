@@ -1,6 +1,4 @@
 using kvk.BuildingBlocks.Common;
-using kvk.Gaming.Domain;
-using kvk.Gaming;
 using kvk.Gaming.Interfaces;
 using Microsoft.EntityFrameworkCore;
 

@@ -21,7 +21,7 @@ public class DayEndController : ControllerBase
         if (!result.Succeeded)
             return BadRequest(result);
 
-        return CreatedAtAction(null, result);
+        return Ok(result);
     }
 
     // GET /api/gym/dayend?date=2026-05-24
@@ -32,5 +32,3 @@ public class DayEndController : ControllerBase
         return Ok(list);
     }
 }
-
-

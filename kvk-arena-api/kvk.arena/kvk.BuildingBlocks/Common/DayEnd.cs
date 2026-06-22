@@ -9,12 +9,6 @@ public class DayEnd
     // The date the report is for (typically the current business date)
     public DateTime CurrentDate { get; set; }
 
-    // The next working date (e.g. next business day)
-    public DateTime NextWorkingDate { get; set; }
-
-    // Cash brought forward from the previous day
-    public decimal CashFromPrevDay { get; set; }
-
     // Expected total cash (after today's takings)
     public decimal ExpectedCashTotal { get; set; }
 
@@ -25,7 +19,7 @@ public class DayEnd
     public decimal Discrepancy { get; set; }
 
     // Remarks are required for auditing (e.g. explanation of discrepancy)
-    public string Remark { get; set; } = string.Empty;
+    public string? Remark { get; set; } = string.Empty;
 
     // Amount to hold for the next day (float to next day's float)
     public decimal HoldForNextDay { get; set; }
