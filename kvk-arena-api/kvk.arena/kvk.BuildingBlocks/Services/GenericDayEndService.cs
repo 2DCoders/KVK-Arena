@@ -39,7 +39,6 @@ public class GenericDayEndService<TContext, TEntity> : IDayEndService
     {
         // Delete existing records for the current date before adding a new one
         var existingRecords = await _setSelector(_db)
-            .Where(e => EF.Property<DateTime>(e, _currentDatePropertyName) == dayEnd.CurrentDate.Date)
             .ToListAsync(cancellationToken);
 
         if (existingRecords.Any())

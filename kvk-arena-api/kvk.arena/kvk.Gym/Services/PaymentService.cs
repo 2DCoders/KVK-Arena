@@ -117,13 +117,9 @@ public class PaymentService : IPaymentService
                     await _db.MembershipPlans.FirstOrDefaultAsync(mp => mp.Id == member.MembershipPlanId,
                         cancellationToken);
 
-                if (request.StartDate == null)
-                {
-                    memberPayment.MemberShipStartDate = memberPayment.MemberShipEndDate;
-                    memberPayment.MemberShipEndDate =
-                        memberPayment.MemberShipStartDate?.AddDays(membershipPlan?.DurationInDays ?? 30);
-                    memberPayment.MemberShipRenewalDate = DateTime.UtcNow;
-                }
+                memberPayment.MemberShipStartDate = memberPayment.MemberShipEndDate ?? DateTime.UtcNow;
+                memberPayment.MemberShipEndDate = memberPayment.MemberShipStartDate?.AddDays(membershipPlan?.DurationInDays ?? 30);
+                memberPayment.MemberShipRenewalDate = DateTime.UtcNow;
 
                 memberPayment.PaymentType = request.PaymentType;
                 memberPayment.PaymentStatus = PaymentStatus.Paid;
