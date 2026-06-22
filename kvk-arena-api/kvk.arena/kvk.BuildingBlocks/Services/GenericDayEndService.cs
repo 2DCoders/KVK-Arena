@@ -37,12 +37,15 @@ public class GenericDayEndService<TContext, TEntity> : IDayEndService
 
     public async Task<Result> CreateDayEndAsync(DayEnd dayEnd, CancellationToken cancellationToken = default)
     {
-        // dayEnd is non-nullable in the contract; validate required fields
-        // if (string.IsNullOrWhiteSpace(dayEnd.Remark))
-        //     return Result.Failure("Remark is required");
+        // Delete existing records for the current date before adding a new one
+        var existingRecords = await _setSelector(_db)
+            .Where(e => EF.Property<DateTime>(e, _currentDatePropertyName) == dayEnd.CurrentDate.Date)
+            .ToListAsync(cancellationToken);
 
-        // compute discrepancy
-        // dayEnd.Discrepancy = dayEnd.ActualCashCount - dayEnd.ExpectedCashTotal;
+        if (existingRecords.Any())
+        {
+            _setSelector(_db).RemoveRange(existingRecords);
+        }
 
         var entity = _toEntity(dayEnd);
         await _setSelector(_db).AddAsync(entity, cancellationToken);
@@ -57,7 +60,6 @@ public class GenericDayEndService<TContext, TEntity> : IDayEndService
             throw;
         }
       
-
         return Result.Success("Day end saved");
     }
 
