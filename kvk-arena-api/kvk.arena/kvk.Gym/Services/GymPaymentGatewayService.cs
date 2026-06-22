@@ -89,7 +89,10 @@ public class GymPaymentGatewayService : IGymPaymentGatewayService
 
 
         var memberPayment =
-            await _db.MemberPayments.FirstOrDefaultAsync(p => p.TransactionReference == request.OrderId);
+            await _db.MemberPayments
+                .Include(p => p.Membership)
+                .ThenInclude(m => m.MembershipPlan)
+                .FirstOrDefaultAsync(p => p.TransactionReference == request.OrderId);
 
         //updatePayment record as well
 
@@ -128,8 +131,16 @@ public class GymPaymentGatewayService : IGymPaymentGatewayService
         if (memberPayment.Amount != request.PayhereAmount)
             return;
 
+        //need to discuss
         memberPayment.PaymentStatus = PaymentStatus.Paid;
         memberPayment.TransactionReference = request.PaymentId;
+        memberPayment.MemberShipStartDate = DateTime.Now;
+        memberPayment.MemberShipEndDate = memberPayment.Membership?.MembershipPlan?.DurationInDays != null
+            ? memberPayment.MemberShipStartDate.Value.AddDays(memberPayment.Membership.MembershipPlan.DurationInDays)
+            : null;
+        memberPayment.MemberShipRenewalDate = memberPayment.Membership?.MembershipPlan?.DurationInDays != null
+            ? memberPayment.MemberShipStartDate.Value.AddDays(memberPayment.Membership.MembershipPlan.DurationInDays)
+            : null;
         paymentRecord.PaymentStatus = PaymentStatus.Paid;
 
 
