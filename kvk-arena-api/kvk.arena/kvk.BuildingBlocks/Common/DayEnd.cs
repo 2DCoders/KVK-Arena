@@ -23,4 +23,6 @@ public class DayEnd
 
     // Amount to hold for the next day (float to next day's float)
     public decimal HoldForNextDay { get; set; }
+    
+    public decimal CashFromPrevDay { get; set;}
 }

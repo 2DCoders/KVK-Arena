@@ -27,7 +27,6 @@ public class GymDayEndService : GenericDayEndService<GymDbContext, DayEndRecord>
                 ActualCashCount = dto.ActualCashCount,
                 Discrepancy = dto.Discrepancy,
                 Remark = dto.Remark ?? string.Empty,
-                HoldForNextDay = 0,
                 CreatedAt = DateTime.Now
             },
             entity => new DayEnd
@@ -37,7 +36,7 @@ public class GymDayEndService : GenericDayEndService<GymDbContext, DayEndRecord>
                 ActualCashCount = entity.ActualCashCount,
                 Discrepancy = entity.Discrepancy,
                 Remark = entity.Remark,
-                HoldForNextDay = entity.HoldForNextDay
+                HoldForNextDay = entity.CashFromPrevDay,
             },
             currentDatePropertyName: "CurrentDate")
     {
