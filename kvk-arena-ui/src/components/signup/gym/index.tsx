@@ -713,7 +713,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                         )}
 
                         {/* STEP 2 */}
-                        {step === 2 && (
+                        {authMode === "signup" && step === 2 && (
                             <>
                                 {/* HEADER */}
                                 <div className="mb-4">

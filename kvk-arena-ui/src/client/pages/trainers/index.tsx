@@ -185,12 +185,11 @@ export default function Trainers() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-slate-100">
-                      <img
-                        src="/anonymous-avatar.png"
-                        alt="Anonymous Trainer"
-                        className="w-32 h-32 opacity-70"
-                      />
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#296BE1] to-blue-500">
+                      <span className="text-5xl font-bold text-white">
+                        {trainer.firstName?.charAt(0).toUpperCase()}
+                        {trainer.lastName?.charAt(0).toUpperCase()}
+                      </span>
                     </div>
                   )}
 
@@ -371,8 +370,8 @@ export default function Trainers() {
                   transition
                   cursor-pointer
                   flex items-center justify-center
-                "              
-                >
+                "
+              >
                 ✕
               </button>
 

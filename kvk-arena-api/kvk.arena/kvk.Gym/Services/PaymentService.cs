@@ -226,7 +226,11 @@ public class PaymentService : IPaymentService
 
             var payments = await _db.PaymentRecords
                 .AsNoTracking()
+<<<<<<< HEAD
                 .Where(p => p.CreatedAt.Date >= fromDate.Date && p.CreatedAt.Date <= toDate.Date)
+=======
+                .Where(p => p.CreatedAt.Date >= fromDate.Date && p.CreatedAt.Date <= toDate.Date && p.PaymentStatus == PaymentStatus.Paid)
+>>>>>>> aa7cc0aaf31bfff99214c1f15355504b983b1925
                 .Include(p => p.Membership)
                 .OrderByDescending(p => p.CreatedAt)
                 .Select(p => new PaymentResponse
