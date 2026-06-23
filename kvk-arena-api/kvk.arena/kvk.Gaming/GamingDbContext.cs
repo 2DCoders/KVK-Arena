@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 namespace kvk.Gaming;
 
 public class GamingDbContext(
-    DbContextOptions options,
+    DbContextOptions<GamingDbContext> options,
     ITenantService tenantService,
     ILogger<AppDbContextBase> logger,
     IHttpContextAccessor? httpContextAccessor = null)

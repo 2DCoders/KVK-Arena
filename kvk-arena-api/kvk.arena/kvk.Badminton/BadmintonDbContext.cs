@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace kvk.Badminton;
 
 public class BadmintonDbContext(
-    DbContextOptions options,
+    DbContextOptions<BadmintonDbContext> options,
     ITenantService tenantService,
     ILogger<AppDbContextBase> logger,
     IHttpContextAccessor? httpContextAccessor = null)
