@@ -21,7 +21,7 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
             .FirstOrDefaultAsync(x => x.CourtId == courtId, cancellationToken);
 
         if (config == null)
-            throw new KeyNotFoundException("Configuration not found for the specified court");
+            return null;
 
         return MapToResponse(config);
     }
