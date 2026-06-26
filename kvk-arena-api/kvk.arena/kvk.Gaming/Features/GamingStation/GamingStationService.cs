@@ -1,6 +1,8 @@
+using kvk.Badminton.Enums;
 using kvk.BuildingBlocks.Common;
 using kvk.Gaming.Domain;
 using kvk.Gaming;
+using kvk.Gaming.Enums;
 using kvk.Gaming.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -44,31 +46,11 @@ public class GamingStationService : IGamingStationService
         if (await _db.GamingStations.AnyAsync(gs => gs.GamingCategoryId == request.GamingCategoryId && gs.Name == request.Name, cancellationToken))
             return Result.Failure($"Gaming station with name '{request.Name}' already exists in category '{gamingCategory.Name}'.");
 
-        // Handle GameId based on GamingCategory.HasGames
-        if (gamingCategory.HasGames)
-        {
-            if (request.GameId == null || request.GameId == Guid.Empty)
-                return Result.Failure($"Gaming category '{gamingCategory.Name}' requires a Game to be selected.");
-
-            var game = await _db.Games.FindAsync(new object[] { request.GameId.Value }, cancellationToken);
-            if (game == null)
-                return Result.Failure($"Game with ID '{request.GameId}' not found.");
-            
-            if (!game.IsActive)
-                return Result.Failure($"Game '{game.Name}' is inactive. Cannot create gaming station with an inactive game.");
-        }
-        else // Category does not have games (e.g., Pool)
-        {
-            if (request.GameId != null && request.GameId != Guid.Empty)
-                return Result.Failure($"Gaming category '{gamingCategory.Name}' does not support game selection.");
-        }
-
         try
         {
             var gamingStation = new Domain.GamingStation
             {
                 GamingCategoryId = request.GamingCategoryId,
-                GameId = request.GameId ?? Guid.Empty, // Set to Guid.Empty if no game is selected
                 StationCode = request.StationCode,
                 Name = request.Name,
                 IsActive = request.IsActive
@@ -82,8 +64,6 @@ public class GamingStationService : IGamingStationService
                 Id = gamingStation.Id,
                 GamingCategoryId = gamingStation.GamingCategoryId,
                 GamingCategoryName = gamingCategory.Name,
-                GameId = gamingStation.GameId != Guid.Empty ? gamingStation.GameId : null,
-                GameName = gamingStation.GameId != Guid.Empty ? _db.Games.Find(gamingStation.GameId)?.Name : null,
                 StationCode = gamingStation.StationCode,
                 Name = gamingStation.Name,
                 IsActive = gamingStation.IsActive,
@@ -137,34 +117,14 @@ public class GamingStationService : IGamingStationService
             return Result.Failure($"Gaming station with name '{request.Name}' already exists in category '{gamingCategory.Name}'.");
 
         // Category changes should not be allowed when the station has existing game mappings.
-        if (existingStation.GamingCategoryId != request.GamingCategoryId && existingStation.GameId != Guid.Empty)
+        if (existingStation.GamingCategoryId != request.GamingCategoryId)
         {
             return Result.Failure("Category change is not allowed for stations with existing game mappings.");
         }
-
-        // Handle GameId based on GamingCategory.HasGames
-        if (gamingCategory.HasGames)
-        {
-            if (request.GameId == null || request.GameId == Guid.Empty)
-                return Result.Failure($"Gaming category '{gamingCategory.Name}' requires a Game to be selected.");
-
-            var game = await _db.Games.FindAsync(new object[] { request.GameId.Value }, cancellationToken);
-            if (game == null)
-                return Result.Failure($"Game with ID '{request.GameId}' not found.");
-
-            if (!game.IsActive)
-                return Result.Failure($"Game '{game.Name}' is inactive. Cannot update gaming station with an inactive game.");
-        }
-        else // Category does not have games (e.g., Pool)
-        {
-            if (request.GameId != null && request.GameId != Guid.Empty)
-                return Result.Failure($"Gaming category '{gamingCategory.Name}' does not support game selection.");
-        }
-
+        
         try
         {
             existingStation.GamingCategoryId = request.GamingCategoryId;
-            existingStation.GameId = request.GameId ?? Guid.Empty;
             existingStation.StationCode = request.StationCode;
             existingStation.Name = request.Name;
             existingStation.IsActive = request.IsActive;
@@ -177,8 +137,6 @@ public class GamingStationService : IGamingStationService
                 Id = existingStation.Id,
                 GamingCategoryId = existingStation.GamingCategoryId,
                 GamingCategoryName = gamingCategory.Name,
-                GameId = existingStation.GameId != Guid.Empty ? existingStation.GameId : null,
-                GameName = existingStation.GameId != Guid.Empty ? _db.Games.Find(existingStation.GameId)?.Name : null,
                 StationCode = existingStation.StationCode,
                 Name = existingStation.Name,
                 IsActive = existingStation.IsActive,
@@ -202,7 +160,6 @@ public class GamingStationService : IGamingStationService
 
         var gamingStation = await _db.GamingStations
             .Include(gs => gs.GamingCategory)
-            .Include(gs => gs.Game)
             .AsNoTracking()
             .SingleOrDefaultAsync(gs => gs.Id == id, cancellationToken);
 
@@ -214,8 +171,6 @@ public class GamingStationService : IGamingStationService
             Id = gamingStation.Id,
             GamingCategoryId = gamingStation.GamingCategoryId,
             GamingCategoryName = gamingStation.GamingCategory.Name,
-            GameId = gamingStation.GameId != Guid.Empty ? gamingStation.GameId : null,
-            GameName = gamingStation.GameId != Guid.Empty ? gamingStation.Game?.Name : null,
             StationCode = gamingStation.StationCode,
             Name = gamingStation.Name,
             IsActive = gamingStation.IsActive,
@@ -228,7 +183,6 @@ public class GamingStationService : IGamingStationService
     {
         var query = _db.GamingStations
             .Include(gs => gs.GamingCategory)
-            .Include(gs => gs.Game)
             .AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
@@ -260,8 +214,6 @@ public class GamingStationService : IGamingStationService
             Id = gs.Id,
             GamingCategoryId = gs.GamingCategoryId,
             GamingCategoryName = gs.GamingCategory.Name,
-            GameId = gs.GameId != Guid.Empty ? gs.GameId : null,
-            GameName = gs.GameId != Guid.Empty ? gs.Game?.Name : null,
             StationCode = gs.StationCode,
             Name = gs.Name,
             IsActive = gs.IsActive,
@@ -277,7 +229,6 @@ public class GamingStationService : IGamingStationService
 
         var gamingStations = await _db.GamingStations
             .Include(gs => gs.GamingCategory)
-            .Include(gs => gs.Game)
             .AsNoTracking()
             .Where(gs => gs.GamingCategoryId == categoryId && gs.IsActive) // Only active stations in active listings
             .OrderBy(gs => gs.Name)
@@ -288,8 +239,6 @@ public class GamingStationService : IGamingStationService
             Id = gs.Id,
             GamingCategoryId = gs.GamingCategoryId,
             GamingCategoryName = gs.GamingCategory.Name,
-            GameId = gs.GameId != Guid.Empty ? gs.GameId : null,
-            GameName = gs.GameId != Guid.Empty ? gs.Game?.Name : null,
             StationCode = gs.StationCode,
             Name = gs.Name,
             IsActive = gs.IsActive,
@@ -309,9 +258,9 @@ public class GamingStationService : IGamingStationService
 
         // Prevent deletion of a Gaming Station if active future bookings exist.
         // TODO: Implement actual checks for active future bookings.
-        // var hasActiveBookings = await _db.Bookings.AnyAsync(b => b.GamingStationId == id && b.Status == BookingStatus.Active && b.EndTime > DateTime.UtcNow, cancellationToken);
-        // if (hasActiveBookings)
-        //     return Result.Failure("Cannot delete gaming station as it has active future bookings.");
+        var hasActiveBookings = await _db.GamingBookings.AnyAsync(b => b.GamingStationId == id && b.Status == GamingBookingStatus.Confirmed, cancellationToken);
+        if (hasActiveBookings)
+            return Result.Failure("Cannot delete gaming station as it has active future bookings.");
 
         // Prevent deletion of a Gaming Station if active slot configurations exist.
         // TODO: Implement actual checks for active slot configurations.
@@ -321,7 +270,7 @@ public class GamingStationService : IGamingStationService
 
         try
         {
-            gamingStation.IsActive = false; // Soft delete by setting IsActive to false
+            gamingStation.IsDeleted = false; // Soft delete by setting IsActive to false
             _db.GamingStations.Update(gamingStation);
             await _db.SaveChangesAsync(cancellationToken);
 

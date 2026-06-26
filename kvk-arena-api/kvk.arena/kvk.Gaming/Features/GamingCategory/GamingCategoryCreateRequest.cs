@@ -11,5 +11,4 @@ public class GamingCategoryCreateRequest
     [Required(ErrorMessage = "Code is required.")]
     public required string Code { get; set; }
 
-    public bool HasGames { get; set; }
 }

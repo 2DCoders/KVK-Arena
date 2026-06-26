@@ -4,14 +4,15 @@ namespace kvk.Gaming.Domain;
 
 public class GamingSlotConfiguration : AuditableEntity
 {
-    public Guid GamingStationId { get; set; }
-    public GamingStation GamingStation { get; set; } = null!;
+    public Guid GamingCategoryId { get; set; }
+    
+    public GamingCategory GamingCategory { get; set; }
 
-    public TimeSpan StartTime { get; set; }
-    public TimeSpan EndTime { get; set; }
+    public TimeOnly StartTime { get; set; }
+    public TimeOnly EndTime { get; set; }
     public int SlotDurationMinutes { get; set; } // Duration of each slot in minutes
     public int SlotGapMinutes { get; set; }     // Gap between slots in minutes
     public decimal Price { get; set; }          // Price per slot
 
-    public bool IsActive { get; set; }
+    public decimal? IsActive { get; set; }
 }

@@ -5,6 +5,7 @@ namespace kvk.Gaming.Features.GamingStation;
 
 [ApiController]
 [Route("api/gaming-m/gaming-stations")]
+//pc - 01,pc - 02,ps5
 public class GamingStationController : ControllerBase
 {
     private readonly GamingStationService _service;

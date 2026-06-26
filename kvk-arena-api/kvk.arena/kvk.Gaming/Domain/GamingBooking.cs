@@ -16,14 +16,13 @@ public class GamingBooking : AuditableEntity
     public Guid GamingSlotId { get; set; }
     public GamingSlot GamingSlot { get; set; } = null!; // Navigation property
 
-    public Guid? GameId { get; set; }
-    public Game? Game { get; set; } // Navigation property (nullable)
-
     public string CustomerName { get; set; } = null!;
 
     public string CustomerPhone { get; set; } = null!;
 
     public decimal Amount { get; set; }
+    
+    public DateOnly BookingDate { get; set; }
 
     public GamingBookingStatus Status { get; set; }
 }

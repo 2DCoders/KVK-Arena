@@ -7,5 +7,4 @@ public class ReplaceGamesForGamingStationRequest
     [Required(ErrorMessage = "Gaming Station ID is required.")]
     public Guid GamingStationId { get; set; }
 
-    public List<Guid> NewGameIds { get; set; } = new List<Guid>();
 }

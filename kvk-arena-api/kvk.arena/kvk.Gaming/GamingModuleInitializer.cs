@@ -17,24 +17,24 @@ public class GamingModuleInitializer : IModuleInitializer
 {
     public void RegisterModule(IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("BadmintonConnection")
+        var connectionString = configuration.GetConnectionString("GamingConnection")
                                ?? configuration.GetConnectionString("DefaultConnection");
 
         if (string.IsNullOrWhiteSpace(connectionString))
-            throw new InvalidOperationException("A connection string named 'GymConnection' or 'DefaultConnection' is required.");
+            throw new InvalidOperationException("A connection string named 'GamingConnection' or 'DefaultConnection' is required.");
 
         services.AddDbContext<GamingDbContext>(options => options.UseNpgsql(connectionString));
         
         // Register GamingCategoryService
         services.AddScoped<IGamingCategoryService,GamingCategoryService>();
         // Register GameService
-        services.AddScoped<IGameService,GameService>();
+        // services.AddScoped<IGameService,GameService>();
         // Register GamingStationService
         services.AddScoped<IGamingStationService, GamingStationService>();
         // Register GamingStationGameMappingService
-        services.AddScoped<IGamingStationGameMappingService, GamingStationGameMappingService>();
+        // services.AddScoped<IGamingStationGameMappingService, GamingStationGameMappingService>();
         // Register GamingSlotConfigurationService
-        services.AddScoped<IGamingSlotConfigurationService, GamingSlotConfigurationService>();
+        // services.AddScoped<IGamingSlotConfigurationService, GamingSlotConfigurationService>();
         // Register GamingSlotGenerationService
         services.AddScoped<IGamingSlotGenerationService, GamingSlotGenerationService>();
         // Register GamingBookingService

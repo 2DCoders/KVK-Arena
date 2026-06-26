@@ -6,8 +6,11 @@ public class CreateGamingBookingRequest
 {
     [Required(ErrorMessage = "Gaming Slot ID is required.")]
     public Guid GamingSlotId { get; set; }
+    
+    public DateOnly BookingDate { get; set; }
+    
+    public decimal Amount { get; set; }
 
-    public Guid? GameId { get; set; } // Optional, depending on category
 
     [Required(ErrorMessage = "Customer Name is required.")]
     [StringLength(100, ErrorMessage = "Customer Name cannot exceed 100 characters.")]

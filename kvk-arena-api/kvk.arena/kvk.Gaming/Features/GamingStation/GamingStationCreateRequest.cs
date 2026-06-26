@@ -8,10 +8,9 @@ public class GamingStationCreateRequest
     public Guid GamingCategoryId { get; set; }
 
     // GameId is optional for categories like 'POOL'
-    public Guid? GameId { get; set; }
-
     [Required(ErrorMessage = "Station Code is required.")]
     [StringLength(50, ErrorMessage = "Station Code cannot exceed 50 characters.")]
+    //pc - 01,pc - 02,pc - ultimate,ps5 - ultimate
     public required string StationCode { get; set; }
 
     [Required(ErrorMessage = "Name is required.")]

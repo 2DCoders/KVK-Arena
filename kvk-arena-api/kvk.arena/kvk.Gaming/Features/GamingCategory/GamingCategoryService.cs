@@ -38,7 +38,6 @@ public class GamingCategoryService : IGamingCategoryService
             {
                 Name = request.Name,
                 Code = request.Code,
-                HasGames = request.HasGames,
                 IsActive = true // New categories are active by default
             };
 
@@ -50,7 +49,6 @@ public class GamingCategoryService : IGamingCategoryService
                 Id = gamingCategory.Id,
                 Name = gamingCategory.Name,
                 Code = gamingCategory.Code,
-                HasGames = gamingCategory.HasGames,
                 IsActive = gamingCategory.IsActive,
                 CreatedAt = gamingCategory.CreatedAt,
                 LastModifiedAt = gamingCategory.LastModifiedAt
@@ -96,7 +94,6 @@ public class GamingCategoryService : IGamingCategoryService
         {
             existingCategory.Name = request.Name;
             existingCategory.Code = request.Code;
-            existingCategory.HasGames = request.HasGames;
             existingCategory.IsActive = request.IsActive;
 
             _db.GamingCategories.Update(existingCategory);
@@ -107,7 +104,6 @@ public class GamingCategoryService : IGamingCategoryService
                 Id = existingCategory.Id,
                 Name = existingCategory.Name,
                 Code = existingCategory.Code,
-                HasGames = existingCategory.HasGames,
                 IsActive = existingCategory.IsActive,
                 CreatedAt = existingCategory.CreatedAt,
                 LastModifiedAt = existingCategory.LastModifiedAt
@@ -139,7 +135,6 @@ public class GamingCategoryService : IGamingCategoryService
             Id = gamingCategory.Id,
             Name = gamingCategory.Name,
             Code = gamingCategory.Code,
-            HasGames = gamingCategory.HasGames,
             IsActive = gamingCategory.IsActive,
             CreatedAt = gamingCategory.CreatedAt,
             LastModifiedAt = gamingCategory.LastModifiedAt
@@ -156,7 +151,6 @@ public class GamingCategoryService : IGamingCategoryService
             Id = gc.Id,
             Name = gc.Name,
             Code = gc.Code,
-            HasGames = gc.HasGames,
             IsActive = gc.IsActive,
             CreatedAt = gc.CreatedAt,
             LastModifiedAt = gc.LastModifiedAt
@@ -178,11 +172,11 @@ public class GamingCategoryService : IGamingCategoryService
         // Prevent deleting categories that are referenced by Gaming Stations or Games.
         // This requires checking related entities.
         var hasGamingStations = await _db.GamingStations.AnyAsync(gs => gs.GamingCategoryId == id, cancellationToken);
-        var hasGames = await _db.Games.AnyAsync(g => g.GamingCategoryId == id, cancellationToken);
+        // var hasGames = await _db.Games.AnyAsync(g => g.GamingCategoryId == id, cancellationToken);
 
-        if (hasGamingStations || hasGames)
+        if (hasGamingStations )
         {
-            return Result.Failure("Cannot delete gaming category as it is referenced by existing gaming stations or games.");
+            return Result.Failure("Cannot delete gaming category as it is referenced by existing gaming stations.");
         }
 
         try

@@ -58,25 +58,12 @@ public class GamingBookingService : IGamingBookingService
             if (gamingCategory == null) // Should not happen if Include is correct
                 return Result.Failure("Associated Gaming Category not found.");
 
-            // If Gaming Category HasGames = true, Game selection is mandatory.
-            if (gamingCategory.HasGames)
+            if (request.Amount != gamingSlot.Price)
             {
-                if (request.GameId == null || request.GameId == Guid.Empty)
-                    return Result.Failure($"Gaming Category '{gamingCategory.Name}' requires a game selection.");
-
-                // Selected Game must be assigned to the chosen Gaming Station.
-                var isGameAssignedToStation = await _db.GamingStationGames
-                    .AnyAsync(gsg => gsg.GamingStationId == gamingStation.Id && gsg.GameId == request.GameId.Value, cancellationToken);
-
-                if (!isGameAssignedToStation)
-                    return Result.Failure($"Selected Game '{request.GameId}' is not assigned to Gaming Station '{gamingStation.Name}'.");
+                return Result.Failure($"Booking amount must match the Gaming Slot price of {gamingSlot.Price:C}.");
             }
-            else
-            {
-                // If category does not have games, ensure no game is selected
-                if (request.GameId != null && request.GameId != Guid.Empty)
-                    return Result.Failure($"Gaming Category '{gamingCategory.Name}' does not support game selection.");
-            }
+
+         
 
             // Mark slot as booked
             gamingSlot.IsBooked = true;
@@ -91,11 +78,12 @@ public class GamingBookingService : IGamingBookingService
                 GamingCategoryId = gamingCategory.Id,
                 GamingStationId = gamingStation.Id,
                 GamingSlotId = gamingSlot.Id,
-                GameId = request.GameId,
                 CustomerName = request.CustomerName,
                 CustomerPhone = request.CustomerPhone,
                 Amount = gamingSlot.Price, // Booking amount must be derived from the Gaming Slot price.
-                Status = GamingBookingStatus.Confirmed
+                Status = GamingBookingStatus.Confirmed,
+                BookingDate = request.BookingDate
+                
             };
 
             _db.GamingBookings.Add(booking);
@@ -111,11 +99,9 @@ public class GamingBookingService : IGamingBookingService
                 GamingStationId = booking.GamingStationId,
                 GamingStationName = gamingStation.Name,
                 GamingSlotId = booking.GamingSlotId,
-                SlotDate = gamingSlot.Date,
+                SlotDate = request.BookingDate,
                 SlotStartTime = gamingSlot.StartTime,
                 SlotEndTime = gamingSlot.EndTime,
-                GameId = booking.GameId,
-                GameName = request.GameId.HasValue ? (await _db.Games.FindAsync(new object[] { request.GameId.Value }, cancellationToken))?.Name : null,
                 CustomerName = booking.CustomerName,
                 CustomerPhone = booking.CustomerPhone,
                 Amount = booking.Amount,
@@ -133,7 +119,7 @@ public class GamingBookingService : IGamingBookingService
             return Result.Failure($"Failed to create gaming booking: {ex.Message}");
         }
     }
-
+    
     public async Task<Result> CancelGamingBookingAsync(CancelGamingBookingRequest request, CancellationToken cancellationToken = default)
     {
         if (request == null)
@@ -162,15 +148,6 @@ public class GamingBookingService : IGamingBookingService
             _db.GamingBookings.Update(booking);
 
             // Cancelled bookings must release slot availability for future use only if slot is not past time.
-            if (booking.GamingSlot != null)
-            {
-                var slotDateTime = booking.GamingSlot.Date.Date + booking.GamingSlot.StartTime;
-                if (slotDateTime > DateTime.UtcNow) // Only release if the slot is in the future
-                {
-                    booking.GamingSlot.IsBooked = false;
-                    _db.GamingSlots.Update(booking.GamingSlot);
-                }
-            }
 
             await _db.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
@@ -193,7 +170,6 @@ public class GamingBookingService : IGamingBookingService
             .Include(b => b.GamingSlot)
                 .ThenInclude(gs => gs.GamingStation)
                     .ThenInclude(station => station.GamingCategory)
-            .Include(b => b.Game)
             .AsNoTracking()
             .SingleOrDefaultAsync(b => b.Id == id, cancellationToken);
 
@@ -209,11 +185,9 @@ public class GamingBookingService : IGamingBookingService
             GamingStationId = booking.GamingStationId,
             GamingStationName = booking.GamingSlot.GamingStation.Name,
             GamingSlotId = booking.GamingSlotId,
-            SlotDate = booking.GamingSlot.Date,
+            SlotDate = booking.BookingDate,
             SlotStartTime = booking.GamingSlot.StartTime,
             SlotEndTime = booking.GamingSlot.EndTime,
-            GameId = booking.GameId,
-            GameName = booking.Game?.Name,
             CustomerName = booking.CustomerName,
             CustomerPhone = booking.CustomerPhone,
             Amount = booking.Amount,
@@ -229,7 +203,6 @@ public class GamingBookingService : IGamingBookingService
             .Include(b => b.GamingSlot)
                 .ThenInclude(gs => gs.GamingStation)
                     .ThenInclude(station => station.GamingCategory)
-            .Include(b => b.Game)
             .AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
@@ -256,12 +229,12 @@ public class GamingBookingService : IGamingBookingService
 
         if (request.FromDate.HasValue)
         {
-            query = query.Where(b => b.GamingSlot.Date.Date >= request.FromDate.Value.Date);
+            query = query.Where(b => b.BookingDate >= request.FromDate.Value);
         }
 
         if (request.ToDate.HasValue)
         {
-            query = query.Where(b => b.GamingSlot.Date.Date <= request.ToDate.Value.Date);
+            query = query.Where(b => b.BookingDate <= request.ToDate.Value);
         }
 
         var bookings = await query
@@ -279,11 +252,9 @@ public class GamingBookingService : IGamingBookingService
             GamingStationId = booking.GamingStationId,
             GamingStationName = booking.GamingSlot.GamingStation.Name,
             GamingSlotId = booking.GamingSlotId,
-            SlotDate = booking.GamingSlot.Date,
+            SlotDate = booking.BookingDate,
             SlotStartTime = booking.GamingSlot.StartTime,
             SlotEndTime = booking.GamingSlot.EndTime,
-            GameId = booking.GameId,
-            GameName = booking.Game?.Name,
             CustomerName = booking.CustomerName,
             CustomerPhone = booking.CustomerPhone,
             Amount = booking.Amount,
@@ -305,12 +276,11 @@ public class GamingBookingService : IGamingBookingService
             .Include(b => b.GamingSlot)
                 .ThenInclude(gs => gs.GamingStation)
                     .ThenInclude(station => station.GamingCategory)
-            .Include(b => b.Game)
             .AsNoTracking();
 
         if (request.Date.HasValue)
         {
-            query = query.Where(b => b.GamingSlot.Date.Date == request.Date.Value.Date);
+            query = query.Where(b => b.BookingDate == request.Date.Value);
         }
 
         var bookings = await query
@@ -328,11 +298,9 @@ public class GamingBookingService : IGamingBookingService
             GamingStationId = booking.GamingStationId,
             GamingStationName = booking.GamingSlot.GamingStation.Name,
             GamingSlotId = booking.GamingSlotId,
-            SlotDate = booking.GamingSlot.Date,
+            SlotDate = booking.BookingDate,
             SlotStartTime = booking.GamingSlot.StartTime,
             SlotEndTime = booking.GamingSlot.EndTime,
-            GameId = booking.GameId,
-            GameName = booking.Game?.Name,
             CustomerName = booking.CustomerName,
             CustomerPhone = booking.CustomerPhone,
             Amount = booking.Amount,
@@ -354,12 +322,11 @@ public class GamingBookingService : IGamingBookingService
             .Include(b => b.GamingSlot)
                 .ThenInclude(gs => gs.GamingStation)
                     .ThenInclude(station => station.GamingCategory)
-            .Include(b => b.Game)
             .AsNoTracking();
 
         if (request.Date.HasValue)
         {
-            query = query.Where(b => b.GamingSlot.Date.Date == request.Date.Value.Date);
+            query = query.Where(b => b.BookingDate == request.Date.Value);
         }
 
         var bookings = await query
@@ -377,11 +344,9 @@ public class GamingBookingService : IGamingBookingService
             GamingStationId = booking.GamingStationId,
             GamingStationName = booking.GamingSlot.GamingStation.Name,
             GamingSlotId = booking.GamingSlotId,
-            SlotDate = booking.GamingSlot.Date,
+            SlotDate = booking.BookingDate,
             SlotStartTime = booking.GamingSlot.StartTime,
             SlotEndTime = booking.GamingSlot.EndTime,
-            GameId = booking.GameId,
-            GameName = booking.Game?.Name,
             CustomerName = booking.CustomerName,
             CustomerPhone = booking.CustomerPhone,
             Amount = booking.Amount,
