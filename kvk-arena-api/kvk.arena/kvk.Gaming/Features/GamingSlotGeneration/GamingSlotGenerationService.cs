@@ -56,7 +56,7 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
         }
     }
     
-    public async Task<Result> UpdateAsync(GamingSlotConfigurationUpdateRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> UpdateAsync(GamingSlotGenerationConfigurationUpdateRequest request, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -70,6 +70,7 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
             config.SlotDurationMinutes = request.SlotDurationMinutes;
             config.SlotGapMinutes = request.SlotGapMinutes;
             config.IsActive = request.IsActive;
+            config.GamingCategoryId = request.GamingCategoryId;
 
             await _db.SaveChangesAsync(cancellationToken);
 

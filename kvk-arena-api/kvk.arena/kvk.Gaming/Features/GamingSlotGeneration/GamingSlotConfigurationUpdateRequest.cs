@@ -1,6 +1,6 @@
 namespace kvk.Gaming.Features.GamingSlotGeneration;
 
-public class GamingSlotConfigurationUpdateRequest
+public class GamingSlotGenerationConfigurationUpdateRequest
 {
     public Guid Id { get; set; }
     public Guid GamingCategoryId { get; set; }

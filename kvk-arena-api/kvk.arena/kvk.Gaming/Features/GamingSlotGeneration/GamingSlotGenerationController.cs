@@ -27,7 +27,7 @@ public class GamingSlotGenerationController : ControllerBase
     }
 
     [HttpPut]
-    public async Task<IActionResult> Update([FromBody] GamingSlotConfigurationUpdateRequest request, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Update([FromBody] GamingSlotGenerationConfigurationUpdateRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.UpdateAsync(request, cancellationToken);
 

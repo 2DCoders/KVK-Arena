@@ -17,7 +17,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Microsoft.Extensions.Options;
 using Serilog;
-
+using System.Text.Json.Serialization;
+using Newtonsoft.Json.Serialization;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,7 +42,12 @@ builder.Host.UseSerilog();
 
 // Add OpenAPI/Swagger documentation
 builder.Services.AddOpenApi();
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    options.JsonSerializerOptions.WriteIndented = true;
+});
+
 
 // Add core infrastructure services
 builder.Services.AddScoped<ITenantService, TenantService>();
