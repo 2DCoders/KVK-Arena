@@ -21,6 +21,8 @@ public class GamingDbContext(
     public DbSet<GamingSlotConfiguration> GamingSlotConfigurations { get; set; } = null!;
     public DbSet<GamingSlot> GamingSlots { get; set; } = null!;
     public DbSet<GamingBooking> GamingBookings { get; set; } = null!;
+    public DbSet<Domain.GamingDayEnd> GamingDayEnds => Set<Domain.GamingDayEnd>();
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
