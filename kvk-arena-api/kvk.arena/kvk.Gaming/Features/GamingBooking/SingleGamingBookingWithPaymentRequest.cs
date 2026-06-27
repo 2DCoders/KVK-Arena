@@ -28,5 +28,5 @@ public class SingleGamingBookingWithPaymentRequest
     [StringLength(20, ErrorMessage = "Customer Phone cannot exceed 20 characters.")]
     public string PhoneNumber { get; set; } = string.Empty;
     
-    public PaymentType PaymentType { get; set; }
+    public PaymentTypes PaymentTypes { get; set; }
 }

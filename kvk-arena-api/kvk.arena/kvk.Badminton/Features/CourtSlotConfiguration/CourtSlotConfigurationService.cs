@@ -26,6 +26,35 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
         return MapToResponse(config);
     }
 
+    public async Task<IEnumerable<CourtSlotResponse>> GetByCourtIdAndDateAsync(Guid courtId, DateOnly date, CancellationToken cancellationToken = default)
+    {
+        var allAvailableSlots = await _db.CourtSlots
+            .AsNoTracking()
+            .Where(x => x.CourtId == courtId)
+            .OrderBy(x => x.StartTime)
+            .ToListAsync(cancellationToken);
+
+        var bookedSlotsIds = await _db.CourtBookings
+            .AsNoTracking()
+            .Where(b => b.CourtId == courtId &&
+                        b.BookingDate == date)
+            .Select(x => x.CourtSlotId)
+            .ToListAsync(cancellationToken);
+
+        return allAvailableSlots.Select(slot => new CourtSlotResponse
+        {
+            Id = slot.Id,
+            CourtId = slot.CourtId,
+            StartTime = slot.StartTime,
+            EndTime = slot.EndTime,
+            IsActive = slot.IsActive,
+            Price = slot.Price,
+            IsBooked = bookedSlotsIds.Contains(slot.Id),
+            CreatedAt = slot.CreatedAt,
+            LastModifiedAt = slot.LastModifiedAt
+        });
+    }
+
     public async Task<Result> CreateAsync(CourtSlotConfigurationCreateRequest request, CancellationToken cancellationToken = default)
     {
         if (request == null) return Result.Failure("Request is null");
@@ -164,4 +193,5 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
             LastModifiedAt = entity.LastModifiedAt
         };
     }
+
 }

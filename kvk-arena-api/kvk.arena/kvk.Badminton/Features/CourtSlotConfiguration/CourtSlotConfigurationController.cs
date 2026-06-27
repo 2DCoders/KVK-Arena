@@ -21,6 +21,13 @@ public class CourtSlotConfigurationController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("availability-by-court")]
+    public async Task<IActionResult> GetByCourtIdAndDate([FromQuery]Guid courtId,[FromQuery] DateOnly date, CancellationToken cancellationToken)
+    {
+        var result = await _service.GetByCourtIdAndDateAsync(courtId, date, cancellationToken);
+        return Ok(result);
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CourtSlotConfigurationCreateRequest request, CancellationToken cancellationToken)
     {

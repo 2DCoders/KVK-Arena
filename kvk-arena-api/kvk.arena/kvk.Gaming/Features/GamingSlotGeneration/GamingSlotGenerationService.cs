@@ -107,7 +107,38 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
             return Result.Failure($"Failed to delete configuration: {ex.Message}");
         }
     }
-    
+
+    public async Task<IEnumerable<GameSlotResponse>> GetByStationCategoryIdAndDate(Guid stationId, Guid categoryId, DateOnly date,
+        CancellationToken cancellationToken = default)
+    {
+        var allAvailableSlots = await _db.GamingSlots
+            .AsNoTracking()
+            .Where(x => x.GamingCategoryId == categoryId && x.GamingStationId == stationId)
+            .OrderBy(x => x.StartTime)
+            .ToListAsync(cancellationToken);
+
+        var bookedSlotsIds = await _db.GamingBookings
+            .AsNoTracking()
+            .Where(b => b.GamingStationId == stationId &&
+                        b.BookingDate == date && b.GamingCategoryId == categoryId)
+            .Select(x => x.GamingSlotId)
+            .ToListAsync(cancellationToken);
+
+        return allAvailableSlots.Select(slot => new GameSlotResponse
+        {
+            Id = slot.Id,
+            StationId = slot.GamingStationId,
+            CategoryId = slot.GamingCategoryId,
+            StartTime = slot.StartTime,
+            EndTime = slot.EndTime,
+            IsActive = slot.IsActive,
+            Price = slot.Price,
+            IsBooked = bookedSlotsIds.Contains(slot.Id),
+            CreatedAt = slot.CreatedAt,
+            LastModifiedAt = slot.LastModifiedAt
+        });
+    }
+
     private async Task RegenerateSlotsInternalAsync(Domain.GamingSlotConfiguration config, CancellationToken cancellationToken)
     {
         // 1. Delete old slots

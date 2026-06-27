@@ -8,10 +8,10 @@ public class MultiBookingRequest
     public decimal TotalAmount { get; set; }
     public string CustomerName { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
-    public PaymentType PaymentType { get; set; }
+    public PaymentTypes PaymentTypes { get; set; }
 }
 
-public enum PaymentType
+public enum PaymentTypes
 {
     Cash,
     Card

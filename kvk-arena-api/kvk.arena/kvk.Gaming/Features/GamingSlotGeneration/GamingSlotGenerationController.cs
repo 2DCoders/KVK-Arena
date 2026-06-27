@@ -16,7 +16,7 @@ public class GamingSlotGenerationController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> GenerateSlotsForSpecificDate([FromBody] GamingCategorySlotConfigurationRequest request, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GenerateSlotsForGamingCategoryeAsync([FromBody] GamingCategorySlotConfigurationRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.GenerateSlotsForGamingCategoryeAsync(request, cancellationToken);
 
@@ -45,6 +45,12 @@ public class GamingSlotGenerationController : ControllerBase
         if (!result.Succeeded)
             return BadRequest(result);
 
+        return Ok(result);
+    }
+    [HttpGet("availability-by-station-category")]
+    public async Task<IActionResult> GetByStationCategoryIdAndDate([FromQuery]Guid stationId,[FromQuery]Guid categoryId,[FromQuery] DateOnly date, CancellationToken cancellationToken)
+    {
+        var result = await _service.GetByStationCategoryIdAndDate(stationId, categoryId, date, cancellationToken);
         return Ok(result);
     }
 }
