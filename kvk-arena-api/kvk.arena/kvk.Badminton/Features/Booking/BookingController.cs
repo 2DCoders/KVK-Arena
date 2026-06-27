@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Badminton.Features.Booking;
@@ -36,6 +37,35 @@ public class BookingController : ControllerBase
         }
 
         return Ok(result);
+    }
+
+    [HttpPost("multi-hold")]
+    public async Task<IActionResult> CreateMultiHold([FromBody] MultiBookingRequest request, CancellationToken ct)
+    {
+        var result = await _service.CreateMultiHoldAsync(request, ct);
+
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("create")] // New endpoint for single booking with payment
+    public async Task<IActionResult> CreateSingleBookingWithPayment([FromBody] SingleBookingWithPaymentRequest request, CancellationToken ct)
+    {
+        var result = await _service.CreateSingleBookingWithPaymentAsync(request, ct);
+
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("notify")]
+    public async Task<IActionResult> PaymentNotification([FromForm] PaymentNotificationRequest request, CancellationToken ct)
+    {
+        await _service.VerifyPaymentNotificationAsync(request, ct);
+        return Ok();
     }
 
     [HttpPost("internal/cleanup")]

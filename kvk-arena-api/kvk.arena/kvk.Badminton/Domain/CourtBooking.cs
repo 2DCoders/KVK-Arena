@@ -23,4 +23,7 @@ public class CourtBooking : AuditableEntity, ICustomerDetails
 
     public required string CustomerName { get; set; }
     public required string PhoneNumber { get; set; }
+    
+    public string? PaymentId { get; set; }
+
 }

@@ -25,4 +25,8 @@ public class GamingBooking : AuditableEntity
     public DateOnly BookingDate { get; set; }
 
     public GamingBookingStatus Status { get; set; }
+    
+    public string PaymentIntentId { get; set; }
 }
+
+

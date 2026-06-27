@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace kvk.Gym.Features.PaymentGateway;
+namespace kvk.BuildingBlocks.Common;
 
 public class PaymentNotificationRequest
 {
@@ -19,4 +19,3 @@ public class PaymentNotificationRequest
     [FromForm(Name = "md5sig")]
     public string Md5Sig { get; set; } = null!;
 }
-

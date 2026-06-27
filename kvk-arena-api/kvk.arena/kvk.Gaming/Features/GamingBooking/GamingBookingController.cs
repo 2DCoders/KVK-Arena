@@ -26,6 +26,49 @@ public class GamingBookingController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("multi-hold")]
+    public async Task<IActionResult> CreateMultiGamingHold([FromBody] MultiGamingBookingRequest request, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.CreateMultiGamingHoldAsync(request, cancellationToken);
+
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("create-with-payment")]
+    public async Task<IActionResult> CreateSingleGamingBookingWithPayment([FromBody] SingleGamingBookingWithPaymentRequest request, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.CreateSingleGamingBookingWithPaymentAsync(request, cancellationToken);
+
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("confirm/{holdId:guid}")]
+    public async Task<IActionResult> ConfirmGamingBooking(Guid holdId, [FromQuery] string paymentIntentId, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.ProcessPaymentSuccessAsync(holdId, paymentIntentId, cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            if (result.Message.Contains("not found")) return NotFound(result);
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    [HttpPost("notify")]
+    public async Task<IActionResult> GamingPaymentNotification([FromForm] PaymentNotificationRequest request, CancellationToken cancellationToken = default)
+    {
+        await _service.VerifyPaymentNotificationAsync(request, cancellationToken);
+        return Ok();
+    }
+
     [HttpPut("cancel")]
     public async Task<IActionResult> CancelGamingBooking([FromBody] CancelGamingBookingRequest request, CancellationToken cancellationToken = default)
     {

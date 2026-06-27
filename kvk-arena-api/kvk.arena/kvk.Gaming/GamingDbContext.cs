@@ -21,6 +21,7 @@ public class GamingDbContext(
     public DbSet<GamingSlotConfiguration> GamingSlotConfigurations { get; set; } = null!;
     public DbSet<GamingSlot> GamingSlots { get; set; } = null!;
     public DbSet<GamingBooking> GamingBookings { get; set; } = null!;
+    public DbSet<GamingBookingHold> GamingBookingHolds { get; set; } = null!; // Added GamingBookingHold DbSet
     public DbSet<Domain.GamingDayEnd> GamingDayEnds => Set<Domain.GamingDayEnd>();
 
 
@@ -73,6 +74,24 @@ public class GamingDbContext(
             .HasForeignKey(gb => gb.GamingSlotId)
             .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete
 
+        // Configure relationships for GamingBookingHold
+        modelBuilder.Entity<GamingBookingHold>()
+            .HasOne<GamingCategory>()
+            .WithMany()
+            .HasForeignKey(gbh => gbh.GamingCategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<GamingBookingHold>()
+            .HasOne<GamingStation>()
+            .WithMany()
+            .HasForeignKey(gbh => gbh.GamingStationId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<GamingBookingHold>()
+            .HasOne<GamingSlot>()
+            .WithMany()
+            .HasForeignKey(gbh => gbh.GamingSlotId)
+            .OnDelete(DeleteBehavior.Restrict);
 
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(GamingDbContext).Assembly);

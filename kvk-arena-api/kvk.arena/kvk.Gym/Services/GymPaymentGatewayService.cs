@@ -1,4 +1,5 @@
 using kvk.BuildingBlocks;
+using kvk.BuildingBlocks.Common;
 using kvk.BuildingBlocks.Services;
 using kvk.Gym.Domain;
 using kvk.Gym.Enums;

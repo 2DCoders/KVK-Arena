@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Common;
 using kvk.Gym.Features.PaymentGateway;
 
 namespace kvk.Gym.Interfaces;

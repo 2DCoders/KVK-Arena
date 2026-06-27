@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Common;
 using kvk.Gym.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
