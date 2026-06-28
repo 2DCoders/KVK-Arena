@@ -26,9 +26,9 @@ public class BookingController : ControllerBase
     }
 
     [HttpPost("confirm/{holdId:guid}")]
-    public async Task<IActionResult> Confirm(Guid holdId, [FromQuery] string paymentIntentId, CancellationToken ct)
+    public async Task<IActionResult> Confirm(Guid holdId,[FromBody] CustomerDetails customerDetails, [FromQuery] string paymentIntentId, CancellationToken ct)
     {
-        var result = await _service.ProcessPaymentSuccessAsync(holdId, paymentIntentId, ct);
+        var result = await _service.ProcessPaymentSuccessAsync(holdId,customerDetails, paymentIntentId, ct);
 
         if (!result.Succeeded)
         {

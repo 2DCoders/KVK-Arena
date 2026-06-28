@@ -44,8 +44,6 @@ public class BookingService
                 CourtSlotId = request.CourtSlotId,
                 BookingDate = request.BookingDate,
                 Amount = request.Amount,
-                CustomerName = request.CustomerName,
-                PhoneNumber = request.PhoneNumber,
                 Status = BookingHoldStatus.Pending,
                 ExpiresAt = DateTime.Now.AddMinutes(DefaultHoldMinutes)
             };
@@ -107,9 +105,7 @@ public class BookingService
                     CourtId = bookingDetail.CourtId,
                     CourtSlotId = bookingDetail.CourtSlotId,
                     BookingDate = bookingDetail.BookingDate,
-                    Amount = request.TotalAmount / request.Bookings.Count, // Distribute total amount among bookings
-                    CustomerName = request.CustomerName,
-                    PhoneNumber = request.PhoneNumber,
+                    Amount = request.TotalAmount / request.Bookings.Count,
                     Status = BookingHoldStatus.Pending,
                     ExpiresAt = DateTime.Now.AddMinutes(DefaultHoldMinutes)
                 };
@@ -199,7 +195,7 @@ public class BookingService
         }
     }
 
-    public async Task<Result> ProcessPaymentSuccessAsync(Guid holdId, string paymentIntentId, CancellationToken ct = default)
+    public async Task<Result> ProcessPaymentSuccessAsync(Guid holdId,CustomerDetails customerDetails, string paymentIntentId, CancellationToken ct = default)
     {
         // Use Serializable isolation to prevent race conditions during final booking creation
         using var transaction = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
@@ -243,8 +239,8 @@ public class BookingService
                 BookingDate = hold.BookingDate,
                 BookingAmount = hold.Amount,
                 Status = BookingStatus.Confirmed,
-                CustomerName = hold.CustomerName,
-                PhoneNumber = hold.PhoneNumber,
+                CustomerName = customerDetails.CustomerName,
+                PhoneNumber = customerDetails.PhoneNumber,
                 PaymentId = paymentIntentId // Use the paymentIntentId from the hold
             };
 

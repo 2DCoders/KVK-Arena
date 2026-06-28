@@ -1,3 +1,4 @@
+using kvk.Badminton.Features.Booking;
 using kvk.Badminton.Features.Court;
 using kvk.Badminton.Features.CourtSlotConfiguration;
 using kvk.Badminton.Interfaces;
@@ -26,6 +27,7 @@ public class BadmintonModuleInitializer : IModuleInitializer
         services.AddScoped<ICourtService, CourtService>();
         services.AddScoped<ICourtSlotConfigurationService, CourtSlotConfigurationService>();
         services.AddScoped<IDayEndService, BadmintonDayEndService>(); // Register the new service
+        services.AddScoped<BookingService>();
 
         
             
