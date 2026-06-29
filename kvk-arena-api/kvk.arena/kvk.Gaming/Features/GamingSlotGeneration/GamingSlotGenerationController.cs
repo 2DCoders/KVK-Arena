@@ -53,4 +53,12 @@ public class GamingSlotGenerationController : ControllerBase
         var result = await _service.GetByStationCategoryIdAndDate(stationId, categoryId, date, cancellationToken);
         return Ok(result);
     }
+    
+    //configuration by category
+    [HttpGet("configuration-by-category")]
+    public async Task<IActionResult> GetConfigurationByCategory([FromQuery]Guid categoryId, CancellationToken cancellationToken)
+    {
+        var result = await _service.GetConfigurationByCategory(categoryId, cancellationToken);
+        return Ok(result);
+    }
 }

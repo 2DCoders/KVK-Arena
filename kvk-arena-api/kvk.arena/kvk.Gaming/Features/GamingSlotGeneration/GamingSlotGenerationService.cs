@@ -1,6 +1,7 @@
 using kvk.BuildingBlocks.Common;
 using kvk.Gaming.Domain;
 using kvk.Gaming;
+using kvk.Gaming.Features.GamingSlotConfiguration;
 using kvk.Gaming.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -46,7 +47,7 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
             await _db.SaveChangesAsync(cancellationToken);
 
             await RegenerateSlotsInternalAsync(config, cancellationToken);
-            
+
             return Result.Success("Configuration created and slots generated");
         }
         catch (Exception e)
@@ -55,8 +56,9 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
             throw;
         }
     }
-    
-    public async Task<Result> UpdateAsync(GamingSlotGenerationConfigurationUpdateRequest request, CancellationToken cancellationToken = default)
+
+    public async Task<Result> UpdateAsync(GamingSlotGenerationConfigurationUpdateRequest request,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -96,7 +98,7 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
             // When config is deleted, we should probably clear the generated slots too
             var existingSlots = _db.GamingSlotConfigurations.Where(x => x.GamingCategoryId == config.GamingCategoryId);
             _db.GamingSlotConfigurations.RemoveRange(existingSlots);
-            
+
             _db.GamingSlotConfigurations.Remove(config);
             await _db.SaveChangesAsync(cancellationToken);
 
@@ -108,7 +110,8 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
         }
     }
 
-    public async Task<IEnumerable<GameSlotResponse>> GetByStationCategoryIdAndDate(Guid stationId, Guid categoryId, DateOnly date,
+    public async Task<IEnumerable<GameSlotResponse>> GetByStationCategoryIdAndDate(Guid stationId, Guid categoryId,
+        DateOnly date,
         CancellationToken cancellationToken = default)
     {
         var allAvailableSlots = await _db.GamingSlots
@@ -139,24 +142,61 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
         });
     }
 
-    private async Task RegenerateSlotsInternalAsync(Domain.GamingSlotConfiguration config, CancellationToken cancellationToken)
+    public async Task<GamingSlotConfigurationResponse?> GetConfigurationByCategory(Guid categoryId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var config = await _db.GamingSlotConfigurations
+                .FirstOrDefaultAsync(x => x.GamingCategoryId == categoryId, cancellationToken);
+
+            if (config == null)
+            {
+                throw new Exception($"No configuration found for Gaming Category ID: {categoryId}");
+            }
+
+            return new GamingSlotConfigurationResponse
+            {
+                Id = config.Id,
+                GamingCategoryName =
+                    (await _db.GamingCategories.FindAsync(new object[] { categoryId }, cancellationToken))?.Name ??
+                    string.Empty,
+                StartTime = config.StartTime,
+                EndTime = config.EndTime,
+                SlotDurationMinutes = config.SlotDurationMinutes,
+                SlotGapMinutes = config.SlotGapMinutes,
+                Price = config.IsActive ?? 0,
+                IsActive = config.IsActive > 0,
+                CreatedAt = config.CreatedAt,
+                LastModifiedAt = config.LastModifiedAt
+            };
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    private async Task RegenerateSlotsInternalAsync(Domain.GamingSlotConfiguration config,
+        CancellationToken cancellationToken)
     {
         // 1. Delete old slots
         var oldSlots = await _db.GamingSlots
             .Where(x => x.GamingCategoryId == config.GamingCategoryId)
             .ToListAsync(cancellationToken);
-        
+
         _db.GamingSlots.RemoveRange(oldSlots);
 
         // 2. Generate new slots
         var newSlots = new List<GamingSlot>();
         var currentTime = config.StartTime;
-        
+
         // Simple safety check to prevent infinite loops if end time is before start time or duration is 0
         while (currentTime.AddMinutes(config.SlotDurationMinutes) <= config.EndTime)
         {
             var slotEndTime = currentTime.AddMinutes(config.SlotDurationMinutes);
-            
+
             newSlots.Add(new GamingSlot
             {
                 GamingCategoryId = config.GamingCategoryId,
@@ -168,9 +208,9 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
             });
 
             currentTime = slotEndTime.AddMinutes(config.SlotGapMinutes);
-            
+
             // Prevent infinite loop if crossing midnight (though TimeOnly handles 24h)
-            if (currentTime < slotEndTime) break; 
+            if (currentTime < slotEndTime) break;
         }
 
         if (newSlots.Any())

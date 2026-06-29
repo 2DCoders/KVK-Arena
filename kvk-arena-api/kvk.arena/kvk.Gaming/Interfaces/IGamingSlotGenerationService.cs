@@ -1,5 +1,6 @@
 using kvk.Badminton.Features.CourtSlotConfiguration;
 using kvk.BuildingBlocks.Common;
+using kvk.Gaming.Features.GamingSlotConfiguration;
 using kvk.Gaming.Features.GamingSlotGeneration;
 
 namespace kvk.Gaming.Interfaces;
@@ -11,6 +12,8 @@ public interface IGamingSlotGenerationService
     Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
     
     Task<IEnumerable<GameSlotResponse>> GetByStationCategoryIdAndDate(Guid stationId, Guid categoryId, DateOnly date, CancellationToken cancellationToken = default);
+    
+    Task<GamingSlotConfigurationResponse?> GetConfigurationByCategory(Guid categoryId, CancellationToken cancellationToken = default);
 
 }
 
