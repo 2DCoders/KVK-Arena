@@ -1,3 +1,4 @@
+using kvk.Badminton.Interfaces;
 using kvk.BuildingBlocks.Common;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,9 +8,9 @@ namespace kvk.Badminton.Features.Booking;
 [Route("api/badminton/bookings")]
 public class BookingController : ControllerBase
 {
-    private readonly BookingService _service;
+    private readonly IBookingService _service;
 
-    public BookingController(BookingService service)
+    public BookingController(IBookingService service)
     {
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }

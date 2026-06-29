@@ -27,7 +27,7 @@ public class BadmintonModuleInitializer : IModuleInitializer
         services.AddScoped<ICourtService, CourtService>();
         services.AddScoped<ICourtSlotConfigurationService, CourtSlotConfigurationService>();
         services.AddScoped<IDayEndService, BadmintonDayEndService>(); // Register the new service
-        services.AddScoped<BookingService>();
+        services.AddScoped<IBookingService, BookingService>();
 
         
             

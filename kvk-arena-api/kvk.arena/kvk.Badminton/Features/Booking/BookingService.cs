@@ -1,13 +1,14 @@
 using System.Data;
 using kvk.Badminton.Domain;
 using kvk.Badminton.Enums;
+using kvk.Badminton.Interfaces;
 using kvk.BuildingBlocks.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace kvk.Badminton.Features.Booking;
 
-public class BookingService
+public class BookingService : IBookingService
 {
     private readonly BadmintonDbContext _db;
     private const int DefaultHoldMinutes = 7;
@@ -45,7 +46,7 @@ public class BookingService
                 BookingDate = request.BookingDate,
                 Amount = request.Amount,
                 Status = BookingHoldStatus.Pending,
-                ExpiresAt = DateTime.Now.AddMinutes(DefaultHoldMinutes)
+                ExpiresAt = DateTime.Now.ToUniversalTime().AddMinutes(DefaultHoldMinutes)
             };
 
             _db.Set<BookingHold>().Add(hold);
@@ -107,7 +108,7 @@ public class BookingService
                     BookingDate = bookingDetail.BookingDate,
                     Amount = request.TotalAmount / request.Bookings.Count,
                     Status = BookingHoldStatus.Pending,
-                    ExpiresAt = DateTime.Now.AddMinutes(DefaultHoldMinutes)
+                    ExpiresAt = DateTime.Now.ToUniversalTime().AddMinutes(DefaultHoldMinutes)
                 };
 
                 _db.Set<BookingHold>().Add(hold);
@@ -173,7 +174,7 @@ public class BookingService
                 CustomerName = request.CustomerName,
                 PhoneNumber = request.PhoneNumber,
                 Status = BookingHoldStatus.Pending, // Always pending initially
-                ExpiresAt = DateTime.Now.AddMinutes(DefaultHoldMinutes)
+                ExpiresAt = DateTime.Now.ToUniversalTime().AddMinutes(DefaultHoldMinutes)
             };
 
             _db.Set<BookingHold>().Add(hold);
@@ -212,7 +213,7 @@ public class BookingService
             if (hold.Status == BookingHoldStatus.Confirmed)
                 return Result.Success("Booking already confirmed.");
 
-            if (hold.Status == BookingHoldStatus.Expired || hold.ExpiresAt < DateTime.Now)
+            if (hold.Status == BookingHoldStatus.Expired || hold.ExpiresAt < DateTime.UtcNow)
             {
                 hold.Status = BookingHoldStatus.Expired;
                 await _db.SaveChangesAsync(ct);
@@ -388,11 +389,11 @@ public class BookingService
         if (isBooked) return false;
 
         // Check Active Holds (Pending and not expired)
-        var isHeld = await _db.Set<BookingHold>()
+        var isHeld = await _db.BookingHolds
             .AnyAsync(h => h.CourtSlotId == slotId 
                         && h.BookingDate == date 
                         && h.Status == BookingHoldStatus.Pending 
-                        && h.ExpiresAt > DateTime.Now, ct);
+                        && h.ExpiresAt > DateTime.UtcNow, ct);
 
         return !isHeld;
     }
@@ -410,4 +411,3 @@ public class BookingService
         };
     }
 }
-
