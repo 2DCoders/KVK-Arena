@@ -18,4 +18,6 @@ public class GamingStationCreateRequest
     public required string Name { get; set; }
 
     public bool IsActive { get; set; } = true; // Default to active
+
+    public decimal Price { get; set; }
 }

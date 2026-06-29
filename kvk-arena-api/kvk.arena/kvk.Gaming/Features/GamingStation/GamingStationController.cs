@@ -1,4 +1,5 @@
 using kvk.BuildingBlocks.Common;
+using kvk.Gaming.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Gaming.Features.GamingStation;
@@ -8,9 +9,9 @@ namespace kvk.Gaming.Features.GamingStation;
 //pc - 01,pc - 02,ps5
 public class GamingStationController : ControllerBase
 {
-    private readonly GamingStationService _service;
+    private readonly IGamingStationService _service;
 
-    public GamingStationController(GamingStationService service)
+    public GamingStationController(IGamingStationService service)
     {
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }

@@ -13,6 +13,8 @@ public class GamingStation : AuditableEntity
     public bool IsActive { get; set; }
     
     public bool IsDeleted { get; set; }
+    
+    public decimal Price { get; set; }
 
      public GamingCategory GamingCategory { get; set; }
      

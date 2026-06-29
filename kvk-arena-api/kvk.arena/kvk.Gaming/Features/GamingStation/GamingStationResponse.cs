@@ -10,4 +10,8 @@ public class GamingStationResponse
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime LastModifiedAt { get; set; }
+    
+    public decimal Price { get; set; }
 }
+
+
