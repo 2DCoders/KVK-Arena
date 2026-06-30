@@ -17,7 +17,8 @@ public class GamingBookingService : IGamingBookingService
         _db = db ?? throw new ArgumentNullException(nameof(db));
     }
 
-    public async Task<Result> CreateGamingBookingAsync(CreateGamingBookingRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> CreateGamingBookingAsync(CreateGamingBookingRequest request,
+        CancellationToken cancellationToken = default)
     {
         if (request == null)
             return Result.Failure("Request cannot be null.");
@@ -36,7 +37,7 @@ public class GamingBookingService : IGamingBookingService
         {
             var gamingSlot = await _db.GamingSlots
                 .Include(gs => gs.GamingStation)
-                    .ThenInclude(station => station.GamingCategory)
+                .ThenInclude(station => station.GamingCategory)
                 .SingleOrDefaultAsync(gs => gs.Id == request.GamingSlotId, cancellationToken);
 
             if (gamingSlot == null)
@@ -75,7 +76,7 @@ public class GamingBookingService : IGamingBookingService
             {
                 BookingNumber = bookingNumber,
                 GamingCategoryId = gamingCategory.Id, // Use category from slot's station
-                GamingStationId = gamingStation.Id,   // Use station from slot
+                GamingStationId = gamingStation.Id, // Use station from slot
                 GamingSlotId = gamingSlot.Id,
                 CustomerName = request.CustomerName,
                 CustomerPhone = request.CustomerPhone,
@@ -117,8 +118,9 @@ public class GamingBookingService : IGamingBookingService
             return Result.Failure($"Failed to create gaming booking: {ex.Message}");
         }
     }
-    
-    public async Task<Result> CancelGamingBookingAsync(CancelGamingBookingRequest request, CancellationToken cancellationToken = default)
+
+    public async Task<Result> CancelGamingBookingAsync(CancelGamingBookingRequest request,
+        CancellationToken cancellationToken = default)
     {
         if (request == null)
             return Result.Failure("Request cannot be null.");
@@ -161,7 +163,8 @@ public class GamingBookingService : IGamingBookingService
         }
     }
 
-    public async Task<Result> CreateMultiGamingHoldAsync(MultiGamingBookingRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> CreateMultiGamingHoldAsync(MultiGamingBookingRequest request,
+        CancellationToken cancellationToken = default)
     {
         if (!request.Bookings.Any())
             return Result.Failure("No gaming booking details provided.");
@@ -182,22 +185,26 @@ public class GamingBookingService : IGamingBookingService
 
                 var gamingSlot = await _db.GamingSlots
                     .Include(gs => gs.GamingStation)
-                        .ThenInclude(station => station.GamingCategory)
-                    .FirstOrDefaultAsync(gs => gs.Id == bookingDetail.GamingSlotId && 
+                    .ThenInclude(station => station.GamingCategory)
+                    .FirstOrDefaultAsync(gs => gs.Id == bookingDetail.GamingSlotId &&
                                                gs.GamingStationId == bookingDetail.GamingStationId &&
-                                               gs.GamingCategoryId == bookingDetail.GamingCategoryId, cancellationToken);
+                                               gs.GamingCategoryId == bookingDetail.GamingCategoryId,
+                        cancellationToken);
 
                 if (gamingSlot == null || !gamingSlot.IsActive || !gamingSlot.GamingStation.IsActive)
                 {
                     await transaction.RollbackAsync(cancellationToken);
-                    return Result.Failure($"The selected gaming slot, station, or category for {bookingDetail.GamingSlotId} is unavailable or inactive.");
+                    return Result.Failure(
+                        $"The selected gaming slot, station, or category for {bookingDetail.GamingSlotId} is unavailable or inactive.");
                 }
 
-                bool isAvailable = await CheckAvailabilityInternalAsync(bookingDetail.GamingSlotId, bookingDetail.BookingDate, cancellationToken);
+                bool isAvailable = await CheckAvailabilityInternalAsync(bookingDetail.GamingSlotId,
+                    bookingDetail.BookingDate, cancellationToken);
                 if (!isAvailable)
                 {
                     await transaction.RollbackAsync(cancellationToken);
-                    return Result.Failure($"The selected slot for {bookingDetail.GamingSlotId} on {bookingDetail.BookingDate} is already booked or held by another user.");
+                    return Result.Failure(
+                        $"The selected slot for {bookingDetail.GamingSlotId} on {bookingDetail.BookingDate} is already booked or held by another user.");
                 }
 
                 var hold = new GamingBookingHold
@@ -235,7 +242,8 @@ public class GamingBookingService : IGamingBookingService
         }
     }
 
-    public async Task<Result> CreateSingleGamingBookingWithPaymentAsync(SingleGamingBookingWithPaymentRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> CreateSingleGamingBookingWithPaymentAsync(SingleGamingBookingWithPaymentRequest request,
+        CancellationToken cancellationToken = default)
     {
         if (request.BookingDate < DateOnly.FromDateTime(DateTime.Now))
             return Result.Failure("Booking date cannot be in the past.");
@@ -245,8 +253,8 @@ public class GamingBookingService : IGamingBookingService
         {
             var gamingSlot = await _db.GamingSlots
                 .Include(gs => gs.GamingStation)
-                    .ThenInclude(station => station.GamingCategory)
-                .FirstOrDefaultAsync(gs => gs.Id == request.GamingSlotId && 
+                .ThenInclude(station => station.GamingCategory)
+                .FirstOrDefaultAsync(gs => gs.Id == request.GamingSlotId &&
                                            gs.GamingStationId == request.GamingStationId &&
                                            gs.GamingCategoryId == request.GamingCategoryId, cancellationToken);
 
@@ -256,7 +264,8 @@ public class GamingBookingService : IGamingBookingService
                 return Result.Failure("The selected gaming slot, station, or category is unavailable or inactive.");
             }
 
-            bool isAvailable = await CheckAvailabilityInternalAsync(request.GamingSlotId, request.BookingDate, cancellationToken);
+            bool isAvailable =
+                await CheckAvailabilityInternalAsync(request.GamingSlotId, request.BookingDate, cancellationToken);
             if (!isAvailable)
             {
                 await transaction.RollbackAsync(cancellationToken);
@@ -290,9 +299,11 @@ public class GamingBookingService : IGamingBookingService
         }
     }
 
-    public async Task<Result> ProcessPaymentSuccessAsync(Guid holdId, string paymentIntentId, CancellationToken cancellationToken = default)
+    public async Task<Result> ProcessPaymentSuccessAsync(Guid holdId, string paymentIntentId,
+        CancellationToken cancellationToken = default)
     {
-        await using var transaction = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+        await using var transaction =
+            await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
         try
         {
             var hold = await _db.GamingBookingHolds
@@ -313,20 +324,22 @@ public class GamingBookingService : IGamingBookingService
             }
 
             bool isStillAvailable = await _db.GamingBookings
-                .AnyAsync(b => b.GamingSlotId == hold.GamingSlotId 
-                            && b.BookingDate == hold.BookingDate 
-                            && b.Status != GamingBookingStatus.Cancelled, cancellationToken);
+                .AnyAsync(b => b.GamingSlotId == hold.GamingSlotId
+                               && b.BookingDate == hold.BookingDate
+                               && b.Status != GamingBookingStatus.Cancelled, cancellationToken);
 
             if (isStillAvailable)
             {
                 return Result.Failure("Gaming slot was booked by another confirmed transaction.");
             }
-            
-            var gamingSlot = await _db.GamingSlots.FirstOrDefaultAsync(gs => gs.Id == hold.GamingSlotId, cancellationToken);
+
+            var gamingSlot =
+                await _db.GamingSlots.FirstOrDefaultAsync(gs => gs.Id == hold.GamingSlotId, cancellationToken);
             if (gamingSlot == null)
             {
                 return Result.Failure("Gaming slot associated with the hold not found.");
             }
+
             gamingSlot.IsBooked = true;
             _db.GamingSlots.Update(gamingSlot);
 
@@ -368,7 +381,8 @@ public class GamingBookingService : IGamingBookingService
         }
     }
 
-    public async Task VerifyPaymentNotificationAsync(PaymentNotificationRequest request, CancellationToken cancellationToken = default)
+    public async Task VerifyPaymentNotificationAsync(PaymentNotificationRequest request,
+        CancellationToken cancellationToken = default)
     {
         // Placeholder for MD5 signature verification.
         // if (!VerifyMd5Signature(request)) {
@@ -376,11 +390,13 @@ public class GamingBookingService : IGamingBookingService
         //     return;
         // }
 
-        Console.WriteLine($"Received gaming payment notification for OrderId: {request.OrderId}, PaymentId: {request.PaymentId}, Status: {request.StatusCode}");
+        Console.WriteLine(
+            $"Received gaming payment notification for OrderId: {request.OrderId}, PaymentId: {request.PaymentId}, Status: {request.StatusCode}");
 
         if (Guid.TryParse(request.OrderId, out var holdId))
         {
-            await using var transaction = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+            await using var transaction =
+                await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
             try
             {
                 var hold = await _db.GamingBookingHolds.FirstOrDefaultAsync(h => h.Id == holdId, cancellationToken);
@@ -391,24 +407,28 @@ public class GamingBookingService : IGamingBookingService
                         if (hold.Status == GamingBookingHoldStatus.Pending)
                         {
                             bool isStillAvailable = await _db.GamingBookings
-                                .AnyAsync(b => b.GamingSlotId == hold.GamingSlotId 
-                                            && b.BookingDate == hold.BookingDate 
-                                            && b.Status != GamingBookingStatus.Cancelled, cancellationToken);
+                                .AnyAsync(b => b.GamingSlotId == hold.GamingSlotId
+                                               && b.BookingDate == hold.BookingDate
+                                               && b.Status != GamingBookingStatus.Cancelled, cancellationToken);
 
                             if (isStillAvailable)
                             {
-                                Console.WriteLine($"Gaming slot for hold {holdId} was booked by another confirmed transaction. Payment notification ignored.");
+                                Console.WriteLine(
+                                    $"Gaming slot for hold {holdId} was booked by another confirmed transaction. Payment notification ignored.");
                                 await transaction.RollbackAsync(cancellationToken);
                                 return;
                             }
 
-                            var gamingSlot = await _db.GamingSlots.FirstOrDefaultAsync(gs => gs.Id == hold.GamingSlotId, cancellationToken);
+                            var gamingSlot = await _db.GamingSlots.FirstOrDefaultAsync(gs => gs.Id == hold.GamingSlotId,
+                                cancellationToken);
                             if (gamingSlot == null)
                             {
-                                Console.WriteLine($"Gaming slot associated with hold {holdId} not found during notification processing.");
+                                Console.WriteLine(
+                                    $"Gaming slot associated with hold {holdId} not found during notification processing.");
                                 await transaction.RollbackAsync(cancellationToken);
                                 return;
                             }
+
                             gamingSlot.IsBooked = true;
                             _db.GamingSlots.Update(gamingSlot);
 
@@ -437,13 +457,15 @@ public class GamingBookingService : IGamingBookingService
                         }
                         else
                         {
-                            Console.WriteLine($"Gaming hold {holdId} already in status {hold.Status}, skipping confirmation from notification.");
+                            Console.WriteLine(
+                                $"Gaming hold {holdId} already in status {hold.Status}, skipping confirmation from notification.");
                             await transaction.CommitAsync(cancellationToken);
                         }
                     }
                     else
                     {
-                        Console.WriteLine($"Gaming payment notification for hold {holdId} indicates non-success status: {request.StatusCode}");
+                        Console.WriteLine(
+                            $"Gaming payment notification for hold {holdId} indicates non-success status: {request.StatusCode}");
                         // Optionally update hold status to failed or pending review
                         // hold.Status = GamingBookingHoldStatus.PaymentFailed;
                         // await _db.SaveChangesAsync(cancellationToken);
@@ -452,14 +474,16 @@ public class GamingBookingService : IGamingBookingService
                 }
                 else
                 {
-                    Console.WriteLine($"GamingBookingHold with OrderId {request.OrderId} not found for payment notification.");
+                    Console.WriteLine(
+                        $"GamingBookingHold with OrderId {request.OrderId} not found for payment notification.");
                     await transaction.RollbackAsync(cancellationToken);
                 }
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync(cancellationToken);
-                Console.WriteLine($"Error processing gaming payment notification for OrderId {request.OrderId}: {ex.Message}");
+                Console.WriteLine(
+                    $"Error processing gaming payment notification for OrderId {request.OrderId}: {ex.Message}");
             }
         }
         else
@@ -468,15 +492,16 @@ public class GamingBookingService : IGamingBookingService
         }
     }
 
-    public async Task<GamingBookingResponse?> GetGamingBookingByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<GamingBookingResponse?> GetGamingBookingByIdAsync(Guid id,
+        CancellationToken cancellationToken = default)
     {
         if (id == Guid.Empty)
             return null;
 
         var booking = await _db.GamingBookings
             .Include(b => b.GamingSlot)
-                .ThenInclude(gs => gs.GamingStation)
-                    .ThenInclude(station => station.GamingCategory)
+            .ThenInclude(gs => gs.GamingStation)
+            .ThenInclude(station => station.GamingCategory)
             .AsNoTracking()
             .SingleOrDefaultAsync(b => b.Id == id, cancellationToken);
 
@@ -504,12 +529,13 @@ public class GamingBookingService : IGamingBookingService
         };
     }
 
-    public async Task<List<GamingBookingResponse>> GetGamingBookingsListAsync(GetGamingBookingsListRequest request, CancellationToken cancellationToken = default)
+    public async Task<List<GamingBookingResponse>> GetGamingBookingsListAsync(GetGamingBookingsListRequest request,
+        CancellationToken cancellationToken = default)
     {
         var query = _db.GamingBookings
             .Include(b => b.GamingSlot)
-                .ThenInclude(gs => gs.GamingStation)
-                    .ThenInclude(station => station.GamingCategory)
+            .ThenInclude(gs => gs.GamingStation)
+            .ThenInclude(station => station.GamingCategory)
             .AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
@@ -573,7 +599,8 @@ public class GamingBookingService : IGamingBookingService
         return responses;
     }
 
-    public async Task<List<GamingBookingResponse>> GetBookingsByGamingStationAsync(GetBookingsByGamingStationRequest request, CancellationToken cancellationToken = default)
+    public async Task<List<GamingBookingResponse>> GetBookingsByGamingStationAsync(
+        GetBookingsByGamingStationRequest request, CancellationToken cancellationToken = default)
     {
         if (request.GamingStationId == Guid.Empty)
             return new List<GamingBookingResponse>();
@@ -581,8 +608,8 @@ public class GamingBookingService : IGamingBookingService
         var query = _db.GamingBookings
             .Where(b => b.GamingStationId == request.GamingStationId)
             .Include(b => b.GamingSlot)
-                .ThenInclude(gs => gs.GamingStation)
-                    .ThenInclude(station => station.GamingCategory)
+            .ThenInclude(gs => gs.GamingStation)
+            .ThenInclude(station => station.GamingCategory)
             .AsNoTracking();
 
         if (request.Date.HasValue)
@@ -619,7 +646,8 @@ public class GamingBookingService : IGamingBookingService
         return responses;
     }
 
-    public async Task<List<GamingBookingResponse>> GetBookingsByCustomerAsync(GetBookingsByCustomerRequest request, CancellationToken cancellationToken = default)
+    public async Task<List<GamingBookingResponse>> GetBookingsByCustomerAsync(GetBookingsByCustomerRequest request,
+        CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(request.CustomerPhone))
             return new List<GamingBookingResponse>();
@@ -627,8 +655,8 @@ public class GamingBookingService : IGamingBookingService
         var query = _db.GamingBookings
             .Where(b => b.CustomerPhone == request.CustomerPhone)
             .Include(b => b.GamingSlot)
-                .ThenInclude(gs => gs.GamingStation)
-                    .ThenInclude(station => station.GamingCategory)
+            .ThenInclude(gs => gs.GamingStation)
+            .ThenInclude(station => station.GamingCategory)
             .AsNoTracking();
 
         if (request.Date.HasValue)
@@ -667,22 +695,31 @@ public class GamingBookingService : IGamingBookingService
 
     private async Task<bool> CheckAvailabilityInternalAsync(Guid gamingSlotId, DateOnly date, CancellationToken ct)
     {
+        var now = DateTime.Now;
+
         // Check Confirmed Bookings
         var isBooked = await _db.GamingBookings
-            .AnyAsync(b => b.GamingSlotId == gamingSlotId 
-                        && b.BookingDate == date 
-                        && b.Status != GamingBookingStatus.Cancelled, ct);
+            .FirstOrDefaultAsync(b => b.GamingSlotId == gamingSlotId
+                                      && b.BookingDate == date
+                                      && b.Status != GamingBookingStatus.Cancelled, ct);
 
-        if (isBooked) return false;
-
-        // Check Active Holds (Pending and not expired)
         var isHeld = await _db.GamingBookingHolds
-            .AnyAsync(h => h.GamingSlotId == gamingSlotId 
-                        && h.BookingDate == date 
-                        && h.Status == GamingBookingHoldStatus.Pending 
-                        && h.ExpiresAt > DateTime.Now, ct);
+            .FirstOrDefaultAsync(h => h.GamingSlotId == gamingSlotId
+                                      && h.BookingDate == date
+                                      && h.Status == GamingBookingHoldStatus.Pending
+                                      && h.ExpiresAt > now, ct);
+        if (isHeld != null)
+        {
+            Console.WriteLine($"Returned isHeld.ExpiresAt: {isHeld.ExpiresAt.TimeOfDay}");
+            Console.WriteLine($"DateTime.Now at query time: {DateTime.Now}");
+        }
 
-        return !isHeld;
+        if (isBooked != null || isHeld != null)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private GamingBookingHoldResponse MapToResponse(GamingBookingHold hold)

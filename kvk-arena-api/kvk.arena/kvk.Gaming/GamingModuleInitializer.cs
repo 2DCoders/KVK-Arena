@@ -24,7 +24,11 @@ public class GamingModuleInitializer : IModuleInitializer
         if (string.IsNullOrWhiteSpace(connectionString))
             throw new InvalidOperationException("A connection string named 'GamingConnection' or 'DefaultConnection' is required.");
 
-        services.AddDbContext<GamingDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddDbContext<GamingDbContext>(
+            options => options.UseNpgsql(connectionString)
+                .EnableSensitiveDataLogging()
+                .LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information)
+            );
         
         // Register GamingCategoryService
         services.AddScoped<IGamingCategoryService,GamingCategoryService>();
