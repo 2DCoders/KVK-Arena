@@ -11,4 +11,6 @@ public class GamingCategorySlotConfigurationRequest
     public int SlotDurationMinutes { get; set; }
     public int SlotGapMinutes { get; set; }
     public decimal? IsActive { get; set; }
+    
+    public decimal Price { get; set; }
 }

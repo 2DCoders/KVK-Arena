@@ -23,13 +23,16 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
             return Result.Failure("Request cannot be null.");
 
         if (request.GamingCategoryId == Guid.Empty)
-            return Result.Failure("Gaming Station ID is required.");
+            return Result.Failure("Gaming Category ID is required.");
 
-        var gamingCategories = await _db.GamingCategories
+        var gamingCategory = await _db.GamingCategories
             .SingleOrDefaultAsync(gs => gs.Id == request.GamingCategoryId, cancellationToken);
 
-        if (!gamingCategories.IsActive)
-            return Result.Failure($"Gaming Station '{gamingCategories.Name}' is inactive. Cannot generate slots.");
+        if (gamingCategory == null)
+            return Result.Failure("Gaming Category not found.");
+
+        if (!gamingCategory.IsActive)
+            return Result.Failure($"Gaming Category '{gamingCategory.Name}' is inactive. Cannot generate slots.");
 
         try
         {
@@ -40,6 +43,7 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
                 EndTime = request.EndTime,
                 SlotDurationMinutes = request.SlotDurationMinutes,
                 SlotGapMinutes = request.SlotGapMinutes,
+                Price = request.Price, 
                 IsActive = request.IsActive ?? 0
             };
 
@@ -73,6 +77,7 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
             config.SlotGapMinutes = request.SlotGapMinutes;
             config.IsActive = request.IsActive;
             config.GamingCategoryId = request.GamingCategoryId;
+            config.Price = request.Price; // Corrected to use request.Price
 
             await _db.SaveChangesAsync(cancellationToken);
 
@@ -95,9 +100,12 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
 
             if (config == null) return Result.Failure("Configuration not found");
 
-            // When config is deleted, we should probably clear the generated slots too
-            var existingSlots = _db.GamingSlotConfigurations.Where(x => x.GamingCategoryId == config.GamingCategoryId);
-            _db.GamingSlotConfigurations.RemoveRange(existingSlots);
+            // When config is deleted, we should clear the generated slots associated with it
+            var existingSlots = await _db.GamingSlots
+                .Where(x => x.GamingCategoryId == config.GamingCategoryId)
+                .ToListAsync(cancellationToken);
+            
+            _db.GamingSlots.RemoveRange(existingSlots);
 
             _db.GamingSlotConfigurations.Remove(config);
             await _db.SaveChangesAsync(cancellationToken);
@@ -165,7 +173,7 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
                 EndTime = config.EndTime,
                 SlotDurationMinutes = config.SlotDurationMinutes,
                 SlotGapMinutes = config.SlotGapMinutes,
-                Price = config.IsActive ?? 0,
+                Price = config.Price, // Corrected to use config.Price
                 IsActive = config.IsActive > 0,
                 CreatedAt = config.CreatedAt,
                 LastModifiedAt = config.LastModifiedAt
@@ -181,36 +189,46 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
     private async Task RegenerateSlotsInternalAsync(Domain.GamingSlotConfiguration config,
         CancellationToken cancellationToken)
     {
-        // 1. Delete old slots
+        // 1. Get all active gaming stations for the category
+        var gamingStations = await _db.GamingStations
+            .Where(gs => gs.GamingCategoryId == config.GamingCategoryId && gs.IsActive)
+            .ToListAsync(cancellationToken);
+
+        // 2. Delete old slots for all stations in this category
         var oldSlots = await _db.GamingSlots
             .Where(x => x.GamingCategoryId == config.GamingCategoryId)
             .ToListAsync(cancellationToken);
 
         _db.GamingSlots.RemoveRange(oldSlots);
 
-        // 2. Generate new slots
+        // 3. Generate new slots for each gaming station
         var newSlots = new List<GamingSlot>();
-        var currentTime = config.StartTime;
 
-        // Simple safety check to prevent infinite loops if end time is before start time or duration is 0
-        while (currentTime.AddMinutes(config.SlotDurationMinutes) <= config.EndTime)
+        foreach (var station in gamingStations)
         {
-            var slotEndTime = currentTime.AddMinutes(config.SlotDurationMinutes);
+            var currentTime = config.StartTime;
 
-            newSlots.Add(new GamingSlot
+            // Simple safety check to prevent infinite loops if end time is before start time or duration is 0
+            while (currentTime.AddMinutes(config.SlotDurationMinutes) <= config.EndTime)
             {
-                GamingCategoryId = config.GamingCategoryId,
-                StartTime = currentTime,
-                EndTime = slotEndTime,
-                IsActive = true,
-                // Using the 'IsActive' decimal from config as price if available, else 0
-                Price = config.IsActive ?? 0
-            });
+                var slotEndTime = currentTime.AddMinutes(config.SlotDurationMinutes);
 
-            currentTime = slotEndTime.AddMinutes(config.SlotGapMinutes);
+                newSlots.Add(new GamingSlot
+                {
+                    GamingCategoryId = config.GamingCategoryId,
+                    GamingSlotConfigurationId = config.Id, // Assign the configuration ID to satisfy the foreign key
+                    GamingStationId = station.Id, // Assign the station ID
+                    StartTime = currentTime,
+                    EndTime = slotEndTime,
+                    IsActive = true,
+                    Price = config.Price // Corrected to use config.Price
+                });
 
-            // Prevent infinite loop if crossing midnight (though TimeOnly handles 24h)
-            if (currentTime < slotEndTime) break;
+                currentTime = slotEndTime.AddMinutes(config.SlotGapMinutes);
+
+                // Prevent infinite loop if crossing midnight (though TimeOnly handles 24h)
+                if (currentTime < slotEndTime) break;
+            }
         }
 
         if (newSlots.Any())
