@@ -1,6 +1,8 @@
+using kvk.Badminton.Enums;
 using kvk.BuildingBlocks.Common;
 using kvk.Gaming.Domain;
 using kvk.Gaming;
+using kvk.Gaming.Enums;
 using kvk.Gaming.Features.GamingSlotConfiguration;
 using kvk.Gaming.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -134,6 +136,17 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
                         b.BookingDate == date && b.GamingCategoryId == categoryId)
             .Select(x => x.GamingSlotId)
             .ToListAsync(cancellationToken);
+        
+        //and check with CourtBookingHold also
+        var bookingHoldNotExpired = await _db.GamingBookingHolds
+            .AsNoTracking()
+            .Where(b => b.GamingStationId == stationId &&
+                        b.GamingCategoryId == categoryId &&
+                        b.BookingDate == date &&
+                        b.Status == GamingBookingHoldStatus.Pending &&
+                        b.ExpiresAt > DateTime.Now)
+            .Select(x => x.GamingSlotId)
+            .ToListAsync(cancellationToken);
 
         return allAvailableSlots.Select(slot => new GameSlotResponse
         {
@@ -144,7 +157,7 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
             EndTime = slot.EndTime,
             IsActive = slot.IsActive,
             Price = slot.Price,
-            IsBooked = bookedSlotsIds.Contains(slot.Id),
+            IsBooked = bookedSlotsIds.Contains(slot.Id) || bookingHoldNotExpired.Contains(slot.Id),
             CreatedAt = slot.CreatedAt,
             LastModifiedAt = slot.LastModifiedAt
         });

@@ -380,6 +380,9 @@ public class BookingService : IBookingService
 
     private async Task<bool> CheckAvailabilityInternalAsync(Guid slotId, DateOnly date, CancellationToken ct)
     {
+
+        var now = DateTime.Now;
+        
         // Check Confirmed Bookings
         var isBooked = await _db.CourtBookings
             .AnyAsync(b => b.CourtSlotId == slotId 
@@ -393,9 +396,11 @@ public class BookingService : IBookingService
             .AnyAsync(h => h.CourtSlotId == slotId 
                         && h.BookingDate == date 
                         && h.Status == BookingHoldStatus.Pending 
-                        && h.ExpiresAt > DateTime.Now, ct);
+                        && h.ExpiresAt > now, ct);
 
-        return !isHeld;
+        if (isHeld) return false;
+        
+        return true;
     }
 
     private BookingResponse MapToResponse(BookingHold hold)

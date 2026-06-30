@@ -1,3 +1,4 @@
+using kvk.Badminton.Domain;
 using kvk.BuildingBlocks.Interfaces;
 using kvk.BuildingBlocks.Persistence;
 using Microsoft.AspNetCore.Http;
@@ -25,7 +26,16 @@ public class BadmintonDbContext(
         modelBuilder.HasDefaultSchema("badminton");
 
         base.OnModelCreating(modelBuilder);
+        
+        
+        modelBuilder
+            .Entity<BookingHold>()
+            .Property(x => x.ExpiresAt)
+            .HasColumnType("timestamp without time zone");
+
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(BadmintonDbContext).Assembly);
+        
+  
     }
 }

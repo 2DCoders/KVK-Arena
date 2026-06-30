@@ -1,4 +1,5 @@
 using kvk.Badminton.Domain;
+using kvk.Badminton.Enums;
 using kvk.Badminton.Interfaces;
 using kvk.BuildingBlocks.Common;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +29,8 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
 
     public async Task<IEnumerable<CourtSlotResponse>> GetByCourtIdAndDateAsync(Guid courtId, DateOnly date, CancellationToken cancellationToken = default)
     {
+        var now =  DateTime.Now;
+        
         var allAvailableSlots = await _db.CourtSlots
             .AsNoTracking()
             .Where(x => x.CourtId == courtId)
@@ -40,6 +43,16 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
                         b.BookingDate == date)
             .Select(x => x.CourtSlotId)
             .ToListAsync(cancellationToken);
+        
+        //and check with CourtBookingHold also
+        var bookingHoldNotExpired = await _db.BookingHolds
+            .AsNoTracking()
+            .Where(b => b.CourtId == courtId &&
+                        b.BookingDate == date &&
+                        b.Status == BookingHoldStatus.Pending &&
+                        b.ExpiresAt > DateTime.Now)
+            .Select(x => x.CourtSlotId)
+            .ToListAsync(cancellationToken);
 
         return allAvailableSlots.Select(slot => new CourtSlotResponse
         {
@@ -49,7 +62,7 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
             EndTime = slot.EndTime,
             IsActive = slot.IsActive,
             Price = slot.Price,
-            IsBooked = bookedSlotsIds.Contains(slot.Id),
+            IsBooked = bookedSlotsIds.Contains(slot.Id) || bookingHoldNotExpired.Contains(slot.Id),
             CreatedAt = slot.CreatedAt,
             LastModifiedAt = slot.LastModifiedAt
         });
