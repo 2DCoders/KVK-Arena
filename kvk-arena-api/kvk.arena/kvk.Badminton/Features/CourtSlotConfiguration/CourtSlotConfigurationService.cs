@@ -50,7 +50,7 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
             .Where(b => b.CourtId == courtId &&
                         b.BookingDate == date &&
                         b.Status == BookingHoldStatus.Pending &&
-                        b.ExpiresAt > DateTime.Now)
+                        b.ExpiresAt > now)
             .Select(x => x.CourtSlotId)
             .ToListAsync(cancellationToken);
 
