@@ -13,12 +13,12 @@ public class MultiGamingBookingRequest
 
     [Required(ErrorMessage = "Customer Name is required.")]
     [StringLength(100, ErrorMessage = "Customer Name cannot exceed 100 characters.")]
-    public string CustomerName { get; set; } = string.Empty;
+    public string? CustomerName { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Customer Phone is required.")]
     [Phone(ErrorMessage = "Invalid phone number format.")]
     [StringLength(20, ErrorMessage = "Customer Phone cannot exceed 20 characters.")]
-    public string CustomerPhone { get; set; } = string.Empty;
+    public string? CustomerPhone { get; set; } = string.Empty;
     
     public PaymentTypes PaymentTypes { get; set; }
 }
