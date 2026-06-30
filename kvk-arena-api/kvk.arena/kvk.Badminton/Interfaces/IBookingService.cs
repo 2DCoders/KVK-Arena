@@ -9,6 +9,7 @@ public interface IBookingService
     Task<Result> CreateMultiHoldAsync(MultiBookingRequest request, CancellationToken ct = default);
     Task<Result> CreateSingleBookingWithPaymentAsync(SingleBookingWithPaymentRequest request, CancellationToken ct = default);
     Task<Result> ProcessPaymentSuccessAsync(Guid holdId, CustomerDetails customerDetails, string paymentIntentId, CancellationToken ct = default);
+    Task<Result> ProcessMultiPaymentSuccessAsync(MultiPaymentRequest request, CancellationToken ct = default);
     Task VerifyPaymentNotificationAsync(PaymentNotificationRequest request, CancellationToken ct = default);
     Task<Result> CleanupExpiredHoldsAsync(CancellationToken ct = default);
 }

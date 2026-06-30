@@ -51,6 +51,20 @@ public class BookingController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("confirm-multi")]
+    public async Task<IActionResult> ConfirmMulti([FromBody] MultiPaymentRequest request, CancellationToken ct)
+    {
+        var result = await _service.ProcessMultiPaymentSuccessAsync(request, ct);
+
+        if (!result.Succeeded)
+        {
+            if (result.Message.Contains("not found")) return NotFound(result);
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
     [HttpPost("create")] // New endpoint for single booking with payment
     public async Task<IActionResult> CreateSingleBookingWithPayment([FromBody] SingleBookingWithPaymentRequest request, CancellationToken ct)
     {
