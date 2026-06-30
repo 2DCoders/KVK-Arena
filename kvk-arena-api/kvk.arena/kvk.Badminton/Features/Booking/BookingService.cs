@@ -46,7 +46,7 @@ public class BookingService : IBookingService
                 BookingDate = request.BookingDate,
                 Amount = request.Amount,
                 Status = BookingHoldStatus.Pending,
-                ExpiresAt = DateTime.Now.ToUniversalTime().AddMinutes(DefaultHoldMinutes)
+                ExpiresAt = DateTime.Now.AddMinutes(DefaultHoldMinutes)
             };
 
             _db.Set<BookingHold>().Add(hold);
@@ -108,7 +108,7 @@ public class BookingService : IBookingService
                     BookingDate = bookingDetail.BookingDate,
                     Amount = request.TotalAmount / request.Bookings.Count,
                     Status = BookingHoldStatus.Pending,
-                    ExpiresAt = DateTime.Now.ToUniversalTime().AddMinutes(DefaultHoldMinutes)
+                    ExpiresAt = DateTime.Now.AddMinutes(DefaultHoldMinutes)
                 };
 
                 _db.Set<BookingHold>().Add(hold);
@@ -174,7 +174,7 @@ public class BookingService : IBookingService
                 CustomerName = request.CustomerName,
                 PhoneNumber = request.PhoneNumber,
                 Status = BookingHoldStatus.Pending, // Always pending initially
-                ExpiresAt = DateTime.Now.ToUniversalTime().AddMinutes(DefaultHoldMinutes)
+                ExpiresAt = DateTime.Now.AddMinutes(DefaultHoldMinutes)
             };
 
             _db.Set<BookingHold>().Add(hold);
@@ -213,7 +213,7 @@ public class BookingService : IBookingService
             if (hold.Status == BookingHoldStatus.Confirmed)
                 return Result.Success("Booking already confirmed.");
 
-            if (hold.Status == BookingHoldStatus.Expired || hold.ExpiresAt < DateTime.UtcNow)
+            if (hold.Status == BookingHoldStatus.Expired || hold.ExpiresAt < DateTime.Now)
             {
                 hold.Status = BookingHoldStatus.Expired;
                 await _db.SaveChangesAsync(ct);
@@ -361,7 +361,7 @@ public class BookingService : IBookingService
         try
         {
             var expiredHolds = await _db.Set<BookingHold>()
-                .Where(h => h.Status == BookingHoldStatus.Pending && h.ExpiresAt < DateTime.UtcNow)
+                .Where(h => h.Status == BookingHoldStatus.Pending && h.ExpiresAt < DateTime.Now)
                 .ToListAsync(ct);
 
             foreach (var hold in expiredHolds)
@@ -393,7 +393,7 @@ public class BookingService : IBookingService
             .AnyAsync(h => h.CourtSlotId == slotId 
                         && h.BookingDate == date 
                         && h.Status == BookingHoldStatus.Pending 
-                        && h.ExpiresAt > DateTime.UtcNow, ct);
+                        && h.ExpiresAt > DateTime.Now, ct);
 
         return !isHeld;
     }

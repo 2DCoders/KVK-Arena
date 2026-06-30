@@ -16,7 +16,9 @@ public class GamingDbContext(
 {
     public DbSet<GamingCategory> GamingCategories { get; set; } = null!;
     public DbSet<GamingStation> GamingStations { get; set; } = null!;
+
     public DbSet<Game> Games { get; set; } = null!;
+
     // public DbSet<GamingStationGame> GamingStationGames { get; set; } = null!;
     public DbSet<GamingSlotConfiguration> GamingSlotConfigurations { get; set; } = null!;
     public DbSet<GamingSlot> GamingSlots { get; set; } = null!;
@@ -49,7 +51,7 @@ public class GamingDbContext(
         modelBuilder.Entity<GamingSlot>()
             .HasIndex(gs => new { gs.GamingStationId, gs.StartTime })
             .IsUnique();
-            
+
         // Configure GamingBooking unique constraint for BookingNumber
         modelBuilder.Entity<GamingBooking>()
             .HasIndex(gb => gb.BookingNumber)
@@ -92,6 +94,11 @@ public class GamingDbContext(
             .WithMany()
             .HasForeignKey(gbh => gbh.GamingSlotId)
             .OnDelete(DeleteBehavior.Restrict);
+       
+        modelBuilder
+            .Entity<GamingBookingHold>()
+            .Property(x => x.ExpiresAt)
+            .HasColumnType("timestamp without time zone");
 
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(GamingDbContext).Assembly);
