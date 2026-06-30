@@ -82,7 +82,7 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
                 EndTime = request.EndTime,
                 SlotDurationMinutes = request.SlotDurationMinutes,
                 SlotGapMinutes = request.SlotGapMinutes,
-                IsActive = request.IsActive
+                IsActive = request.IsActive,
             };
 
             _db.CourtSlotConfigurations.Add(config);
@@ -174,8 +174,10 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
                 StartTime = currentTime,
                 EndTime = slotEndTime,
                 IsActive = true,
-                // Using the 'IsActive' decimal from config as price if available, else 0
-                Price = config.IsActive ?? 0 
+                Price = await _db.CourtSlots
+                    .Where(x => x.CourtId == config.CourtId)
+                    .Select(x => x.Price)
+                    .FirstOrDefaultAsync(cancellationToken) // Use existing price if available, else default to 0
             });
 
             currentTime = slotEndTime.AddMinutes(config.SlotGapMinutes);

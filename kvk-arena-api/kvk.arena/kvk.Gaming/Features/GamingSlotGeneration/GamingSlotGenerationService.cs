@@ -45,7 +45,7 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
                 EndTime = request.EndTime,
                 SlotDurationMinutes = request.SlotDurationMinutes,
                 SlotGapMinutes = request.SlotGapMinutes,
-                Price = request.Price, 
+                Price = request.Price,
                 IsActive = request.IsActive ?? 0
             };
 
@@ -106,7 +106,7 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
             var existingSlots = await _db.GamingSlots
                 .Where(x => x.GamingCategoryId == config.GamingCategoryId)
                 .ToListAsync(cancellationToken);
-            
+
             _db.GamingSlots.RemoveRange(existingSlots);
 
             _db.GamingSlotConfigurations.Remove(config);
@@ -136,7 +136,7 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
                         b.BookingDate == date && b.GamingCategoryId == categoryId)
             .Select(x => x.GamingSlotId)
             .ToListAsync(cancellationToken);
-        
+
         //and check with CourtBookingHold also
         var bookingHoldNotExpired = await _db.GamingBookingHolds
             .AsNoTracking()
@@ -234,7 +234,10 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
                     StartTime = currentTime,
                     EndTime = slotEndTime,
                     IsActive = true,
-                    Price = config.Price // Corrected to use config.Price
+                    Price = await _db.GamingStations
+                        .Where(x => x.Id == station.Id)
+                        .Select(x => x.Price)
+                        .FirstOrDefaultAsync(cancellationToken) // Use existing price if available, else default to 0
                 });
 
                 currentTime = slotEndTime.AddMinutes(config.SlotGapMinutes);
