@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { getCourts } from "@/services/court-api";
 import { getNextWorkingDays } from "@/services/holidays-api";
+import { getCourtSlotsAvailability } from "@/services/court-slot-api";
 
 export default function BadmintonBookings() {
   const [courts, setCourts] = useState<
@@ -25,9 +26,9 @@ export default function BadmintonBookings() {
   const [workingDays, setWorkingDays] = useState<any[]>([]);
 
   const yesterday = new Date();
-yesterday.setDate(yesterday.getDate() - 1);
+  yesterday.setDate(yesterday.getDate() - 1);
 
-const startDate = yesterday.toISOString().split("T")[0];
+  const startDate = yesterday.toISOString().split("T")[0];
 
   useEffect(() => {
     const fetchWorkingDays = async () => {
@@ -63,6 +64,14 @@ const startDate = yesterday.toISOString().split("T")[0];
     fetchWorkingDays();
   }, []);
 
+  const handleGetCourtSlotsAvailability = async (courtId: string, date: string) => {
+    try {
+      const res = await getCourtSlotsAvailability(courtId, date);
+      console.log("Court Slots Availability:", res);
+    } catch (error) {
+      console.error("Error fetching court slots availability:", error);
+    }
+  };
 
   useEffect(() => {
     handleGetCourts();
@@ -137,17 +146,26 @@ const startDate = yesterday.toISOString().split("T")[0];
     { time: "06:00 PM - 07:00 PM", available: true },
   ];
 
-  const [selectedCourts, setSelectedCourts] = useState<number[]>([]);
+  const [selectedCourt, setSelectedCourt] = useState<number | null>(null);
   const [selectedDate, setSelectedDate] = useState(0);
   const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
 
-  const toggleCourt = (index: number) => {
+  const toggleCourt = async (index: number) => {
     const court = courts[index];
 
     if (court.status === 2) return;
 
-    setSelectedCourts((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index],
+    // Deselect if clicking the selected court
+    if (selectedCourt === index) {
+      setSelectedCourt(null);
+      return;
+    }
+
+    setSelectedCourt(index);
+
+    await handleGetCourtSlotsAvailability(
+      court.id,
+      workingDays[selectedDate]?.fullDate
     );
   };
 
@@ -175,12 +193,10 @@ const startDate = yesterday.toISOString().split("T")[0];
   };
 
   const serviceFee = 100;
-  const selectedCourtObjects = selectedCourts.map((index) => courts[index]);
+const selectedCourtObject =
+  selectedCourt !== null ? courts[selectedCourt] : null;
 
-  const courtFee = selectedCourtObjects.reduce(
-    (sum, court) => sum + court.price,
-    0,
-  );
+const courtFee = selectedCourtObject?.price ?? 0;
 
   const subtotal = courtFee * selectedSlots.length;
   const total = subtotal + serviceFee;
@@ -237,7 +253,16 @@ const startDate = yesterday.toISOString().split("T")[0];
             {workingDays.map((item, index) => (
               <button
                 key={index}
-                onClick={() => setSelectedDate(index)}
+                onClick={async () => {
+                  setSelectedDate(index);
+
+                  if (selectedCourt !== null) {
+                    await handleGetCourtSlotsAvailability(
+                      courts[selectedCourt].id,
+                      workingDays[index].fullDate
+                    );
+                  }
+                }}
                 className={`
         rounded-2xl
         border
@@ -251,11 +276,6 @@ const startDate = yesterday.toISOString().split("T")[0];
                   }
       `}
               >
-                {item.isToday && (
-                  <div className="mb-2 text-[10px] font-bold">
-                    TODAY
-                  </div>
-                )}
 
                 <p className="text-xs font-bold">{item.day}</p>
 
@@ -287,13 +307,13 @@ const startDate = yesterday.toISOString().split("T")[0];
                   transition-all
                   duration-500
                   cursor-pointer
-                  ${selectedCourts.includes(index)
+                  ${selectedCourt === index
                     ? "border-amber-500 shadow-2xl ring-4 ring-amber-200 scale-[1.02]"
                     : "border-gray-200 hover:-translate-y-1 hover:border-amber-300 hover:shadow-xl"
                   }
                   ${courtItem.status === 2
                     ? "cursor-not-allowed opacity-60 grayscale"
-                    : selectedCourts.includes(index)
+                    : selectedCourt === index
                       ? "border-amber-500 shadow-2xl ring-4 ring-amber-200 scale-[1.02]"
                       : "border-gray-200 hover:-translate-y-1 hover:border-amber-300 hover:shadow-xl"
                   }
@@ -302,12 +322,12 @@ const startDate = yesterday.toISOString().split("T")[0];
                 <div className="relative h-52 overflow-hidden">
                   <div className="absolute top-4 left-4 z-20">
                     <input
-                      type="checkbox"
-                      checked={selectedCourts.includes(index)}
-                      onChange={() => toggleCourt(index)}
-                      disabled={courtItem.status === 2}
-                      className="h-5 w-5 cursor-pointer accent-amber-600"
-                    />
+  type="checkbox"
+  checked={selectedCourt === index}
+  onChange={() => toggleCourt(index)}
+  disabled={courtItem.status === 2}
+  className="h-5 w-5 cursor-pointer accent-amber-600"
+/>
                   </div>
                   <img
                     src={courtItem.image}
@@ -388,10 +408,10 @@ const startDate = yesterday.toISOString().split("T")[0];
 
                     <p
                       className={`mt-2 text-xs font-bold ${slot.available
-                          ? selectedSlots.includes(index)
-                            ? "text-white"
-                            : "text-green-600"
-                          : "text-red-500"
+                        ? selectedSlots.includes(index)
+                          ? "text-white"
+                          : "text-green-600"
+                        : "text-red-500"
                         }`}
                     >
                       {isPastSlot(slot.time, selectedDate)
@@ -430,9 +450,7 @@ const startDate = yesterday.toISOString().split("T")[0];
                   <span className="text-gray-500">Courts</span>
 
                   <span className="font-semibold text-right">
-                    {selectedCourtObjects.length
-                      ? selectedCourtObjects.map((c) => c.name).join(", ")
-                      : "Select Courts"}
+                    {selectedCourtObject?.name ?? "Select Court"}
                   </span>
                 </div>
 
