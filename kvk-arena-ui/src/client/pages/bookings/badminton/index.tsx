@@ -9,6 +9,8 @@ import {
   Trophy,
 } from "lucide-react";
 import { getCourts } from "@/services/court-api";
+import { getNextWorkingDays } from "@/services/holidays-api";
+import { getCourtSlotsAvailability } from "@/services/court-slot-api";
 
 export default function BadmintonBookings() {
   const [courts, setCourts] = useState<
@@ -21,6 +23,55 @@ export default function BadmintonBookings() {
       features: string[];
     }[]
   >([]);
+  const [workingDays, setWorkingDays] = useState<any[]>([]);
+
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const startDate = yesterday.toISOString().split("T")[0];
+
+  useEffect(() => {
+    const fetchWorkingDays = async () => {
+      try {
+        const res = await getNextWorkingDays(startDate, 7);
+
+        const formattedDates = res.map(
+          (dateStr: string) => {
+            const date = new Date(dateStr);
+            const today = new Date();
+
+            return {
+              fullDate: dateStr,
+              day: date.toLocaleDateString("en-US", {
+                weekday: "short",
+              }),
+              date: date.getDate(),
+              month: date.toLocaleDateString("en-US", {
+                month: "short",
+              }),
+              isToday:
+                date.toDateString() === today.toDateString(),
+            };
+          }
+        );
+
+        setWorkingDays(formattedDates);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchWorkingDays();
+  }, []);
+
+  const handleGetCourtSlotsAvailability = async (courtId: string, date: string) => {
+    try {
+      const res = await getCourtSlotsAvailability(courtId, date);
+      console.log("Court Slots Availability:", res);
+    } catch (error) {
+      console.error("Error fetching court slots availability:", error);
+    }
+  };
 
   useEffect(() => {
     handleGetCourts();
@@ -95,17 +146,26 @@ export default function BadmintonBookings() {
     { time: "06:00 PM - 07:00 PM", available: true },
   ];
 
-  const [selectedCourts, setSelectedCourts] = useState<number[]>([]);
+  const [selectedCourt, setSelectedCourt] = useState<number | null>(null);
   const [selectedDate, setSelectedDate] = useState(0);
   const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
 
-  const toggleCourt = (index: number) => {
+  const toggleCourt = async (index: number) => {
     const court = courts[index];
 
     if (court.status === 2) return;
 
-    setSelectedCourts((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index],
+    // Deselect if clicking the selected court
+    if (selectedCourt === index) {
+      setSelectedCourt(null);
+      return;
+    }
+
+    setSelectedCourt(index);
+
+    await handleGetCourtSlotsAvailability(
+      court.id,
+      workingDays[selectedDate]?.fullDate
     );
   };
 
@@ -133,12 +193,10 @@ export default function BadmintonBookings() {
   };
 
   const serviceFee = 100;
-  const selectedCourtObjects = selectedCourts.map((index) => courts[index]);
+const selectedCourtObject =
+  selectedCourt !== null ? courts[selectedCourt] : null;
 
-  const courtFee = selectedCourtObjects.reduce(
-    (sum, court) => sum + court.price,
-    0,
-  );
+const courtFee = selectedCourtObject?.price ?? 0;
 
   const subtotal = courtFee * selectedSlots.length;
   const total = subtotal + serviceFee;
@@ -192,27 +250,32 @@ export default function BadmintonBookings() {
           </div>
 
           <div className="grid grid-cols-7 gap-4 p-2">
-            {dates.map((item, index) => (
+            {workingDays.map((item, index) => (
               <button
                 key={index}
-                onClick={() => setSelectedDate(index)}
+                onClick={async () => {
+                  setSelectedDate(index);
+
+                  if (selectedCourt !== null) {
+                    await handleGetCourtSlotsAvailability(
+                      courts[selectedCourt].id,
+                      workingDays[index].fullDate
+                    );
+                  }
+                }}
                 className={`
-                      rounded-2xl
-                      border
-                      p-4
-                      transition-all
-                      duration-300
-                      cursor-pointer
-                      ${
-                        selectedDate === index
-                          ? "scale-105 border-amber-500 bg-[#A65A2A] text-white shadow-xl"
-                          : "border-gray-200 bg-white hover:border-amber-300"
-                      }
-                    `}
+        rounded-2xl
+        border
+        p-4
+        transition-all
+        duration-300
+        cursor-pointer
+        ${selectedDate === index
+                    ? "scale-105 border-amber-500 bg-[#A65A2A] text-white shadow-xl"
+                    : "border-gray-200 bg-white hover:border-amber-300"
+                  }
+      `}
               >
-                {item.isToday && (
-                  <div className="mb-2 text-[10px] font-bold">TODAY</div>
-                )}
 
                 <p className="text-xs font-bold">{item.day}</p>
 
@@ -244,29 +307,27 @@ export default function BadmintonBookings() {
                   transition-all
                   duration-500
                   cursor-pointer
-                  ${
-                    selectedCourts.includes(index)
+                  ${selectedCourt === index
+                    ? "border-amber-500 shadow-2xl ring-4 ring-amber-200 scale-[1.02]"
+                    : "border-gray-200 hover:-translate-y-1 hover:border-amber-300 hover:shadow-xl"
+                  }
+                  ${courtItem.status === 2
+                    ? "cursor-not-allowed opacity-60 grayscale"
+                    : selectedCourt === index
                       ? "border-amber-500 shadow-2xl ring-4 ring-amber-200 scale-[1.02]"
                       : "border-gray-200 hover:-translate-y-1 hover:border-amber-300 hover:shadow-xl"
-                  }
-                  ${
-                    courtItem.status === 2
-                      ? "cursor-not-allowed opacity-60 grayscale"
-                      : selectedCourts.includes(index)
-                        ? "border-amber-500 shadow-2xl ring-4 ring-amber-200 scale-[1.02]"
-                        : "border-gray-200 hover:-translate-y-1 hover:border-amber-300 hover:shadow-xl"
                   }
                 `}
               >
                 <div className="relative h-52 overflow-hidden">
                   <div className="absolute top-4 left-4 z-20">
                     <input
-                      type="checkbox"
-                      checked={selectedCourts.includes(index)}
-                      onChange={() => toggleCourt(index)}
-                      disabled={courtItem.status === 2}
-                      className="h-5 w-5 cursor-pointer accent-amber-600"
-                    />
+  type="checkbox"
+  checked={selectedCourt === index}
+  onChange={() => toggleCourt(index)}
+  disabled={courtItem.status === 2}
+  className="h-5 w-5 cursor-pointer accent-amber-600"
+/>
                   </div>
                   <img
                     src={courtItem.image}
@@ -277,9 +338,8 @@ export default function BadmintonBookings() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
 
                   <span
-                    className={`absolute top-4 right-4 rounded-full px-3 py-1 text-xs font-bold text-white ${
-                      courtItem.status === 2 ? "bg-red-500" : "bg-green-500"
-                    }`}
+                    className={`absolute top-4 right-4 rounded-full px-3 py-1 text-xs font-bold text-white ${courtItem.status === 2 ? "bg-red-500" : "bg-green-500"
+                      }`}
                   >
                     {courtItem.status === 2
                       ? "Temporarily Closed"
@@ -336,25 +396,23 @@ export default function BadmintonBookings() {
                       transition-all
                       cursor-pointer
                       duration-300
-                      ${
-                        !slot.available || isPastSlot(slot.time, selectedDate)
-                          ? "cursor-not-allowed border-red-200 bg-red-50 opacity-60"
-                          : selectedSlots.includes(index)
-                            ? "border-amber-500 bg-[#A65A2A] text-white shadow-lg"
-                            : "border-gray-200 hover:border-amber-300 hover:shadow-md"
+                      ${!slot.available || isPastSlot(slot.time, selectedDate)
+                        ? "cursor-not-allowed border-red-200 bg-red-50 opacity-60"
+                        : selectedSlots.includes(index)
+                          ? "border-amber-500 bg-[#A65A2A] text-white shadow-lg"
+                          : "border-gray-200 hover:border-amber-300 hover:shadow-md"
                       }
                     `}
                   >
                     <p className="font-semibold text-sm">{slot.time}</p>
 
                     <p
-                      className={`mt-2 text-xs font-bold ${
-                        slot.available
-                          ? selectedSlots.includes(index)
-                            ? "text-white"
-                            : "text-green-600"
-                          : "text-red-500"
-                      }`}
+                      className={`mt-2 text-xs font-bold ${slot.available
+                        ? selectedSlots.includes(index)
+                          ? "text-white"
+                          : "text-green-600"
+                        : "text-red-500"
+                        }`}
                     >
                       {isPastSlot(slot.time, selectedDate)
                         ? "Expired"
@@ -392,9 +450,7 @@ export default function BadmintonBookings() {
                   <span className="text-gray-500">Courts</span>
 
                   <span className="font-semibold text-right">
-                    {selectedCourtObjects.length
-                      ? selectedCourtObjects.map((c) => c.name).join(", ")
-                      : "Select Courts"}
+                    {selectedCourtObject?.name ?? "Select Court"}
                   </span>
                 </div>
 
@@ -411,9 +467,9 @@ export default function BadmintonBookings() {
                   <span className="font-semibold text-right">
                     {selectedSlots.length
                       ? selectedSlots
-                          .sort((a, b) => a - b)
-                          .map((i) => slots[i].time)
-                          .join(", ")
+                        .sort((a, b) => a - b)
+                        .map((i) => slots[i].time)
+                        .join(", ")
                       : "Select Slots"}
                   </span>
                 </div>
