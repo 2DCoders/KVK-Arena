@@ -234,10 +234,7 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
                     StartTime = currentTime,
                     EndTime = slotEndTime,
                     IsActive = true,
-                    Price = await _db.GamingStations
-                        .Where(x => x.Id == station.Id)
-                        .Select(x => x.Price)
-                        .FirstOrDefaultAsync(cancellationToken) // Use existing price if available, else default to 0
+                    Price = config.Price
                 });
 
                 currentTime = slotEndTime.AddMinutes(config.SlotGapMinutes);

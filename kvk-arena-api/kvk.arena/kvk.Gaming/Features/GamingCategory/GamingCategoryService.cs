@@ -38,7 +38,8 @@ public class GamingCategoryService : IGamingCategoryService
             {
                 Name = request.Name,
                 Code = request.Code,
-                IsActive = true // New categories are active by default
+                IsActive = true, // New categories are active by default
+                Price = request.Price
             };
 
             _db.GamingCategories.Add(gamingCategory);
@@ -51,6 +52,7 @@ public class GamingCategoryService : IGamingCategoryService
                 Code = gamingCategory.Code,
                 IsActive = gamingCategory.IsActive,
                 CreatedAt = gamingCategory.CreatedAt,
+                Price = gamingCategory.Price,
                 LastModifiedAt = gamingCategory.LastModifiedAt
             };
 
@@ -95,6 +97,7 @@ public class GamingCategoryService : IGamingCategoryService
             existingCategory.Name = request.Name;
             existingCategory.Code = request.Code;
             existingCategory.IsActive = request.IsActive;
+            existingCategory.Price = request.Price;
 
             _db.GamingCategories.Update(existingCategory);
             await _db.SaveChangesAsync(cancellationToken);
@@ -105,6 +108,7 @@ public class GamingCategoryService : IGamingCategoryService
                 Name = existingCategory.Name,
                 Code = existingCategory.Code,
                 IsActive = existingCategory.IsActive,
+                Price = existingCategory.Price,
                 CreatedAt = existingCategory.CreatedAt,
                 LastModifiedAt = existingCategory.LastModifiedAt
             };
@@ -136,6 +140,7 @@ public class GamingCategoryService : IGamingCategoryService
             Name = gamingCategory.Name,
             Code = gamingCategory.Code,
             IsActive = gamingCategory.IsActive,
+            Price = gamingCategory.Price,
             CreatedAt = gamingCategory.CreatedAt,
             LastModifiedAt = gamingCategory.LastModifiedAt
         };
@@ -152,6 +157,7 @@ public class GamingCategoryService : IGamingCategoryService
             Name = gc.Name,
             Code = gc.Code,
             IsActive = gc.IsActive,
+            Price = gc.Price,
             CreatedAt = gc.CreatedAt,
             LastModifiedAt = gc.LastModifiedAt
         }).ToList();

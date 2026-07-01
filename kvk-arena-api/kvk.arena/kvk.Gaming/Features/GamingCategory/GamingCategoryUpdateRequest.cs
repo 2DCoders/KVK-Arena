@@ -16,4 +16,6 @@ public class GamingCategoryUpdateRequest
     public bool HasGames { get; set; }
     
     public bool IsActive { get; set; }
+    
+    public decimal Price { get; set; }
 }

@@ -12,6 +12,8 @@ public class GamingCategory : AuditableEntity
     public string Code { get; set; }
     
     public bool IsActive { get; set; }
+    
+    public decimal Price { get; set; }
 
     
 }

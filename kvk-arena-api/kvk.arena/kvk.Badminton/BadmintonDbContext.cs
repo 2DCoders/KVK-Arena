@@ -14,12 +14,12 @@ public class BadmintonDbContext(
     IHttpContextAccessor? httpContextAccessor = null)
     : AppDbContextBase(options, tenantService, logger, httpContextAccessor)
 {
-    public DbSet<Domain.Court> Courts => Set<Domain.Court>();
-    public DbSet<Domain.CourtSlotConfiguration> CourtSlotConfigurations => Set<Domain.CourtSlotConfiguration>();
-    public DbSet<Domain.CourtSlot> CourtSlots => Set<Domain.CourtSlot>();
-    public DbSet<Domain.CourtBooking> CourtBookings => Set<Domain.CourtBooking>();
-    public DbSet<Domain.BookingHold> BookingHolds => Set<Domain.BookingHold>();
-    public DbSet<Domain.BadmintonDayEnd> BadmintonDayEnds => Set<Domain.BadmintonDayEnd>();
+    public DbSet<Court> Courts => Set<Court>();
+    public DbSet<CourtSlotConfiguration> CourtSlotConfigurations => Set<Domain.CourtSlotConfiguration>();
+    public DbSet<CourtSlot> CourtSlots => Set<Domain.CourtSlot>();
+    public DbSet<CourtBooking> CourtBookings => Set<Domain.CourtBooking>();
+    public DbSet<BookingHold> BookingHolds => Set<Domain.BookingHold>();
+    public DbSet<BadmintonDayEnd> BadmintonDayEnds => Set<Domain.BadmintonDayEnd>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

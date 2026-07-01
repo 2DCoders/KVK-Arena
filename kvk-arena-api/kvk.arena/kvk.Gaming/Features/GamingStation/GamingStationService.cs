@@ -54,7 +54,6 @@ public class GamingStationService : IGamingStationService
                 StationCode = request.StationCode,
                 Name = request.Name,
                 IsActive = request.IsActive,
-                Price = request.Price
             };
 
             _db.GamingStations.Add(gamingStation);
@@ -67,7 +66,7 @@ public class GamingStationService : IGamingStationService
                 GamingCategoryName = gamingCategory.Name,
                 StationCode = gamingStation.StationCode,
                 Name = gamingStation.Name,
-                Price = gamingStation.Price,
+                Price = gamingCategory.Price,
                 IsActive = gamingStation.IsActive,
                 CreatedAt = gamingStation.CreatedAt,
                 LastModifiedAt = gamingStation.LastModifiedAt
@@ -130,7 +129,6 @@ public class GamingStationService : IGamingStationService
             existingStation.StationCode = request.StationCode;
             existingStation.Name = request.Name;
             existingStation.IsActive = request.IsActive;
-            existingStation.Price = request.Price;
 
             _db.GamingStations.Update(existingStation);
             await _db.SaveChangesAsync(cancellationToken);
@@ -142,7 +140,7 @@ public class GamingStationService : IGamingStationService
                 GamingCategoryName = gamingCategory.Name,
                 StationCode = existingStation.StationCode,
                 Name = existingStation.Name,
-                Price = existingStation.Price,
+                Price = gamingCategory.Price,
                 IsActive = existingStation.IsActive,
                 CreatedAt = existingStation.CreatedAt,
                 LastModifiedAt = existingStation.LastModifiedAt
@@ -180,7 +178,7 @@ public class GamingStationService : IGamingStationService
             IsActive = gamingStation.IsActive,
             CreatedAt = gamingStation.CreatedAt,
             LastModifiedAt = gamingStation.LastModifiedAt,
-            Price = gamingStation.Price
+            Price = gamingStation.GamingCategory.Price
         };
     }
 
@@ -224,7 +222,7 @@ public class GamingStationService : IGamingStationService
             IsActive = gs.IsActive,
             CreatedAt = gs.CreatedAt,
             LastModifiedAt = gs.LastModifiedAt,
-            Price = gs.Price
+            Price = gs.GamingCategory.Price
         }).ToList();
     }
 
@@ -250,7 +248,7 @@ public class GamingStationService : IGamingStationService
             IsActive = gs.IsActive,
             CreatedAt = gs.CreatedAt,
             LastModifiedAt = gs.LastModifiedAt,
-            Price = gs.Price
+            Price = gs.GamingCategory.Price
         }).ToList();
     }
 
