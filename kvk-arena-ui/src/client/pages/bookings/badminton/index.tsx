@@ -40,6 +40,15 @@ type CourtSlot = {
   available: boolean;
 };
 
+type SelectedSlotDetail = {
+  courtId: string;
+  courtName: string;
+  slotId: string;
+  slotIndex: number;
+  label: string;
+  price: number;
+};
+
 const formatSlotLabel = (startTime: string, endTime: string) => {
   const formatTime = (time: string) => {
     const [hoursText, minutesText] = time.split(":");
@@ -61,8 +70,9 @@ export default function BadmintonBookings() {
   const [workingDays, setWorkingDays] = useState<BookingDay[]>([]);
   const [courtSlots, setCourtSlots] = useState<Record<string, CourtSlot[]>>({});
   const [selectedDate, setSelectedDate] = useState(0);
-  const [selectedCourtId, setSelectedCourtId] = useState<string | null>(null);
-  const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
+  const [selectedSlotsByCourt, setSelectedSlotsByCourt] = useState<
+    Record<string, number[]>
+  >({});
 
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
@@ -192,8 +202,7 @@ export default function BadmintonBookings() {
   }, [courts, displayedDays, selectedDate]);
 
   useEffect(() => {
-    setSelectedCourtId(null);
-    setSelectedSlots([]);
+    setSelectedSlotsByCourt({});
   }, [selectedDate]);
 
   const isPastSlot = (slotTime: string, selectedDateIndex: number) => {
@@ -216,54 +225,91 @@ export default function BadmintonBookings() {
 
   const toggleSlot = (courtId: string, index: number) => {
     const court = courts.find((item) => item.id === courtId);
+    const slots = courtSlots[courtId] ?? [];
+    const slot = slots[index];
 
-    if (!court || court.status === 2) {
+    if (!court || court.status === 2 || !slot || !slot.available) {
       return;
     }
 
-    if (selectedCourtId !== courtId) {
-      setSelectedCourtId(courtId);
-      setSelectedSlots([index]);
-      return;
-    }
+    setSelectedSlotsByCourt((currentSelections) => {
+      const selectedForCourt = currentSelections[courtId] ?? [];
 
-    if (selectedSlots.length === 0) {
-      setSelectedSlots([index]);
-      return;
-    }
+      if (selectedForCourt.includes(index)) {
+        const nextSelections = selectedForCourt.filter(
+          (slotIndex) => slotIndex !== index
+        );
 
-    if (selectedSlots.includes(index)) {
-      setSelectedSlots(selectedSlots.filter((slotIndex) => slotIndex !== index));
-      return;
-    }
+        if (nextSelections.length === 0) {
+          const nextSelectionsByCourt = { ...currentSelections };
+          delete nextSelectionsByCourt[courtId];
+          return nextSelectionsByCourt;
+        }
 
-    const sorted = [...selectedSlots].sort((a, b) => a - b);
-    const min = sorted[0];
-    const max = sorted[sorted.length - 1];
-    const isAdjacent = index === min - 1 || index === max + 1;
+        return {
+          ...currentSelections,
+          [courtId]: nextSelections,
+        };
+      }
 
-    if (isAdjacent) {
-      setSelectedSlots([...selectedSlots, index]);
-    }
+      if (selectedForCourt.length === 0) {
+        return {
+          ...currentSelections,
+          [courtId]: [index],
+        };
+      }
+
+      const sorted = [...selectedForCourt].sort((a, b) => a - b);
+      const min = sorted[0];
+      const max = sorted[sorted.length - 1];
+      const isAdjacent = index === min - 1 || index === max + 1;
+
+      if (!isAdjacent) {
+        return currentSelections;
+      }
+
+      return {
+        ...currentSelections,
+        [courtId]: [...selectedForCourt, index],
+      };
+    });
   };
 
   const serviceFee = 100;
-  const selectedCourtObject = selectedCourtId
-    ? courts.find((court) => court.id === selectedCourtId) ?? null
-    : null;
-  const selectedCourtSlots = selectedCourtId ? courtSlots[selectedCourtId] ?? [] : [];
-  const courtFee = selectedCourtObject?.price ?? 0;
-  const subtotal = courtFee * selectedSlots.length;
+  const selectedSlotDetails = useMemo<SelectedSlotDetail[]>(() => {
+    return courts.flatMap((court) => {
+      const selectedIndexes = selectedSlotsByCourt[court.id] ?? [];
+      const slots = courtSlots[court.id] ?? [];
+
+      return selectedIndexes
+        .slice()
+        .sort((a, b) => a - b)
+        .map((slotIndex) => {
+          const slot = slots[slotIndex];
+
+          if (!slot) {
+            return null;
+          }
+
+          return {
+            courtId: court.id,
+            courtName: court.name,
+            slotId: slot.id,
+            slotIndex,
+            label: slot.label,
+            price: slot.price > 0 ? slot.price : court.price,
+          };
+        })
+        .filter((item): item is SelectedSlotDetail => item !== null);
+    });
+  }, [courts, courtSlots, selectedSlotsByCourt]);
+
+  const subtotal = selectedSlotDetails.reduce((sum, item) => sum + item.price, 0);
   const total = subtotal + serviceFee;
   const selectedDateInfo = displayedDays[selectedDate] ?? displayedDays[0];
-  const selectedSlotLabels =
-    selectedCourtId && selectedCourtSlots.length > 0 && selectedSlots.length > 0
-      ? selectedSlots
-        .sort((a, b) => a - b)
-        .map((slotIndex) => selectedCourtSlots[slotIndex]?.label)
-        .filter(Boolean)
-        .join(", ")
-      : "Select Slots";
+  const selectedCourtNames = Array.from(
+    new Set(selectedSlotDetails.map((item) => item.courtName))
+  );
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-[#fafafa] via-white to-[#fafafa] py-20">
@@ -330,7 +376,8 @@ export default function BadmintonBookings() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch mb-5">
           {courts.map((courtItem) => {
             const slots = courtSlots[courtItem.id] ?? [];
-            const isActiveCourt = selectedCourtId === courtItem.id;
+            const selectedSlots = selectedSlotsByCourt[courtItem.id] ?? [];
+            const isActiveCourt = selectedSlots.length > 0;
 
             return (
               <div
@@ -393,8 +440,7 @@ export default function BadmintonBookings() {
                             courtItem.status === 2 ||
                             !slot.available ||
                             isPastSlot(slot.label, selectedDate);
-                          const isSelected =
-                            isActiveCourt && selectedSlots.includes(index);
+                          const isSelected = selectedSlots.includes(index);
 
                           return (
                             <button
@@ -438,9 +484,11 @@ export default function BadmintonBookings() {
 
               <div className="space-y-3">
                 <div className="flex justify-between gap-4">
-                  <span className="text-gray-500">Court</span>
+                  <span className="text-gray-500">Courts</span>
                   <span className="text-right font-semibold">
-                    {selectedCourtObject?.name ?? "Select a slot"}
+                    {selectedCourtNames.length > 0
+                      ? selectedCourtNames.join(", ")
+                      : "Select slots"}
                   </span>
                 </div>
 
@@ -452,16 +500,38 @@ export default function BadmintonBookings() {
                 </div>
 
                 <div className="flex justify-between gap-4">
-                  <span className="text-gray-500">Slots</span>
+                  <span className="text-gray-500">Selected Slots</span>
                   <span className="text-right font-semibold">
-                    {selectedSlotLabels}
+                    {selectedSlotDetails.length}
                   </span>
                 </div>
 
+                {selectedSlotDetails.length > 0 && (
+                  <div className="max-h-72 space-y-2 overflow-auto rounded-2xl bg-gray-50 p-4">
+                    {selectedSlotDetails.map((slot) => (
+                      <div
+                        key={`${slot.courtId}-${slot.slotId}`}
+                        className="flex items-start justify-between gap-4 text-sm"
+                      >
+                        <div>
+                          <p className="font-semibold text-gray-900">
+                            {slot.courtName}
+                          </p>
+                          <p className="text-gray-500">{slot.label}</p>
+                        </div>
+
+                        <p className="whitespace-nowrap font-semibold text-amber-700">
+                          LKR {slot.price.toLocaleString()}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <div className="border-t pt-3">
                   <div className="flex justify-between text-sm">
-                    <span>Court Fee</span>
-                    <span>LKR {courtFee.toLocaleString()}</span>
+                    <span>Subtotal</span>
+                    <span>LKR {subtotal.toLocaleString()}</span>
                   </div>
 
                   <div className="mt-2 flex justify-between text-sm">
@@ -479,7 +549,7 @@ export default function BadmintonBookings() {
               </div>
 
               <button
-                disabled={!selectedCourtObject || selectedSlots.length === 0}
+                disabled={selectedSlotDetails.length === 0}
                 className="group relative mt-6 w-full overflow-hidden rounded-2xl bg-gradient-to-r from-[#A65A2A] via-[#D4A76A] to-[#A65A2A] px-8 py-4 font-bold text-white transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_15px_40px_rgba(201,119,58,0.35)] cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <span className="relative z-10">Proceed To Payment</span>
@@ -489,8 +559,8 @@ export default function BadmintonBookings() {
             </div>
 
             <div className="rounded-3xl border border-amber-100 bg-amber-50/70 p-6 text-sm text-amber-900">
-              Pick a slot on any court to start a booking. You can extend the
-              selection only to adjacent slots on the same court.
+              Pick slots on any court to build your booking. Within each court,
+              selections still need to stay adjacent.
             </div>
           </div>
         </div>
