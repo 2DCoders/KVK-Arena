@@ -234,7 +234,7 @@ public class GamingStationService : IGamingStationService
         var gamingStations = await _db.GamingStations
             .Include(gs => gs.GamingCategory)
             .AsNoTracking()
-            .Where(gs => gs.GamingCategoryId == categoryId && gs.IsActive) // Only active stations in active listings
+            .Where(gs => gs.GamingCategoryId == categoryId) // Only active stations in active listings
             .OrderBy(gs => gs.Name)
             .ToListAsync(cancellationToken);
 
