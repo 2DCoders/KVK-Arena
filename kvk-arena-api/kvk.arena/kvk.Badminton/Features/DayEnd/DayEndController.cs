@@ -1,3 +1,4 @@
+using kvk.Badminton.Services;
 using Microsoft.AspNetCore.Mvc;
 using kvk.BuildingBlocks.Interfaces;
 
@@ -7,9 +8,9 @@ namespace kvk.Badminton.Features.DayEnd;
 [Route("api/badminton/dayend")]
 public class DayEndController : ControllerBase
 {
-    private readonly IDayEndService _service;
+    private readonly BadmintonDayEndService _service;
 
-    public DayEndController(IDayEndService service)
+    public DayEndController(BadmintonDayEndService service)
     {
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }

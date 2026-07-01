@@ -6,18 +6,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace kvk.Badminton.Services;
 
-public class BadmintonDayEndService : IDayEndService
+public class BadmintonDayEndService : GenericDayEndService<BadmintonDbContext, BadmintonDayEnd>
 {
     private readonly GenericDayEndService<BadmintonDbContext, BadmintonDayEnd> _genericDayEndService;
 
     public BadmintonDayEndService(BadmintonDbContext db)
-    {
-        _genericDayEndService = new GenericDayEndService<BadmintonDbContext, BadmintonDayEnd>(
-            db: db,
-            setSelector: context => context.BadmintonDayEnds,
-            toEntity: dto => new BadmintonDayEnd 
-            { 
-                CurrentDate = dto.CurrentDate, 
+        : base(
+            db,
+            ctx => ctx.Set<BadmintonDayEnd>(),
+            dto => new BadmintonDayEnd
+
+            {
+                CurrentDate = dto.CurrentDate,
                 Remark = dto.Remark,
                 ExpectedCashTotal = dto.ExpectedCashTotal,
                 ActualCashCount = dto.ActualCashCount,
@@ -25,26 +25,29 @@ public class BadmintonDayEndService : IDayEndService
                 HoldForNextDay = dto.HoldForNextDay,
                 CashFromPrevDay = dto.CashFromPrevDay
             }, // Map DTO to entity
-            toDto: entity => new DayEnd 
-            { 
-                CurrentDate = entity.CurrentDate, 
+            toDto: entity => new DayEnd
+            {
+                CurrentDate = entity.CurrentDate,
                 Remark = entity.Remark,
                 ExpectedCashTotal = entity.ExpectedCashTotal,
                 ActualCashCount = entity.ActualCashCount,
                 Discrepancy = entity.Discrepancy,
                 HoldForNextDay = entity.HoldForNextDay,
                 CashFromPrevDay = entity.CashFromPrevDay
-            } // Map entity to DTO
-        );
-    }
-
-    public Task<Result> CreateDayEndAsync(DayEnd dayEnd, CancellationToken cancellationToken = default)
+            },
+            currentDatePropertyName: "CurrentDate"// Map entity to DTO
+        )
     {
-        return _genericDayEndService.CreateDayEndAsync(dayEnd, cancellationToken);
-    }
-
-    public Task<List<DayEnd>> GetDayEndsAsync(DateTime? forDate = null, CancellationToken cancellationToken = default)
-    {
-        return _genericDayEndService.GetDayEndsAsync(forDate, cancellationToken);
     }
 }
+
+// public Task<Result> CreateDayEndAsync(BadmintonDayEnd dayEnd, CancellationToken cancellationToken = default)
+// {
+//     return _genericDayEndService.CreateDayEndAsync(dayEnd, cancellationToken);
+// }
+//
+// public Task<List<DayEnd>> GetDayEndsAsync(DateTime? forDate = null, CancellationToken cancellationToken = default)
+// {
+//     return _genericDayEndService.GetDayEndsAsync(forDate, cancellationToken);
+// }
+

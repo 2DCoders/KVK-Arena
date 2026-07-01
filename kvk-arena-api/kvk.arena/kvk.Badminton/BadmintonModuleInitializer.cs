@@ -26,7 +26,7 @@ public class BadmintonModuleInitializer : IModuleInitializer
         services.AddDbContext<BadmintonDbContext>(options => options.UseNpgsql(connectionString));    
         services.AddScoped<ICourtService, CourtService>();
         services.AddScoped<ICourtSlotConfigurationService, CourtSlotConfigurationService>();
-        services.AddScoped<IDayEndService, BadmintonDayEndService>(); // Register the new service
+        services.AddScoped<BadmintonDayEndService>(); // Register the new service
         services.AddScoped<IBookingService, BookingService>();
 
         

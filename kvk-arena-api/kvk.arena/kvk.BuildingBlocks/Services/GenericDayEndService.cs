@@ -39,6 +39,7 @@ public class GenericDayEndService<TContext, TEntity> : IDayEndService
     {
         // Delete existing records for the current date before adding a new one
         var existingRecords = await _setSelector(_db)
+            .Where(e => EF.Property<DateTime>(e, _currentDatePropertyName).Date == dayEnd.CurrentDate.Date) // Ensure date-only comparison
             .ToListAsync(cancellationToken);
 
         if (existingRecords.Any())
@@ -69,7 +70,7 @@ public class GenericDayEndService<TContext, TEntity> : IDayEndService
         if (forDate.HasValue)
         {
             var d = forDate.Value.Date;
-            set = set.Where(e => EF.Property<DateTime>(e, _currentDatePropertyName) == d);
+            set = set.Where(e => EF.Property<DateTime>(e, _currentDatePropertyName).Date == d); // Ensure date-only comparison
         }
 
         var list = await set.OrderByDescending(e => EF.Property<DateTime>(e, _currentDatePropertyName))
