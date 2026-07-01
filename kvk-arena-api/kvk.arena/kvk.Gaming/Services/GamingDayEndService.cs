@@ -8,16 +8,18 @@ namespace kvk.Gaming.Services;
 
 public class GamingDayEndService : IDayEndService
 {
+    private readonly IHolidayService _holidayService;
     private readonly GenericDayEndService<GamingDbContext, GamingDayEnd> _genericDayEndService;
 
-    public GamingDayEndService(GamingDbContext db)
+    public GamingDayEndService(GamingDbContext db,IHolidayService holidayService)
     {
+        _holidayService = holidayService;
         _genericDayEndService = new GenericDayEndService<GamingDbContext, GamingDayEnd>(
             db: db,
             setSelector: context => context.GamingDayEnds,
             toEntity: dto => new GamingDayEnd 
             { 
-                CurrentDate = dto.CurrentDate, 
+                CurrentDate = holidayService.GetNextWorkingDayAsync(dto.CurrentDate).Result, 
                 Remark = dto.Remark,
                 ExpectedCashTotal = dto.ExpectedCashTotal,
                 ActualCashCount = dto.ActualCashCount,

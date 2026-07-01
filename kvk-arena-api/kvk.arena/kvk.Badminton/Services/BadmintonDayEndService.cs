@@ -8,16 +8,17 @@ namespace kvk.Badminton.Services;
 
 public class BadmintonDayEndService : GenericDayEndService<BadmintonDbContext, BadmintonDayEnd>
 {
+    private readonly IHolidayService _holidayService;
     private readonly GenericDayEndService<BadmintonDbContext, BadmintonDayEnd> _genericDayEndService;
 
-    public BadmintonDayEndService(BadmintonDbContext db)
+    public BadmintonDayEndService(BadmintonDbContext db,IHolidayService holidayService)
         : base(
             db,
             ctx => ctx.Set<BadmintonDayEnd>(),
             dto => new BadmintonDayEnd
 
             {
-                CurrentDate = dto.CurrentDate,
+                CurrentDate = holidayService.GetNextWorkingDayAsync(dto.CurrentDate).Result,
                 Remark = dto.Remark,
                 ExpectedCashTotal = dto.ExpectedCashTotal,
                 ActualCashCount = dto.ActualCashCount,
@@ -38,6 +39,7 @@ public class BadmintonDayEndService : GenericDayEndService<BadmintonDbContext, B
             currentDatePropertyName: "CurrentDate"// Map entity to DTO
         )
     {
+        _holidayService = holidayService;
     }
 }
 
