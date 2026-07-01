@@ -1,4 +1,5 @@
 using System.Data;
+using kvk.Badminton.Features.Booking;
 using kvk.BuildingBlocks.Common;
 using kvk.Gaming.Domain;
 using kvk.Gaming.Enums;
@@ -82,7 +83,8 @@ public class GamingBookingService : IGamingBookingService
                 CustomerPhone = request.CustomerPhone,
                 Amount = gamingSlot.Price,
                 Status = GamingBookingStatus.Confirmed,
-                BookingDate = request.BookingDate
+                BookingDate = request.BookingDate,
+                PaymentType = request.PaymentType
             };
 
             _db.GamingBookings.Add(booking);
@@ -106,7 +108,8 @@ public class GamingBookingService : IGamingBookingService
                 Amount = booking.Amount,
                 Status = booking.Status,
                 CreatedAt = booking.CreatedAt,
-                LastModifiedAt = booking.LastModifiedAt
+                LastModifiedAt = booking.LastModifiedAt,
+                PaymentType = booking.PaymentType
             };
 
             return Result.Success("Gaming booking created successfully.")
@@ -217,7 +220,8 @@ public class GamingBookingService : IGamingBookingService
                     CustomerName = request.CustomerName,
                     CustomerPhone = request.CustomerPhone,
                     Status = GamingBookingHoldStatus.Pending,
-                    ExpiresAt = DateTime.Now.AddMinutes(DefaultHoldMinutes)
+                    ExpiresAt = DateTime.Now.AddMinutes(DefaultHoldMinutes),
+                    
                 };
 
                 _db.GamingBookingHolds.Add(hold);
@@ -355,7 +359,8 @@ public class GamingBookingService : IGamingBookingService
                 Amount = hold.Amount,
                 BookingDate = hold.BookingDate,
                 Status = GamingBookingStatus.Confirmed,
-                PaymentIntentId = paymentIntentId
+                PaymentIntentId = paymentIntentId,
+                PaymentType = PaymentTypes.Card
             };
 
             hold.Status = GamingBookingHoldStatus.Confirmed;
@@ -444,7 +449,8 @@ public class GamingBookingService : IGamingBookingService
                                 Amount = hold.Amount,
                                 BookingDate = hold.BookingDate,
                                 Status = GamingBookingStatus.Confirmed,
-                                PaymentIntentId = request.PaymentId
+                                PaymentIntentId = request.PaymentId,
+                                PaymentType = PaymentTypes.Card
                             };
 
                             hold.Status = GamingBookingHoldStatus.Confirmed;
@@ -593,7 +599,8 @@ public class GamingBookingService : IGamingBookingService
             Amount = booking.Amount,
             Status = booking.Status,
             CreatedAt = booking.CreatedAt,
-            LastModifiedAt = booking.LastModifiedAt
+            LastModifiedAt = booking.LastModifiedAt,
+            PaymentType = booking.PaymentType
         }).ToList();
 
         return responses;
@@ -640,7 +647,8 @@ public class GamingBookingService : IGamingBookingService
             Amount = booking.Amount,
             Status = booking.Status,
             CreatedAt = booking.CreatedAt,
-            LastModifiedAt = booking.LastModifiedAt
+            LastModifiedAt = booking.LastModifiedAt,
+            PaymentType = booking.PaymentType
         }).ToList();
 
         return responses;
@@ -687,7 +695,8 @@ public class GamingBookingService : IGamingBookingService
             Amount = booking.Amount,
             Status = booking.Status,
             CreatedAt = booking.CreatedAt,
-            LastModifiedAt = booking.LastModifiedAt
+            LastModifiedAt = booking.LastModifiedAt,
+            PaymentType = booking.PaymentType
         }).ToList();
 
         return responses;

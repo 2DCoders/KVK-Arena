@@ -1,3 +1,4 @@
+using kvk.Badminton.Features.Booking;
 using kvk.Gaming.Enums;
 
 namespace kvk.Gaming.Features.GamingBooking;
@@ -20,4 +21,6 @@ public class GamingBookingResponse
     public GamingBookingStatus Status { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime LastModifiedAt { get; set; }
+    
+    public PaymentTypes PaymentType { get; set; }
 }

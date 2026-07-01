@@ -4,4 +4,6 @@ public class CustomerDetails
 {
     public string CustomerName { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
+    
+    public PaymentTypes  PaymentType { get; set; }
 }

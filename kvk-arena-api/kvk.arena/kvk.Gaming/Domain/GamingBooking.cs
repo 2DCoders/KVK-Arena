@@ -1,3 +1,4 @@
+using kvk.Badminton.Features.Booking;
 using kvk.BuildingBlocks.Common;
 using kvk.Gaming.Enums;
 
@@ -6,7 +7,7 @@ namespace kvk.Gaming.Domain;
 public class GamingBooking : AuditableEntity
 {
     public string BookingNumber { get; set; } = null!;
-
+    
     public Guid GamingCategoryId { get; set; }
     public GamingCategory GamingCategory { get; set; } = null!; // Navigation property
 
@@ -27,6 +28,8 @@ public class GamingBooking : AuditableEntity
     public GamingBookingStatus Status { get; set; }
     
     public string PaymentIntentId { get; set; }
+    
+    public PaymentTypes PaymentType { get; set; }
 }
 
 

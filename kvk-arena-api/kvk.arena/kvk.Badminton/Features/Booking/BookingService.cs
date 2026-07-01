@@ -253,7 +253,10 @@ public class BookingService : IBookingService
                 Status = BookingStatus.Confirmed,
                 CustomerName = customerDetails.CustomerName,
                 PhoneNumber = customerDetails.PhoneNumber,
-                PaymentId = paymentIntentId // Use the paymentIntentId from the hold
+                PaymentId = paymentIntentId,
+                PaymentType = customerDetails.PaymentType,
+                BookingNumber = GenerateUniqueBookingNumber()
+                // Use the paymentIntentId from the hold
             };
 
             hold.Status = BookingHoldStatus.Confirmed;
@@ -361,7 +364,9 @@ public class BookingService : IBookingService
                     Status = BookingStatus.Confirmed,
                     CustomerName = request.CustomerDetails.CustomerName,
                     PhoneNumber = request.CustomerDetails.PhoneNumber,
-                    PaymentId = request.PaymentIntentId
+                    PaymentId = request.PaymentIntentId, 
+                    BookingNumber = GenerateUniqueBookingNumber(),
+                    PaymentType = request.CustomerDetails.PaymentType
                 };
 
                 hold.Status = BookingHoldStatus.Confirmed;
@@ -447,7 +452,10 @@ public class BookingService : IBookingService
                                 Status = BookingStatus.Confirmed,
                                 CustomerName = hold.CustomerName,
                                 PhoneNumber = hold.PhoneNumber,
-                                PaymentId = request.PaymentId // Use the paymentId from the notification
+                                PaymentId = request.PaymentId,
+                                PaymentType = PaymentTypes.Card,
+                                BookingNumber = GenerateUniqueBookingNumber()
+                                
                             };
 
                             hold.Status = BookingHoldStatus.Confirmed;
@@ -552,5 +560,10 @@ public class BookingService : IBookingService
             Status = hold.Status.ToString(),
             ExpiresAt = hold.ExpiresAt
         };
+    }
+    
+    private string GenerateUniqueBookingNumber()
+    {
+        return $"BCKG-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpperInvariant()}";
     }
 }

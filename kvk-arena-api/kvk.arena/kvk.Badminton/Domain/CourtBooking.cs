@@ -1,4 +1,5 @@
 using kvk.Badminton.Enums;
+using kvk.Badminton.Features.Booking;
 using kvk.BuildingBlocks.Common;
 
 namespace kvk.Badminton.Domain;
@@ -8,6 +9,9 @@ public class CourtBooking : AuditableEntity, ICustomerDetails
     public Guid CourtId { get; set; }
 
     public Guid CourtSlotId { get; set; }
+    
+    public string BookingNumber { get; set; } = string.Empty;
+    public PaymentTypes  PaymentType { get; set; }
 
     public Court Court { get; set; }
 
