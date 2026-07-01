@@ -174,10 +174,10 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
                 StartTime = currentTime,
                 EndTime = slotEndTime,
                 IsActive = true,
-                Price = await _db.CourtSlots
-                    .Where(x => x.CourtId == config.CourtId)
-                    .Select(x => x.Price)
-                    .FirstOrDefaultAsync(cancellationToken) // Use existing price if available, else default to 0
+                Price = await _db.Courts
+                    .Where(c => c.Id == config.CourtId)
+                    .Select(c => c.PricePerSlot)
+                    .FirstOrDefaultAsync(cancellationToken)
             });
 
             currentTime = slotEndTime.AddMinutes(config.SlotGapMinutes);
