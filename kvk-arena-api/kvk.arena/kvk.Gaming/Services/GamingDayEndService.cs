@@ -20,12 +20,12 @@ public class GamingDayEndService : IDayEndService
             toEntity: dto => new GamingDayEnd 
             { 
                 CurrentDate = holidayService.GetNextWorkingDayAsync(dto.CurrentDate).Result, 
+                NextWorkingDate = holidayService.GetNextWorkingDayAsync(holidayService.GetNextWorkingDayAsync(dto.CurrentDate).Result).Result,
                 Remark = dto.Remark,
                 ExpectedCashTotal = dto.ExpectedCashTotal,
                 ActualCashCount = dto.ActualCashCount,
                 Discrepancy = dto.Discrepancy,
-                HoldForNextDay = dto.HoldForNextDay,
-                CashFromPrevDay = dto.CashFromPrevDay
+                CashFromPrevDay = dto.HoldForNextDay
             }, // Map DTO to entity
             toDto: entity => new DayEnd 
             { 
@@ -34,7 +34,6 @@ public class GamingDayEndService : IDayEndService
                 ExpectedCashTotal = entity.ExpectedCashTotal,
                 ActualCashCount = entity.ActualCashCount,
                 Discrepancy = entity.Discrepancy,
-                HoldForNextDay = entity.HoldForNextDay,
                 CashFromPrevDay = entity.CashFromPrevDay
             } // Map entity to DTO
         );

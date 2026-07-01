@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using kvk.Badminton;
@@ -11,9 +12,11 @@ using kvk.Badminton;
 namespace kvk.Badminton.Migrations
 {
     [DbContext(typeof(BadmintonDbContext))]
-    partial class BadmintonDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260701190656_Update_DayEnd")]
+    partial class Update_DayEnd
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

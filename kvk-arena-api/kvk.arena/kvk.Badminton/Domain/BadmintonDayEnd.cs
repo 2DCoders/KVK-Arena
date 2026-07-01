@@ -11,6 +11,9 @@ public class BadmintonDayEnd
     [Column(TypeName = "timestamp without time zone")]
     public DateTime CurrentDate { get; set; }
     
+    [Column(TypeName = "timestamp without time zone")]
+    public DateTime NextWorkingDate { get; set; }
+    
     [Column(TypeName = "numeric(18,2)")]
     public decimal ExpectedCashTotal { get; set; }
 
