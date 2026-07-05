@@ -134,16 +134,17 @@ export default function Home() {
             <Hero />
             <BrandsSlider />
 
-            <section id="services" className="relative overflow-hidden py-10 lg:py-16">
+            {/* <section id="services" className="relative overflow-hidden py-10 lg:py-16">
                 <Services />
-            </section>
+            </section> */}
 
             <WorkFlow />
-            <Feedbacks />
 
-            <section id="gallery" className="relative overflow-hidden">
+            {/* <Feedbacks /> */}
+
+            {/* <section id="gallery" className="relative overflow-hidden">
                 <Gallery />
-            </section>
+            </section> */}
 
             <section id="about" className="relative overflow-hidden">
                 <AboutUs />
