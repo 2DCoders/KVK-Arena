@@ -8,7 +8,7 @@ import {
   Star,
 } from "lucide-react";
 import { getCourts } from "@/services/court-api";
-import { bookingSlots, confirmBooking } from "@/services/booking-api";
+import { bookingSlots } from "@/services/booking-api";
 import { getNextWorkingDays } from "@/services/holidays-api";
 import { getCourtSlotsAvailability } from "@/services/court-slot-api";
 import Alert from "@/components/alert";
@@ -408,6 +408,10 @@ export default function BadmintonBookings() {
           </div>
         </div>,
         document.body
+      )}
+
+      {holdIds.length > 0 && (
+        <></>
       )}
 
       {pageAlert.visible && (
