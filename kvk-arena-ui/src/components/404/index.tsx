@@ -1,5 +1,6 @@
 import IMG from "@/assets/road.png";
-import { X, Construction } from "lucide-react";
+import { X } from "lucide-react";
+import { createPortal } from "react-dom";
 
 interface ConstructionModalProps {
   open: boolean;
@@ -15,7 +16,8 @@ export default function ConstructionModal({
   if (!open) return null;
 
   return (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md">
+    createPortal(
+  <div className="fixed inset-0 z-50000 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md">
     <div className="relative w-full max-w-md overflow-hidden rounded-[32px] bg-white shadow-[0_20px_80px_rgba(0,0,0,0.25)] animate-in fade-in zoom-in-95 duration-300">
 
       {/* Gradient Header */}
@@ -60,6 +62,8 @@ export default function ConstructionModal({
         </p>
       </div>
     </div>
-  </div>
+  </div>,
+    document.body
+    )
 );
 }

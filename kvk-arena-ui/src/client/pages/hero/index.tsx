@@ -1,11 +1,21 @@
 import hero_bg from "@/assets/hero/hero_bg2.png";
+import ConstructionModal from "@/components/404";
+import { useState } from "react";
 
 export default function Hero() {
+
+  const [open404, setOpen404] = useState(false);
+
   return (
     <section className="relative isolate overflow-hidden py-16 sm:py-20 lg:py-38">
+      <ConstructionModal
+        open={open404}
+        onClose={() => setOpen404(false)}
+        pageName="Services Section"
+      />
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-100 rounded-lg"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-100"
         style={{ backgroundImage: `url(${hero_bg})` }}
       />
       {/* <div aria-hidden="true" className="absolute inset-0 rounded-lg bg-slate-950/20" /> */}
@@ -30,8 +40,10 @@ export default function Hero() {
           </p>
 
           <div className="mt-9 flex justify-center items-center gap-4 sm:flex-row sm:justify-center">
-            <a href="#services">
-              <button className="inline-flex cursor-pointer items-center justify-center rounded-full bg-[#296BE1] px-5 py-2.5 text-xs font-semibold text-white shadow-[0_16px_36px_rgba(41,107,225,0.35)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1f58be] sm:px-8 sm:py-4 sm:text-sm">
+            <a 
+            // href="#services"
+            >
+              <button onClick={() => setOpen404(true)} className="inline-flex cursor-pointer items-center justify-center rounded-full bg-[#296BE1] px-5 py-2.5 text-xs font-semibold text-white shadow-[0_16px_36px_rgba(41,107,225,0.35)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1f58be] sm:px-8 sm:py-4 sm:text-sm">
                 Explore Now
               </button>
             </a>
