@@ -9,6 +9,7 @@ import gaming from "@/assets/billiard.jpg"
 import cafe from "@/assets/coffee.jpg"
 import AOS from 'aos'
 import { useNavigate } from "react-router-dom"
+import ConstructionModal from "@/components/404"
 
 const services = [
     {
@@ -70,6 +71,8 @@ const tabs = [
 export default function Services() {
     const [activeTab, setActiveTab] = useState("all")
     const scrollerRef = useRef<HTMLDivElement | null>(null)
+    const [open404, setOpen404] = useState(false)
+    const [pageName, setPageName] = useState("Services Section")
 
     const navigate = useNavigate()
 
@@ -94,8 +97,18 @@ export default function Services() {
         AOS.refresh()
     }, [visibleServices])
 
+    const handleOpen404 = (serviceName: string) => {
+        setPageName(serviceName)
+        setOpen404(true)
+    }
+
     return (
         <section className="relative overflow-hidden bg-white/5 py-10 lg:py-16">
+            <ConstructionModal
+                open={open404}
+                onClose={() => setOpen404(false)}
+                pageName={pageName}
+            />
             <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="mx-auto max-w-3xl text-center">
                     <h2 data-aos="fade-up" className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl bg-linear-to-r from-[#000000] via-[#2d86fc] to-[#2d86fc] bg-clip-text text-transparent">
@@ -183,7 +196,10 @@ export default function Services() {
                                                 <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#CFEFFF]">
                                                     {service.category}
                                                 </span>
-                                                <button onClick={() => navigate(service.navigateTo)} type="button" className="inline-flex cursor-pointer h-11 w-11 items-center justify-center rounded-full bg-white text-[#296BE1] shadow-[0_10px_25px_rgba(255,255,255,0.18)] transition hover:scale-105">
+                                                <button onClick={() => {
+                                                    // navigate(service.navigateTo)
+                                                    handleOpen404(service.title)
+                                                    }} type="button" className="inline-flex cursor-pointer h-11 w-11 items-center justify-center rounded-full bg-white text-[#296BE1] shadow-[0_10px_25px_rgba(255,255,255,0.18)] transition hover:scale-105">
                                                     <ArrowRight size={18} className="text-[#296BE1]" />
                                                 </button>
                                             </div>

@@ -45,8 +45,8 @@ export default function Header() {
           </a>
 
           <a
-            // href="#services"
-            onClick={() => setOpen404(true)}
+            href="#services"
+            // onClick={() => setOpen404(true)}
             className={`rounded-full cursor-pointer px-4 py-2 text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(37,99,235,0.18)] ${isScrolled ? 'text-slate-700 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950' : 'text-slate-200 hover:bg-white/10 hover:text-white hover:backdrop-blur-sm'}`}
           >
             Services
@@ -128,9 +128,8 @@ export default function Header() {
             </a>
 
             <a
-              // href="#services"
+              href="#services"
               onClick={() => {
-                setOpen404(true);
                 closeMobileMenu();
               }}
               className="rounded-xl px-3 cursor-pointer py-2 text-[15px] font-medium text-slate-800 transition-all duration-300 hover:bg-linear-to-r hover:from-sky-50 hover:to-cyan-50 hover:text-slate-950"
