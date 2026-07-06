@@ -2,6 +2,8 @@ import { ArrowRight } from "lucide-react"
 
 import gym from "@/assets/about.png"
 import badminton from "@/assets/about2.jpg"
+import { useState } from "react";
+import ServicesModal from "@/components/sevices-modal";
 
 const stats = [
     { value: "4", label: "Core Services" },
@@ -11,9 +13,13 @@ const stats = [
 ]
 
 export default function AboutUs() {
+    const [openServicesModal, setOpenServicesModal] = useState(false);
+
     return (
         <section className="relative overflow-hidden bg-white py-16 lg:py-30">
             <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(45,134,252,0.10),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(41,107,225,0.08),transparent_30%)]" />
+
+            <ServicesModal open={openServicesModal} onClose={() => setOpenServicesModal(false)} />
 
             <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-16">
@@ -47,6 +53,7 @@ export default function AboutUs() {
                                 <button
                                     data-aos="fade-right" data-aos-delay="250"
                                     type="button"
+                                    onClick={() => setOpenServicesModal(true)}
                                     className="inline-flex items-center cursor-pointer justify-center rounded-full border border-slate-200 bg-white px-5 py-2.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 sm:px-7 sm:py-3 sm:text-sm"
                                 >
                                     Learn More
