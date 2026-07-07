@@ -59,11 +59,11 @@ export default function ArenaMembership() {
 
             <div
                 aria-hidden="true"
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
                 style={{ backgroundImage: `url(${gymImage})` }}
             />
 
-            <div className="absolute inset-0 bg-slate-950/88" />
+            <div className="absolute inset-0 bg-slate-950/68" />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(41,107,225,0.32),_transparent_34%),radial-gradient(circle_at_80%_20%,_rgba(255,255,255,0.14),_transparent_24%),linear-gradient(180deg,rgba(2,6,23,0.18),rgba(2,6,23,0.96))]" />
             <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px] opacity-20" />
 
@@ -174,12 +174,6 @@ export default function ArenaMembership() {
                                     Register Now
                                     <ArrowRight size={16} />
                                 </button>
-
-                                <div className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/6 px-5 py-3 text-sm text-slate-200">
-                                    {isOfferActive
-                                        ? `Registration closes in ${timeLeft.days} days`
-                                        : "The registration offer has ended"}
-                                </div>
                             </div>
                         </div>
                     </div>
