@@ -1,18 +1,8 @@
 import hero_bg from "@/assets/hero/hero_bg2.png";
-import ConstructionModal from "@/components/404";
-import { useState } from "react";
 
 export default function Hero() {
-
-  const [open404, setOpen404] = useState(false);
-
   return (
-    <section className="relative isolate overflow-hidden py-16 sm:py-20 lg:py-38">
-      <ConstructionModal
-        open={open404}
-        onClose={() => setOpen404(false)}
-        pageName="Services Section"
-      />
+    <section className="relative isolate overflow-hidden pb-20 pt-10 sm:pb-28 sm:pt-15 lg:pb-27 lg:pt-25">
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-100"
@@ -24,7 +14,7 @@ export default function Hero() {
         className="absolute inset-0 rounded-lg bg-linear-to-b from-slate-950/30 via-slate-950/65 to-slate-950/85"
       />
 
-      <div className="relative z-10 mx-auto mt-5 flex max-w-7xl flex-col items-center gap-8 px-4 text-center lg:px-8 mb-5">
+      <div className="relative z-10 mx-auto mt-5 flex max-w-7xl flex-col items-center gap-8 px-4 pb-16 text-center lg:px-8 mb-5">
         <div className="hero-fade-up max-w-4xl">
           <h1 className="mt-6 mb-5 text-4xl font-black leading-[1.2] tracking-[-0.035em] block bg-linear-to-r from-[#2d86fc] via-[#CFEFFF] to-[#8FC0FF] bg-clip-text text-transparent sm:text-5xl lg:text-6xl xl:text-7xl">
             One arena for
@@ -55,6 +45,8 @@ export default function Hero() {
           </div>
         </div>
       </div>
+
+      
 
       <style>{`
         .hero-fade-up {

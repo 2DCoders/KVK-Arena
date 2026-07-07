@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import Main from "@/client/layouts/main";
 import Hero from "../hero";
+import PromoCountdownModal from "@/components/promo-countdown-modal";
 import BrandsSlider from "../brands-slider";
 import Services from "../services";
-import WorkFlow from "../work-flow";
-import Feedbacks from "../feedbacks";
-import Gallery from "../gallery";
 import AboutUs from "../about-us";
 import ContactUs from "../contact-us";
 import ArenaMembership from "../arena-membership";
@@ -68,6 +66,7 @@ export default function Home() {
 
     return (
         <Main>
+            <PromoCountdownModal />
             <div className="fixed right-0 top-1/2 z-50 flex -translate-y-1/2 flex-col gap-2 pr-0">
                 <a
                     href="https://wa.me/+94765605885"
