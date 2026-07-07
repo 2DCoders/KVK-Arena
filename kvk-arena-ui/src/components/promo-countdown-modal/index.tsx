@@ -112,7 +112,7 @@ export default function PromoCountdownModal() {
           type="button"
           onClick={handleClose}
           aria-label="Close offer popup"
-          className="absolute right-3 top-3 z-10 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-black/20 text-white/90 transition duration-300 hover:rotate-90 hover:bg-black/35"
+          className="absolute right-3 top-3 z-1000 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-black/20 text-white/90 transition duration-300 hover:rotate-90 hover:bg-black/35"
         >
           <X size={20} />
         </button>
@@ -120,21 +120,21 @@ export default function PromoCountdownModal() {
         <div className="relative z-10 px-6 pb-6 pt-7 sm:px-7 sm:pt-8">
           <div className="mx-auto flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/85 backdrop-blur-sm">
             <Sparkles size={14} />
-            Limited-Time Offer
+            Limited Time Offer
           </div>
 
           <h2 className="mt-5 text-center text-3xl font-black leading-[1.05] tracking-[-0.04em] sm:text-4xl">
-            Hurry, 40% Off
-            <span className="block text-white/95">Offer Won&apos;t Last!</span>
+            Full Arena Membership
+            <span className="block text-white/95">Registration Open!!!</span>
           </h2>
 
           <div className="mt-6 rounded-[22px] bg-[#ff8a00] px-4 py-4 text-slate-950 shadow-[0_16px_30px_rgba(255,147,0,0.34)] sm:px-5">
             <div className="grid grid-cols-4 gap-2 text-center sm:gap-3">
               {[
-                [formatTime(timeLeft.days), "DAYS"],
-                [formatTime(timeLeft.hours), "HOURS"],
-                [formatTime(timeLeft.minutes), "MINUTES"],
-                [formatTime(timeLeft.seconds), "SECONDS"],
+                [formatTime(timeLeft.days), "DAY"],
+                [formatTime(timeLeft.hours), "HOU"],
+                [formatTime(timeLeft.minutes), "MIN"],
+                [formatTime(timeLeft.seconds), "SEC"],
               ].map(([value, label]) => (
                 <div key={label} className="rounded-2xl bg-[#ffd24d] px-2 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] sm:px-3">
                   <div className="text-2xl font-black tracking-[-0.06em] sm:text-[2rem]">{value}</div>
@@ -147,15 +147,15 @@ export default function PromoCountdownModal() {
           </div>
 
           <p className="mx-auto mt-5 max-w-sm text-center text-sm leading-7 text-white/88 sm:text-[15px]">
-            Limited stock, limited time. Grab your 40% off today before this offer expires.
+            Sign up now to secure your full arena membership at a special discounted rate. This exclusive offer is only available for a limited time, so act fast and join the KVK Arena community today!
           </p>
 
           <a
-            href="#services"
+            href="#add"
             onClick={handleClose}
             className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ffd24d] px-5 py-3.5 text-sm font-bold text-slate-950 shadow-[0_18px_35px_rgba(255,210,77,0.35)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#ffe170]"
           >
-            Start Saving
+            Start
             <ArrowRight size={18} />
           </a>
 
