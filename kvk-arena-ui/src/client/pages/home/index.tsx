@@ -8,6 +8,7 @@ import Feedbacks from "../feedbacks";
 import Gallery from "../gallery";
 import AboutUs from "../about-us";
 import ContactUs from "../contact-us";
+import ArenaMembership from "../arena-membership";
 
 function WhatsappIcon() {
     return (
@@ -138,7 +139,8 @@ export default function Home() {
                 <Services />
             </section>
 
-            <WorkFlow />
+            {/* <WorkFlow /> */}
+            <ArenaMembership />
 
             {/* <Feedbacks /> */}
 
