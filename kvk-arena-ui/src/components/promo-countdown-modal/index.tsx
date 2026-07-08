@@ -11,7 +11,7 @@ type TimeLeft = {
 };
 
 const STORAGE_KEY = "kvk-promo-countdown-dismissed";
-const OFFER_END_DATE = "2026-08-15T23:59:59";
+const OFFER_END_DATE = "2026-08-15";
 
 function getTimeLeft(targetTime: number): TimeLeft {
   const total = Math.max(0, targetTime - Date.now());
@@ -34,7 +34,9 @@ export default function PromoCountdownModal() {
 
     return window.localStorage.getItem(STORAGE_KEY) !== "true";
   });
-  const [timeLeft, setTimeLeft] = useState<TimeLeft>(() => getTimeLeft(targetTime));
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>(() =>
+    getTimeLeft(targetTime),
+  );
 
   useEffect(() => {
     const updateCountdown = () => setTimeLeft(getTimeLeft(targetTime));
@@ -109,8 +111,13 @@ export default function PromoCountdownModal() {
                 [formatTime(timeLeft.minutes), "MIN"],
                 [formatTime(timeLeft.seconds), "SEC"],
               ].map(([value, label]) => (
-                <div key={label} className="rounded-2xl bg-[#ffd24d] px-2 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] sm:px-3">
-                  <div className="text-2xl font-black tracking-[-0.06em] sm:text-[2rem]">{value}</div>
+                <div
+                  key={label}
+                  className="rounded-2xl bg-[#ffd24d] px-2 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] sm:px-3"
+                >
+                  <div className="text-2xl font-black tracking-[-0.06em] sm:text-[2rem]">
+                    {value}
+                  </div>
                   <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-700 sm:text-[11px]">
                     {label}
                   </div>
@@ -120,13 +127,34 @@ export default function PromoCountdownModal() {
           </div>
 
           <p className="mx-auto mt-5 max-w-sm text-center text-sm leading-7 text-white/88 sm:text-[15px]">
-            Sign up now to secure your full arena membership at a special discounted rate. This exclusive offer is only available for a limited time, so act fast and join the KVK Arena community today!
+            Sign up now to secure your full arena membership at a special
+            discounted rate. This exclusive offer is only available for a
+            limited time, so act fast and join the KVK Arena community today!
           </p>
 
           <a
             href="#add"
             onClick={handleClose}
-            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ffd24d] px-5 py-3.5 text-sm font-bold text-slate-950 shadow-[0_18px_35px_rgba(255,210,77,0.35)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#ffe170]"
+            className="mt-6
+            inline-flex
+            w-full
+            items-center
+            justify-center
+            gap-2
+            rounded-2xl
+            bg-[#ffd24d]
+            px-5
+            py-3.5
+            text-sm
+            font-bold
+            text-slate-950
+            shadow-xl
+            transition-all
+            duration-300
+            hover:scale-105
+            hover:shadow-2xl
+            active:scale-95
+            animate-pulse"
           >
             Start
             <ArrowRight size={18} />
