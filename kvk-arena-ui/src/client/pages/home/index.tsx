@@ -7,6 +7,8 @@ import Services from "../services";
 import AboutUs from "../about-us";
 import ContactUs from "../contact-us";
 import ArenaMembership from "../arena-membership";
+import { getEnv } from "@/env";
+import WorkFlow from "../work-flow";
 
 function WhatsappIcon() {
   return (
@@ -63,6 +65,8 @@ function InstagramIcon() {
 export default function Home() {
   const [scrollPercent, setScrollPercent] = useState(0);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const OFFER_END_DATE = getEnv().OFFER_END_DATE;
+    const isOfferActive = new Date().getTime() < new Date(OFFER_END_DATE).getTime();
 
   useEffect(() => {
     const updateScrollState = () => {
@@ -172,7 +176,9 @@ export default function Home() {
         <Services />
       </section>
 
-      {/* <WorkFlow /> */}
+      {!isOfferActive && (
+        <WorkFlow />
+      )}     
 
       <section id="add" className="relative overflow-hidden py-10 lg:py-16">
         <ArenaMembership />

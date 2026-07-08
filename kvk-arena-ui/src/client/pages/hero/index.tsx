@@ -1,6 +1,11 @@
 import hero_bg from "@/assets/hero/hero_bg2.png";
+import { getEnv } from "@/env";
 
 export default function Hero() {
+  const OFFER_END_DATE = getEnv().OFFER_END_DATE;
+  const isOfferActive =
+    new Date().getTime() < new Date(OFFER_END_DATE).getTime();
+
   return (
     <section className="relative isolate overflow-hidden pb-20 pt-10 sm:pb-28 sm:pt-15 lg:pb-27 lg:pt-32">
       <div
@@ -30,23 +35,28 @@ export default function Hero() {
           </p>
 
           <div className="mt-9 flex justify-center items-center gap-4 sm:flex-row sm:justify-center">
-            <a 
-            href="#services"
-            >
+            <a href="#services">
               <button className="inline-flex cursor-pointer items-center justify-center rounded-full bg-[#296BE1] px-5 py-2.5 text-xs font-semibold text-white shadow-[0_16px_36px_rgba(41,107,225,0.35)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1f58be] sm:px-8 sm:py-4 sm:text-sm">
                 Explore Now
               </button>
             </a>
-            <a href="#add">
-            <button className="inline-flex cursor-pointer items-center justify-center rounded-full border border-white/35 bg-white/10 px-5 py-2.5 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(15,23,42,0.16)] backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:border-white/55 hover:bg-white/16 sm:px-8 sm:py-4 sm:text-sm">
-              Arena Membership
-            </button>
-            </a>
+
+            {isOfferActive ? (
+              <a href="#add">
+                <button className="inline-flex cursor-pointer items-center justify-center rounded-full border border-white/35 bg-white/10 px-5 py-2.5 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(15,23,42,0.16)] backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:border-white/55 hover:bg-white/16 sm:px-8 sm:py-4 sm:text-sm">
+                  Arena Membership
+                </button>
+              </a>
+            ) : (
+              <a href="#contact">
+                <button className="inline-flex cursor-pointer items-center justify-center rounded-full border border-white/35 bg-white/10 px-5 py-2.5 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(15,23,42,0.16)] backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:border-white/55 hover:bg-white/16 sm:px-8 sm:py-4 sm:text-sm">
+                  Contact Us
+                </button>
+              </a>
+            )}
           </div>
         </div>
       </div>
-
-      
 
       <style>{`
         .hero-fade-up {
