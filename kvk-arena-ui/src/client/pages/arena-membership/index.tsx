@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { BadgeCheck, Clock3, Sparkles, ArrowRight } from "lucide-react";
 
 import gymImage from "@/assets/gym-signup.jpg";
-import SignupModal from "@/components/signup/gym";
 
 type TimeLeft = {
     total: number;
@@ -28,7 +27,6 @@ export default function ArenaMembership() {
     const offerEndValue = OFFER_FALLBACK_END;
     const offerEndDate = new Date(offerEndValue);
     const targetTime = offerEndDate.getTime();
-    const [isSignupOpen, setIsSignupOpen] = useState(false);
     const [timeLeft, setTimeLeft] = useState<TimeLeft>(() => getTimeLeft(targetTime));
 
     useEffect(() => {
@@ -50,13 +48,15 @@ export default function ArenaMembership() {
 
     const isOfferActive = timeLeft.total > 0;
 
+    if (!isOfferActive) {
+    return null;
+}
+
     return (
         <section
             id="memberships"
             className="relative isolate overflow-hidden py-16 sm:py-20 lg:py-28"
         >
-            <SignupModal open={isSignupOpen} onClose={() => setIsSignupOpen(false)} />
-
             <div
                 aria-hidden="true"
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
@@ -168,7 +168,6 @@ export default function ArenaMembership() {
                             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                                 <button
                                     type="button"
-                                    onClick={() => setIsSignupOpen(true)}
                                     className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-[#296BE1] px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(41,107,225,0.3)] transition hover:-translate-y-0.5 hover:bg-[#2158bc]"
                                 >
                                     Register Now

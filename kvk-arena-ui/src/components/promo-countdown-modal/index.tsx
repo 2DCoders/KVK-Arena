@@ -30,10 +30,11 @@ function formatTime(value: number) {
 export default function PromoCountdownModal() {
   const targetTime = useMemo(() => new Date(OFFER_END_DATE).getTime(), []);
   const [isOpen, setIsOpen] = useState(() => {
-    if (typeof window === "undefined") return true;
+  if (typeof window === "undefined") return true;
 
-    return window.localStorage.getItem(STORAGE_KEY) !== "true";
-  });
+  return window.localStorage.getItem(STORAGE_KEY) !== "true";
+});
+
   const [timeLeft, setTimeLeft] = useState<TimeLeft>(() =>
     getTimeLeft(targetTime),
   );
@@ -46,6 +47,12 @@ export default function PromoCountdownModal() {
 
     return () => window.clearInterval(interval);
   }, [targetTime]);
+
+  useEffect(() => {
+  if (timeLeft.total <= 0) {
+    setIsOpen(false);
+  }
+}, [timeLeft.total]);
 
   useEffect(() => {
     if (!isOpen) return;
