@@ -2,7 +2,7 @@ import hero_bg from "@/assets/hero/hero_bg2.png";
 
 export default function Hero() {
   return (
-    <section className="relative isolate overflow-hidden pb-20 pt-10 sm:pb-28 sm:pt-15 lg:pb-27 lg:pt-25">
+    <section className="relative isolate overflow-hidden pb-20 pt-10 sm:pb-28 sm:pt-15 lg:pb-27 lg:pt-32">
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-100"

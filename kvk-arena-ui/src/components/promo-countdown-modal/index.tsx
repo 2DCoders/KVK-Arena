@@ -29,11 +29,6 @@ function formatTime(value: number) {
 
 export default function PromoCountdownModal() {
   const targetTime = useMemo(() => new Date(OFFER_END_DATE).getTime(), []);
-  const [isDismissed, setIsDismissed] = useState(() => {
-    if (typeof window === "undefined") return false;
-
-    return window.localStorage.getItem(STORAGE_KEY) === "true";
-  });
   const [isOpen, setIsOpen] = useState(() => {
     if (typeof window === "undefined") return true;
 
@@ -72,38 +67,16 @@ export default function PromoCountdownModal() {
 
   const handleClose = () => {
     window.localStorage.setItem(STORAGE_KEY, "true");
-    setIsDismissed(true);
     setIsOpen(false);
   };
 
-  const handleOpen = () => {
-    setIsOpen(true);
-  };
-
   if (typeof document === "undefined") return null;
-
-  if (!isOpen && isDismissed) {
-    return createPortal(
-      <button
-        type="button"
-        onClick={handleOpen}
-        aria-label="Open limited-time offer"
-        className="promo-launcher group fixed bottom-5 right-5 z-50000 flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-linear-to-br from-[#ffb21d] via-[#ff8a00] to-[#ff5f1f] text-slate-950 shadow-[0_18px_50px_rgba(255,128,0,0.35)]"
-      >
-        <span className="promo-launcher-ring absolute inset-0 rounded-full border border-white/35" />
-        <span className="relative flex h-12 w-12 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition duration-300 group-hover:scale-105">
-          <Sparkles size={20} />
-        </span>
-      </button>,
-      document.body,
-    );
-  }
 
   if (!isOpen) return null;
 
   return createPortal(
     <div className="fixed inset-0 z-50000 flex items-center justify-center bg-slate-950/70 px-4 py-6 backdrop-blur-md">
-      <div className="promo-card relative w-full max-w-md overflow-hidden rounded-[28px] border border-white/10 bg-[#3f22d8] text-white shadow-[0_25px_90px_rgba(29,16,112,0.55)]">
+      <div className="promo-card relative w-full max-w-md overflow-hidden rounded-[28px] border border-white/10 bg-[#0848A6] text-white shadow-[0_25px_90px_rgba(29,16,112,0.55)]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.18),transparent_38%),radial-gradient(circle_at_80%_20%,rgba(255,188,64,0.2),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.16))]" />
         <div className="absolute -right-10 top-5 h-28 w-28 rounded-full bg-white/10 blur-2xl" />
         <div className="absolute -left-8 bottom-8 h-24 w-24 rounded-full bg-[#ff9f1a]/20 blur-2xl" />
