@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { BadgeCheck, Clock3, Sparkles, ArrowRight } from "lucide-react";
+import { getEnv } from "@/env";
 
 import gymImage from "@/assets/gym-signup.jpg";
 
@@ -11,7 +12,7 @@ type TimeLeft = {
     seconds: number;
 };
 
-const OFFER_FALLBACK_END = "2026-08-15";
+const OFFER_FALLBACK_END =  getEnv().OFFER_END_DATE; // Fallback date if env variable is not set
 
 function getTimeLeft(targetTime: number): TimeLeft {
     const total = Math.max(0, targetTime - Date.now());

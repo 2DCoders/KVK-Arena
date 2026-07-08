@@ -4,5 +4,6 @@ export const getEnv = () => {
   return {
     API_URL: env?.API_URL ?? "",
     BASE_URL: env?.BASE_URL ?? "",
+    OFFER_END_DATE: env?.OFFER_END_DATE ?? "",
   };
 };

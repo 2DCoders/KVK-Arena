@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Clock3, Sparkles, X } from "lucide-react";
 import { createPortal } from "react-dom";
+import { getEnv } from "@/env";
 
 type TimeLeft = {
   total: number;
@@ -11,7 +12,7 @@ type TimeLeft = {
 };
 
 const STORAGE_KEY = "kvk-promo-countdown-dismissed";
-const OFFER_END_DATE = "2026-08-15";
+const OFFER_END_DATE = getEnv().OFFER_END_DATE;
 
 function getTimeLeft(targetTime: number): TimeLeft {
   const total = Math.max(0, targetTime - Date.now());
