@@ -25,6 +25,7 @@ public class GymModuleInitializer : IModuleInitializer
 
         services.Configure<GymDayEndOptions>(configuration.GetSection(GymDayEndOptions.SectionName));
         services.AddScoped<SystemSettingRolloverService>();
+        services.AddScoped<IBackgroundProcessorInitializer, GymBackgroundProcessorInitializer>(); // Register the background processor initializer
 
         // Register services
         services.AddScoped<IMembershipService, MembershipService>();

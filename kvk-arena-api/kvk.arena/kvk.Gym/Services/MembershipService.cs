@@ -88,7 +88,7 @@ public class MembershipService : IMembershipService
                 DeviceFingerprintId2 = request.DeviceFingerprintId2,
                 Otp = GenerateOtp(),
                 MembershipNumber =
-                    MembershipNumberFormatter.Format(request.MemberType.ToString(), DateTime.UtcNow.Year, memberToken)
+                    MembershipNumberFormatter.GymFormat(request.MemberType.ToString(), DateTime.UtcNow.Year, memberToken)
             };
 
             // If both fingerprints null -> Inactive
@@ -504,7 +504,7 @@ public class MembershipService : IMembershipService
                 MemberType = kvk.Gym.Enums.MemberType.Staff,
                 MembershipStatus = kvk.Gym.Enums.MembershipStatus.Active,
                 MembershipPlanId = null,
-                MembershipNumber = MembershipNumberFormatter.Format("Staff", DateTime.UtcNow.Year, memberToken)
+                MembershipNumber = MembershipNumberFormatter.GymFormat("Staff", DateTime.UtcNow.Year, memberToken)
             };
 
             _db.Memberships.Add(member);
@@ -878,7 +878,7 @@ public class MembershipService : IMembershipService
     private async Task<string> GetNextMembershipTokenAsync(string memberTypeName, int year,
         CancellationToken cancellationToken)
     {
-        var prefix = MembershipNumberFormatter.GetMembershipPrefix(memberTypeName);
+        var prefix = MembershipNumberFormatter.GetGymMembershipPrefix(memberTypeName);
         var yearPrefix = $"{prefix}-{year}";
 
         var latestNumber = await _db.Memberships

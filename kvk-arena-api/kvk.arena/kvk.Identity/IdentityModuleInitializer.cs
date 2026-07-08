@@ -2,6 +2,7 @@ using kvk.BuildingBlocks.Auth;
 using kvk.BuildingBlocks.Interfaces;
 using kvk.Identity.Features.Auth;
 using kvk.Identity.Features.CalenderHoliday;
+using kvk.Identity.Features.KvkMember;
 using kvk.Identity.Features.StaffModule;
 using kvk.Identity.Features.Role;
 using kvk.Identity.Persistence;
@@ -26,6 +27,11 @@ public class IdentityModuleInitializer : IModuleInitializer
 
         services.AddDbContext<IdentityApplicationDbContext>(options =>
             options.UseNpgsql(connectionString));
+        
+        
+        services.Configure<MembershipRemainingDaysProcessorOptions>(configuration.GetSection(MembershipRemainingDaysProcessorOptions.SectionName));
+        services.AddScoped<MembershipRemainingDaysProcessorService>();
+        services.AddScoped<IBackgroundProcessorInitializer, IdentityBackgroundProcessorInitializer>(); // Register the background processor initializer
 
         services.AddScoped<IPermissionAuthorizationService, PermissionAuthorizationService>();
         services.AddScoped<AuthService>();
@@ -35,7 +41,9 @@ public class IdentityModuleInitializer : IModuleInitializer
         // Module integrator client to publish integration events (building-blocks contract)
         services.AddScoped<IModuleIntegratorClient, ModuleIntegrator.ModuleIntegratorClient>();
         services.AddScoped<IdentitySeeder>();
+        services.AddScoped<IKvkMemberService, KvkMemberService>();
         // JWT service from BuildingBlocks - simple dev implementation registered here
         services.AddSingleton<IJwtService, JwtService>();
+        
     }
 }

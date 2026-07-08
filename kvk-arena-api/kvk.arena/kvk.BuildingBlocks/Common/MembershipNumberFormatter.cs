@@ -8,7 +8,7 @@ public static class MembershipNumberFormatter
     /// Format a display-only membership number. Accepts a member type name (e.g. "Client", "Trainer", "Staff").
     /// This formatter is cosmetic only; the persisted entity uses a GUID as the primary key.
     /// </summary>
-    public static string Format(string memberTypeName, int year, string token = "0001")
+    public static string GymFormat(string memberTypeName, int year, string token = "0001")
     {
         var prefix = memberTypeName?.ToLowerInvariant() switch
         {
@@ -24,7 +24,7 @@ public static class MembershipNumberFormatter
     }
     
 
-    public static string GetMembershipPrefix(string memberTypeName)
+    public static string GetGymMembershipPrefix(string memberTypeName)
     {
         return memberTypeName?.ToLowerInvariant() switch
         {
@@ -33,6 +33,12 @@ public static class MembershipNumberFormatter
             "staff" => "GYM-STA",
             _ => "GYM-UNK"
         };
+    }
+    
+    public static string KvkMemberFormat(int year, string token = "0001")
+    {
+        // Example: KVK-MEM-20260001
+        return $"KVK-MEM-{year}{token}";
     }
 
 }

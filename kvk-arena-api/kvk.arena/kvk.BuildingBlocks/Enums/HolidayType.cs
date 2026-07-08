@@ -24,3 +24,8 @@ public enum DayOfWeek
     Sunday = 7
 }
 
+public enum MemberShipActiveStatus
+{
+    Active = 1,
+    Inactive = 2
+}

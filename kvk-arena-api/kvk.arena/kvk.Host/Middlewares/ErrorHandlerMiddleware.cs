@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
+
 namespace kvk.Host.Middlewares;
 
 /// <summary>
@@ -9,11 +12,13 @@ public class ErrorHandlerMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ErrorHandlerMiddleware> _logger;
+    private readonly IWebHostEnvironment _env; // Inject IWebHostEnvironment
 
-    public ErrorHandlerMiddleware(RequestDelegate next, ILogger<ErrorHandlerMiddleware> logger)
+    public ErrorHandlerMiddleware(RequestDelegate next, ILogger<ErrorHandlerMiddleware> logger, IWebHostEnvironment env)
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _env = env ?? throw new ArgumentNullException(nameof(env)); // Initialize IWebHostEnvironment
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -57,12 +62,16 @@ public class ErrorHandlerMiddleware
                 tenantId, userId, context.Request.Path, ex.Message);
 
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            await context.Response.WriteAsJsonAsync(new
+
+            var response = new 
             {
                 error = "Internal Server Error",
-                message = "An unexpected error occurred",
+                message = _env.IsDevelopment() ? ex.Message : "An unexpected error occurred", // Show message in dev
+                stackTrace = _env.IsDevelopment() ? ex.StackTrace : null, // Show stack trace in dev
                 timestamp = DateTime.UtcNow
-            });
+            };
+
+            await context.Response.WriteAsJsonAsync(response);
         }
     }
 }
