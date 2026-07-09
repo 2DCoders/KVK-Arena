@@ -11,7 +11,7 @@ type TimeLeft = {
   seconds: number;
 };
 
-const STORAGE_KEY = "kvk-promo-countdown-dismissed";
+export const PROMO_COUNTDOWN_STORAGE_KEY = "kvk-promo-countdown-dismissed";
 const OFFER_END_DATE = getEnv().OFFER_END_DATE;
 
 function getTimeLeft(targetTime: number): TimeLeft {
@@ -28,14 +28,16 @@ function formatTime(value: number) {
   return String(value).padStart(2, "0");
 }
 
-export default function PromoCountdownModal() {
+type PromoCountdownModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+};
+
+export default function PromoCountdownModal({
+  isOpen,
+  onClose,
+}: PromoCountdownModalProps) {
   const targetTime = useMemo(() => new Date(OFFER_END_DATE).getTime(), []);
-  const [isOpen, setIsOpen] = useState(() => {
-  if (typeof window === "undefined") return true;
-
-  return window.localStorage.getItem(STORAGE_KEY) !== "true";
-});
-
   const [timeLeft, setTimeLeft] = useState<TimeLeft>(() =>
     getTimeLeft(targetTime),
   );
@@ -51,9 +53,9 @@ export default function PromoCountdownModal() {
 
   useEffect(() => {
   if (timeLeft.total <= 0) {
-    setIsOpen(false);
+      onClose();
   }
-}, [timeLeft.total]);
+  }, [onClose, timeLeft.total]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -76,8 +78,8 @@ export default function PromoCountdownModal() {
   }, [isOpen]);
 
   const handleClose = () => {
-    window.localStorage.setItem(STORAGE_KEY, "true");
-    setIsOpen(false);
+    window.localStorage.setItem(PROMO_COUNTDOWN_STORAGE_KEY, "true");
+    onClose();
   };
 
   if (typeof document === "undefined") return null;
