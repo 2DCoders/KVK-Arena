@@ -52,7 +52,7 @@ public class DayPassMemberService : IDayPassMemberService
                 MembershipPlanId = request.MembershipPlanId,
                 PaymentType = request.PaymentType,
                 PaymentStatus = request.PaymentStatus,
-                TemporaryMembershipNumber = MembershipNumberFormatter.Format("tempMember", year, token)
+                TemporaryMembershipNumber = MembershipNumberFormatter.GymFormat("tempMember", year, token)
             };
 
             _db.DayPassMembers.Add(dayPass);

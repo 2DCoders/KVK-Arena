@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Common;
 using kvk.Gym.Domain;
 using kvk.Gym.Options;
 using Microsoft.EntityFrameworkCore;
@@ -41,11 +42,12 @@ public class SystemSettingRolloverService
 
         if (exists)
             return;
+        var timeZone = TimeZoneFormaterHangfire.ResolveTimeZone(_options.Value.TimeZoneId);
 
-        var business = GetBusinessDateInfo();
+        var business = TimeZoneFormaterHangfire.GetBusinessDateInfo(timeZone);
         var todayLocal = business.LocalMidnight;
-        var previousLocal = ToLocalMidnight(business.LocalDate.AddDays(-1));
-        var nextLocal = ToLocalMidnight(business.LocalDate.AddDays(1));
+        var previousLocal = TimeZoneFormaterHangfire.ToLocalMidnight(business.LocalDate.AddDays(-1));
+        var nextLocal = TimeZoneFormaterHangfire.ToLocalMidnight(business.LocalDate.AddDays(1));
 
         var setting = new SystemSetting
         {
@@ -72,14 +74,16 @@ public class SystemSettingRolloverService
         if (setting == null)
             return;
 
-        var business = GetBusinessDateInfo();
+        var timeZone = TimeZoneFormaterHangfire.ResolveTimeZone(_options.Value.TimeZoneId);
+
+        var business = TimeZoneFormaterHangfire.GetBusinessDateInfo(timeZone);
         var todayLocal = business.LocalMidnight;
-        if (EnsureLocalKind(setting.CurrentDay) == todayLocal)
+        if (TimeZoneFormaterHangfire.EnsureLocalKind(setting.CurrentDay) == todayLocal)
             return;
 
         var previousDayLocal = setting.CurrentDay == default
-            ? ToLocalMidnight(business.LocalDate.AddDays(-1))
-            : EnsureLocalKind(setting.CurrentDay);
+            ? TimeZoneFormaterHangfire.ToLocalMidnight(business.LocalDate.AddDays(-1))
+            : TimeZoneFormaterHangfire.EnsureLocalKind(setting.CurrentDay);
 
         setting.PreviousDayEnd = previousDayLocal;
         setting.CurrentDay = todayLocal;
@@ -89,11 +93,11 @@ public class SystemSettingRolloverService
         if (holidayService != null)
         {
             var next = await holidayService.GetNextWorkingDayAsync(business.LocalDate, cancellationToken);
-            setting.NextWorkingDay = ToLocalMidnight(next);
+            setting.NextWorkingDay = TimeZoneFormaterHangfire.ToLocalMidnight(next);
         }
         else
         {
-            setting.NextWorkingDay = ToLocalMidnight(business.LocalDate.AddDays(1));
+            setting.NextWorkingDay = TimeZoneFormaterHangfire.ToLocalMidnight(business.LocalDate.AddDays(1));
         }
 
         await UpdateDayEndStatusAsync(db, setting, previousDayLocal, cancellationToken);
@@ -110,7 +114,7 @@ public class SystemSettingRolloverService
         if (previousDay == default)
             return;
 
-        var previousDayLocal = EnsureLocalKind(previousDay);
+        var previousDayLocal = TimeZoneFormaterHangfire.EnsureLocalKind(previousDay);
         var dayStartLocal = previousDayLocal.Date;
         var dayEndLocal = dayStartLocal.AddDays(1);
 
@@ -129,47 +133,53 @@ public class SystemSettingRolloverService
         }
     }
 
-    private (DateTime LocalDate, DateTime LocalMidnight) GetBusinessDateInfo()
-    {
-        var options = _options.Value;
-        var timeZone = ResolveTimeZone(options.TimeZoneId);
-        var nowInZone = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, timeZone);
-        var localDate = nowInZone.Date;
-        var localMidnight = ToLocalMidnight(localDate);
-        return (localDate, localMidnight);
-    }
+    #region MovedToStatic
 
-    private static DateTime ToLocalMidnight(DateTime localDate)
-    {
-        return DateTime.SpecifyKind(localDate.Date, DateTimeKind.Unspecified);
-    }
+    // private (DateTime LocalDate, DateTime LocalMidnight) GetBusinessDateInfo()
+    // {
+    //     var options = _options.Value;
+    //     var timeZone = ResolveTimeZone(options.TimeZoneId);
+    //     var nowInZone = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, timeZone);
+    //     var localDate = nowInZone.Date;
+    //     var localMidnight = TimeZoneFormaterHangfire.ToLocalMidnight(localDate);
+    //     return (localDate, localMidnight);
+    // }
 
-    private static DateTime EnsureLocalKind(DateTime value)
-    {
-        if (value.Kind == DateTimeKind.Unspecified)
-            return value;
+    // private static DateTime ToLocalMidnight(DateTime localDate)
+    // {
+    //     return DateTime.SpecifyKind(localDate.Date, DateTimeKind.Unspecified);
+    // }
+    //
+    // private static DateTime EnsureLocalKind(DateTime value)
+    // {
+    //     if (value.Kind == DateTimeKind.Unspecified)
+    //         return value;
+    //
+    //     return DateTime.SpecifyKind(value, DateTimeKind.Unspecified);
+    // }
+    //
+    // private TimeZoneInfo ResolveTimeZone(string? timeZoneId)
+    // {
+    //     if (string.IsNullOrWhiteSpace(timeZoneId))
+    //         return TimeZoneInfo.Local;
+    //
+    //     try
+    //     {
+    //         return TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+    //     }
+    //     catch (TimeZoneNotFoundException)
+    //     {
+    //         _logger.LogWarning("Time zone '{TimeZoneId}' not found. Falling back to local time.", timeZoneId);
+    //         return TimeZoneInfo.Local;
+    //     }
+    //     catch (InvalidTimeZoneException)
+    //     {
+    //         _logger.LogWarning("Time zone '{TimeZoneId}' invalid. Falling back to local time.", timeZoneId);
+    //         return TimeZoneInfo.Local;
+    //     }
+    // }
+    
 
-        return DateTime.SpecifyKind(value, DateTimeKind.Unspecified);
-    }
+    #endregion
 
-    private TimeZoneInfo ResolveTimeZone(string? timeZoneId)
-    {
-        if (string.IsNullOrWhiteSpace(timeZoneId))
-            return TimeZoneInfo.Local;
-
-        try
-        {
-            return TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-        }
-        catch (TimeZoneNotFoundException)
-        {
-            _logger.LogWarning("Time zone '{TimeZoneId}' not found. Falling back to local time.", timeZoneId);
-            return TimeZoneInfo.Local;
-        }
-        catch (InvalidTimeZoneException)
-        {
-            _logger.LogWarning("Time zone '{TimeZoneId}' invalid. Falling back to local time.", timeZoneId);
-            return TimeZoneInfo.Local;
-        }
-    }
 }

@@ -373,7 +373,7 @@ public class TrainerApprovalRequestService
                         Gender = entity.Gender,
                         // ProfilePicture = entity.ProfilePicture,
                         // Role = entity.Role,
-                        MembershipNumber = MembershipNumberFormatter.Format(nameof(MemberType.Trainer),
+                        MembershipNumber = MembershipNumberFormatter.GymFormat(nameof(MemberType.Trainer),
                             DateTime.UtcNow.Year, memberToken)
                     };
                     
@@ -450,7 +450,7 @@ public class TrainerApprovalRequestService
     private async Task<string> GetNextMembershipTokenAsync(string memberTypeName, int year,
         CancellationToken cancellationToken)
     {
-        var prefix = MembershipNumberFormatter.GetMembershipPrefix(memberTypeName);
+        var prefix = MembershipNumberFormatter.GetGymMembershipPrefix(memberTypeName);
         var yearPrefix = $"{prefix}-{year}";
 
         var latestNumber = await _db.Memberships
