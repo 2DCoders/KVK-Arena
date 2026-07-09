@@ -43,7 +43,7 @@ export default function Hero({ onOpenPromoCountdown }: HeroProps) {
   }, [targetTime]);
 
   return (
-    <section className="relative isolate overflow-hidden pb-20 pt-24 sm:pb-28 sm:pt-15 lg:pb-23 lg:pt-28">
+    <section className="relative isolate overflow-hidden pb-20 pt-24 sm:pb-28 sm:pt-15 lg:pb-10 lg:pt-28">
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-100"

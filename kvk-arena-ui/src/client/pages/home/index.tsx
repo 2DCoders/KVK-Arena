@@ -198,7 +198,7 @@ export default function Home() {
         <WorkFlow />
       )}     
 
-      <section id="add" className="relative overflow-hidden py-10 lg:py-16">
+      <section id="add" className="relative overflow-hidden">
         <ArenaMembership />
       </section>
 
