@@ -112,7 +112,7 @@ export default function Hero({ onOpenPromoCountdown }: HeroProps) {
                       <div className="flex flex-1 items-center justify-center bg-white/5">
                         <FlipNumbers
                           play
-                          height={24}
+                          height={20}
                           perspective={800}
                           width={18}
                           color="#ffffff"
@@ -121,7 +121,7 @@ export default function Hero({ onOpenPromoCountdown }: HeroProps) {
                         />
                       </div>
 
-                      <div className="border-t border-white/10 bg-[#296BE1]/20 py-1 text-center">
+                      <div className="border-t border-white/10 bg-[#296BE1]/25 py-1 text-center">
                         <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-300">
                           {item.label}
                         </span>
