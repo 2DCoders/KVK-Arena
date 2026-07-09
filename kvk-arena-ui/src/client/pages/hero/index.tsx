@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Clock3, Sparkles } from "lucide-react";
+import { Clock3 } from "lucide-react";
+import * as FlipNumbersModule from "react-flip-numbers";
 import hero_bg from "@/assets/hero/hero_bg2.png";
 import { getEnv } from "@/env";
 
@@ -13,6 +14,9 @@ type TimeLeft = {
   minutes: number;
   seconds: number;
 };
+
+const FlipNumbers = (FlipNumbersModule as any).default?.default ??
+  (FlipNumbersModule as any).default;
 
 function getTimeLeft(targetTime: number): TimeLeft {
   const total = Math.max(0, targetTime - Date.now());
@@ -74,6 +78,7 @@ export default function Hero({ onOpenPromoCountdown }: HeroProps) {
             <button
               type="button"
               onClick={onOpenPromoCountdown}
+              data-aos="fade-up"
               className="z-50 mx-auto mt-5 flex flex-col cursor-pointer gap-4 rounded-sm p-5 text-white shadow-[0_18px_45px_rgba(15,23,42,0.34)] backdrop-blur-md transition hover:-translate-y-0.5 hover:bg-slate-950/95 sm:flex-row sm:items-center sm:rounded-full"
             >
               <div className="flex flex-col">
@@ -105,12 +110,18 @@ export default function Hero({ onOpenPromoCountdown }: HeroProps) {
                       className="flex h-16 w-14 flex-col overflow-hidden rounded-xl border border-white/15 bg-white/10 shadow-lg"
                     >
                       <div className="flex flex-1 items-center justify-center bg-white/5">
-                        <span className="font-mono text-xl font-bold tabular-nums">
-                          {item.value}
-                        </span>
+                        <FlipNumbers
+                          play
+                          height={24}
+                          perspective={800}
+                          width={18}
+                          color="#ffffff"
+                          background="transparent"
+                          numbers={item.value}
+                        />
                       </div>
 
-                      <div className="border-t border-white/10 bg-black/20 py-1 text-center">
+                      <div className="border-t border-white/10 bg-[#296BE1]/20 py-1 text-center">
                         <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-300">
                           {item.label}
                         </span>
@@ -118,31 +129,30 @@ export default function Hero({ onOpenPromoCountdown }: HeroProps) {
                     </div>
                   ))}
                 </div>
-              <div className="flex items-center gap-2 p-3">
-                <Clock3 size={20} className="text-yellow-200/90" />
-                <span className="text-sm font-semibold uppercase tracking-[0.22em] text-yellow-200/90">
-                  Limited Time Offer
-                </span>
-              </div>
+                <div className="flex items-center gap-2 p-3">
+                  <Clock3 size={20} className="text-yellow-200/90" />
+                  <span className="text-sm font-semibold uppercase tracking-[0.22em] text-yellow-200/90">
+                    Limited Time Offer
+                  </span>
+                </div>
               </div>
             </button>
           )}
 
           {!isOfferActive && (
             <div className="mt-9 flex justify-center items-center gap-4 sm:flex-row sm:justify-center">
-            <a href="#services">
-              <button className="inline-flex cursor-pointer items-center justify-center rounded-full bg-[#296BE1] px-5 py-2.5 text-xs font-semibold text-white shadow-[0_16px_36px_rgba(41,107,225,0.35)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1f58be] sm:px-8 sm:py-4 sm:text-sm">
-                Explore Now
-              </button>
-            </a>
+              <a href="#services">
+                <button className="inline-flex cursor-pointer items-center justify-center rounded-full bg-[#296BE1] px-5 py-2.5 text-xs font-semibold text-white shadow-[0_16px_36px_rgba(41,107,225,0.35)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1f58be] sm:px-8 sm:py-4 sm:text-sm">
+                  Explore Now
+                </button>
+              </a>
               <a href="#contact">
                 <button className="inline-flex cursor-pointer items-center justify-center rounded-full border border-white/35 bg-white/10 px-5 py-2.5 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(15,23,42,0.16)] backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:border-white/55 hover:bg-white/16 sm:px-8 sm:py-4 sm:text-sm">
                   Contact Us
                 </button>
               </a>
-          </div>
+            </div>
           )}
-          
         </div>
       </div>
 
