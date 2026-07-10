@@ -149,7 +149,6 @@ export default function MembershipRegistration({
 												{[
 													["male", "Male"],
 													["female", "Female"],
-													["other", "Other"],
 												].map(([value, label]) => (
 													<label
 														key={value}
@@ -184,7 +183,7 @@ export default function MembershipRegistration({
 											type="submit"
 											className="inline-flex cursor-pointer items-center justify-center rounded-full bg-[#296BE1] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(41,107,225,0.3)] transition hover:-translate-y-0.5 hover:bg-[#2158bc]"
 										>
-											Apply Now
+											Apply
 										</button>
 									</div>
 								</form>
