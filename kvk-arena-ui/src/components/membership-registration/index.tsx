@@ -147,7 +147,7 @@ export default function MembershipRegistration({
               </div>
             </div>
 
-            <div className="grid flex-1 overflow-auto lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="grid flex-1 overflow-auto lg:grid-cols-[1.2fr_0.8fr]">
               <aside className="border-b overflow-y-auto border-slate-200 bg-[#081a3d] px-5 py-6 text-white sm:px-7 sm:py-8 lg:border-b-0 lg:border-r lg:px-8 lg:py-10">
                 <div className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:pr-1">
                   <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/60">
