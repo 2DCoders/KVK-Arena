@@ -4,6 +4,7 @@ import { getEnv } from "@/env";
 
 import gymImage from "@/assets/gym-signup.jpg";
 import MembershipRegistration from "@/components/membership-registration";
+import Alert from "@/components/alert";
 
 type TimeLeft = {
     total: number;
@@ -31,6 +32,7 @@ export default function ArenaMembership() {
     const targetTime = offerEndDate.getTime();
     const [timeLeft, setTimeLeft] = useState<TimeLeft>(() => getTimeLeft(targetTime));
     const [registrationOpen, setRegistrationOpen] = useState(false);
+    const [pageAlert, setPageAlert] = useState<{ visible: boolean; variant?: "success" | "error" | "warning" | "info"; title?: string; description?: string }>({ visible: false });
 
     useEffect(() => {
         setTimeLeft(getTimeLeft(targetTime));
@@ -60,9 +62,24 @@ export default function ArenaMembership() {
             id="memberships"
             className="relative isolate overflow-hidden py-16 sm:py-20 lg:py-28"
         >
+            {pageAlert.visible && (
+                <Alert
+                    variant={pageAlert.variant}
+                    title={pageAlert.title}
+                    description={pageAlert.description}
+                    onClose={() => setPageAlert((s) => ({ ...s, visible: false }))}
+                />
+            )}
+
             <MembershipRegistration
                 open={registrationOpen}
                 onClose={() => setRegistrationOpen(false)}
+                onSuccess={() => setPageAlert({
+                    visible: true,
+                    variant: "success",
+                    title: "Registration Successful",
+                    description: "Your membership application has been submitted successfully. Our team will contact you shortly.",
+                })}
             />
 
             <div

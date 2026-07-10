@@ -7,6 +7,7 @@ import { registerMember } from "@/services/arena-membership-api";
 type MembershipRegistrationProps = {
   open: boolean;
   onClose: () => void;
+  onSuccess: () => void;
 };
 
 type FormState = {
@@ -21,6 +22,7 @@ type FormState = {
 export default function MembershipRegistration({
   open,
   onClose,
+  onSuccess,
 }: MembershipRegistrationProps) {
   const [formData, setFormData] = useState<FormState>({
     firstName: "",
@@ -32,7 +34,8 @@ export default function MembershipRegistration({
   });
   const [gender, setGender] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [loading, setLoading] = useState(false);
   const genderOptions = [
     { value: 1, label: "Male" },
     { value: 2, label: "Female" },
@@ -58,30 +61,49 @@ export default function MembershipRegistration({
     };
   }, [onClose, open]);
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setShowConfirmModal(true);
+  };
 
+  const handleConfirmRegistration = async () => {
     const payload = new FormData();
+
     payload.append("firstName", formData.firstName.trim());
     payload.append("lastName", formData.lastName.trim());
     payload.append("userName", formData.email.split("@")[0].trim());
     payload.append("phone", formData.whatsapp.trim());
     payload.append("email", formData.email.trim());
     payload.append("gender", String(gender));
-    payload.append("passwordHash", formData.firstName.trim())
-    payload.append("status", "1")
+    payload.append("passwordHash", formData.firstName.trim());
+    payload.append("status", "1");
 
     if (formData.nic.trim()) {
       payload.append("nic", formData.nic.trim());
     }
 
     setIsSubmitting(true);
+    setLoading(true);
 
     try {
       await registerMember(payload);
+
+      setShowConfirmModal(false);
+      setFormData({
+        firstName: "",
+        lastName: "",
+        dateOfBirth: "",
+        whatsapp: "",
+        email: "",
+        nic: "",
+        });
+      onSuccess();
       onClose();
+    } catch (err) {
+      console.error(err);
     } finally {
       setIsSubmitting(false);
+        setLoading(false);
     }
   };
 
@@ -90,6 +112,17 @@ export default function MembershipRegistration({
   return createPortal(
     <div className="fixed inset-0 z-50000 bg-slate-950/80 backdrop-blur-sm">
       <div className="absolute inset-0" aria-hidden="true" onClick={onClose} />
+
+      {loading &&
+        createPortal(
+          <div className="fixed inset-0 z-9999999999 flex items-center justify-center bg-black/60 backdrop-blur-md">
+            <div className="flex flex-col items-center gap-3">
+              <div className="h-14 w-14 animate-spin rounded-full border-4 border-white/30 border-t-white"></div>
+              <p className="text-sm text-white font-medium">Loading</p>
+            </div>
+          </div>,
+          document.body,
+        )}
 
       <div className="relative z-10 h-full w-full overflow-y-auto">
         <div className="flex h-screen w-screen items-stretch">
@@ -282,6 +315,38 @@ export default function MembershipRegistration({
           </div>
         </div>
       </div>
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-60000 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="w-[92%] max-w-md rounded-3xl bg-white p-7 shadow-2xl">
+            <h3 className="text-xl font-bold text-slate-900">
+              Confirm Registration
+            </h3>
+
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              Are you sure you want to submit your membership application?
+            </p>
+
+            <div className="mt-8 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowConfirmModal(false)}
+                className="rounded-xl border cursor-pointer border-slate-300 px-5 py-2.5 font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleConfirmRegistration}
+                disabled={isSubmitting}
+                className="rounded-xl bg-[#296BE1] px-5 cursor-pointer py-2.5 font-medium text-white hover:bg-[#2158bc] disabled:opacity-70"
+              >
+                {isSubmitting ? "Submitting..." : "Yes, Apply"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>,
     document.body,
   );
