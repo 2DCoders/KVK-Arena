@@ -80,6 +80,12 @@ export default function ArenaMembership() {
                     title: "Registration Successful",
                     description: "Your membership application has been submitted successfully. Our team will contact you shortly.",
                 })}
+                onFailure={() => setPageAlert({
+                    visible: true,
+                    variant: "error",
+                    title: "Registration Failed",
+                    description: "There was an issue submitting your membership application. Please try again later.",
+                })}
             />
 
             <div

@@ -8,6 +8,7 @@ type MembershipRegistrationProps = {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  onFailure: () => void;
 };
 
 type FormState = {
@@ -19,10 +20,13 @@ type FormState = {
   nic: string;
 };
 
+type FormErrors = Partial<Record<keyof Pick<FormState, "firstName" | "lastName" | "whatsapp" | "email" | "nic"> | "gender", string>>;
+
 export default function MembershipRegistration({
   open,
   onClose,
   onSuccess,
+  onFailure,
 }: MembershipRegistrationProps) {
   const [formData, setFormData] = useState<FormState>({
     firstName: "",
@@ -36,10 +40,44 @@ export default function MembershipRegistration({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [apiError, setApiError] = useState<string | null>(null);
   const genderOptions = [
     { value: 1, label: "Male" },
     { value: 2, label: "Female" },
   ];
+
+  const validateForm = () => {
+    const nextErrors: FormErrors = {};
+
+    if (!formData.firstName.trim()) {
+      nextErrors.firstName = "First name is required.";
+    }
+
+    if (!formData.lastName.trim()) {
+      nextErrors.lastName = "Last name is required.";
+    }
+
+    const whatsappValue = formData.whatsapp.trim();
+    if (!whatsappValue) {
+      nextErrors.whatsapp = "WhatsApp number is required.";
+    } else if (!/^0\d{9}$/.test(whatsappValue)) {
+      nextErrors.whatsapp = "Enter a valid mobile number, such as 07xxxxxxxx.";
+    }
+
+    const emailValue = formData.email.trim();
+    if (!emailValue) {
+      nextErrors.email = "Email address is required.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) {
+      nextErrors.email = "Enter a valid email address.";
+    }
+
+    if (gender !== 1 && gender !== 2) {
+      nextErrors.gender = "Select your gender.";
+    }
+
+    return nextErrors;
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -63,6 +101,15 @@ export default function MembershipRegistration({
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    const nextErrors = validateForm();
+    setErrors(nextErrors);
+    setApiError(null);
+
+    if (Object.keys(nextErrors).length > 0) {
+      return;
+    }
+
     setShowConfirmModal(true);
   };
 
@@ -89,6 +136,7 @@ export default function MembershipRegistration({
       await registerMember(payload);
 
       setShowConfirmModal(false);
+      setApiError(null);
       setFormData({
         firstName: "",
         lastName: "",
@@ -97,10 +145,21 @@ export default function MembershipRegistration({
         email: "",
         nic: "",
         });
+      setErrors({});
       onSuccess();
       onClose();
     } catch (err) {
-      console.error(err);
+      const responseMessage = (err as {
+        response?: { data?: { message?: unknown } };
+      })?.response?.data?.message;
+      const errorMessage =
+        typeof responseMessage === "string" && responseMessage.trim()
+          ? responseMessage
+          : "Unable to complete registration. Please try again.";
+
+      setApiError(errorMessage);
+      setShowConfirmModal(false);
+      onFailure();
     } finally {
       setIsSubmitting(false);
         setLoading(false);
@@ -206,32 +265,57 @@ export default function MembershipRegistration({
 
               <main className="bg-white px-5 py-6 sm:px-7 sm:py-8 lg:px-8 lg:py-10 overflow-y-auto">
                 <form className="grid gap-5" onSubmit={handleSubmit}>
+                  {apiError && (
+                    <div
+                      role="alert"
+                      className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700"
+                    >
+                      {apiError}
+                    </div>
+                  )}
+
                   <div className="grid gap-5 sm:grid-cols-2">
                     <Field
                       label="First name"
                       value={formData.firstName}
-                      onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                      onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                        const value = event.target.value;
                         setFormData({
                           ...formData,
-                          firstName: event.target.value,
-                        })
-                      }
+                          firstName: value,
+                        });
+                        if (apiError) {
+                          setApiError(null);
+                        }
+                        if (errors.firstName) {
+                          setErrors((currentErrors) => ({ ...currentErrors, firstName: undefined }));
+                        }
+                      }}
                       name="firstName"
                       placeholder="Enter first name"
-                      required
+                      error={errors.firstName}
+                      required helperText={""}
                     />
                     <Field
                       label="Last name"
                       value={formData.lastName}
-                      onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                      onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                        const value = event.target.value;
                         setFormData({
                           ...formData,
-                          lastName: event.target.value,
-                        })
-                      }
+                          lastName: value,
+                        });
+                        if (apiError) {
+                          setApiError(null);
+                        }
+                        if (errors.lastName) {
+                          setErrors((currentErrors) => ({ ...currentErrors, lastName: undefined }));
+                        }
+                      }}
                       name="lastName"
                       placeholder="Enter last name"
-                      required
+                      error={errors.lastName}
+                      required helperText={""}
                     />
                   </div>
 
@@ -239,29 +323,45 @@ export default function MembershipRegistration({
                     <Field
                       label="WhatsApp no"
                       value={formData.whatsapp}
-                      onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                      onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                        const value = event.target.value;
                         setFormData({
                           ...formData,
-                          whatsapp: event.target.value,
-                        })
-                      }
+                          whatsapp: value,
+                        });
+                        if (apiError) {
+                          setApiError(null);
+                        }
+                        if (errors.whatsapp) {
+                          setErrors((currentErrors) => ({ ...currentErrors, whatsapp: undefined }));
+                        }
+                      }}
                       name="whatsapp"
                       placeholder="07xxxxxxxx"
-                      required
+                      error={errors.whatsapp}
+                      required helperText={""}
                     />
                     <Field
                       label="Email"
                       value={formData.email}
-                      onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                      onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                        const value = event.target.value;
                         setFormData({
                           ...formData,
-                          email: event.target.value,
-                        })
-                      }
+                          email: value,
+                        });
+                        if (apiError) {
+                          setApiError(null);
+                        }
+                        if (errors.email) {
+                          setErrors((currentErrors) => ({ ...currentErrors, email: undefined }));
+                        }
+                      }}
                       name="email"
                       type="email"
                       placeholder="you@example.com"
-                      required
+                      error={errors.email}
+                      required helperText={""}
                     />
                   </div>
 
@@ -292,6 +392,9 @@ export default function MembershipRegistration({
                           </label>
                         ))}
                       </div>
+                      <p className={`mt-2 text-sm ${errors.gender ? "text-red-600" : "text-slate-500"}`}>
+                        {errors.gender}
+                      </p>
                     </div>
                   </div>
 
@@ -354,6 +457,8 @@ export default function MembershipRegistration({
 
 type FieldProps = {
   label: string;
+  helperText: string;
+  error?: string;
 } & InputHTMLAttributes<HTMLInputElement>;
 
 function Field({
@@ -361,6 +466,8 @@ function Field({
   type = "text",
   placeholder,
   required,
+  helperText,
+  error,
   ...inputProps
 }: FieldProps) {
   return (
@@ -373,8 +480,15 @@ function Field({
         placeholder={placeholder}
         required={required}
         {...inputProps}
-        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#296BE1] focus:ring-4 focus:ring-[#296BE1]/10"
+        aria-invalid={Boolean(error)}
+        className={`w-full rounded-2xl border bg-white px-4 py-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:ring-4 ${error
+          ? "border-red-300 focus:border-red-500 focus:ring-red-500/10"
+          : "border-slate-200 focus:border-[#296BE1] focus:ring-[#296BE1]/10"
+        }`}
       />
+      <p className={`mt-2 text-xs leading-5 ${error ? "text-red-600" : "text-slate-500"}`}>
+        {error ?? helperText}
+      </p>
     </label>
   );
 }
