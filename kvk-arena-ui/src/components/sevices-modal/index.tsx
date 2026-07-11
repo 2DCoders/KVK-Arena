@@ -1,4 +1,4 @@
-import { X, Dumbbell, Car, Trophy, Gamepad2, Coffee, ArrowRight } from "lucide-react";
+import { X, Dumbbell, Car, Trophy, Gamepad2, Coffee } from "lucide-react";
 
 import gymHero from "@/assets/about.png";
 import badmintonHero from "@/assets/about2.jpg";

@@ -5,13 +5,23 @@ import {
   TikTokOutlined,
   FacebookOutlined,
 } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
+import ConstructionModal from "../404";
+import { useState } from "react";
 
 export default function Footer() {
-  const navigate = useNavigate();
+  const [openConstructionModal, setOpenConstructionModal] = useState(false);
+  const [constructionPageName, setConstructionPageName] = useState("");
+  // const navigate = useNavigate();
   
   return (
     <footer className="relative overflow-hidden bg-[#f5f5f5] py-16 md:py-24">
+
+      <ConstructionModal
+        open={openConstructionModal}
+        onClose={() => setOpenConstructionModal(false)}
+        pageName={constructionPageName}
+      />
       {/* Background Text */}
       <div className="pointer-events-none absolute bottom-[-90px] left-1/2 -translate-x-1/2 select-none">
         <h1 className="text-[140px] md:text-[260px] font-black tracking-tight text-slate-200/40 whitespace-nowrap">
@@ -84,7 +94,9 @@ export default function Footer() {
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          navigate("/gym");
+                          setConstructionPageName("Gym Section");
+                          setOpenConstructionModal(true);
+                          // navigate("/gym");
                         }}
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
@@ -97,7 +109,9 @@ export default function Footer() {
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          navigate("/badminton");
+                          setConstructionPageName("Badminton Section");
+                          setOpenConstructionModal(true);
+                          // navigate("/badminton");
                         }}
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
@@ -110,7 +124,9 @@ export default function Footer() {
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          navigate("/gaming");
+                          setConstructionPageName("Gaming Section");
+                          setOpenConstructionModal(true);
+                          // navigate("/gaming");
                         }}
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
@@ -123,7 +139,9 @@ export default function Footer() {
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          navigate("/carwash");
+                          setConstructionPageName("Carwash Section");
+                          setOpenConstructionModal(true);
+                          // navigate("/carwash");
                         }}
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
@@ -136,7 +154,9 @@ export default function Footer() {
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          navigate("/cafe");
+                          setConstructionPageName("Cafe Section");
+                          setOpenConstructionModal(true);
+                          // navigate("/cafe");
                         }}
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >

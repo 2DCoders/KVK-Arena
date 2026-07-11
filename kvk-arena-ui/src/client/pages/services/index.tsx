@@ -8,7 +8,7 @@ import badminton from "@/assets/badminton.jpg";
 import gaming from "@/assets/billiard.jpg";
 import cafe from "@/assets/coffee.jpg";
 import AOS from "aos";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import ConstructionModal from "@/components/404";
 
 const services = [
@@ -74,7 +74,7 @@ export default function Services() {
   const [open404, setOpen404] = useState(false);
   const [pageName, setPageName] = useState("Services Section");
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const scrollServices = (direction: "left" | "right") => {
     const container = scrollerRef.current;
