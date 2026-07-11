@@ -129,6 +129,124 @@ namespace kvk.Identity.Persistence.Migrations.IdentityRbacInitial
                     b.ToTable("ApplicationPermissions", "identity");
                 });
 
+            modelBuilder.Entity("kvk.Identity.Domain.KvkMember", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("Gender")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastModifiedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("MemberId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int?>("MembershipDurationDays")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MembershipStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("NicNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(25)
+                        .HasColumnType("character varying(25)");
+
+                    b.Property<byte[]>("ProfilePicture")
+                        .HasColumnType("bytea");
+
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(25)
+                        .HasColumnType("character varying(25)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_KvkMember_TenantId");
+
+                    b.HasIndex("TenantId", "CreatedAt")
+                        .HasDatabaseName("IX_KvkMember_TenantId_CreatedAt");
+
+                    b.ToTable("KvkMembers", "identity");
+                });
+
+            modelBuilder.Entity("kvk.Identity.Domain.MemberEligibleOffer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsEligible")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("MemberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("OfferId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MemberId");
+
+                    b.ToTable("MemberEligibleOffers", "identity");
+                });
+
             modelBuilder.Entity("kvk.Identity.Domain.Role", b =>
                 {
                     b.Property<Guid>("Id")
@@ -391,6 +509,17 @@ namespace kvk.Identity.Persistence.Migrations.IdentityRbacInitial
                     b.ToTable("StaffRoles", "identity");
                 });
 
+            modelBuilder.Entity("kvk.Identity.Domain.MemberEligibleOffer", b =>
+                {
+                    b.HasOne("kvk.Identity.Domain.KvkMember", "Member")
+                        .WithMany("EligibleOffers")
+                        .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Member");
+                });
+
             modelBuilder.Entity("kvk.Identity.Domain.RolePermission", b =>
                 {
                     b.HasOne("kvk.Identity.Domain.ApplicationPermission", "ApplicationPermission")
@@ -439,6 +568,11 @@ namespace kvk.Identity.Persistence.Migrations.IdentityRbacInitial
                     b.Navigation("Role");
 
                     b.Navigation("Staff");
+                });
+
+            modelBuilder.Entity("kvk.Identity.Domain.KvkMember", b =>
+                {
+                    b.Navigation("EligibleOffers");
                 });
 
             modelBuilder.Entity("kvk.Identity.Domain.Role", b =>

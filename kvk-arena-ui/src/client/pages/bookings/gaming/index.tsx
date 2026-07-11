@@ -88,10 +88,15 @@ export default function BookingGaming() {
   const [selectedResources, setSelectedResources] = useState<string[]>([]);
   const [workingDays, setWorkingDays] = useState<any[]>([]);
 
+  const yesterday = new Date();
+yesterday.setDate(yesterday.getDate() - 1);
+
+const startDate = yesterday.toISOString().split("T")[0];
+
   useEffect(() => {
     const fetchWorkingDays = async () => {
       try {
-        const res = await getNextWorkingDays(new Date().toISOString().split("T")[0], 7);
+        const res = await getNextWorkingDays(startDate, 7);
 
         const formattedDates = res.map(
           (dateStr: string) => {

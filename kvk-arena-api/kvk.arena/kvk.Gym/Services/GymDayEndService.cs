@@ -36,7 +36,7 @@ public class GymDayEndService : GenericDayEndService<GymDbContext, DayEndRecord>
                 ActualCashCount = entity.ActualCashCount,
                 Discrepancy = entity.Discrepancy,
                 Remark = entity.Remark,
-                HoldForNextDay = entity.CashFromPrevDay,
+                CashFromPrevDay = entity.CashFromPrevDay,
             },
             currentDatePropertyName: "CurrentDate")
     {

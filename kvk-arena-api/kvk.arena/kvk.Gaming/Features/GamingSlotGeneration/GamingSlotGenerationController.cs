@@ -15,10 +15,10 @@ public class GamingSlotGenerationController : ControllerBase
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }
 
-    [HttpPost("generate-single-date")]
-    public async Task<IActionResult> GenerateSlotsForSpecificDate([FromBody] GenerateSlotsForDateRequest request, CancellationToken cancellationToken = default)
+    [HttpPost]
+    public async Task<IActionResult> GenerateSlotsForGamingCategoryeAsync([FromBody] GamingCategorySlotConfigurationRequest request, CancellationToken cancellationToken = default)
     {
-        var result = await _service.GenerateSlotsForSpecificDateAsync(request, cancellationToken);
+        var result = await _service.GenerateSlotsForGamingCategoryeAsync(request, cancellationToken);
 
         if (!result.Succeeded)
             return BadRequest(result);
@@ -26,10 +26,10 @@ public class GamingSlotGenerationController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("generate-date-range")]
-    public async Task<IActionResult> GenerateSlotsForDateRange([FromBody] GenerateSlotsForDateRangeRequest request, CancellationToken cancellationToken = default)
+    [HttpPut]
+    public async Task<IActionResult> Update([FromBody] GamingSlotGenerationConfigurationUpdateRequest request, CancellationToken cancellationToken = default)
     {
-        var result = await _service.GenerateSlotsForDateRangeAsync(request, cancellationToken);
+        var result = await _service.UpdateAsync(request, cancellationToken);
 
         if (!result.Succeeded)
             return BadRequest(result);
@@ -37,32 +37,28 @@ public class GamingSlotGenerationController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPut("regenerate-station-slots")]
-    public async Task<IActionResult> RegenerateSlotsForGamingStation([FromBody] RegenerateSlotsForStationRequest request, CancellationToken cancellationToken = default)
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken = default)
     {
-        var result = await _service.RegenerateSlotsForGamingStationAsync(request, cancellationToken);
+        var result = await _service.DeleteAsync(id, cancellationToken);
 
         if (!result.Succeeded)
             return BadRequest(result);
 
         return Ok(result);
     }
-
-    [HttpPut("disable-slots-for-date")]
-    public async Task<IActionResult> DisableGeneratedSlotsForDate([FromBody] DisableGeneratedSlotsForDateRequest request, CancellationToken cancellationToken = default)
+    [HttpGet("availability-by-station-category")]
+    public async Task<IActionResult> GetByStationCategoryIdAndDate([FromQuery]Guid stationId,[FromQuery]Guid categoryId,[FromQuery] DateOnly date, CancellationToken cancellationToken)
     {
-        var result = await _service.DisableGeneratedSlotsForDateAsync(request, cancellationToken);
-
-        if (!result.Succeeded)
-            return BadRequest(result);
-
+        var result = await _service.GetByStationCategoryIdAndDate(stationId, categoryId, date, cancellationToken);
         return Ok(result);
     }
-
-    [HttpGet("by-station-and-date")]
-    public async Task<ActionResult<List<GamingSlotResponse>>> GetSlotsByGamingStationAndDate([FromQuery] GetSlotsByStationAndDateRequest request, CancellationToken cancellationToken = default)
+    
+    //configuration by category
+    [HttpGet("configuration-by-category")]
+    public async Task<IActionResult> GetConfigurationByCategory([FromQuery]Guid categoryId, CancellationToken cancellationToken)
     {
-        var result = await _service.GetSlotsByGamingStationAndDateAsync(request, cancellationToken);
+        var result = await _service.GetConfigurationByCategory(categoryId, cancellationToken);
         return Ok(result);
     }
 }

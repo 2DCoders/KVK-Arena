@@ -2,12 +2,9 @@ using kvk.BuildingBlocks.Common;
 
 namespace kvk.Gaming.Domain;
 
+//no need
 public class Game : AuditableEntity
 {
-    public Guid GamingCategoryId { get; set; }
-    
-    public GamingCategory GamingCategory { get; set; } = null!;
-
     public string Name { get; set; }
 
     public string? Description { get; set; }

@@ -7,9 +7,6 @@ using kvk.BuildingBlocks.Services;
 using kvk.Host.Middlewares;
 using kvk.Identity;
 using kvk.Gym;
-using kvk.Gym.Domain;
-using kvk.Gym.Options;
-using kvk.Gym.Services;
 using kvk.Financial;
 using kvk.Badminton;
 using kvk.Gaming;
@@ -17,7 +14,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Microsoft.Extensions.Options;
 using Serilog;
-
+using System.Text.Json.Serialization;
+using Newtonsoft.Json.Serialization;
+using kvk.BuildingBlocks.Common;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,7 +40,12 @@ builder.Host.UseSerilog();
 
 // Add OpenAPI/Swagger documentation
 builder.Services.AddOpenApi();
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    options.JsonSerializerOptions.WriteIndented = true;
+});
+
 
 // Add core infrastructure services
 builder.Services.AddScoped<ITenantService, TenantService>();
@@ -196,32 +200,16 @@ app.MapControllers();
 // Log startup information
 var logger = app.Services.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Program>>();
 
-var dayEndOptions = app.Services.GetRequiredService<IOptions<GymDayEndOptions>>().Value;
-var dayEndTimeZone = ResolveTimeZone(dayEndOptions.TimeZoneId, logger);
-var runAt = dayEndOptions.RunAt;
-var dailyCron = Cron.Daily(runAt.Hours, runAt.Minutes);
-
+// Initialize background processors from modules
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<GymDbContext>();
-    var currentSetting = db.SystemSettings
-        .AsNoTracking()
-        .FirstOrDefault(s => s.Id == SystemSetting.SingletonId);
-
-    var businessDate = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, dayEndTimeZone).Date;
-
-    if (currentSetting == null || currentSetting.CurrentDay.Date < businessDate)
+    var scopedServices = scope.ServiceProvider;
+    var backgroundProcessorInitializers = scopedServices.GetServices<IBackgroundProcessorInitializer>();
+    foreach (var initializer in backgroundProcessorInitializers)
     {
-        BackgroundJob.Enqueue<SystemSettingRolloverService>(job => job.RunAsync());
-        logger.LogInformation("System setting rollover queued for catch-up.");
+        await initializer.InitializeAsync(scopedServices, logger);
     }
 }
-
-RecurringJob.AddOrUpdate<SystemSettingRolloverService>(
-    "Gym.SystemSettingRollover",
-    job => job.RunAsync(),
-    dailyCron,
-    new RecurringJobOptions { TimeZone = dayEndTimeZone });
 
 logger.LogInformation("KVK Arena API starting up...");
 logger.LogInformation("Environment: {Environment}", app.Environment.EnvironmentName);
@@ -250,24 +238,3 @@ if (app.Environment.IsDevelopment())
 }
 
 app.Run();
-
-static TimeZoneInfo ResolveTimeZone(string? timeZoneId, Microsoft.Extensions.Logging.ILogger logger)
-{
-    if (string.IsNullOrWhiteSpace(timeZoneId))
-        return TimeZoneInfo.Local;
-
-    try
-    {
-        return TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-    }
-    catch (TimeZoneNotFoundException)
-    {
-        logger.LogWarning("Time zone '{TimeZoneId}' not found. Falling back to local time.", timeZoneId);
-        return TimeZoneInfo.Local;
-    }
-    catch (InvalidTimeZoneException)
-    {
-        logger.LogWarning("Time zone '{TimeZoneId}' invalid. Falling back to local time.", timeZoneId);
-        return TimeZoneInfo.Local;
-    }
-}

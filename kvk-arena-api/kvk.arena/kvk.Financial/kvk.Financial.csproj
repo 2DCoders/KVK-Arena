@@ -8,7 +8,6 @@
 
     <ItemGroup>
       <Folder Include="Domain\" />
-      <Folder Include="Features\" />
       <Folder Include="Interfaces\" />
       <Folder Include="Persistence\" />
       <Folder Include="Services\" />
@@ -16,7 +15,9 @@
 
     <ItemGroup>
       <!-- Project references required to access shared building blocks and gym DbContext -->
+      <ProjectReference Include="..\kvk.Badminton\kvk.Badminton.csproj" />
       <ProjectReference Include="..\kvk.BuildingBlocks\kvk.BuildingBlocks.csproj" />
+      <ProjectReference Include="..\kvk.Gaming\kvk.Gaming.csproj" />
       <ProjectReference Include="..\kvk.Gym\kvk.Gym.csproj" />
     </ItemGroup>
 

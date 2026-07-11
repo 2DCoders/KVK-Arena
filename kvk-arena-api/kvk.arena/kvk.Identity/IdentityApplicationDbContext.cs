@@ -32,6 +32,11 @@ public class IdentityApplicationDbContext : AppDbContextBase
     public DbSet<StaffModule> StaffModules => Set<StaffModule>();
     
     public DbSet<CalenderHolidays> CalenderHolidays => Set<CalenderHolidays>();
+    
+    public DbSet<KvkMember> KvkMembers => Set<KvkMember>();
+    
+    public DbSet<MemberEligibleOffer> MemberEligibleOffers => Set<MemberEligibleOffer>();
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

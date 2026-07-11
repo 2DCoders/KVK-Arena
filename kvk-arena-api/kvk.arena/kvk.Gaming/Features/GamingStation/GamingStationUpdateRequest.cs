@@ -8,10 +8,7 @@ public class GamingStationUpdateRequest
 
     [Required(ErrorMessage = "Gaming Category ID is required.")]
     public Guid GamingCategoryId { get; set; }
-
-    // GameId is optional for categories like 'POOL'
-    public Guid? GameId { get; set; }
-
+    
     [Required(ErrorMessage = "Station Code is required.")]
     [StringLength(50, ErrorMessage = "Station Code cannot exceed 50 characters.")]
     public required string StationCode { get; set; }

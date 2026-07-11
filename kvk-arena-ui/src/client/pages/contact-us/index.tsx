@@ -119,7 +119,7 @@ export default function ContactUs() {
                             <div>
                                 <p className="text-xs text-slate-400">Address</p>
                                 <p className="text-sm font-semibold text-white">
-                                    No.387, Bambalapitiya road, Colombo 4
+                                    No.387, Galle road, Colombo 4
                                 </p>
                             </div>
                         </div>

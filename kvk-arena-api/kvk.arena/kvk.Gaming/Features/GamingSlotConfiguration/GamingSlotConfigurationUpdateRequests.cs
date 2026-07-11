@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace kvk.Gaming.Features.GamingSlotConfiguration;
 
-public class GamingSlotConfigurationUpdateRequest
+public class GamingSlotConfigurationUpdateRequests
 {
     public Guid Id { get; set; }
 

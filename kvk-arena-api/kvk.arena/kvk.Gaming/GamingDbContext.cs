@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 namespace kvk.Gaming;
 
 public class GamingDbContext(
-    DbContextOptions options,
+    DbContextOptions<GamingDbContext> options,
     ITenantService tenantService,
     ILogger<AppDbContextBase> logger,
     IHttpContextAccessor? httpContextAccessor = null)
@@ -16,11 +16,16 @@ public class GamingDbContext(
 {
     public DbSet<GamingCategory> GamingCategories { get; set; } = null!;
     public DbSet<GamingStation> GamingStations { get; set; } = null!;
+
     public DbSet<Game> Games { get; set; } = null!;
-    public DbSet<GamingStationGame> GamingStationGames { get; set; } = null!;
+
+    // public DbSet<GamingStationGame> GamingStationGames { get; set; } = null!;
     public DbSet<GamingSlotConfiguration> GamingSlotConfigurations { get; set; } = null!;
     public DbSet<GamingSlot> GamingSlots { get; set; } = null!;
     public DbSet<GamingBooking> GamingBookings { get; set; } = null!;
+    public DbSet<GamingBookingHold> GamingBookingHolds { get; set; } = null!; // Added GamingBookingHold DbSet
+    public DbSet<Domain.GamingDayEnd> GamingDayEnds => Set<Domain.GamingDayEnd>();
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -28,25 +33,25 @@ public class GamingDbContext(
 
         base.OnModelCreating(modelBuilder);
 
-        // Configure GamingStationGame many-to-many relationship
-        modelBuilder.Entity<GamingStationGame>()
-            .HasKey(gsg => new { gsg.GamingStationId, gsg.GameId });
-
-        modelBuilder.Entity<GamingStationGame>()
-            .HasOne(gsg => gsg.GamingStation)
-            .WithMany()
-            .HasForeignKey(gsg => gsg.GamingStationId);
-
-        modelBuilder.Entity<GamingStationGame>()
-            .HasOne(gsg => gsg.Game)
-            .WithMany()
-            .HasForeignKey(gsg => gsg.GameId);
+        // // Configure GamingStationGame many-to-many relationship
+        // modelBuilder.Entity<GamingStationGame>()
+        //     .HasKey(gsg => new { gsg.GamingStationId, gsg.GameId });
+        //
+        // modelBuilder.Entity<GamingStationGame>()
+        //     .HasOne(gsg => gsg.GamingStation)
+        //     .WithMany()
+        //     .HasForeignKey(gsg => gsg.GamingStationId);
+        //
+        // modelBuilder.Entity<GamingStationGame>()
+        //     .HasOne(gsg => gsg.Game)
+        //     .WithMany()
+        //     .HasForeignKey(gsg => gsg.GameId);
 
         // Configure GamingSlot unique constraint
         modelBuilder.Entity<GamingSlot>()
-            .HasIndex(gs => new { gs.GamingStationId, gs.Date, gs.StartTime })
+            .HasIndex(gs => new { gs.GamingStationId, gs.StartTime })
             .IsUnique();
-            
+
         // Configure GamingBooking unique constraint for BookingNumber
         modelBuilder.Entity<GamingBooking>()
             .HasIndex(gb => gb.BookingNumber)
@@ -71,12 +76,30 @@ public class GamingDbContext(
             .HasForeignKey(gb => gb.GamingSlotId)
             .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete
 
-        modelBuilder.Entity<GamingBooking>()
-            .HasOne(gb => gb.Game)
+        // Configure relationships for GamingBookingHold
+        modelBuilder.Entity<GamingBookingHold>()
+            .HasOne<GamingCategory>()
             .WithMany()
-            .HasForeignKey(gb => gb.GameId)
-            .IsRequired(false) // GameId is nullable
-            .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete
+            .HasForeignKey(gbh => gbh.GamingCategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<GamingBookingHold>()
+            .HasOne<GamingStation>()
+            .WithMany()
+            .HasForeignKey(gbh => gbh.GamingStationId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<GamingBookingHold>()
+            .HasOne<GamingSlot>()
+            .WithMany()
+            .HasForeignKey(gbh => gbh.GamingSlotId)
+            .OnDelete(DeleteBehavior.Restrict);
+       
+        modelBuilder
+            .Entity<GamingBookingHold>()
+            .Property(x => x.ExpiresAt)
+            .HasColumnType("timestamp without time zone");
+
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(GamingDbContext).Assembly);
     }

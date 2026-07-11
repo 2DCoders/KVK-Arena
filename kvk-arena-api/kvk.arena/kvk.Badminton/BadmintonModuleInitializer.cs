@@ -1,6 +1,8 @@
+using kvk.Badminton.Features.Booking;
 using kvk.Badminton.Features.Court;
 using kvk.Badminton.Features.CourtSlotConfiguration;
 using kvk.Badminton.Interfaces;
+using kvk.Badminton.Services; // Add this using statement
 using kvk.BuildingBlocks.Interfaces;
 using kvk.BuildingBlocks.Persistence;
 using Microsoft.AspNetCore.Http;
@@ -24,6 +26,8 @@ public class BadmintonModuleInitializer : IModuleInitializer
         services.AddDbContext<BadmintonDbContext>(options => options.UseNpgsql(connectionString));    
         services.AddScoped<ICourtService, CourtService>();
         services.AddScoped<ICourtSlotConfigurationService, CourtSlotConfigurationService>();
+        services.AddScoped<BadmintonDayEndService>(); // Register the new service
+        services.AddScoped<IBookingService, BookingService>();
 
         
             

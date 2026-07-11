@@ -1,4 +1,5 @@
 using kvk.Badminton.Domain;
+using kvk.Badminton.Enums;
 using kvk.Badminton.Interfaces;
 using kvk.BuildingBlocks.Common;
 using Microsoft.EntityFrameworkCore;
@@ -21,9 +22,50 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
             .FirstOrDefaultAsync(x => x.CourtId == courtId, cancellationToken);
 
         if (config == null)
-            throw new KeyNotFoundException("Configuration not found for the specified court");
+            return null;
 
         return MapToResponse(config);
+    }
+
+    public async Task<IEnumerable<CourtSlotResponse>> GetByCourtIdAndDateAsync(Guid courtId, DateOnly date, CancellationToken cancellationToken = default)
+    {
+        var now =  DateTime.Now;
+        
+        var allAvailableSlots = await _db.CourtSlots
+            .AsNoTracking()
+            .Where(x => x.CourtId == courtId)
+            .OrderBy(x => x.StartTime)
+            .ToListAsync(cancellationToken);
+
+        var bookedSlotsIds = await _db.CourtBookings
+            .AsNoTracking()
+            .Where(b => b.CourtId == courtId &&
+                        b.BookingDate == date)
+            .Select(x => x.CourtSlotId)
+            .ToListAsync(cancellationToken);
+        
+        //and check with CourtBookingHold also
+        var bookingHoldNotExpired = await _db.BookingHolds
+            .AsNoTracking()
+            .Where(b => b.CourtId == courtId &&
+                        b.BookingDate == date &&
+                        b.Status == BookingHoldStatus.Pending &&
+                        b.ExpiresAt > now)
+            .Select(x => x.CourtSlotId)
+            .ToListAsync(cancellationToken);
+
+        return allAvailableSlots.Select(slot => new CourtSlotResponse
+        {
+            Id = slot.Id,
+            CourtId = slot.CourtId,
+            StartTime = slot.StartTime,
+            EndTime = slot.EndTime,
+            IsActive = slot.IsActive,
+            Price = slot.Price,
+            IsBooked = bookedSlotsIds.Contains(slot.Id) || bookingHoldNotExpired.Contains(slot.Id),
+            CreatedAt = slot.CreatedAt,
+            LastModifiedAt = slot.LastModifiedAt
+        });
     }
 
     public async Task<Result> CreateAsync(CourtSlotConfigurationCreateRequest request, CancellationToken cancellationToken = default)
@@ -40,7 +82,7 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
                 EndTime = request.EndTime,
                 SlotDurationMinutes = request.SlotDurationMinutes,
                 SlotGapMinutes = request.SlotGapMinutes,
-                IsActive = request.IsActive
+                IsActive = request.IsActive,
             };
 
             _db.CourtSlotConfigurations.Add(config);
@@ -132,8 +174,10 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
                 StartTime = currentTime,
                 EndTime = slotEndTime,
                 IsActive = true,
-                // Using the 'IsActive' decimal from config as price if available, else 0
-                Price = config.IsActive ?? 0 
+                Price = await _db.Courts
+                    .Where(c => c.Id == config.CourtId)
+                    .Select(c => c.PricePerSlot)
+                    .FirstOrDefaultAsync(cancellationToken)
             });
 
             currentTime = slotEndTime.AddMinutes(config.SlotGapMinutes);
@@ -164,4 +208,5 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
             LastModifiedAt = entity.LastModifiedAt
         };
     }
+
 }

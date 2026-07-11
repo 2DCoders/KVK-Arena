@@ -69,7 +69,7 @@ public class GenericDayEndService<TContext, TEntity> : IDayEndService
         if (forDate.HasValue)
         {
             var d = forDate.Value.Date;
-            set = set.Where(e => EF.Property<DateTime>(e, _currentDatePropertyName) == d);
+            set = set.Where(e => EF.Property<DateTime>(e, _currentDatePropertyName).Date == d); // Ensure date-only comparison
         }
 
         var list = await set.OrderByDescending(e => EF.Property<DateTime>(e, _currentDatePropertyName))

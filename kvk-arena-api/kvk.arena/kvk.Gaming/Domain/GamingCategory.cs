@@ -10,10 +10,10 @@ public class GamingCategory : AuditableEntity
     
     // PC, PS5, BILLIARD
     public string Code { get; set; }
-
-    public bool HasGames { get; set; }
     
     public bool IsActive { get; set; }
+    
+    public decimal Price { get; set; }
 
     
 }

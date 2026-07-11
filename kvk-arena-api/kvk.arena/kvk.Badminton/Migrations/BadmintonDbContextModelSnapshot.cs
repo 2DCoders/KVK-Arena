@@ -23,6 +23,112 @@ namespace kvk.Badminton.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("kvk.Badminton.Domain.BadmintonDayEnd", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("ActualCashCount")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("CashFromPrevDay")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTime>("CurrentDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<decimal>("Discrepancy")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("ExpectedCashTotal")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("HoldForNextDay")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTime>("NextWorkingDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Remark")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BadmintonDayEnds", "badminton");
+                });
+
+            modelBuilder.Entity("kvk.Badminton.Domain.BookingHold", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateOnly>("BookingDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("CourtId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CourtSlotId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime>("LastModifiedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PaymentId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PaymentIntentId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourtId");
+
+                    b.HasIndex("CourtSlotId");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_BookingHold_TenantId");
+
+                    b.HasIndex("TenantId", "CreatedAt")
+                        .HasDatabaseName("IX_BookingHold_TenantId_CreatedAt");
+
+                    b.ToTable("BookingHolds", "badminton");
+                });
+
             modelBuilder.Entity("kvk.Badminton.Domain.Court", b =>
                 {
                     b.Property<Guid>("Id")
@@ -78,6 +184,10 @@ namespace kvk.Badminton.Migrations
                     b.Property<DateOnly>("BookingDate")
                         .HasColumnType("date");
 
+                    b.Property<string>("BookingNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<Guid>("CourtId")
                         .HasColumnType("uuid");
 
@@ -90,8 +200,9 @@ namespace kvk.Badminton.Migrations
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("CustomerId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("LastModifiedAt")
                         .HasColumnType("timestamp without time zone");
@@ -100,6 +211,16 @@ namespace kvk.Badminton.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PaymentId")
+                        .HasColumnType("text");
+
+                    b.Property<int>("PaymentType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("Status")
@@ -222,6 +343,25 @@ namespace kvk.Badminton.Migrations
                         .HasDatabaseName("IX_CourtSlotConfiguration_TenantId_CreatedAt");
 
                     b.ToTable("CourtSlotConfigurations", "badminton");
+                });
+
+            modelBuilder.Entity("kvk.Badminton.Domain.BookingHold", b =>
+                {
+                    b.HasOne("kvk.Badminton.Domain.Court", "Court")
+                        .WithMany()
+                        .HasForeignKey("CourtId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("kvk.Badminton.Domain.CourtSlot", "CourtSlot")
+                        .WithMany()
+                        .HasForeignKey("CourtSlotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Court");
+
+                    b.Navigation("CourtSlot");
                 });
 
             modelBuilder.Entity("kvk.Badminton.Domain.CourtBooking", b =>

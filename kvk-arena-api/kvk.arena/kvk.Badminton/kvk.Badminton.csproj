@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <Folder Include="EventHandlers\" />
+      <Folder Include="Features\DayEnd\" />
       <Folder Include="Services\" />
     </ItemGroup>
 
