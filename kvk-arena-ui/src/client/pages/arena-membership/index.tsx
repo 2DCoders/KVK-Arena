@@ -3,6 +3,8 @@ import { BadgeCheck, Clock3, Sparkles, ArrowRight } from "lucide-react";
 import { getEnv } from "@/env";
 
 import gymImage from "@/assets/gym-signup.jpg";
+import MembershipRegistration from "@/components/membership-registration";
+import Alert from "@/components/alert";
 
 type TimeLeft = {
     total: number;
@@ -29,6 +31,8 @@ export default function ArenaMembership() {
     const offerEndDate = new Date(offerEndValue);
     const targetTime = offerEndDate.getTime();
     const [timeLeft, setTimeLeft] = useState<TimeLeft>(() => getTimeLeft(targetTime));
+    const [registrationOpen, setRegistrationOpen] = useState(false);
+    const [pageAlert, setPageAlert] = useState<{ visible: boolean; variant?: "success" | "error" | "warning" | "info"; title?: string; description?: string }>({ visible: false });
 
     useEffect(() => {
         setTimeLeft(getTimeLeft(targetTime));
@@ -58,6 +62,26 @@ export default function ArenaMembership() {
             id="memberships"
             className="relative isolate overflow-hidden py-16 sm:py-20 lg:py-28"
         >
+            {pageAlert.visible && (
+                <Alert
+                    variant={pageAlert.variant}
+                    title={pageAlert.title}
+                    description={pageAlert.description}
+                    onClose={() => setPageAlert((s) => ({ ...s, visible: false }))}
+                />
+            )}
+
+            <MembershipRegistration
+                open={registrationOpen}
+                onClose={() => setRegistrationOpen(false)}
+                onSuccess={() => setPageAlert({
+                    visible: true,
+                    variant: "success",
+                    title: "Registration Successful",
+                    description: "Your membership application has been submitted successfully. Our team will contact you shortly.",
+                })}
+            />
+
             <div
                 aria-hidden="true"
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
@@ -65,8 +89,8 @@ export default function ArenaMembership() {
             />
 
             <div className="absolute inset-0 bg-slate-950/68" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(41,107,225,0.32),_transparent_34%),radial-gradient(circle_at_80%_20%,_rgba(255,255,255,0.14),_transparent_24%),linear-gradient(180deg,rgba(2,6,23,0.18),rgba(2,6,23,0.96))]" />
-            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px] opacity-20" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(41,107,225,0.32),transparent_34%),radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.14),transparent_24%),linear-gradient(180deg,rgba(2,6,23,0.18),rgba(2,6,23,0.96))]" />
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[64px_64px] opacity-20" />
 
             <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="grid gap-8 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
@@ -103,7 +127,7 @@ export default function ArenaMembership() {
                         <div className="absolute -left-8 top-8 h-28 w-28 rounded-full bg-[#296BE1]/20 blur-3xl" />
                         <div className="absolute -right-6 bottom-8 h-32 w-32 rounded-full bg-white/10 blur-3xl" />
 
-                        <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-white/8 p-5 shadow-[0_30px_90px_rgba(0,0,0,0.34)] backdrop-blur-xl sm:p-6">
+                        <div className="relative overflow-hidden rounded-4xl border border-white/10 bg-white/8 p-5 shadow-[0_30px_90px_rgba(0,0,0,0.34)] backdrop-blur-xl sm:p-6">
                             <div className="flex flex-wrap items-center justify-between gap-3">
                                 <div>
                                     <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#8FC0FF]">
@@ -169,6 +193,7 @@ export default function ArenaMembership() {
                             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                                 <button
                                     type="button"
+                                    onClick={() => setRegistrationOpen(true)}
                                     className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-[#296BE1] px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(41,107,225,0.3)] transition hover:-translate-y-0.5 hover:bg-[#2158bc]"
                                 >
                                     Register Now
