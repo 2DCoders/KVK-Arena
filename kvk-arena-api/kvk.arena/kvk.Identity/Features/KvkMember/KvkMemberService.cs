@@ -34,6 +34,17 @@ public class KvkMemberService : IKvkMemberService
         var exists = await _db.KvkMembers
             .AnyAsync(x => x.UserName == request.UserName || x.Email == request.Email, cancellationToken);
 
+        if (request.NicNumber != null)
+        {
+            exists = await _db.KvkMembers
+                .AnyAsync(x => x.NicNumber == request.NicNumber, cancellationToken);
+            if (exists)
+            {
+                return Result.Failure("A member with the same nic number already exists.");
+            }
+            
+        }
+
         if (exists)
         {
             return Result.Failure("A member with the same username or email already exists.");
@@ -78,7 +89,8 @@ public class KvkMemberService : IKvkMemberService
                 IsPaid = m.IsPaid,
                 StartDate = m.StartDate,
                 EndDate = m.EndDate,
-                Status = m.Status
+                Status = m.Status,
+                NicNumber = m.NicNumber
                 
             })
             .ToListAsync(cancellationToken);
@@ -104,7 +116,8 @@ public class KvkMemberService : IKvkMemberService
             IsPaid = member.IsPaid,
             StartDate = member.StartDate,
             EndDate = member.EndDate,
-            Status = member.Status
+            Status = member.Status,
+            NicNumber = member.NicNumber
         };
     }
 
@@ -157,7 +170,7 @@ public class KvkMemberService : IKvkMemberService
     private async Task<string> GetNextMembershipTokenAsync(int year,
         CancellationToken cancellationToken)
     {
-        var yearPrefix = $"{year}";
+        var yearPrefix = $"KVK-MEM-{year}";
 
         var latestNumber = await _db.KvkMembers
             .AsNoTracking()

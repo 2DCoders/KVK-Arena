@@ -30,5 +30,7 @@ public class KvkMemberRegisterRequest
     public Gender Gender { get; set; }
     
     public IFormFile? ProfilePicture { get; set; } 
+    
+    public string? NicNumber { get; set; }
 
 }

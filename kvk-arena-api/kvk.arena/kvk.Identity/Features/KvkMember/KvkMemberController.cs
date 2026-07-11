@@ -9,9 +9,14 @@ public class KvkMemberController(IKvkMemberService kvkMemberService) : Controlle
     private readonly IKvkMemberService _kvkMemberService = kvkMemberService;
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromForm] KvkMemberRegisterRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Register([FromForm] KvkMemberRegisterRequest request,
+        CancellationToken cancellationToken)
     {
         var result = await _kvkMemberService.RegisterAsync(request, cancellationToken);
+        if (!result.Succeeded)
+        {
+            return BadRequest(result);
+        }
         return Ok(result);
     }
 
@@ -40,20 +45,34 @@ public class KvkMemberController(IKvkMemberService kvkMemberService) : Controlle
     public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var result = await _kvkMemberService.DeleteMemberAsync(id, cancellationToken);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { error = result.Errors });
+        }
         return Ok(result);
     }
 
     [HttpPost("pay")]
-    public async Task<IActionResult> RecordAsPaid([FromBody] MemberPayRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> RecordAsPaid([FromBody] MemberPayRequest request,
+        CancellationToken cancellationToken)
     {
         var result = await _kvkMemberService.RecordMemberAsPaidAsync(request, cancellationToken);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { error = result.Errors });
+        }
         return Ok(result);
     }
 
     [HttpPatch("{id:guid}/status")]
-    public async Task<IActionResult> ActiveOrDeactivateMember([FromRoute] Guid id, [FromQuery] bool isActive, CancellationToken cancellationToken)
+    public async Task<IActionResult> ActiveOrDeactivateMember([FromRoute] Guid id, [FromQuery] bool isActive,
+        CancellationToken cancellationToken)
     {
         var result = await _kvkMemberService.ActiveOrDeactivateMemberAsync(id, isActive, cancellationToken);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { error = result.Errors });
+        }
         return Ok(result);
     }
 }

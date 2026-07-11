@@ -35,7 +35,7 @@ public static class MembershipNumberFormatter
         };
     }
     
-    public static string KvkMemberFormat(int year, string token = "0001")
+    public static string KvkMemberFormat(int year, string token)
     {
         // Example: KVK-MEM-20260001
         return $"KVK-MEM-{year}{token}";

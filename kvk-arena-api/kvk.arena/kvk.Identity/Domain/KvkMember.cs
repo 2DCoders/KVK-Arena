@@ -25,6 +25,9 @@ public class KvkMember : User
 
     public int? MembershipDurationDays { get; set; } = 0;
     
+    [MaxLength(20)]
+    public string? NicNumber { get; set; }
+    
     //this is for eligible discounts for user at any time admin can enable or disable those and planned to create a hangfire job also for this
     public ICollection<MemberEligibleOffer> EligibleOffers { get; set; } = new List<MemberEligibleOffer>();
 

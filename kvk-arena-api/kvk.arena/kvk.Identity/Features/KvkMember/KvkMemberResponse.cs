@@ -32,4 +32,8 @@ public class KvkMemberResponse
     public bool IsPaid { get; set; }
     
     public MemberShipActiveStatus MembershipStatus {get; set; }
+    
+    public string? NicNumber { get; set; }
+    
+    
 }
