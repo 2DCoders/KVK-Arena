@@ -144,7 +144,7 @@ export default function MembershipRegistration({
         whatsapp: "",
         email: "",
         nic: "",
-        });
+      });
       setErrors({});
       onSuccess();
       onClose();
@@ -162,7 +162,7 @@ export default function MembershipRegistration({
       onFailure();
     } finally {
       setIsSubmitting(false);
-        setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -206,24 +206,24 @@ export default function MembershipRegistration({
               </div>
             </div>
 
-            <div className="grid flex-1 overflow-auto lg:grid-cols-[1.2fr_0.8fr]">
-              <aside className="border-b overflow-y-auto border-slate-200 bg-[#081a3d] px-5 py-6 text-white sm:px-7 sm:py-8 lg:border-b-0 lg:border-r lg:px-8 lg:py-10">
-                <div className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:pr-1">
+            <div className="grid min-h-0 flex-1 overflow-hidden lg:grid-cols-[1.05fr_0.95fr]">
+              {/* Desktop information panel */}
+              <aside className="hidden overflow-y-auto border-r border-slate-200 bg-[#081a3d] px-8 py-10 text-white lg:block">
+                <div className="mx-auto max-w-2xl">
                   <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/60">
                     Why register
                   </p>
 
-                  <h3 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">
+                  <h3 className="mt-4 text-4xl font-black tracking-tight">
                     Join the arena with one simple application.
                   </h3>
 
-                  <p className="mt-4 max-w-xl text-sm leading-7 text-white/80 sm:text-[15px]">
-                    The membership is designed for people who want convenience,
-                    priority handling, and a better experience across KVK Arena
-                    services.
+                  <p className="mt-4 max-w-xl text-[15px] leading-7 text-white/80">
+                    The membership is designed for people who want convenience, priority
+                    handling, and a better experience across KVK Arena services.
                   </p>
 
-                  <div className="mt-6 rounded-[28px] border border-white/10 bg-white/6 p-5 shadow-[0_20px_55px_rgba(0,0,0,0.18)] backdrop-blur-sm sm:p-6">
+                  <div className="mt-6 rounded-[28px] border border-white/10 bg-white/6 p-6 shadow-[0_20px_55px_rgba(0,0,0,0.18)] backdrop-blur-sm">
                     <div className="flex items-start gap-3">
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#296BE1] text-white shadow-[0_14px_30px_rgba(41,107,225,0.32)]">
                         <Info size={18} />
@@ -233,29 +233,32 @@ export default function MembershipRegistration({
                         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#8FC0FF]">
                           Registration note
                         </p>
+
                         <p className="mt-2 text-sm leading-7 text-white/78">
-                          Use a reachable WhatsApp number and email address so
-                          our team can contact you quickly after you apply.
+                          Use a reachable WhatsApp number and email address so our team can
+                          contact you quickly after you apply.
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+                  <div className="mt-6 grid gap-3">
                     {[
-                      ["01", "Enter your details"],
-                      ["02", "Submit the application"],
-                      ["03", "Wait for follow-up"],
-                    ].map(([step, label]) => (
+                      ["01", "Enter your details", "Complete the membership form."],
+                      ["02", "Confirm application", "Review and confirm your details."],
+                      ["03", "Arena follow-up", "Our team will contact you via WhatsApp."],
+                    ].map(([step, title, description]) => (
                       <div
-                        key={label}
-                        className="rounded-2xl border border-white/10 bg-white/6 px-4 py-4"
+                        key={step}
+                        className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/6 px-4 py-4"
                       >
-                        <div className="text-xs font-semibold uppercase tracking-[0.22em] text-[#8FC0FF]">
-                          Step {step}
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-sm font-bold text-[#8FC0FF]">
+                          {step}
                         </div>
-                        <div className="mt-2 text-sm font-medium text-white/90">
-                          {label}
+
+                        <div>
+                          <p className="text-sm font-semibold text-white">{title}</p>
+                          <p className="mt-1 text-xs text-white/60">{description}</p>
                         </div>
                       </div>
                     ))}
@@ -263,156 +266,259 @@ export default function MembershipRegistration({
                 </div>
               </aside>
 
-              <main className="bg-white px-5 py-6 sm:px-7 sm:py-8 lg:px-8 lg:py-10 overflow-y-auto">
-                <form className="grid gap-5" onSubmit={handleSubmit}>
-                  {apiError && (
-                    <div
-                      role="alert"
-                      className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700"
-                    >
-                      {apiError}
+              {/* Form section */}
+              <main className="min-h-0 overflow-y-auto bg-white px-4 pb-8 pt-4 sm:px-7 sm:py-8 lg:px-8 lg:py-10">
+                <div className="mx-auto w-full max-w-2xl">
+                  {/* Mobile-only heading */}
+                  <div className="mb-5 lg:hidden">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#296BE1]">
+                      Membership application
+                    </p>
+
+                    <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-950">
+                      Enter your details
+                    </h2>
+
+                    <p className="mt-2 text-sm leading-6 text-slate-500">
+                      Complete the form and our team will contact you through WhatsApp.
+                    </p>
+                  </div>
+
+                  {/* Mobile step indicator */}
+                  <div className="mb-6 lg:hidden">
+                    <div className="relative flex items-start justify-between">
+                      <div
+                        aria-hidden="true"
+                        className="absolute left-[16%] right-[16%] top-4 h-px bg-slate-200"
+                      />
+
+                      {[
+                        ["1", "Details"],
+                        ["2", "Confirm"],
+                        ["3", "Follow-up"],
+                      ].map(([step, label], index) => (
+                        <div
+                          key={step}
+                          className="relative z-10 flex min-w-0 flex-1 flex-col items-center"
+                        >
+                          <div
+                            className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-bold ${index === 0
+                                ? "border-[#296BE1] bg-[#296BE1] text-white shadow-[0_7px_18px_rgba(41,107,225,0.25)]"
+                                : "border-slate-200 bg-white text-slate-400"
+                              }`}
+                          >
+                            {step}
+                          </div>
+
+                          <span
+                            className={`mt-2 text-center text-[10px] font-semibold sm:text-xs ${index === 0 ? "text-[#296BE1]" : "text-slate-400"
+                              }`}
+                          >
+                            {label}
+                          </span>
+                        </div>
+                      ))}
                     </div>
-                  )}
-
-                  <div className="grid gap-5 sm:grid-cols-2">
-                    <Field
-                      label="First name"
-                      value={formData.firstName}
-                      onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                        const value = event.target.value;
-                        setFormData({
-                          ...formData,
-                          firstName: value,
-                        });
-                        if (apiError) {
-                          setApiError(null);
-                        }
-                        if (errors.firstName) {
-                          setErrors((currentErrors) => ({ ...currentErrors, firstName: undefined }));
-                        }
-                      }}
-                      name="firstName"
-                      placeholder="Enter first name"
-                      error={errors.firstName}
-                      required helperText={""}
-                    />
-                    <Field
-                      label="Last name"
-                      value={formData.lastName}
-                      onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                        const value = event.target.value;
-                        setFormData({
-                          ...formData,
-                          lastName: value,
-                        });
-                        if (apiError) {
-                          setApiError(null);
-                        }
-                        if (errors.lastName) {
-                          setErrors((currentErrors) => ({ ...currentErrors, lastName: undefined }));
-                        }
-                      }}
-                      name="lastName"
-                      placeholder="Enter last name"
-                      error={errors.lastName}
-                      required helperText={""}
-                    />
                   </div>
 
-                  <div className="grid gap-5 sm:grid-cols-2">
-                    <Field
-                      label="WhatsApp no"
-                      value={formData.whatsapp}
-                      onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                        const value = event.target.value;
-                        setFormData({
-                          ...formData,
-                          whatsapp: value,
-                        });
-                        if (apiError) {
-                          setApiError(null);
-                        }
-                        if (errors.whatsapp) {
-                          setErrors((currentErrors) => ({ ...currentErrors, whatsapp: undefined }));
-                        }
-                      }}
-                      name="whatsapp"
-                      placeholder="07xxxxxxxx"
-                      error={errors.whatsapp}
-                      required helperText={""}
-                    />
-                    <Field
-                      label="Email"
-                      value={formData.email}
-                      onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                        const value = event.target.value;
-                        setFormData({
-                          ...formData,
-                          email: value,
-                        });
-                        if (apiError) {
-                          setApiError(null);
-                        }
-                        if (errors.email) {
-                          setErrors((currentErrors) => ({ ...currentErrors, email: undefined }));
-                        }
-                      }}
-                      name="email"
-                      type="email"
-                      placeholder="you@example.com"
-                      error={errors.email}
-                      required helperText={""}
-                    />
-                  </div>
+                  <form className="grid gap-4 sm:gap-5" onSubmit={handleSubmit}>
+                    {apiError && (
+                      <div
+                        role="alert"
+                        className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700"
+                      >
+                        {apiError}
+                      </div>
+                    )}
 
-                  <div className="grid gap-5">
+                    <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
+                      <Field
+                        label="First name"
+                        value={formData.firstName}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                          const value = event.target.value;
+
+                          setFormData((current) => ({
+                            ...current,
+                            firstName: value,
+                          }));
+
+                          if (apiError) {
+                            setApiError(null);
+                          }
+
+                          if (errors.firstName) {
+                            setErrors((current) => ({
+                              ...current,
+                              firstName: undefined,
+                            }));
+                          }
+                        }}
+                        name="firstName"
+                        placeholder="Enter first name"
+                        error={errors.firstName}
+                        required
+                        helperText=""
+                      />
+
+                      <Field
+                        label="Last name"
+                        value={formData.lastName}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                          const value = event.target.value;
+
+                          setFormData((current) => ({
+                            ...current,
+                            lastName: value,
+                          }));
+
+                          if (apiError) {
+                            setApiError(null);
+                          }
+
+                          if (errors.lastName) {
+                            setErrors((current) => ({
+                              ...current,
+                              lastName: undefined,
+                            }));
+                          }
+                        }}
+                        name="lastName"
+                        placeholder="Enter last name"
+                        error={errors.lastName}
+                        required
+                        helperText=""
+                      />
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
+                      <Field
+                        label="WhatsApp number"
+                        value={formData.whatsapp}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                          const value = event.target.value.replace(/\D/g, "").slice(0, 10);
+
+                          setFormData((current) => ({
+                            ...current,
+                            whatsapp: value,
+                          }));
+
+                          if (apiError) {
+                            setApiError(null);
+                          }
+
+                          if (errors.whatsapp) {
+                            setErrors((current) => ({
+                              ...current,
+                              whatsapp: undefined,
+                            }));
+                          }
+                        }}
+                        name="whatsapp"
+                        type="tel"
+                        inputMode="numeric"
+                        placeholder="07xxxxxxxx"
+                        error={errors.whatsapp}
+                        required
+                        helperText=""
+                      />
+
+                      <Field
+                        label="Email address"
+                        value={formData.email}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                          const value = event.target.value;
+
+                          setFormData((current) => ({
+                            ...current,
+                            email: value,
+                          }));
+
+                          if (apiError) {
+                            setApiError(null);
+                          }
+
+                          if (errors.email) {
+                            setErrors((current) => ({
+                              ...current,
+                              email: undefined,
+                            }));
+                          }
+                        }}
+                        name="email"
+                        type="email"
+                        placeholder="you@example.com"
+                        error={errors.email}
+                        required
+                        helperText=""
+                      />
+                    </div>
+
                     <div>
                       <label className="mb-2 block text-sm font-semibold text-slate-800">
                         Gender
                       </label>
-                      <div className="grid gap-3 sm:grid-cols-2">
+
+                      <div className="grid grid-cols-2 gap-3">
                         {genderOptions.map(({ value, label }) => (
                           <label
                             key={value}
-                            className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 transition ${
-                              gender === value
-                                ? "border-[#296BE1] bg-[#296BE1]/6 text-slate-950"
+                            className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 transition ${gender === value
+                                ? "border-[#296BE1] bg-[#296BE1]/6 text-slate-950 ring-2 ring-[#296BE1]/10"
                                 : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
-                            }`}
+                              }`}
                           >
                             <input
                               type="radio"
                               name="gender"
                               value={value}
                               checked={gender === value}
-                              onChange={() => setGender(value)}
+                              onChange={() => {
+                                setGender(value);
+
+                                if (errors.gender) {
+                                  setErrors((current) => ({
+                                    ...current,
+                                    gender: undefined,
+                                  }));
+                                }
+                              }}
                               className="h-4 w-4 accent-[#296BE1]"
                             />
+
                             <span className="text-sm font-medium">{label}</span>
                           </label>
                         ))}
                       </div>
-                      <p className={`mt-2 text-sm ${errors.gender ? "text-red-600" : "text-slate-500"}`}>
-                        {errors.gender}
+
+                      {errors.gender && (
+                        <p className="mt-2 text-xs text-red-600">{errors.gender}</p>
+                      )}
+                    </div>
+
+                    <div className="mt-1 rounded-2xl border border-blue-100 bg-blue-50/70 px-4 py-3 lg:hidden">
+                      <p className="text-xs leading-5 text-slate-600">
+                        Make sure your WhatsApp number is active. Our team will use it for
+                        verification and membership payment instructions.
                       </p>
                     </div>
-                  </div>
 
-                  <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-sm leading-7 text-slate-500">
-                      By applying, you agree that KVK Arena may contact you for
-                      membership verification and next steps.
-                    </p>
+                    <div className="flex flex-col gap-4 border-t border-slate-100 pt-5">
+                      <p className="text-xs leading-5 text-slate-500 sm:text-sm sm:leading-6">
+                        By applying, you agree that KVK Arena may contact you for membership
+                        verification and next steps.
+                      </p>
 
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="inline-flex cursor-pointer items-center justify-center rounded-full bg-[#296BE1] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(41,107,225,0.3)] transition hover:-translate-y-0.5 hover:bg-[#2158bc] disabled:cursor-not-allowed disabled:opacity-70"
-                    >
-                      {isSubmitting ? "Applying..." : "Apply"}
-                    </button>
-                  </div>
-                </form>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="inline-flex min-h-12 w-full cursor-pointer items-center justify-center rounded-2xl bg-[#296BE1] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_16px_35px_rgba(41,107,225,0.28)] transition hover:bg-[#2158bc] disabled:cursor-not-allowed disabled:opacity-70 sm:ml-auto sm:w-auto sm:min-w-40"
+                      >
+                        {isSubmitting ? "Applying..." : "Continue"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
               </main>
             </div>
           </div>
@@ -484,7 +590,7 @@ function Field({
         className={`w-full rounded-2xl border bg-white px-4 py-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:ring-4 ${error
           ? "border-red-300 focus:border-red-500 focus:ring-red-500/10"
           : "border-slate-200 focus:border-[#296BE1] focus:ring-[#296BE1]/10"
-        }`}
+          }`}
       />
       <p className={`mt-2 text-xs leading-5 ${error ? "text-red-600" : "text-slate-500"}`}>
         {error ?? helperText}

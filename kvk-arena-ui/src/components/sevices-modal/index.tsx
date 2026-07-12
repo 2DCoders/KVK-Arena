@@ -26,7 +26,7 @@ const services = [
   {
     title: "Badminton Courts",
     icon: Trophy,
-    highlight: "Fast indoor play and friendly matches",
+    highlight: "Fast indoor play",
     description:
       "Book a fast-paced indoor court for practice, friendly matches, or competitive play. Our badminton space is set up for comfort, movement, and a great experience every time you step on court. The court flow is designed to keep games smooth, energetic, and enjoyable for every type of player.",
   },
@@ -177,7 +177,7 @@ export default function ServicesModal({
                                   <h4 className="text-lg font-bold text-slate-950 sm:text-xl">
                                     {service.title}
                                   </h4>
-                                  <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600">
+                                  <span className="rounded-full bg-slate-100 px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-600">
                                     {service.highlight}
                                   </span>
                                 </div>
