@@ -2,18 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using kvk.Identity.Persistence;
 
 #nullable disable
 
-namespace kvk.Identity.Persistence.Migrations.IdentityRbacInitial
+namespace kvk.Identity.Migrations
 {
     [DbContext(typeof(IdentityApplicationDbContext))]
-    partial class IdentityApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260712182001_Add_CustomerFeedback")]
+    partial class Add_CustomerFeedback
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

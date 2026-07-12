@@ -36,6 +36,10 @@ public class IdentityApplicationDbContext : AppDbContextBase
     public DbSet<KvkMember> KvkMembers => Set<KvkMember>();
     
     public DbSet<MemberEligibleOffer> MemberEligibleOffers => Set<MemberEligibleOffer>();
+    
+    public DbSet<CustomerFeedBack> CustomerFeedBacks => Set<CustomerFeedBack>();
+    
+    
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
