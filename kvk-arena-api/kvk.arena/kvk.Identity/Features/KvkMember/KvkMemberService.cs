@@ -62,7 +62,7 @@ public class KvkMemberService : IKvkMemberService
             Gender = request.Gender,
             ProfilePicture = profilePictureBytes,
             MemberId = MembershipNumberFormatter.KvkMemberFormat(DateTime.UtcNow.Year,memberToken), 
-            MembershipStatus = MemberShipActiveStatus.Active,
+            MembershipStatus = MemberShipActiveStatus.Inactive,
             IsPaid = false,
             Status = request.Status
         };
@@ -90,7 +90,9 @@ public class KvkMemberService : IKvkMemberService
                 StartDate = m.StartDate,
                 EndDate = m.EndDate,
                 Status = m.Status,
-                NicNumber = m.NicNumber
+                NicNumber = m.NicNumber,
+                Phone = m.Phone,
+                Gender = m.Gender
                 
             })
             .ToListAsync(cancellationToken);
@@ -117,7 +119,9 @@ public class KvkMemberService : IKvkMemberService
             StartDate = member.StartDate,
             EndDate = member.EndDate,
             Status = member.Status,
-            NicNumber = member.NicNumber
+            NicNumber = member.NicNumber,
+            Phone = member.Phone,
+            Gender = member.Gender
         };
     }
 
@@ -141,6 +145,7 @@ public class KvkMemberService : IKvkMemberService
         member.StartDate = request.StartDate;
         member.EndDate = request.EndDate;
         member.MembershipDurationDays = 365;
+        member.MembershipStatus = MemberShipActiveStatus.Active;
         
         ////Todo Gym Member table also need to update 
 

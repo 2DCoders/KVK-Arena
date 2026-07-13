@@ -58,6 +58,7 @@ public class IdentityApplicationDbContext : AppDbContextBase
         modelBuilder.ApplyConfiguration(new Configuration.RolePermissionConfiguration());
         modelBuilder.ApplyConfiguration(new Configuration.StaffRoleConfiguration());
         modelBuilder.ApplyConfiguration(new Configuration.StaffModuleConfiguration());
+        modelBuilder.ApplyConfiguration(new Configuration.KvkMemberConfiguration());
     }
     
 }
