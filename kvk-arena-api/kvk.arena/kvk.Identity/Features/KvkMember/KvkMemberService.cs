@@ -147,11 +147,21 @@ public class KvkMemberService : IKvkMemberService
         member.MembershipDurationDays = 365;
         member.MembershipStatus = MemberShipActiveStatus.Active;
         
-        ////Todo Gym Member table also need to update 
-
-        if (request.StartDate.HasValue && request.EndDate.HasValue)
+       //assign member offer rate to the specifc member
+      var offers =  await _db.OfferRates.Where
+           (x => x.OfferType == OfferType.MembershipOffer).ToListAsync(cancellationToken);
+      
+      //assign MemberEligileOFfer
+        foreach (var offer in offers)
         {
-            member.MembershipDurationDays = (int)(request.EndDate.Value - request.StartDate.Value).TotalDays;
+            var memberEligibleOffer = new MemberEligibleOffer
+            {
+                Id = Guid.NewGuid(),
+                MemberId = member.Id,
+                OfferId = offer.Id,
+                IsEligible = true,
+            };
+            _db.MemberEligibleOffers.Add(memberEligibleOffer);
         }
 
         await _db.SaveChangesAsync(cancellationToken);

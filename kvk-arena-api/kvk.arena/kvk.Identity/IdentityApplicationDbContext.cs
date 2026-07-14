@@ -38,6 +38,7 @@ public class IdentityApplicationDbContext : AppDbContextBase
     public DbSet<MemberEligibleOffer> MemberEligibleOffers => Set<MemberEligibleOffer>();
     
     public DbSet<CustomerFeedBack> CustomerFeedBacks => Set<CustomerFeedBack>();
+    public DbSet<OfferRate> OfferRates => Set<OfferRate>();
     
     
 
