@@ -40,6 +40,8 @@ public class IdentityModuleInitializer : IModuleInitializer
         services.AddScoped<RoleService>();
         services.AddScoped<StaffModuleService>();
         services.AddScoped<IHolidayService, HolidayService>();
+        services.AddScoped<ICustomerFeedBackService, CustomerFeedBackService>();
+        services.AddScoped<IOfferRateService, OfferRateService>();
         // Module integrator client to publish integration events (building-blocks contract)
         services.AddScoped<IModuleIntegratorClient, ModuleIntegrator.ModuleIntegratorClient>();
         services.AddScoped<IdentitySeeder>();
