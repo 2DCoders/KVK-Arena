@@ -2,7 +2,9 @@ using kvk.BuildingBlocks.Auth;
 using kvk.BuildingBlocks.Interfaces;
 using kvk.Identity.Features.Auth;
 using kvk.Identity.Features.CalenderHoliday;
+using kvk.Identity.Features.CustomerFeedBack;
 using kvk.Identity.Features.KvkMember;
+using kvk.Identity.Features.OfferRate;
 using kvk.Identity.Features.StaffModule;
 using kvk.Identity.Features.Role;
 using kvk.Identity.Persistence;
@@ -38,6 +40,8 @@ public class IdentityModuleInitializer : IModuleInitializer
         services.AddScoped<RoleService>();
         services.AddScoped<StaffModuleService>();
         services.AddScoped<IHolidayService, HolidayService>();
+        services.AddScoped<ICustomerFeedBackService, CustomerFeedBackService>();
+        services.AddScoped<IOfferRateService, OfferRateService>();
         // Module integrator client to publish integration events (building-blocks contract)
         services.AddScoped<IModuleIntegratorClient, ModuleIntegrator.ModuleIntegratorClient>();
         services.AddScoped<IdentitySeeder>();
