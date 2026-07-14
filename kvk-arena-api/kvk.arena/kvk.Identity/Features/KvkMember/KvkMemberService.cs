@@ -146,6 +146,7 @@ public class KvkMemberService : IKvkMemberService
         member.EndDate = request.EndDate;
         member.MembershipDurationDays = 365;
         member.MembershipStatus = MemberShipActiveStatus.Active;
+        member.IsPaid = true;
         
        //assign member offer rate to the specifc member
       var offers =  await _db.OfferRates.Where
