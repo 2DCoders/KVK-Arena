@@ -6,7 +6,7 @@ public interface IOfferRateService
 {
     Task<Result> CreateOfferRateAsync(OfferRateCreateRequest request,CancellationToken cancellationToken = default);
 
-    Task<Result> UpdateOfferRateAsync(OfferRateUpdateRequest request, CancellationToken cancellationToken = default);
+    Task<Result> UpdateOfferRateAsync(Guid id,OfferRateUpdateRequest request, CancellationToken cancellationToken = default);
     
     Task<Result> DeleteOfferRateAsync(Guid id, CancellationToken cancellationToken = default);
     

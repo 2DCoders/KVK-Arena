@@ -2,7 +2,9 @@ using kvk.BuildingBlocks.Auth;
 using kvk.BuildingBlocks.Interfaces;
 using kvk.Identity.Features.Auth;
 using kvk.Identity.Features.CalenderHoliday;
+using kvk.Identity.Features.CustomerFeedBack;
 using kvk.Identity.Features.KvkMember;
+using kvk.Identity.Features.OfferRate;
 using kvk.Identity.Features.StaffModule;
 using kvk.Identity.Features.Role;
 using kvk.Identity.Persistence;
@@ -42,6 +44,8 @@ public class IdentityModuleInitializer : IModuleInitializer
         services.AddScoped<IModuleIntegratorClient, ModuleIntegrator.ModuleIntegratorClient>();
         services.AddScoped<IdentitySeeder>();
         services.AddScoped<IKvkMemberService, KvkMemberService>();
+        services.AddScoped<IOfferRateService, OfferRateService>();
+        services.AddScoped<ICustomerFeedBackService, CustomerFeedBackService>();
         // JWT service from BuildingBlocks - simple dev implementation registered here
         services.AddSingleton<IJwtService, JwtService>();
         

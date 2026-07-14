@@ -49,10 +49,10 @@ public class OfferRateService : IOfferRateService
         return Result.Success("Offer Rate Created");
     }
 
-    public async Task<Result> UpdateOfferRateAsync(OfferRateUpdateRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> UpdateOfferRateAsync(Guid id,OfferRateUpdateRequest request, CancellationToken cancellationToken = default)
     {
         
-        var existRate =  await _db.OfferRates.FindAsync(new object[] { request.Id }, cancellationToken);
+        var existRate =  await _db.OfferRates.FindAsync(new object[] { id }, cancellationToken);
         
         existRate.ThrowIfNull("Offer Rate Not Found");
         
