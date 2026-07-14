@@ -62,7 +62,7 @@ public class KvkMemberService : IKvkMemberService
             Gender = request.Gender,
             ProfilePicture = profilePictureBytes,
             MemberId = MembershipNumberFormatter.KvkMemberFormat(DateTime.UtcNow.Year,memberToken), 
-            MembershipStatus = MemberShipActiveStatus.Active,
+            MembershipStatus = MemberShipActiveStatus.Inactive,
             IsPaid = false,
             Status = request.Status
         };
@@ -90,7 +90,9 @@ public class KvkMemberService : IKvkMemberService
                 StartDate = m.StartDate,
                 EndDate = m.EndDate,
                 Status = m.Status,
-                NicNumber = m.NicNumber
+                NicNumber = m.NicNumber,
+                Phone = m.Phone,
+                Gender = m.Gender
                 
             })
             .ToListAsync(cancellationToken);
@@ -117,7 +119,9 @@ public class KvkMemberService : IKvkMemberService
             StartDate = member.StartDate,
             EndDate = member.EndDate,
             Status = member.Status,
-            NicNumber = member.NicNumber
+            NicNumber = member.NicNumber,
+            Phone = member.Phone,
+            Gender = member.Gender
         };
     }
 
@@ -141,12 +145,24 @@ public class KvkMemberService : IKvkMemberService
         member.StartDate = request.StartDate;
         member.EndDate = request.EndDate;
         member.MembershipDurationDays = 365;
+        member.MembershipStatus = MemberShipActiveStatus.Active;
+        member.IsPaid = true;
         
-        ////Todo Gym Member table also need to update 
-
-        if (request.StartDate.HasValue && request.EndDate.HasValue)
+       //assign member offer rate to the specifc member
+      var offers =  await _db.OfferRates.Where
+           (x => x.OfferType == OfferType.MembershipOffer).ToListAsync(cancellationToken);
+      
+      //assign MemberEligileOFfer
+        foreach (var offer in offers)
         {
-            member.MembershipDurationDays = (int)(request.EndDate.Value - request.StartDate.Value).TotalDays;
+            var memberEligibleOffer = new MemberEligibleOffer
+            {
+                Id = Guid.NewGuid(),
+                MemberId = member.Id,
+                OfferId = offer.Id,
+                IsEligible = true,
+            };
+            _db.MemberEligibleOffers.Add(memberEligibleOffer);
         }
 
         await _db.SaveChangesAsync(cancellationToken);

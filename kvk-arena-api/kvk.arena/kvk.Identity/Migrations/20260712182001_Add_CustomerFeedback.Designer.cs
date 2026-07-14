@@ -2,18 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using kvk.Identity.Persistence;
 
 #nullable disable
 
-namespace kvk.Identity.Persistence.Migrations.IdentityRbacInitial
+namespace kvk.Identity.Migrations
 {
     [DbContext(typeof(IdentityApplicationDbContext))]
-    partial class IdentityApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260712182001_Add_CustomerFeedback")]
+    partial class Add_CustomerFeedback
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -272,76 +275,6 @@ namespace kvk.Identity.Persistence.Migrations.IdentityRbacInitial
                     b.HasIndex("MemberId");
 
                     b.ToTable("MemberEligibleOffers", "identity");
-                });
-
-            modelBuilder.Entity("kvk.Identity.Domain.OfferRate", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsPurchaseRequired")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime>("LastModifiedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<Guid?>("LastModifiedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("OfferName")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<int>("OfferType")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal?>("Price")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("RateBadminton")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("RateCafe")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("RateCarWash")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("RateGaming")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("RateGym")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("RateRetail")
-                        .HasColumnType("numeric");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TenantId")
-                        .HasDatabaseName("IX_OfferRate_TenantId");
-
-                    b.HasIndex("TenantId", "CreatedAt")
-                        .HasDatabaseName("IX_OfferRate_TenantId_CreatedAt");
-
-                    b.ToTable("OfferRates", "identity");
                 });
 
             modelBuilder.Entity("kvk.Identity.Domain.Role", b =>

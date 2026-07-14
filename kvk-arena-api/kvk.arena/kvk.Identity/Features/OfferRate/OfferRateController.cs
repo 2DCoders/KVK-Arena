@@ -1,0 +1,66 @@
+using Microsoft.AspNetCore.Mvc;
+
+namespace kvk.Identity.Features.OfferRate;
+
+[ApiController]
+[Route("api/identity/offer-rate")]
+public class OfferRateController(IOfferRateService offerRateService) : ControllerBase
+{
+    private readonly IOfferRateService _offerRateService = offerRateService;
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    {
+        var offerRates = await _offerRateService.GetOfferRateListAsync(cancellationToken);
+        return Ok(offerRates);
+    }
+
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetById([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var offerRate = await _offerRateService.GetOfferRateByIdAsync(id, cancellationToken);
+            return Ok(offerRate);
+        }
+        catch (Exception ex)
+        {
+            return NotFound(ex.Message);
+        }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] OfferRateCreateRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _offerRateService.CreateOfferRateAsync(request, cancellationToken);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { error = result.Errors });
+        }
+        return Ok(result);
+    }
+
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] OfferRateUpdateRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _offerRateService.UpdateOfferRateAsync(id, request, cancellationToken);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { error = result.Errors });
+        }
+        return Ok(result);
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _offerRateService.DeleteOfferRateAsync(id, cancellationToken);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { error = result.Errors });
+        }
+        return Ok(result);
+    }
+}

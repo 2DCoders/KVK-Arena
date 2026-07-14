@@ -36,6 +36,11 @@ public class IdentityApplicationDbContext : AppDbContextBase
     public DbSet<KvkMember> KvkMembers => Set<KvkMember>();
     
     public DbSet<MemberEligibleOffer> MemberEligibleOffers => Set<MemberEligibleOffer>();
+    
+    public DbSet<CustomerFeedBack> CustomerFeedBacks => Set<CustomerFeedBack>();
+    public DbSet<OfferRate> OfferRates => Set<OfferRate>();
+    
+    
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -54,6 +59,7 @@ public class IdentityApplicationDbContext : AppDbContextBase
         modelBuilder.ApplyConfiguration(new Configuration.RolePermissionConfiguration());
         modelBuilder.ApplyConfiguration(new Configuration.StaffRoleConfiguration());
         modelBuilder.ApplyConfiguration(new Configuration.StaffModuleConfiguration());
+        modelBuilder.ApplyConfiguration(new Configuration.KvkMemberConfiguration());
     }
     
 }
