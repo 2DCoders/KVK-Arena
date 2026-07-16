@@ -5,8 +5,7 @@ namespace kvk.Identity.Features.StaffModule;
 /// </summary>
 public class AssignModulesToStaffRequest
 {
-    public required Guid StaffId { get; set; }
-    public required string[] ModuleNames { get; set; } = Array.Empty<string>();
+    public string[]? ModuleNames { get; set; } = Array.Empty<string>();
 }
 
 /// <summary>
@@ -18,5 +17,3 @@ public class StaffModuleResponse
     public string[] AssignedModules { get; set; } = Array.Empty<string>();
     public DateTime LastModified { get; set; }
 }
-
-

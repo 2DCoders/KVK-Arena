@@ -50,12 +50,12 @@ public class StaffModuleController : ControllerBase
     [HttpPost("assign")]
     public async Task<IActionResult> AssignModules(
         Guid staffId,
-        [FromBody] AssignModulesToStaffRequest request,
+        [FromBody] AssignModulesToStaffRequest? request,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            var result = await _service.AssignModulesToStaffAsync(staffId, request.ModuleNames, cancellationToken);
+            var result = await _service.AssignModulesToStaffAsync(staffId, request, cancellationToken);
             return Ok(result);
         }
         catch (ArgumentException ex)
