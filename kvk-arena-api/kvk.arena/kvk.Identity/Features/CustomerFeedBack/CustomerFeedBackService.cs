@@ -45,7 +45,11 @@ public class CustomerFeedBackService : ICustomerFeedBackService
                 Name = x.Name,
                 Email = x.Email,
                 FeedBack = x.FeedBack,
-                Phone = x.Phone
+                Phone = x.Phone,
+                CreatedAt = x.CreatedAt,
+                IsAddressed = x.IsAddressed,
+                AddressedDate = x.AddressedDate,    
+                AddressedBy = x.AddressedBy
             })
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -64,8 +68,13 @@ public class CustomerFeedBackService : ICustomerFeedBackService
                 Name = x.Name,
                 Email = x.Email,
                 FeedBack = x.FeedBack,
-                Phone = x.Phone
+                Phone = x.Phone,
+                CreatedAt = x.CreatedAt,
+                IsAddressed = x.IsAddressed,
+                AddressedDate = x.AddressedDate,    
+                AddressedBy = x.AddressedBy
             })
+            .OrderBy(x => x.CreatedAt)
             .ToListAsync(cancellationToken);
 
         feedBacks.ThrowIfNull("Customer FeedBack Not Found");
