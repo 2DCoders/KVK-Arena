@@ -4,6 +4,7 @@ using kvk.BuildingBlocks.Common;
 using kvk.Identity.Domain;
 using kvk.Identity.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Throw;
 
 namespace kvk.Identity.Features.Auth;
 
@@ -174,7 +175,8 @@ public class AuthService
     /// <summary>
     /// Change password for a staff member. Accepts either UserId or UserName (UserId takes precedence).
     /// </summary>
-    public async Task<Result> ChangePasswordAsync(ChangePasswordRequest? request, CancellationToken cancellationToken = default)
+    public async Task<Result> ChangePasswordAsync(ChangePasswordRequest? request,
+        CancellationToken cancellationToken = default)
     {
         if (request == null)
             return Result.Failure("Request cannot be null");
@@ -217,6 +219,27 @@ public class AuthService
         }
     }
 
+    public async Task<List<StaffResponse>> GetAllStaffAsync(CancellationToken cancellationToken = default)
+    {
+        var staffs = await _db.Staffs
+            .Include(x => x.StaffModules)
+            .AsNoTracking()
+            .Select(s => new StaffResponse
+            {
+                Id = s.Id,
+                FirstName = s.FirstName,
+                LastName = s.LastName,
+                UserName = s.UserName,
+                Email = s.Email,
+                Status = s.Status,
+                AssignedModules = s.StaffModules
+                    .Select(x => x.ModuleName)
+                    .ToArray(),
+            })
+            .ToListAsync(cancellationToken);
 
+        staffs.ThrowIfNull("Staff not found.");
+
+        return staffs;
+    }
 }
-
