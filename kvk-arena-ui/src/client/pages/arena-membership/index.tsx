@@ -26,7 +26,7 @@ type TimeLeft = {
 };
 
 const OFFER_FALLBACK_END = getEnv().OFFER_END_DATE;
-const MEMBERSHIP_PRICE = getEnv().MEMBERSHIP_PRICE;
+// const MEMBERSHIP_PRICE = getEnv().MEMBERSHIP_PRICE;
 const GYM_RATE = getEnv().GYM_RATE;
 const BADMINTON_RATE = getEnv().BADMINTON_RATE;
 const CARWASH_RATE = getEnv().CARWASH_RATE;
@@ -41,16 +41,6 @@ function getTimeLeft(targetTime: number): TimeLeft {
   const seconds = Math.floor((total / 1000) % 60);
 
   return { total, days, hours, minutes, seconds };
-}
-
-function formatPrice(value: string | number | undefined) {
-  const numericValue = Number(value);
-
-  if (Number.isNaN(numericValue)) {
-    return value || "0";
-  }
-
-  return numericValue.toLocaleString("en-LK");
 }
 
 function formatPercentage(value: string | number | undefined) {
