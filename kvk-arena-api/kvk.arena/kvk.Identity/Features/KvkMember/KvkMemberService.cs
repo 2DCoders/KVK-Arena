@@ -1,5 +1,7 @@
 using kvk.BuildingBlocks.Common;
+using kvk.BuildingBlocks.Constants;
 using kvk.BuildingBlocks.Enums;
+using kvk.BuildingBlocks.Interfaces;
 using kvk.Identity.Domain;
 using kvk.Identity.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -7,21 +9,17 @@ using Throw;
 
 namespace kvk.Identity.Features.KvkMember;
 
-public class KvkMemberService : IKvkMemberService
+public class KvkMemberService(IdentityApplicationDbContext db, ISmsService smsService) : IKvkMemberService
 {
-    private readonly IdentityApplicationDbContext _db;
-
-    public KvkMemberService(IdentityApplicationDbContext db)
-    {
-        _db = db ?? throw new ArgumentNullException(nameof(db));
-    }
+    private readonly IdentityApplicationDbContext _db = db ?? throw new ArgumentNullException(nameof(db));
+    private readonly ISmsService _smsService = smsService;
 
     public async Task<Result> RegisterAsync(KvkMemberRegisterRequest request, CancellationToken cancellationToken)
     {
-        var memberToken = await GetNextMembershipTokenAsync( DateTime.UtcNow.Year,
+        var memberToken = await GetNextMembershipTokenAsync(DateTime.UtcNow.Year,
             cancellationToken);
-        
-        
+
+
         byte[]? profilePictureBytes = null;
         if (request.ProfilePicture != null)
         {
@@ -29,8 +27,8 @@ public class KvkMemberService : IKvkMemberService
             await request.ProfilePicture.CopyToAsync(memoryStream, cancellationToken);
             profilePictureBytes = memoryStream.ToArray();
         }
-        
-        
+
+
         var exists = await _db.KvkMembers
             .AnyAsync(x => x.UserName == request.UserName || x.Email == request.Email, cancellationToken);
 
@@ -42,7 +40,6 @@ public class KvkMemberService : IKvkMemberService
             {
                 return Result.Failure("A member with the same nic number already exists.");
             }
-            
         }
 
         if (exists)
@@ -61,7 +58,7 @@ public class KvkMemberService : IKvkMemberService
             PasswordHash = PasswordEncryption.HashPassword(request.PasswordHash),
             Gender = request.Gender,
             ProfilePicture = profilePictureBytes,
-            MemberId = MembershipNumberFormatter.KvkMemberFormat(DateTime.UtcNow.Year,memberToken), 
+            MemberId = MembershipNumberFormatter.KvkMemberFormat(DateTime.UtcNow.Year, memberToken),
             MembershipStatus = MemberShipActiveStatus.Inactive,
             IsPaid = false,
             Status = request.Status
@@ -69,6 +66,9 @@ public class KvkMemberService : IKvkMemberService
 
         _db.KvkMembers.Add(member);
         await _db.SaveChangesAsync(cancellationToken);
+
+        await _smsService.SendSingleMessageAsync(member.Phone!,
+            MessageList.GetKvkMemberRegistrationMessage(member.FirstName, member.MemberId), cancellationToken);
 
         return Result.Success();
     }
@@ -93,7 +93,6 @@ public class KvkMemberService : IKvkMemberService
                 NicNumber = m.NicNumber,
                 Phone = m.Phone,
                 Gender = m.Gender
-                
             })
             .ToListAsync(cancellationToken);
     }
@@ -128,7 +127,7 @@ public class KvkMemberService : IKvkMemberService
     public async Task<Result> DeleteMemberAsync(Guid id, CancellationToken cancellationToken)
     {
         var member = await _db.KvkMembers.FindAsync(new object[] { id }, cancellationToken);
-        
+
         member.ThrowIfNull("Member not found.");
 
         _db.KvkMembers.Remove(member);
@@ -147,12 +146,12 @@ public class KvkMemberService : IKvkMemberService
         member.MembershipDurationDays = 365;
         member.MembershipStatus = MemberShipActiveStatus.Active;
         member.IsPaid = true;
-        
-       //assign member offer rate to the specifc member
-      var offers =  await _db.OfferRates.Where
-           (x => x.OfferType == OfferType.MembershipOffer).ToListAsync(cancellationToken);
-      
-      //assign MemberEligileOFfer
+
+        //assign member offer rate to the specifc member
+        var offers = await _db.OfferRates.Where
+            (x => x.OfferType == OfferType.MembershipOffer).ToListAsync(cancellationToken);
+
+        //assign MemberEligileOFfer
         foreach (var offer in offers)
         {
             var memberEligibleOffer = new MemberEligibleOffer
@@ -174,15 +173,14 @@ public class KvkMemberService : IKvkMemberService
         var member = await _db.KvkMembers.FindAsync(new object[] { id }, cancellationToken);
 
         member.ThrowIfNull("Member not found.");
-        
+
         member.MembershipStatus = isActive ? MemberShipActiveStatus.Active : MemberShipActiveStatus.Inactive;
-        
+
         await _db.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
-    
-    
-    
+
+
     private async Task<string> GetNextMembershipTokenAsync(int year,
         CancellationToken cancellationToken)
     {
