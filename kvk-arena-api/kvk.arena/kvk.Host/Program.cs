@@ -162,10 +162,11 @@ var app = builder.Build();
 
 
 // Error handling middleware (should be first to catch all errors)
-app.UseMiddleware<ErrorHandlerMiddleware>();
+
 
 // Tenant permission middleware (extracts TenantId from JWT)
 app.UseMiddleware<TenantPermissionMiddleware>();
+app.UseMiddleware<ErrorHandlerMiddleware>();
 
 // if (app.Environment.IsDevelopment())
 // {

@@ -19,4 +19,12 @@ public static class MessageList
       return $"Dear {firstName}, your membership has been upgraded to {planTitle}. Valid from {start} to {end}. Thank you for being with KVK Arena.";
    }
 
+   public static string GetKvkMemberRegistrationMessage(string firstName, string membershipNumber)
+   {
+      return
+         $"Congratulations, {firstName}! Your KVK Arena membership has been successfully registered. " +
+         $"Your Member ID is {membershipNumber}. Welcome to the KVK Arena family! " +
+         $"Once the pre-registration period ends on 20th August 2026, you'll be able to access and enjoy all the exciting features of KVK Arena.";
+   }
+
 }
