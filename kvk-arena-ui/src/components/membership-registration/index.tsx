@@ -193,7 +193,7 @@ export default function MembershipRegistration({
                 <div className="max-w-3xl">
                   <div className="inline-flex items-center gap-2 rounded-full border border-[#296BE1]/15 bg-[#296BE1]/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#296BE1]">
                     {/* <Info size={14} /> */}
-                    Full Arena Membership
+                    KVK Arena Pre Registration
                   </div>
                 </div>
 
@@ -221,8 +221,7 @@ export default function MembershipRegistration({
                   </h3>
 
                   <p className="mt-4 max-w-xl text-[15px] leading-7 text-white/80">
-                    The membership is designed for people who want convenience, priority
-                    handling, and a better experience across KVK Arena services.
+                    Pre-register with KVK Arena to join our community and receive priority access to services, including badminton court bookings. Our team will contact you via WhatsApp with further details.
                   </p>
 
                   <div className="mt-6 rounded-[28px] border border-white/10 bg-white/6 p-6 shadow-[0_20px_55px_rgba(0,0,0,0.18)] backdrop-blur-sm">
@@ -246,9 +245,9 @@ export default function MembershipRegistration({
 
                   <div className="mt-6 grid gap-3">
                     {[
-                      ["01", "Enter your details", "Complete the membership form."],
+                      ["01", "Enter your details", "Complete the registration form."],
                       ["02", "Confirm application", "Review and confirm your details."],
-                      ["03", "Arena follow-up", "Our team will contact you via WhatsApp."],
+                      ["03", "Arena follow-up", "We will contact you via WhatsApp."],
                     ].map(([step, title, description]) => (
                       <div
                         key={step}
@@ -274,7 +273,7 @@ export default function MembershipRegistration({
                   {/* Mobile-only heading */}
                   <div className="mb-5 lg:hidden">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#296BE1]">
-                      Membership application
+                      Form application
                     </p>
 
                     <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-950">
@@ -305,8 +304,8 @@ export default function MembershipRegistration({
                         >
                           <div
                             className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-bold ${index === 0
-                                ? "border-[#296BE1] bg-[#296BE1] text-white shadow-[0_7px_18px_rgba(41,107,225,0.25)]"
-                                : "border-slate-200 bg-white text-slate-400"
+                              ? "border-[#296BE1] bg-[#296BE1] text-white shadow-[0_7px_18px_rgba(41,107,225,0.25)]"
+                              : "border-slate-200 bg-white text-slate-400"
                               }`}
                           >
                             {step}
@@ -466,8 +465,8 @@ export default function MembershipRegistration({
                           <label
                             key={value}
                             className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 transition ${gender === value
-                                ? "border-[#296BE1] bg-[#296BE1]/6 text-slate-950 ring-2 ring-[#296BE1]/10"
-                                : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                              ? "border-[#296BE1] bg-[#296BE1]/6 text-slate-950 ring-2 ring-[#296BE1]/10"
+                              : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
                               }`}
                           >
                             <input

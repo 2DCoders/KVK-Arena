@@ -83,7 +83,7 @@ export default function Hero({ onOpenPromoCountdown }: HeroProps) {
             >
               <div className="flex flex-col">
                 <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-sky-200/90">
-                  Membership Registration
+                  KVK Registration
                 </span>
 
                 <div className="mt-3 flex items-center gap-2">

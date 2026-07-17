@@ -122,9 +122,7 @@ export default function ArenaMembership() {
   }, [showRateInfo]);
 
   const membershipBenefits = [
-    "Discounts for every service",
-    "Annual renewal option",
-    "Priority registration handling",
+    "Priority badminton court bookings",
     "WhatsApp follow-up after signup",
   ];
 
@@ -235,54 +233,12 @@ export default function ArenaMembership() {
             </div>
 
             <h2 className="mt-5 text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-6xl">
-              Full Arena Membership
+              KVK Arena Pre-Registration Open
             </h2>
 
             <p className="mt-5 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
-              Join the full arena membership and unlock exclusive discounts
-              across our services, with an annual membership plan designed for
-              customers who want more value from every visit.
+              Pre-register with KVK Arena today and enjoy priority access to badminton court bookings when reservations officially open. Be among the first to secure your preferred time slots and become part of the KVK Arena community from day one.
             </p>
-
-            {/* Eye-catching Membership Price */}
-            <div className="mt-7 max-w-xl overflow-hidden rounded-3xl border border-[#61A5FA]/30 bg-gradient-to-r from-[#296BE1]/25 via-[#296BE1]/10 to-white/5 p-px shadow-[0_24px_60px_rgba(41,107,225,0.18)]">
-              <div className="relative overflow-hidden rounded-[calc(1.5rem-1px)] bg-slate-950/75 px-5 py-5 backdrop-blur-xl sm:px-6">
-                <div className="pointer-events-none absolute -right-10 -top-14 h-36 w-36 rounded-full bg-[#296BE1]/25 blur-3xl" />
-
-                <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                  <div>
-                    <div className="inline-flex items-center gap-2 rounded-full border border-[#8FC0FF]/20 bg-[#296BE1]/15 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#A9D1FF]">
-                      <Sparkles size={12} />
-                      Annual Membership
-                    </div>
-
-                    <p className="mt-3 text-sm font-medium text-slate-300">
-                      One payment. Benefits across the arena.
-                    </p>
-                  </div>
-
-                  <div className="sm:text-right">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                      Membership price
-                    </p>
-
-                    <div className="mt-1 flex items-end gap-2 sm:justify-end">
-                      <span className="pb-1 text-sm font-bold text-[#8FC0FF]">
-                        LKR
-                      </span>
-
-                      <span className="bg-gradient-to-r from-white to-[#8FC0FF] bg-clip-text text-4xl font-black tracking-tight text-transparent sm:text-5xl">
-                        {formatPrice(MEMBERSHIP_PRICE)}
-                      </span>
-                    </div>
-
-                    <p className="mt-1 text-xs font-medium text-slate-400">
-                      Valid for one year
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
 
             {/* Benefits and Info Button */}
             <div className="mt-7 flex flex-wrap items-center gap-3">
@@ -515,8 +471,8 @@ export default function ArenaMembership() {
                     </p>
 
                     <p className="mt-2 text-sm leading-7 text-slate-300">
-                      Complete your registration today and our admin team will
-                      contact you through WhatsApp to confirm the membership and
+                      Complete your registration today and we will
+                      contact you through WhatsApp to confirm the registration and
                       payment details.
                     </p>
                   </div>
