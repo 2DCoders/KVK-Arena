@@ -7,7 +7,6 @@ import {
   Coffee,
   Dumbbell,
   Gamepad2,
-  Info,
   Sparkles,
   Trophy,
   X,
@@ -298,7 +297,7 @@ export default function ArenaMembership() {
               ))}
 
               <div ref={infoPanelRef} className="relative">
-                <button
+                {/* <button
                   type="button"
                   aria-label="View membership discount rates"
                   aria-expanded={showRateInfo}
@@ -307,7 +306,7 @@ export default function ArenaMembership() {
                 >
                   <Info size={16} />
                   Discount Rates
-                </button>
+                </button> */}
 
                 {/* Desktop Info Popover */}
                 {showRateInfo && (
@@ -534,14 +533,14 @@ export default function ArenaMembership() {
                   <ArrowRight size={16} />
                 </button>
 
-                <button
+                {/* <button
                   type="button"
                   onClick={() => setShowRateInfo((current) => !current)}
                   className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
                 >
                   <Info size={16} />
                   View Discounts
-                </button>
+                </button> */}
               </div>
             </div>
           </div>
