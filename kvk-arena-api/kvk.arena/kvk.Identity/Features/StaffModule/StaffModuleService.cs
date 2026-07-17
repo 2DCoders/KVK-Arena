@@ -46,17 +46,12 @@ public class StaffModuleService
     /// </summary>
     public async Task<StaffModuleResponse> AssignModulesToStaffAsync(
         Guid staffId,
-        string[] moduleNames,
+        AssignModulesToStaffRequest? requests,
         CancellationToken cancellationToken = default)
     {
-        if (staffId == Guid.Empty)
-            throw new ArgumentException("Staff ID cannot be empty", nameof(staffId));
-
-        if (moduleNames == null || moduleNames.Length == 0)
-            throw new ArgumentException("At least one module must be provided", nameof(moduleNames));
-
         try
         {
+            
             // Verify staff exists
             var staff = await _db.Set<Staff>()
                 .AsNoTracking()
@@ -64,20 +59,35 @@ public class StaffModuleService
 
             if (staff == null)
                 throw new InvalidOperationException($"Staff member with ID {staffId} not found");
+            
+            
+            var exists = await _db.StaffModules
+                .Where(x => x.StaffId == staffId)
+                .ToListAsync(cancellationToken);
+
+            _db.StaffModules.RemoveRange(exists);
 
             // Validate module names
             var availableModules = GetAvailableModules();
-            var invalidModules = moduleNames.Except(availableModules).ToList();
+            if (requests == null || requests.ModuleNames == null)
+            {
+                return new StaffModuleResponse
+                {
+                    StaffId = staffId,
+                    AssignedModules = Array.Empty<string>(),
+                    LastModified = DateTime.UtcNow
+                };
+            }
+
+            var invalidModules = requests.ModuleNames.Except(availableModules).ToList();
             if (invalidModules.Any())
                 throw new ArgumentException(
                     $"Invalid module names: {string.Join(", ", invalidModules)}. Available: {string.Join(", ", availableModules)}",
-                    nameof(moduleNames));
+                    nameof(requests.ModuleNames));
 
             // Assign modules
-            foreach (var moduleName in moduleNames)
-            {
-                await _seeder.AssignModuleToStaffAsync(staffId, moduleName, cancellationToken);
-            }
+            await _seeder.AssignModulesToStaffAsync(staffId,requests.ModuleNames, cancellationToken);
+            
 
             // Get updated modules list
             var assignedModules = await _seeder.GetStaffModulesAsync(staffId, cancellationToken);

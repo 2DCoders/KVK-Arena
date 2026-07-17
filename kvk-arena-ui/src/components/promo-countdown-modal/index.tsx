@@ -109,7 +109,7 @@ export default function PromoCountdownModal({
           </div>
 
           <h2 className="mt-5 text-center text-3xl font-black leading-[1.05] tracking-[-0.04em] sm:text-4xl">
-            Full Arena Membership
+            KVK Arena Pre
             <span className="block text-white/95">Registration Open!!!</span>
           </h2>
 
@@ -137,9 +137,7 @@ export default function PromoCountdownModal({
           </div>
 
           <p className="mx-auto mt-5 max-w-sm text-center text-sm leading-7 text-white/88 sm:text-[15px]">
-            Sign up now to secure your full arena membership at a special
-            discounted rate. This exclusive offer is only available for a
-            limited time, so act fast and join the KVK Arena community today!
+            Pre-register for KVK Arena today and receive priority access to badminton court bookings when reservations officially open.
           </p>
 
           <a

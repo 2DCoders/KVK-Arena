@@ -66,13 +66,8 @@ public class IdentitySeeder
             if (staff == null)
                 return false;
 
-            // Check if assignment already exists
-            var exists = await _db.Set<StaffModule>()
-                .AnyAsync(sm => sm.StaffId == staffId && sm.ModuleName == moduleName, cancellationToken);
-
-            if (exists)
-                return true; // Already assigned
-
+            
+            
             // Create new assignment
             var staffModule = new StaffModule
             {
