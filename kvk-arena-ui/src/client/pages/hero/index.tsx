@@ -69,8 +69,7 @@ export default function Hero({ onOpenPromoCountdown }: HeroProps) {
           </h1>
 
           <p className="mt-6 mx-auto max-w-2xl text-base leading-8 text-slate-200 lg:text-md sm:text-md">
-            Explore six core services, including gym training, car wash, badminton, café, online clothing, and gaming, all designed for convenience and comfort.
-          </p>
+KVK Arena brings together a gym, car wash, badminton court, café, clothing store, and gaming zone, creating a complete lifestyle experience where fitness, entertainment, convenience, and style come together under one roof.          </p>
 
           {isOfferActive && (
             <button
