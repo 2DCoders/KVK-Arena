@@ -6,7 +6,7 @@ import { useState } from "react";
 import ServicesModal from "@/components/sevices-modal";
 
 const stats = [
-    { value: "4", label: "Core Services" },
+    { value: "6", label: "Core Services" },
     { value: "1", label: "Connected Arena" },
     { value: "24/7", label: "Easy Booking" },
     { value: "100%", label: "Member Focus" },
@@ -30,8 +30,7 @@ export default function AboutUs() {
                             </h2>
 
                             <p data-aos="fade-right" data-aos-delay="100" className="mt-5 text-base leading-8 text-slate-500">
-                                KVK Arena brings gym training, car wash care, badminton play, and gaming into one connected experience. We design every service around convenience, comfort, and a smooth day for our members.
-                            </p>
+                                KVK Arena brings together gym training, car wash services, badminton, a café, online clothing, and gaming into one connected experience. We design every service around convenience, comfort, and creating a seamless experience for our members.                            </p>
 
                             <p data-aos="fade-right" data-aos-delay="150" className="mt-4 text-base leading-8 text-slate-500">
                                 From the first booking to the final visit, our goal is to keep everything easy, fast, and dependable. Whether you are here to move, relax, or get things done, the arena is built to keep your routine flowing.

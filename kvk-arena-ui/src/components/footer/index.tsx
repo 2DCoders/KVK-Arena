@@ -163,6 +163,21 @@ export default function Footer() {
                         Cafe
                       </a>
                     </li>
+
+                    <li>
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setConstructionPageName("Clothing Section");
+                          setOpenConstructionModal(true);
+                          // navigate("/clothing");
+                        }}
+                        className="text-sm text-slate-500 hover:text-slate-900 transition"
+                      >
+                        Clothing
+                      </a>
+                    </li>
                   </ul>
                 </div>
 
