@@ -183,7 +183,7 @@ export default function ArenaMembership() {
             variant: "success",
             title: "Registration Successful",
             description:
-              "Your membership application has been submitted successfully. Our team will contact you shortly.",
+              "Your membership application has been submitted successfully. Our team will contact you.",
           })
         }
         onFailure={() =>
