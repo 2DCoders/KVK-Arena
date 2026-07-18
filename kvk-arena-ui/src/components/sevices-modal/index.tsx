@@ -73,7 +73,7 @@ export default function ServicesModal({
                     KVK Arena Journal
                   </p>
                   <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">
-                    One arena, five connected experiences
+                    One arena, six connected experiences
                   </h1>
                   {/* <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
                     A closer look at how KVK Arena brings fitness, sport,
@@ -92,7 +92,7 @@ export default function ServicesModal({
               </div>
             </div>
 
-            <div className="grid gap-0 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="grid gap-0 lg:grid-cols-1">
               <article className="px-5 py-6 sm:px-7 sm:py-8 lg:px-10 lg:py-10">
                 <div className="overflow-hidden rounded-3xl bg-slate-900 shadow-[0_24px_60px_rgba(15,23,42,0.16)]">
                   <div className="relative aspect-video">
@@ -201,45 +201,6 @@ export default function ServicesModal({
                   </section>
                 </div>
               </article>
-
-              <aside className="border-t border-slate-200 bg-white px-5 py-6 sm:px-7 lg:border-l lg:border-t-0 lg:px-8 lg:py-10">
-                <div className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto lg:pr-1">
-                  <div className="rounded-3xl bg-slate-950 p-5 text-white shadow-[0_24px_60px_rgba(15,23,42,0.22)] sm:p-6">
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/60">
-                      Editorial note
-                    </p>
-                    <p className="mt-4 text-base leading-8 text-white/86">
-                      KVK Arena is built for visitors who want variety without
-                      complexity. The article-like layout reflects that idea:
-                      clear sections, readable paragraphs, and a calm visual
-                      rhythm that works on phones and desktops.
-                    </p>
-
-                    <div className="mt-6 overflow-hidden rounded-[20px] border border-white/10 bg-white/5">
-                      <img
-                        src={badmintonHero}
-                        alt="KVK Arena badminton court"
-                        className="h-52 w-full object-cover"
-                      />
-                    </div>
-
-                    <div className="mt-6 space-y-3 text-sm leading-7 text-white/76">
-                      <p>
-                        The gym supports strength and consistency.
-                      </p>
-                      <p>
-                        Badminton adds speed and competition.
-                      </p>
-                      <p>
-                        Gaming gives the arena a relaxed social layer.
-                      </p>
-                      <p>
-                        The café and car wash complete the everyday utility.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </aside>
             </div>
           </div>
         </div>

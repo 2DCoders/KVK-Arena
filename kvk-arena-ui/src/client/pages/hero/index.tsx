@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Clock3 } from "lucide-react";
 import * as FlipNumbersModule from "react-flip-numbers";
-import hero_bg from "@/assets/hero/hero_bg2.png";
+import hero_bg from "@/assets/hero/hero_bg3.png";
 import { getEnv } from "@/env";
 
 type HeroProps = {
