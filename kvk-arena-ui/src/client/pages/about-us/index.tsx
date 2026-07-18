@@ -6,7 +6,7 @@ import { useState } from "react";
 import ServicesModal from "@/components/sevices-modal";
 
 const stats = [
-    { value: "4", label: "Core Services" },
+    { value: "5", label: "Core Services" },
     { value: "1", label: "Connected Arena" },
     { value: "24/7", label: "Easy Booking" },
     { value: "100%", label: "Member Focus" },
