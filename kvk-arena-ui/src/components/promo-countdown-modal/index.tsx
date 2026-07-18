@@ -137,7 +137,7 @@ export default function PromoCountdownModal({
           </div>
 
           <p className="mx-auto mt-5 max-w-sm text-center text-sm leading-7 text-white/88 sm:text-[15px]">
-            Pre-register for KVK Arena today and receive priority access to badminton court bookings when reservations officially open.
+            Pre-register today to unlock exclusive early access to KVK Arena before the official opening, plus priority access to bookings and more.
           </p>
 
           <a
