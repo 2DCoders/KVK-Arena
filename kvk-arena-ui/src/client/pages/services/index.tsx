@@ -7,6 +7,7 @@ import carwash from "@/assets/carwash.jpg";
 import badminton from "@/assets/badminton.jpg";
 import gaming from "@/assets/billiard.jpg";
 import cafe from "@/assets/coffee.jpg";
+import clothing from "@/assets/clothing.jpg";
 import AOS from "aos";
 // import { useNavigate } from "react-router-dom";
 import ConstructionModal from "@/components/404";
@@ -57,6 +58,15 @@ const services = [
     img: cafe,
     navigateTo: "/cafe",
   },
+  {
+    id: 6,
+    title: "Clothing Store",
+    tag: "Retail",
+    category: "clothing",
+    desc: "Browse our collection of high-quality apparel and accessories.",
+    img: clothing,
+    navigateTo: "/clothing",
+  }
 ];
 
 const tabs = [
@@ -66,6 +76,7 @@ const tabs = [
   { key: "badminton", label: "Badminton" },
   { key: "gaming", label: "Gaming" },
   { key: "cafe", label: "Cafe" },
+  { key: "clothing", label: "Clothing" },
 ];
 
 export default function Services() {

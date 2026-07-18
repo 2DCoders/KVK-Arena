@@ -69,9 +69,7 @@ export default function Hero({ onOpenPromoCountdown }: HeroProps) {
           </h1>
 
           <p className="mt-6 mx-auto max-w-2xl text-base leading-8 text-slate-200 lg:text-md sm:text-md">
-            Explore four connected experiences in a modern light-space design:
-            Gym, Carwash, Badminton Court, and Gaming Centre. Book faster, move
-            easier, and keep your day flowing in one place.
+            Explore six core services, including gym training, car wash, badminton, café, online clothing, and gaming, all designed for convenience and comfort.
           </p>
 
           {isOfferActive && (

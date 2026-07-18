@@ -44,6 +44,13 @@ const services = [
     description:
       "Take a break at the café with coffee, snacks, and light refreshments in a cozy setting. It is the ideal stop to recharge before or after your workout, game, or sports session. The café completes the arena experience by turning a quick pause into a relaxed part of the visit.",
   },
+  {
+    title: "Clothing Store",
+    icon: Trophy,
+    highlight: "High-quality apparel and accessories",
+    description:
+      "Browse our collection of high-quality apparel and accessories. The clothing store offers a curated selection of items designed for comfort, style, and performance. Whether you're looking for workout gear or casual wear, you'll find products that meet your needs and enhance your experience at KVK Arena.",
+  },
 ];
 
 export default function ServicesModal({
@@ -134,7 +141,7 @@ export default function ServicesModal({
 
                   <div className="grid gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-3 sm:p-6">
                     {[
-                      ["5", "Services under one roof"],
+                      ["6", "Services under one roof"],
                       ["24/7", "Convenient booking flow"],
                       ["100%", "Member-first focus"],
                     ].map(([value, label]) => (
