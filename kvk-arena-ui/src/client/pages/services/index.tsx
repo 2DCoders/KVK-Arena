@@ -9,7 +9,7 @@ import gaming from "@/assets/billiard.jpg";
 import cafe from "@/assets/coffee.jpg";
 import clothing from "@/assets/clothing.jpg";
 import AOS from "aos";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import ConstructionModal from "@/components/404";
 
 const services = [
@@ -85,7 +85,7 @@ export default function Services() {
   const [open404, setOpen404] = useState(false);
   const [pageName, setPageName] = useState("Services Section");
 
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const scrollServices = (direction: "left" | "right") => {
     const container = scrollerRef.current;
@@ -224,8 +224,8 @@ export default function Services() {
                         </span>
                         <button
                           onClick={() => {
-                            // navigate(service.navigateTo)
-                            handleOpen404(service.title);
+                            navigate(service.navigateTo)
+                            // handleOpen404(service.title);
                           }}
                           type="button"
                           className="inline-flex cursor-pointer h-11 w-11 items-center justify-center rounded-full bg-white text-[#296BE1] shadow-[0_10px_25px_rgba(255,255,255,0.18)] transition hover:scale-105"
