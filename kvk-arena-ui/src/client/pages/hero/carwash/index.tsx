@@ -1,54 +1,130 @@
-import hero_bg from "@/assets/hero/gaming_hero1.png";
-import { ArrowRight } from "lucide-react";
+import hero_bg from "@/assets/hero/carwash_bg.png";
+import {
+  ArrowRight,
+  Check,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 
 export default function CarwashHero() {
+  const scrollToServices = () => {
+    document
+      .getElementById("services")
+      ?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
-    <section className="relative min-h-[95vh] overflow-hidden">
-      {/* Background Image */}
+    <section className="relative min-h-screen overflow-hidden bg-black">
+      {/* Background image */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 bg-cover bg-[62%_center] bg-no-repeat lg:bg-center"
         style={{
           backgroundImage: `url(${hero_bg})`,
         }}
       />
 
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/0" />
+      {/* Main overlays */}
+      <div className="absolute inset-0 bg-black/5" />
 
-      {/* Content */}
-      <div className="relative z-10 mx-auto flex min-h-[95vh] w-full max-w-7xl items-center px-6 lg:px-12">
-        <div className="max-w-2xl">
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,#000_0%,rgba(0,0,0,0.96)_20%,rgba(0,0,0,0.72)_46%,rgba(0,0,0,0.18)_74%,rgba(0,0,0,0.08)_100%)]" />
 
-          {/* Heading */}
-          <h1 className="mt-6 text-5xl font-black uppercase leading-[0.95] tracking-tight text-white md:text-6xl lg:text-6xl">
-            ENTER THE
-            <br />
-            <span className="text-red-500">ARENA.</span>
-            <br />
-            PROVE YOUR SKILLS.
-          </h1>
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.38)_0%,transparent_32%,rgba(0,0,0,0.18)_68%,#000_100%)]" />
 
-          {/* Description */}
-          <p className="mt-6 max-w-xl text-md leading-relaxed text-slate-300">
-            Join elite tournaments, challenge skilled opponents, and climb the
-            rankings. Earn rewards, build your reputation, and become a
-            champion.
-          </p>
+      {/* Subtle silver glow */}
+      <div className="pointer-events-none absolute -left-32 top-1/3 h-96 w-96 rounded-full bg-white/[0.04] blur-3xl" />
 
-          {/* Buttons */}
-          <div className="mt-10 flex flex-wrap gap-4">
-            <button className="group inline-flex cursor-pointer items-center gap-2 rounded-lg bg-red-600 px-8 py-4 font-semibold text-white transition-all duration-300 hover:bg-red-500">
-              Book a Slot
+      {/* Hero content */}
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col px-6 pb-10 pt-26 sm:px-8 lg:px-12 lg:pb-12 lg:pt-30">
+        <div className="flex flex-1 items-center">
+          <div className="max-w-[650px] pb-8 lg:-translate-y-2">
+            {/* Eyebrow */}
+            <div className="mb-6 flex items-center gap-3">
+              <span className="h-px w-10 bg-gradient-to-r from-gray-100 to-gray-500" />
 
-              <ArrowRight
-                size={18}
-                className="transition-transform duration-300 group-hover:translate-x-1"
-              />
-            </button>
+              <span className="text-xs font-semibold uppercase tracking-[0.32em] text-gray-300">
+                Premium Auto Care
+              </span>
+            </div>
 
-            <button className="cursor-pointer rounded-lg border border-white/20 bg-white/5 px-8 py-4 font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/10">
-              Explore Games
-            </button>
+            {/* Heading */}
+            <h1 className="max-w-[620px] text-[3rem] font-bold leading-[0.98] tracking-[-0.045em] text-[#0046c9] sm:text-5xl lg:text-6xl xl:text-[4.5rem]">
+              Elevate every
+              <span className="mt-2 block bg-gradient-to-r from-white via-gray-200 to-gray-500 bg-clip-text text-transparent">
+                drive.
+              </span>
+            </h1>
+
+            {/* Description */}
+            <p className="mt-7 max-w-[570px] text-base leading-7 text-gray-300 sm:text-lg sm:leading-8">
+              Precision washing, professional detailing and lasting protection
+              designed to keep your vehicle looking its absolute best.
+            </p>
+
+            {/* Feature row */}
+            <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3">
+              {[
+                "Professional detailing",
+                "Premium products",
+                "Careful finishing",
+              ].map((item) => (
+                <div
+                  key={item}
+                  className="flex items-center gap-2 text-sm text-gray-300"
+                >
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full border border-white/20 bg-white/[0.06]">
+                    <Check size={12} strokeWidth={2.5} />
+                  </span>
+
+                  {item}
+                </div>
+              ))}
+            </div>
+
+
+          </div>
+        </div>
+
+        {/* Bottom information panel */}
+        <div className="border-t border-white/10 pt-6">
+          <div className="grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-0">
+            <div className="flex items-center gap-4 sm:border-r sm:border-white/10 sm:pr-8">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-gray-200">
+                <Sparkles size={18} />
+              </div>
+
+              <div>
+                <p className="font-semibold text-white">Premium Finish</p>
+                <p className="mt-0.5 text-xs uppercase tracking-[0.18em] text-gray-500">
+                  Detailed by hand
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 sm:border-r sm:border-white/10 sm:pr-8">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-gray-200">
+                <ShieldCheck size={18} />
+              </div>
+
+              <div>
+                <p className="font-semibold text-white">Trusted Protection</p>
+                <p className="mt-0.5 text-xs uppercase tracking-[0.18em] text-gray-500">
+                  Quality products
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 sm:pr-8">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-gray-200">
+                <Check size={18} />
+              </div>
+
+              <div>
+                <p className="font-semibold text-white">Careful Service</p>
+                <p className="mt-0.5 text-xs uppercase tracking-[0.18em] text-gray-500">
+                  Attention to detail
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
