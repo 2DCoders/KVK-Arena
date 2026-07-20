@@ -134,9 +134,9 @@ export default function Services() {
             data-aos-delay="100"
             className="mt-4 text-base text-slate-500"
           >
-            From AI solutions to custom development, we provide the tools and
-            expertise to help your business grow smarter, faster, and more
-            efficiently.
+            Explore our diverse range of services designed to cater to your
+            needs. From fitness and sports to entertainment and retail, we have
+            something for everyone.
           </p>
         </div>
 
