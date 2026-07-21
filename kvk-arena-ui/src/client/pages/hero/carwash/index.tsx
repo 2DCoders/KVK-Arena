@@ -109,7 +109,7 @@ export default function CarwashHero() {
                 onClick={scrollToServices}
                 className="inline-flex cursor-pointer h-12 items-center justify-center rounded-full border border-blue-300/20 bg-blue-500/[0.07] px-6 text-sm font-semibold text-gray-200 backdrop-blur-md transition-all duration-300 hover:border-blue-300/40 hover:bg-blue-500/[0.12] hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-400/40"
               >
-                View Packages
+                View Pricing
               </button>
             </div>
           </div>

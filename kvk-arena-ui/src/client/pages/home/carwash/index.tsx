@@ -4,6 +4,7 @@ import { useLayoutEffect, useState, useEffect } from "react";
 import CarwashHeader from "@/components/header/carwash";
 import CarwashHero from "../../hero/carwash";
 import CarwashServices from "../../services/carwash";
+import CarwashAdd1 from "../../features/carwash";
 
 
 export default function CarwashHome() {
@@ -45,6 +46,7 @@ export default function CarwashHome() {
               <CarwashServices />
             </section>
             
+              <CarwashAdd1 />              
 
             <div className="fixed bottom-6 right-4 z-50 flex items-end gap-3 sm:bottom-8 sm:right-6">
         <div className="flex min-w-18 flex-col items-center rounded-full border border-white/30 bg-slate-950/85 px-3 py-2 text-white shadow-[0_18px_45px_rgba(15,23,42,0.32)] backdrop-blur-md">
