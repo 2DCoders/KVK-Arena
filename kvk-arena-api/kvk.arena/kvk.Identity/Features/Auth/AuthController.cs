@@ -79,4 +79,20 @@ public class AuthController : ControllerBase
         var result = await _authService.GetAllStaffAsync(cancellationToken);
         return Ok(result);
     }
+
+    //staff delete
+    [HttpDelete("staff/{id:guid}")]
+    public async Task<IActionResult> DeleteStaff(Guid id, CancellationToken cancellationToken = default)
+    {
+        var result = await _authService.DeleteStaffByIdAsync(id, cancellationToken);
+        return Ok(result);
+    }
+
+    //edit staff
+    public async Task<IActionResult> EditStaff([FromBody] EditStaffRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _authService.EditStaffAsync(request, cancellationToken);
+        return Ok(result);
+    }
 }
