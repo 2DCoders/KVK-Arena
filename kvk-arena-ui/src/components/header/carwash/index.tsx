@@ -140,12 +140,12 @@ export default function CarwashHeader() {
 
           {/* Explore button */}
           <div className="relative z-10 hidden lg:block">
-            <a href="#explore" className="text-slate-900">
+            <a href="#packages" className="text-slate-900">
               <button
                 type="button"
                 className="cursor-pointer rounded-full border border-white/30 bg-white px-7 py-2.5 text-sm font-extrabold text-slate-900 transition hover:-translate-y-0.5 hover:shadow-lg"
               >
-                Explore
+                Packages
               </button>
             </a>
           </div>
@@ -252,11 +252,11 @@ export default function CarwashHeader() {
             </a>
 
             <a
-              href="#bookings"
+              href="#packages"
               onClick={closeMobileMenu}
               className="mt-6 flex w-fit cursor-pointer items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-extrabold text-black transition hover:-translate-y-0.5 hover:bg-[#2158bc] hover:text-white hover:shadow-[0_16px_36px_rgba(41,107,225,0.35)]"
             >
-              Explore
+              Packages
             </a>
           </nav>
         </aside>

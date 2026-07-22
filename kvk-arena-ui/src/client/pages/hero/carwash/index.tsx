@@ -101,7 +101,7 @@ export default function CarwashHero() {
                 onClick={scrollToServices}
                 className="group inline-flex cursor-pointer h-12 items-center justify-center gap-3 rounded-full border border-blue-300/20 bg-gradient-to-r from-[#0757d4] to-[#1688ff] px-6 text-sm font-semibold text-white shadow-[0_15px_40px_rgba(0,102,255,0.32)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_50px_rgba(0,132,255,0.48)] focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-black"
               >
-                Explore
+                Packages
                 <ArrowRight
                   size={17}
                   className="transition-transform duration-300 group-hover:translate-x-1"
