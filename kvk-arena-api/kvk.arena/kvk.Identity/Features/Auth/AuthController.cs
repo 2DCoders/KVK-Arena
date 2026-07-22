@@ -89,6 +89,7 @@ public class AuthController : ControllerBase
     }
 
     //edit staff
+    [HttpPut("staff/{id:guid}")]
     public async Task<IActionResult> EditStaff([FromBody] EditStaffRequest request,
         CancellationToken cancellationToken = default)
     {
