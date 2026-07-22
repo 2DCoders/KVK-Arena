@@ -164,7 +164,7 @@ export default function CarwashPricing() {
             {visibleItems.map((item) => (
               <article
                 key={item.id}
-                className="group relative min-w-[84vw] snap-start overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_20px_55px_rgba(15,23,42,0.08)] transition-all duration-500 hover:-translate-y-1.5 hover:border-blue-200 hover:shadow-[0_25px_65px_rgba(20,115,255,0.14)] sm:min-w-[320px] lg:min-w-[350px]"
+                className="group relative min-w-[85vw] snap-start overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_20px_55px_rgba(15,23,42,0.08)] transition-all duration-500 hover:-translate-y-1.5 hover:border-blue-200 hover:shadow-[0_25px_65px_rgba(20,115,255,0.14)] sm:min-w-[320px] lg:min-w-[375px]"
               >
                 {/* Image */}
                 <div className="relative h-56 overflow-hidden bg-slate-50 sm:h-60">
@@ -354,7 +354,7 @@ export default function CarwashPricing() {
                     </span>
 
                     <span className="text-4xl font-bold tracking-[-0.05em] text-slate-950 sm:text-5xl">
-                      {formatPrice(selectedItem.price)}
+                      {formatPrice(selectedItem.price)} /=
                     </span>
                   </div>
                 </div>
