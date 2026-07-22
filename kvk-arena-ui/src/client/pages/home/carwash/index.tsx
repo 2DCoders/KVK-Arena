@@ -8,6 +8,7 @@ import CarwashAdd1 from "../../features/carwash";
 import CarwashPricing from "../../pricing/carwash";
 import CarwashAdd2 from "../../features/carwash/adds";
 import CarwashFooter from "@/components/footer/carwash";
+import CarwashPackages from "../../packages/carwash";
 
 export default function CarwashHome() {
   useLayoutEffect(() => {
@@ -55,6 +56,10 @@ export default function CarwashHome() {
       <CarwashPricing />
 
       <CarwashAdd2 />
+
+      <section id="packages">
+        <CarwashPackages />
+      </section>
 
       <CarwashFooter />
 

@@ -2,8 +2,8 @@ import hero_bg from "@/assets/hero/carwash1.png";
 import { ArrowRight, Check, ShieldCheck, Sparkles } from "lucide-react";
 
 export default function CarwashHero() {
-  const scrollToServices = () => {
-    document.getElementById("services")?.scrollIntoView({ behavior: "smooth" });
+  const scrollToPackages = () => {
+    document.getElementById("packages")?.scrollIntoView({ behavior: "smooth" });
   };
 
   const scrollToPricing = () => {
@@ -98,7 +98,7 @@ export default function CarwashHero() {
             <div className="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:items-center">
               <button
                 type="button"
-                onClick={scrollToServices}
+                onClick={scrollToPackages}
                 className="group inline-flex cursor-pointer h-12 items-center justify-center gap-3 rounded-full border border-blue-300/20 bg-gradient-to-r from-[#0757d4] to-[#1688ff] px-6 text-sm font-semibold text-white shadow-[0_15px_40px_rgba(0,102,255,0.32)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_50px_rgba(0,132,255,0.48)] focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-black"
               >
                 Packages
