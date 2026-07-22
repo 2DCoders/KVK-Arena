@@ -7,6 +7,7 @@ import CarwashServices from "../../services/carwash";
 import CarwashAdd1 from "../../features/carwash";
 import CarwashPricing from "../../pricing/carwash";
 import CarwashAdd2 from "../../features/carwash/adds";
+import CarwashFooter from "@/components/footer/carwash";
 
 export default function CarwashHome() {
   useLayoutEffect(() => {
@@ -55,6 +56,8 @@ export default function CarwashHome() {
 
       <CarwashAdd2 />
 
+      <CarwashFooter />
+
       <div className="fixed bottom-6 right-4 z-50 flex items-end gap-3 sm:bottom-8 sm:right-6">
         <div className="flex min-w-18 flex-col items-center rounded-full border border-white/30 bg-slate-950/85 px-3 py-2 text-white shadow-[0_18px_45px_rgba(15,23,42,0.32)] backdrop-blur-md">
           <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-200/90">
@@ -70,7 +73,7 @@ export default function CarwashHome() {
             type="button"
             onClick={scrollToTop}
             aria-label="Scroll back to top"
-            className="flex cursor-pointer h-13 w-13 items-center justify-center rounded-full bg-red-600 text-white shadow-[0_18px_45px_rgba(41,107,225,0.35)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_55px_rgba(41,107,225,0.42)]"
+            className="flex cursor-pointer h-13 w-13 items-center justify-center rounded-full bg-blue-600 text-white shadow-[0_18px_45px_rgba(41,107,225,0.35)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_55px_rgba(41,107,225,0.42)]"
           >
             <svg
               viewBox="0 0 24 24"
