@@ -57,7 +57,7 @@ export default function CarwashHero() {
         <div className="flex flex-1 items-center">
           <div className="w-full max-w-[660px] pb-12 sm:pb-16 lg:-translate-y-3 lg:pb-8">
             {/* Heading */}
-            <h1 className="max-w-[650px] text-[2.9rem] font-bold leading-[0.95] tracking-[-0.05em] text-white sm:text-[4rem] lg:text-[4.8rem] xl:text-[4rem]">
+            <h1 className="max-w-[650px] text-[2.9rem] font-bold leading-[0.95] tracking-[-0.05em] text-white sm:text-5xl md:text-6xl lg:text-7xl">
               Elevate every
               <span className="relative mt-2 block w-fit">
                 <span className="bg-gradient-to-r from-[#70b7ff] via-[#1473ff] to-[#8fdcff] bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(37,99,235,0.35)]">

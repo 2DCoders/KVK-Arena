@@ -1,16 +1,10 @@
 // import Circle from "../../circle";
 // import LineBanner from "../../line-banner";
 import { useLayoutEffect, useState, useEffect } from "react";
-import CarwashHeader from "@/components/header/carwash";
-import CarwashHero from "../../hero/carwash";
-import CarwashServices from "../../services/carwash";
-import CarwashAdd1 from "../../features/carwash";
-import CarwashPricing from "../../pricing/carwash";
-import CarwashAdd2 from "../../features/carwash/adds";
-import CarwashFooter from "@/components/footer/carwash";
-import CarwashPackages from "../../packages/carwash";
 import CafeHero from "../../hero/cafe";
 import CafeHeader from "@/components/header/cafe";
+import CafeAdds1 from "../../features/cafe/adds";
+import CafeServices from "../../services/cafe";
 
 export default function CafeHome() {
   useLayoutEffect(() => {
@@ -48,6 +42,8 @@ export default function CafeHome() {
     <>
       <CafeHeader />
       <CafeHero />
+      <CafeServices />
+      <CafeAdds1 />
 
       <div className="fixed bottom-6 right-4 z-50 flex items-end gap-3 sm:bottom-8 sm:right-6">
         <div className="flex min-w-18 flex-col items-center rounded-full border border-white/30 bg-slate-950/85 px-3 py-2 text-white shadow-[0_18px_45px_rgba(15,23,42,0.32)] backdrop-blur-md">
