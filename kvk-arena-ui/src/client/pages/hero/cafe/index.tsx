@@ -4,7 +4,6 @@ import {
   Clock3,
   Coffee,
   MapPin,
-  Sparkles,
   Star,
 } from "lucide-react";
 
@@ -25,11 +24,11 @@ export default function CafeHero() {
 
       {/* Image overlays */}
       <div className="absolute inset-0 -z-20 bg-gradient-to-r from-[#1d0e07]/95 via-[#2a160b]/72 to-[#2a160b]/15" />
-      <div className="absolute inset-0 -z-20 bg-gradient-to-t from-[#170a04]/85 via-transparent to-[#2a160b]/20" />
+      {/* <div className="absolute inset-0 -z-20 bg-gradient-to-t from-[#170a04]/85 via-transparent to-[#2a160b]/20" /> */}
 
       {/* Soft brown lighting effects */}
       <div className="absolute -left-28 top-20 -z-10 h-80 w-80 rounded-full bg-amber-500/15 blur-[110px]" />
-      <div className="absolute bottom-0 right-0 -z-10 h-96 w-96 rounded-full bg-orange-300/10 blur-[130px]" />
+      {/* <div className="absolute bottom-0 right-0 -z-10 h-96 w-96 rounded-full bg-orange-300/10 blur-[130px]" /> */}
 
       {/* Decorative grain */}
       <div
@@ -66,7 +65,7 @@ export default function CafeHero() {
               <button
                 type="button"
                 onClick={scrollToMenu}
-                className="group inline-flex items-center justify-center gap-2 rounded-full bg-[#d99a52] px-7 py-3.5 text-sm font-bold text-[#2b160b] shadow-[0_16px_40px_rgba(217,154,82,0.3)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#e8ad68] focus:outline-none focus:ring-4 focus:ring-amber-300/30"
+                className="group cursor-pointer inline-flex items-center justify-center gap-2 rounded-full bg-[#d99a52] px-7 py-3.5 text-sm font-bold text-[#2b160b] shadow-[0_16px_40px_rgba(217,154,82,0.3)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#e8ad68] focus:outline-none focus:ring-4 focus:ring-amber-300/30"
               >
                 Explore Our Menu
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
@@ -74,7 +73,7 @@ export default function CafeHero() {
 
               <button
                 type="button"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition duration-300 hover:-translate-y-0.5 hover:border-white/40 hover:bg-white/15"
+                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition duration-300 hover:-translate-y-0.5 hover:border-white/40 hover:bg-white/15"
               >
                 <MapPin className="h-4 w-4 text-amber-300" />
                 Visit Our Cafe
@@ -152,7 +151,7 @@ export default function CafeHero() {
                     type="button"
                     onClick={scrollToMenu}
                     aria-label="View cafe menu"
-                    className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#321a0d] transition duration-300 hover:scale-105 hover:bg-amber-100"
+                    className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-white text-[#321a0d] transition duration-300 hover:scale-105 hover:bg-amber-100"
                   >
                     <ArrowRight className="h-5 w-5" />
                   </button>
