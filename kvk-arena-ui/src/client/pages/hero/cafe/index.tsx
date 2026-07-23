@@ -12,7 +12,7 @@ export default function CafeHero() {
     document
       .getElementById("cafe-menu")
       ?.scrollIntoView({ behavior: "smooth" });
-  };
+  }; 
 
   return (
     <section className="relative isolate min-h-[92vh] overflow-hidden bg-[#2b170d]">
@@ -23,11 +23,11 @@ export default function CafeHero() {
       />
 
       {/* Image overlays */}
-      <div className="absolute inset-0 -z-20 bg-gradient-to-r from-[#1d0e07]/95 via-[#2a160b]/72 to-[#2a160b]/15" />
+      <div className="absolute inset-0 -z-20 bg-gradient-to-r from-[#1d0e07]/95 via-[#2a160b]/72 to-[#2a160b]/5" />
       {/* <div className="absolute inset-0 -z-20 bg-gradient-to-t from-[#170a04]/85 via-transparent to-[#2a160b]/20" /> */}
 
       {/* Soft brown lighting effects */}
-      <div className="absolute -left-28 top-20 -z-10 h-80 w-80 rounded-full bg-amber-500/15 blur-[110px]" />
+      <div className="absolute -left-28 top-20 -z-10 h-80 w-80 rounded-full bg-amber-500/35 blur-[110px]" />
       {/* <div className="absolute bottom-0 right-0 -z-10 h-96 w-96 rounded-full bg-orange-300/10 blur-[130px]" /> */}
 
       {/* Decorative grain */}
