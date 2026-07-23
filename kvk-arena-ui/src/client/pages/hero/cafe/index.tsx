@@ -10,7 +10,7 @@ import {
 export default function CafeHero() {
   const scrollToMenu = () => {
     document
-      .getElementById("cafe-menu")
+      .getElementById("menu")
       ?.scrollIntoView({ behavior: "smooth" });
   }; 
 
