@@ -101,7 +101,7 @@ export default function CarwashHeader() {
             <button
               type="button"
               onClick={() => navigate("/")}
-              className="rounded-full px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-[#31708E]/20 hover:text-white"
+              className="rounded-full px-4 py-2 cursor-pointer text-sm font-medium text-slate-200 transition hover:bg-[#31708E]/20 hover:text-white"
             >
               Main Arena
             </button>
