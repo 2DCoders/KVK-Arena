@@ -7,6 +7,7 @@ import BadmintonHome from "./client/pages/home/badminton";
 import GamingHome from "./client/pages/home/gaming";
 import CarwashHome from "./client/pages/home/carwash";
 import CafeHome from "./client/pages/home/cafe";
+import Sample from "./client/sample";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
       <Route path="/badminton" element={<BadmintonHome />} />
       <Route path="/gaming" element={<GamingHome />} />
       <Route path="/cafe" element={<CafeHome />} />
+      <Route path="/sample" element={<Sample />} />
     </Routes>
   )
 }
