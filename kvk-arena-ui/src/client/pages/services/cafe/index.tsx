@@ -14,7 +14,7 @@ import { useEffect, useRef } from "react";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const FRAME_COUNT = 10;
+const FRAME_COUNT = 15;
 
 const getFramePath = (frame: number) =>
   `/coffee-sequence/coffee-${String(frame).padStart(3, "0")}.webp`;
