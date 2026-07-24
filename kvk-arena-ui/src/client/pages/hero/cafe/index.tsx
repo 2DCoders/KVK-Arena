@@ -7,6 +7,8 @@ import {
   Star,
 } from "lucide-react";
 
+const MAP_URL = "https://maps.app.goo.gl/D9vcmL5WoNeubk1KA";
+
 export default function CafeHero() {
   const scrollToMenu = () => {
     document
@@ -71,6 +73,7 @@ export default function CafeHero() {
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
               </button>
 
+              <a href={MAP_URL} target="_blank" rel="noreferrer" className="text-slate-900">
               <button
                 type="button"
                 className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition duration-300 hover:-translate-y-0.5 hover:border-white/40 hover:bg-white/15"
@@ -78,6 +81,7 @@ export default function CafeHero() {
                 <MapPin className="h-4 w-4 text-amber-300" />
                 Visit Our Cafe
               </button>
+              </a>
             </div>
 
             {/* Highlights */}

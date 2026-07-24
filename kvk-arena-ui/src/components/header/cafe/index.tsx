@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
 import SignupModal from "@/components/signup/gym";
 
+const MAP_URL = "https://maps.app.goo.gl/D9vcmL5WoNeubk1KA";
+
 export default function CafeHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -140,7 +142,7 @@ export default function CafeHeader() {
 
           {/* Explore button */}
           <div className="relative z-10 hidden lg:block">
-            <a href="#visit" className="text-slate-900">
+            <a href={MAP_URL} target="_blank" rel="noreferrer" className="text-slate-900">
               <button
                 type="button"
                 className="cursor-pointer rounded-full border border-white/30 bg-white px-7 py-2.5 text-sm font-extrabold text-slate-900 transition hover:-translate-y-0.5 hover:shadow-lg"
@@ -252,7 +254,9 @@ export default function CafeHeader() {
             </a>
 
             <a
-              href="#visit"
+              href={MAP_URL}
+              target="_blank"
+              rel="noreferrer"
               onClick={closeMobileMenu}
               className="mt-6 flex w-fit cursor-pointer items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-extrabold text-black transition hover:-translate-y-0.5 hover:bg-[#2158bc] hover:text-white hover:shadow-[0_16px_36px_rgba(41,107,225,0.35)]"
             >
