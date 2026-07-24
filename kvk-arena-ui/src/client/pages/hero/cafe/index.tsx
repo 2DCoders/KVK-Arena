@@ -83,7 +83,7 @@ export default function CafeHero() {
               </button>
               </a>
             </div>
-
+  
             {/* Highlights */}
             <div className="mt-10 flex flex-wrap gap-x-7 gap-y-4 border-t border-white/15 pt-7">
               <div className="flex items-center gap-3">
