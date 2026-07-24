@@ -2,6 +2,7 @@ import Girl from "@/assets/coffee-girl.png";
 
 import {
   ArrowRight,
+  Check,
   ChevronRight,
   Clock3,
   Coffee,
@@ -11,11 +12,12 @@ import {
   Sparkles,
   Star,
   Users,
+  X,
 } from "lucide-react";
-
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { createPortal } from "react-dom";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -24,17 +26,39 @@ const popularChoices = [
     id: 1,
     name: "Classic Breakfast",
     description: "Eggs, sausages, toast, roasted tomatoes and fresh coffee.",
+    fullDescription:
+      "A complete breakfast prepared for a satisfying start to your morning. It includes freshly cooked eggs, grilled sausages, toasted bread, roasted tomatoes and a carefully brewed cup of coffee.",
     price: "LKR 1,850",
     category: "Best Seller",
+    preparationTime: "15–20 min",
+    serving: "1 person",
+    includes: [
+      "Two freshly cooked eggs",
+      "Grilled breakfast sausages",
+      "Buttered toast",
+      "Roasted tomatoes",
+      "Freshly brewed coffee",
+    ],
     image:
       "https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?auto=format&fit=crop&w=900&q=85",
   },
   {
     id: 2,
     name: "Butter Croissant",
-    description: "Freshly baked croissant served with butter and fruit preserve.",
+    description:
+      "Freshly baked croissant served with butter and fruit preserve.",
+    fullDescription:
+      "A light and flaky butter croissant baked until golden, then served warm with creamy butter and a seasonal fruit preserve.",
     price: "LKR 750",
     category: "Freshly Baked",
+    preparationTime: "5–10 min",
+    serving: "1 person",
+    includes: [
+      "Fresh butter croissant",
+      "Creamy butter",
+      "Seasonal fruit preserve",
+      "Optional coffee pairing",
+    ],
     image:
       "https://images.unsplash.com/photo-1623334044303-241021148842?auto=format&fit=crop&w=900&q=85",
   },
@@ -42,8 +66,19 @@ const popularChoices = [
     id: 3,
     name: "Avocado Toast",
     description: "Sourdough toast, smashed avocado, poached egg and herbs.",
+    fullDescription:
+      "Toasted sourdough topped with seasoned avocado, a soft poached egg and fresh herbs for a balanced and refreshing breakfast.",
     price: "LKR 1,450",
     category: "Healthy Choice",
+    preparationTime: "10–15 min",
+    serving: "1 person",
+    includes: [
+      "Toasted sourdough",
+      "Seasoned avocado",
+      "Poached egg",
+      "Fresh herbs",
+      "Light seasoning",
+    ],
     image:
       "https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?auto=format&fit=crop&w=900&q=85",
   },
@@ -51,8 +86,18 @@ const popularChoices = [
     id: 4,
     name: "Pancake Stack",
     description: "Soft pancakes with berries, maple syrup and whipped cream.",
+    fullDescription:
+      "A warm stack of soft pancakes layered with maple syrup and finished with fresh berries and whipped cream.",
     price: "LKR 1,350",
     category: "Sweet Morning",
+    preparationTime: "15 min",
+    serving: "1 person",
+    includes: [
+      "Three soft pancakes",
+      "Fresh berries",
+      "Maple syrup",
+      "Whipped cream",
+    ],
     image:
       "https://images.unsplash.com/photo-1528207776546-365bb710ee93?auto=format&fit=crop&w=900&q=85",
   },
@@ -60,8 +105,19 @@ const popularChoices = [
     id: 5,
     name: "Breakfast Bagel",
     description: "Toasted bagel with egg, cheese, greens and creamy dressing.",
+    fullDescription:
+      "A toasted bagel filled with egg, melted cheese, crisp greens and a smooth house dressing.",
     price: "LKR 1,250",
     category: "Quick Bite",
+    preparationTime: "10–15 min",
+    serving: "1 person",
+    includes: [
+      "Toasted bagel",
+      "Cooked egg",
+      "Melted cheese",
+      "Fresh greens",
+      "House dressing",
+    ],
     image:
       "https://images.unsplash.com/photo-1550507992-eb63ffee0847?auto=format&fit=crop&w=900&q=85",
   },
@@ -69,16 +125,61 @@ const popularChoices = [
     id: 6,
     name: "French Toast",
     description: "Golden brioche, cinnamon, caramelised banana and honey.",
+    fullDescription:
+      "Golden brioche French toast flavoured with cinnamon and topped with caramelised banana and a gentle drizzle of honey.",
     price: "LKR 1,400",
     category: "Cafe Favourite",
+    preparationTime: "15–20 min",
+    serving: "1 person",
+    includes: [
+      "Golden brioche toast",
+      "Cinnamon",
+      "Caramelised banana",
+      "Honey drizzle",
+    ],
     image:
       "https://images.unsplash.com/photo-1484723091739-30a097e8f929?auto=format&fit=crop&w=900&q=85",
   },
 ];
 
+type PopularChoice = (typeof popularChoices)[number];
+
 export default function CafeJourney() {
+  const [selectedChoice, setSelectedChoice] = useState<PopularChoice | null>(
+    null,
+  );
+
   const horizontalSectionRef = useRef<HTMLDivElement>(null);
   const horizontalTrackRef = useRef<HTMLDivElement>(null);
+
+  const handleOpenDetails = (item: PopularChoice) => {
+    setSelectedChoice(item);
+  };
+
+  const handleCloseDetails = () => {
+    setSelectedChoice(null);
+  };
+
+  useEffect(() => {
+  if (!selectedChoice) return;
+
+  const previousOverflow = document.body.style.overflow;
+
+  document.body.style.overflow = "hidden";
+
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+      setSelectedChoice(null);
+    }
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+
+  return () => {
+    document.body.style.overflow = previousOverflow;
+    window.removeEventListener("keydown", handleKeyDown);
+  };
+}, [selectedChoice]);
 
   useEffect(() => {
     const section = horizontalSectionRef.current;
@@ -121,7 +222,7 @@ export default function CafeJourney() {
   return (
     <section
       id="breakfast"
-      className="relative overflow-hidden bg-[#120c08] text-white"
+      className="relative overflow-hidden bg-[#21130c] text-white"
     >
       {/* Hero area */}
       <div className="relative min-h-screen overflow-hidden">
@@ -155,45 +256,6 @@ export default function CafeJourney() {
               plates, every morning is crafted to feel warm, relaxed and
               memorable.
             </p>
-
-            <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
-              <button
-                type="button"
-                className="group inline-flex h-13 items-center justify-center gap-3 rounded-2xl bg-[#c9783d] px-7 py-4 text-sm font-bold text-white shadow-[0_18px_45px_rgba(181,95,42,0.25)] transition duration-300 hover:-translate-y-1 hover:bg-[#dc8b4d]"
-              >
-                Explore breakfast
-                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-              </button>
-
-              <div className="flex items-center gap-3">
-                <div className="flex -space-x-3">
-                  {[
-                    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
-                    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80",
-                    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80",
-                  ].map((avatar) => (
-                    <img
-                      key={avatar}
-                      src={avatar}
-                      alt=""
-                      className="h-10 w-10 rounded-full border-2 border-[#120c08] object-cover"
-                    />
-                  ))}
-                </div>
-
-                <div>
-                  <p className="text-sm font-bold text-[#fff8f0]">
-                    300+ happy guests
-                  </p>
-
-                  <div className="mt-1 flex items-center gap-1 text-xs text-[#bca99b]">
-                    <Star className="h-3.5 w-3.5 fill-[#f0a548] text-[#f0a548]" />
-                    <span className="font-semibold text-[#f4d3b4]">4.9</span>
-                    <span>customer rating</span>
-                  </div>
-                </div>
-              </div>
-            </div>
 
             {/* Mini information */}
             <div className="mt-11 grid max-w-lg grid-cols-2 gap-4">
@@ -324,7 +386,7 @@ export default function CafeJourney() {
       {/* Horizontal choices section */}
       <div
         ref={horizontalSectionRef}
-        className="relative min-h-screen overflow-hidden border-t border-white/10 bg-[#0d0906]"
+        className="relative min-h-screen overflow-hidden border-t border-white/10 bg-[#21130c]"
       >
         <div className="flex h-screen flex-col justify-center">
           {/* Title */}
@@ -394,9 +456,10 @@ export default function CafeJourney() {
                   </p>
 
                   <button
-                    type="button"
-                    className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-white transition hover:text-[#e59a61]"
-                  >
+  type="button"
+  onClick={() => handleOpenDetails(item)}
+  className="mt-5 inline-flex cursor-pointer items-center gap-2 text-sm font-bold text-white transition hover:text-[#e59a61]"
+>
                     View details
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </button>
@@ -439,6 +502,157 @@ export default function CafeJourney() {
           </div>
         </div>
       </div>
+
+      {selectedChoice &&
+  createPortal(
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 p-4 backdrop-blur-md sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="breakfast-modal-title"
+      onMouseDown={handleCloseDetails}
+    >
+      <div
+        className="relative flex max-h-[90vh] w-full max-w-5xl overflow-hidden rounded-[2rem] border border-white/10 bg-[#17100c] shadow-[0_35px_120px_rgba(0,0,0,0.7)]"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={handleCloseDetails}
+          aria-label="Close details"
+          className="absolute cursor-pointer right-4 top-4 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-black/50 text-white backdrop-blur-md transition hover:rotate-90 hover:border-[#d98745]/50 hover:bg-[#d98745]"
+        >
+          <X className="h-5 w-5" />
+        </button>
+
+        <div className="grid max-h-[90vh] w-full overflow-y-auto lg:grid-cols-[0.9fr_1.1fr] lg:overflow-hidden">
+          {/* Fixed image area */}
+          <div className="relative min-h-[300px] overflow-hidden sm:min-h-[400px] lg:min-h-[650px]">
+            <img
+              src={selectedChoice.image}
+              alt={selectedChoice.name}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+
+            <div className="absolute inset-0 bg-gradient-to-t from-[#17100c] via-transparent to-black/20 lg:bg-gradient-to-r lg:from-transparent lg:to-[#17100c]/25" />
+
+            <div className="absolute left-5 top-5">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/45 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-white backdrop-blur-md">
+                <Sparkles className="h-3.5 w-3.5 text-[#e59a61]" />
+                {selectedChoice.category}
+              </span>
+            </div>
+
+            <div className="absolute bottom-6 left-6 right-6 lg:hidden">
+              <p className="text-sm font-bold uppercase tracking-[0.15em] text-[#e59a61]">
+                {selectedChoice.price}
+              </p>
+
+              <h3 className="mt-2 text-3xl font-black text-white">
+                {selectedChoice.name}
+              </h3>
+            </div>
+          </div>
+
+          {/* Scrollable details */}
+          <div className="overflow-y-auto px-6 py-8 sm:px-9 sm:py-10 lg:max-h-[90vh] lg:px-12 lg:py-14">
+            <div className="hidden lg:block">
+              <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#d8894d]">
+                <Coffee className="h-4 w-4" />
+                Breakfast favourite
+              </span>
+
+              <h3
+                id="breakfast-modal-title"
+                className="mt-4 pr-12 text-4xl font-black tracking-[-0.04em] text-white"
+              >
+                {selectedChoice.name}
+              </h3>
+
+              <p className="mt-3 text-xl font-black text-[#e59a61]">
+                {selectedChoice.price}
+              </p>
+            </div>
+
+            <p className="mt-6 text-sm leading-7 text-[#c6b4a7] sm:text-base">
+              {selectedChoice.fullDescription}
+            </p>
+
+            <div className="mt-8 grid grid-cols-2 gap-4">
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#d98745]/15 text-[#e59a61]">
+                  <Clock3 className="h-5 w-5" />
+                </div>
+
+                <p className="mt-4 text-xs uppercase tracking-[0.14em] text-[#9f8b7c]">
+                  Preparation
+                </p>
+
+                <p className="mt-1 text-sm font-bold text-white">
+                  {selectedChoice.preparationTime}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#d98745]/15 text-[#e59a61]">
+                  <Users className="h-5 w-5" />
+                </div>
+
+                <p className="mt-4 text-xs uppercase tracking-[0.14em] text-[#9f8b7c]">
+                  Serving
+                </p>
+
+                <p className="mt-1 text-sm font-bold text-white">
+                  {selectedChoice.serving}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-9">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#d8894d]">
+                What is included
+              </p>
+
+              <div className="mt-4 space-y-3">
+                {selectedChoice.includes.map((item) => (
+                  <div
+                    key={item}
+                    className="flex items-center gap-3 rounded-xl border border-white/[0.07] bg-white/[0.025] px-4 py-3"
+                  >
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#d98745]/15 text-[#e59a61]">
+                      <Check className="h-4 w-4" strokeWidth={2.5} />
+                    </div>
+
+                    <p className="text-sm text-[#d5c5b9]">{item}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-9 rounded-2xl border border-[#d98745]/20 bg-[#d98745]/[0.08] p-5">
+              <div className="flex items-start gap-4">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#d98745]/15 text-[#e59a61]">
+                  <Coffee className="h-5 w-5" />
+                </div>
+
+                <div>
+                  <p className="font-bold text-white">
+                    Perfect with fresh coffee
+                  </p>
+
+                  <p className="mt-2 text-sm leading-6 text-[#bda99b]">
+                    Pair this breakfast with an espresso, cappuccino or iced
+                    coffee for a complete cafe experience.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  )}
     </section>
   );
 }

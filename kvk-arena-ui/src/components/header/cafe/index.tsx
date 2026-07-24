@@ -83,7 +83,7 @@ export default function CafeHeader() {
         <div
           className={
             isScrolled
-              ? "relative mx-auto flex h-16 max-w-295 items-center justify-between overflow-hidden rounded-full border border-[#31708E]/40 bg-black/75 px-4 py-1.5 shadow-lg backdrop-blur-md transition-all duration-500 lg:h-20 lg:px-8 lg:py-2"
+              ? "relative mx-auto flex h-16 max-w-295 items-center justify-between overflow-hidden rounded-full border border-[#31708E]/40 bg-[linear-gradient(135deg,#180B05_0%,#3A1B0E_30%,#6A391D_65%,#D09A60_100%)] px-4 py-1.5 shadow-lg backdrop-blur-md transition-all duration-500 lg:h-20 lg:px-8 lg:py-2"
               : "relative mx-auto flex h-16 max-w-295 items-center justify-between overflow-hidden rounded-full border border-white/30 bg-[linear-gradient(135deg,#180B05_0%,#3A1B0E_30%,#6A391D_65%,#D09A60_100%)] shadow-[0_18px_50px_rgba(25,10,3,0.22)] backdrop-blur-2xl px-4 py-1.5 backdrop-blur-2xl transition-all duration-500 lg:h-20 lg:px-8 lg:py-2"
           }
         >
@@ -133,7 +133,7 @@ export default function CafeHeader() {
 
             <a href="#">
               <span className="cursor-pointer truncate text-xs font-black tracking-wide text-white sm:text-sm lg:text-xl">
-                Cafe
+                Cafe Bii
               </span>
             </a>
           </div>
@@ -208,7 +208,7 @@ export default function CafeHeader() {
               />
 
               <span className="truncate text-xs font-black tracking-wide text-white sm:text-sm lg:text-xl">
-                Cafe
+                Cafe Bii
               </span>
             </a>
 

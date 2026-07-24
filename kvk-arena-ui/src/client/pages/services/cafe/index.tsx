@@ -284,7 +284,7 @@ export default function CafeServices() {
       </div>
 
       {/* Scroll animation area */}
-      <div ref={animationSectionRef} className="relative mt-12 min-h-[50vh]">
+      <div ref={animationSectionRef} className="relative mt-0 min-h-[50vh]">
         <div className="sticky top-0 flex min-h-screen items-center overflow-hidden py-10">
           <div className="relative z-10 mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-12">
             <div className="grid items-center gap-12 lg:grid-cols-[1fr_0.9fr_1fr] lg:gap-8 xl:gap-12">
