@@ -4,6 +4,8 @@ import {
   Dumbbell,
   HeartPulse,
   LoaderCircle,
+  ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 import {
   useCallback,
@@ -12,6 +14,7 @@ import {
   useRef,
   useState,
 } from "react";
+import MobileImg from "@/assets/gym-mobile-hero.png";
 
 const FRAME_COUNT = 151;
 
@@ -46,6 +49,7 @@ export default function GymHero() {
   const [loadedFrames, setLoadedFrames] = useState(0);
   const [isReady, setIsReady] = useState(false);
   const [isOpenSignup, setIsOpenSignup] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   const frameSources = useMemo(
     () =>
@@ -70,6 +74,22 @@ export default function GymHero() {
       memberEmail ||
       memberId,
   );
+
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+
+    const updateDevice = () => {
+      setIsDesktop(mediaQuery.matches);
+    };
+
+    updateDevice();
+    mediaQuery.addEventListener("change", updateDevice);
+
+    return () => {
+      mediaQuery.removeEventListener("change", updateDevice);
+    };
+  }, []);
 
   const drawFrame = useCallback((frameIndex: number) => {
     const canvas = canvasRef.current;
@@ -137,6 +157,11 @@ export default function GymHero() {
   }, []);
 
   useEffect(() => {
+    if (!isDesktop) {
+      setIsReady(true);
+      return;
+    }
+
     if (frameSources.length === 0) {
       console.error(
         "No gym frames were found. Check the frame folder and filename format.",
@@ -182,9 +207,11 @@ export default function GymHero() {
       cancelled = true;
       imagesRef.current = [];
     };
-  }, [drawFrame, frameSources]);
+  }, [drawFrame, frameSources, isDesktop]);
 
   useEffect(() => {
+    if (!isDesktop) return;
+
     const updateScrollProgress = () => {
       const section = sectionRef.current;
 
@@ -242,7 +269,7 @@ export default function GymHero() {
         window.cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [drawFrame, frameSources.length]);
+  }, [drawFrame, frameSources.length, isDesktop]);
 
   /*
    * Different content blocks enter and leave at different scroll points.
@@ -283,16 +310,108 @@ export default function GymHero() {
 
   return (
     <>
+      <SignupModal
+        open={isOpenSignup}
+        onClose={() => setIsOpenSignup(false)}
+      />
+
+      {/* ================= MOBILE HERO ================= */}
+      <section className="relative min-h-[100svh] overflow-hidden bg-[#05070b] lg:hidden">
+        <div className="absolute inset-0">
+          <img
+            src={MobileImg}
+            alt="KVK Arena gym training"
+            className="h-full w-full object-cover object-center"
+          />
+
+          <div className="absolute inset-0 bg-black/65" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(4,7,13,0.74)_0%,rgba(4,7,13,0.12)_30%,rgba(4,7,13,0.28)_52%,rgba(4,7,13,0.96)_86%,#05070b_100%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_34%,rgba(41,107,225,0.16),transparent_44%)]" />
+        </div>
+
+        <div className="pointer-events-none absolute -right-28 top-[28%] h-72 w-72 rounded-full bg-[#296BE1]/25 blur-[100px]" />
+        <div className="pointer-events-none absolute -left-28 bottom-28 h-64 w-64 rounded-full bg-[#296BE1]/15 blur-[90px]" />
+
+        <div className="relative z-10 flex min-h-[100svh] flex-col px-5 pb-7 pt-28">
+          <div className="flex justify-center">
+          </div>
+
+          <div className="mt-auto pb-5">
+            <div className="mb-4 flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-[#8fb6fa]" />
+              <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#8fb6fa]">
+                Built for your next level
+              </p>
+            </div>
+
+            <h1 className="max-w-[360px] text-[46px] font-black uppercase leading-[0.88] tracking-[-0.055em] text-white min-[390px]:text-[52px]">
+              Build your
+              <span className="block bg-gradient-to-r from-[#75a5f7] via-[#4380eb] to-[#296BE1] bg-clip-text text-transparent">
+                strongest
+              </span>
+              version.
+            </h1>
+
+            <p className="mt-5 max-w-[360px] text-[15px] leading-6 text-white/65">
+              Premium equipment, focused training and a motivating environment designed to help you become stronger every day.
+            </p>
+
+            <div className="mt-7 flex flex-col gap-3 min-[90px]:flex-row">
+              {!isLoggedIn && (
+                <button
+                  type="button"
+                  onClick={() => setIsOpenSignup(true)}
+                  className="group inline-flex h-13 flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-[#296BE1] px-5 text-sm font-extrabold text-white shadow-[0_18px_45px_rgba(41,107,225,0.35)] transition active:scale-[0.98]"
+                >
+                  Join Now
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </button>
+              )}
+
+              <a
+                href="#memberships"
+                className="inline-flex h-13 flex-1 items-center justify-center rounded-2xl border border-white/15 bg-white/10 px-5 text-sm font-bold text-white backdrop-blur-xl transition active:scale-[0.98]"
+              >
+                Memberships
+              </a>
+            </div>
+
+            <div className="mt-7 grid grid-cols-3 overflow-hidden rounded-2xl border border-white/10 bg-black/25 backdrop-blur-xl">
+              <div className="px-2 py-4 text-center">
+                <Dumbbell className="mx-auto h-5 w-5 text-[#77a5f5]" />
+                <p className="mt-2 text-sm font-black text-white">Pro</p>
+                <p className="mt-1 text-[9px] font-semibold uppercase tracking-[0.15em] text-white/40">Equipment</p>
+              </div>
+
+              <div className="border-x border-white/10 px-2 py-4 text-center">
+                <HeartPulse className="mx-auto h-5 w-5 text-[#77a5f5]" />
+                <p className="mt-2 text-sm font-black text-white">Elite</p>
+                <p className="mt-1 text-[9px] font-semibold uppercase tracking-[0.15em] text-white/40">Training</p>
+              </div>
+
+              <div className="px-2 py-4 text-center">
+                <ShieldCheck className="mx-auto h-5 w-5 text-[#77a5f5]" />
+                <p className="mt-2 text-sm font-black text-white">Daily</p>
+                <p className="mt-1 text-[9px] font-semibold uppercase tracking-[0.15em] text-white/40">Progress</p>
+              </div>
+            </div>
+
+            <div className="mt-5 flex items-center justify-center gap-3">
+              <span className="h-px w-8 bg-white/20" />
+              <span className="text-[9px] font-bold uppercase tracking-[0.28em] text-white/35">
+                Scroll to explore
+              </span>
+              <span className="h-px w-8 bg-white/20" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= DESKTOP SCROLL HERO ================= */}
       <section
         ref={sectionRef}
-        className="relative h-[500vh] bg-[#05070b]"
+        className="relative hidden h-[500vh] bg-[#05070b] lg:block"
       >
-        <SignupModal
-                open={isOpenSignup}
-                onClose={() =>
-                  setIsOpenSignup(false)
-                }
-              />
         <div className="sticky top-0 h-screen overflow-hidden">
           {/* Scroll-controlled image sequence */}
           <div

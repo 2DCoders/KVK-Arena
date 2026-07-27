@@ -409,6 +409,7 @@ useEffect(() => {
             shadow-[0_30px_80px_rgba(0,0,0,0.65)]
             backdrop-blur-xl
             transition-transform duration-500
+            overflow-hidden
             ease-[cubic-bezier(0.22,1,0.36,1)]
             ${
               mobileMenuOpen

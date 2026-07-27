@@ -197,7 +197,7 @@ export default function Header() {
       >
         <aside
           onClick={(event) => event.stopPropagation()}
-          className={`absolute right-0 top-0 h-full w-72 border-l border-white/12 bg-white/95 p-6 shadow-2xl backdrop-blur-md transition-transform duration-300 ${
+          className={`absolute right-0 top-0 h-full w-72 overflow-hi border-l border-white/12 bg-white/95 p-6 shadow-2xl backdrop-blur-md transition-transform duration-300 ${
             mobileMenuOpen
               ? "translate-x-0"
               : "translate-x-full"
