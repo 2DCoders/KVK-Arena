@@ -484,7 +484,7 @@ export default function GymHero() {
           >
             <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-12">
               <div className="max-w-2xl">
-                <h1 className="max-w-2xl text-5xl font-black uppercase leading-[0.9] tracking-[-0.055em] text-white sm:text-7xl lg:text-[92px]">
+                <h1 className="max-w-2xl text-5xl font-black uppercase leading-[0.9] tracking-[-0.055em] text-white sm:text-7xl lg:text-8xl">
                   Build your
                   <span className="block text-[#4d87ed]">
                     strongest
