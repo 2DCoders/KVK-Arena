@@ -2,10 +2,8 @@ import {
   ArrowRight,
   Check,
   Droplets,
-  Gauge,
   LoaderCircle,
   ShieldCheck,
-  Sparkles,
 } from "lucide-react";
 import {
   useCallback,
