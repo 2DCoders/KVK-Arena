@@ -67,7 +67,7 @@ export default function GamingHero() {
 
   const scrollToBooking = () => {
     document
-      .getElementById("gaming-booking")
+      .getElementById("bookings")
       ?.scrollIntoView({
         behavior: "smooth",
       });
