@@ -11,6 +11,7 @@ import Trainers from "../../trainers";
 import GymFeatures from "../../features/gym";
 import GymFooter from "@/components/footer/gym";
 import SaunaPage from "../../sauna";
+import GymScrollServices from "@/client/GymScrollServices";
 
 
 export default function GymHome() {
@@ -56,6 +57,8 @@ export default function GymHome() {
             </section>
             <GymStepper />
 
+            <GymScrollServices />
+            
             <section id="trainers" className="relative overflow-hidden">
                 <Trainers />
             </section>
