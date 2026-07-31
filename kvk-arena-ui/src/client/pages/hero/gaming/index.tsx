@@ -557,18 +557,14 @@ export default function GamingHero() {
             <div className="max-w-[680px]">
 
               <h1 className="max-w-[670px] text-[3rem] font-black uppercase leading-[0.88] tracking-[-0.055em] text-white sm:text-7xl lg:text-[82px]">
-                Enter the
+                LEGENDS ARE
 
                 <span className="relative mt-2 block w-fit">
                   <span className="bg-gradient-to-r from-red-300 via-red-500 to-red-700 bg-clip-text text-transparent drop-shadow-[0_0_22px_rgba(239,68,68,0.35)]">
-                    Arena.
+                    MADE HERE !
                   </span>
 
                   <span className="absolute -bottom-2 left-1 h-[2px] w-28 bg-gradient-to-r from-red-300 via-red-600 to-transparent shadow-[0_0_14px_rgba(239,68,68,0.85)] sm:w-40" />
-                </span>
-
-                <span className="mt-4 block">
-                  Prove your skills.
                 </span>
               </h1>
 
