@@ -13,7 +13,7 @@ import {
   useState,
 } from "react";
 
-const FRAME_COUNT = 151;
+const FRAME_COUNT = 260;
 
 const getFramePath = (frame: number) => {
   const frameNumber = String(frame).padStart(3, "0");

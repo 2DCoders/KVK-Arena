@@ -16,7 +16,7 @@ import {
 } from "react";
 import MobileImg from "@/assets/gym-mobile-hero.png";
 
-const FRAME_COUNT = 151;
+const FRAME_COUNT = 254;
 
 const getFramePath = (frame: number) => {
   const frameNumber = String(frame).padStart(3, "0");
