@@ -575,13 +575,6 @@ export default function CafeHero() {
         >
           <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-12">
             <div className="max-w-2xl">
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#edb75d]/25 bg-black/20 px-4 py-2 backdrop-blur-md">
-                <Sparkles className="h-4 w-4 text-[#f1bd63]" />
-
-                <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#f4ce87]">
-                  Warmly brewed
-                </span>
-              </div>
 
               <h1 className="text-4xl font-black leading-[0.95] tracking-[-0.055em] text-white sm:text-6xl lg:text-[82px]">
                 TASTE THE
@@ -831,116 +824,6 @@ export default function CafeHero() {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Scroll indicator */}
-        <div
-          className={`
-            absolute bottom-8 left-1/2
-            z-30 hidden
-            -translate-x-1/2
-            flex-col items-center
-            gap-3 text-white/55
-            transition-opacity
-            duration-500
-            sm:flex
-            ${
-              scrollProgress > 0.08
-                ? "opacity-0"
-                : "opacity-100"
-            }
-          `}
-        >
-          <span className="text-[10px] font-semibold uppercase tracking-[0.24em]">
-            Scroll to explore
-          </span>
-
-          <div className="relative h-10 w-[2px] overflow-hidden rounded-full bg-white/15">
-            <div className="absolute left-0 top-0 h-4 w-full animate-[scrollLine_1.6s_ease-in-out_infinite] rounded-full bg-[#efb55d]" />
-          </div>
-        </div>
-
-        {/* Bottom progress */}
-        <div className="absolute bottom-0 left-0 z-30 h-[3px] w-full bg-white/10">
-          <div
-            className="h-full bg-gradient-to-r from-[#9a5b18] via-[#df9e3e] to-[#f0c56d]"
-            style={{
-              width: `${progressPercentage}%`,
-            }}
-          />
-        </div>
-
-        {/* Stage markers */}
-        <div className="absolute bottom-7 right-5 z-30 hidden items-center gap-3 lg:flex lg:right-10">
-          {[
-            {
-              label: "Welcome",
-              icon: Sparkles,
-              point: 0,
-            },
-            {
-              label: "Coffee",
-              icon: Coffee,
-              point: 0.3,
-            },
-            {
-              label: "Meals",
-              icon: UtensilsCrossed,
-              point: 0.58,
-            },
-            {
-              label: "Enjoy",
-              icon: Star,
-              point: 0.86,
-            },
-          ].map(
-            ({
-              label,
-              icon: Icon,
-              point,
-            }) => {
-              const active =
-                scrollProgress >= point;
-
-              return (
-                <div
-                  key={label}
-                  className={`
-                    flex items-center gap-2
-                    transition
-                    duration-300
-                    ${
-                      active
-                        ? "text-[#efb55d]"
-                        : "text-white/35"
-                    }
-                  `}
-                >
-                  <div
-                    className={`
-                      flex h-8 w-8
-                      items-center
-                      justify-center
-                      rounded-full
-                      border
-                      backdrop-blur-md
-                      ${
-                        active
-                          ? "border-[#efb55d]/40 bg-[#d89334]/15"
-                          : "border-white/10 bg-black/20"
-                      }
-                    `}
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                  </div>
-
-                  <span className="hidden text-[10px] font-bold uppercase tracking-[0.16em] xl:block">
-                    {label}
-                  </span>
-                </div>
-              );
-            },
-          )}
         </div>
       </div>
 
