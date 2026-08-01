@@ -147,6 +147,9 @@ badmintonInitializer.RegisterModule(builder.Services, builder.Configuration);
 var gamingInitializer  = new GamingModuleInitializer();
 gamingInitializer.RegisterModule(builder.Services, builder.Configuration);
 
+var carServiceInitializer  = new CarServiceModuleInitializer();
+carServiceInitializer.RegisterModule(builder.Services, builder.Configuration);
+
 
 
 
