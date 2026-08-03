@@ -6,21 +6,21 @@ namespace kvk.CarService.Domain;
 
 public class CarService : AuditableEntity
 {
-    [MaxLength(10)]
+    [MaxLength(100)]
     public required string Title { get; set; }
 
     public int? DurationInMinutes { get; set; } = 0;
     
     public ServiceCategory  ServiceCategory { get; set; }
     
-    [MaxLength(250)]
+    [MaxLength(1000)]
     public string? Description { get; set; }
 
     public decimal Price { get; set; } = 0;
     
     public byte[]  Image { get; set; } = [];
     
-    [MaxLength(250)]
+    [MaxLength(1000)]
     public string? Features { get; set; }
 
 

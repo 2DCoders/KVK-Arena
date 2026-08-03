@@ -8,13 +8,11 @@ public class CarWashCreateRequest
 
     public required string Title { get; set; }
     
-    [MaxLength(250)]
     public string? Description { get; set; }
 
     public decimal Price { get; set; } = 0;
     
     public IFormFile?  Image { get; set; } 
     
-    [MaxLength(250)]
     public string? Features { get; set; }
 }
