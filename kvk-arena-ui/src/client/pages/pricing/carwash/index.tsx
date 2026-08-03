@@ -7,7 +7,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import IMG1 from "@/assets/cut.png";
+import { getCarServices } from "@/services/car-service-api";
 
 interface PricingItem {
   id: number;
@@ -17,49 +17,15 @@ interface PricingItem {
   image: string;
 }
 
-const pricingItems: PricingItem[] = [
-  {
-    id: 1,
-    title: "Premium Wash",
-    description:
-      "A complete exterior wash using premium cleaning products, careful hand washing, wheel cleaning and a clean finishing touch.",
-    price: 2500,
-    image: IMG1,
-  },
-  {
-    id: 2,
-    title: "Car Detailing",
-    description:
-      "Professional interior and exterior detailing designed to restore cleanliness, shine and comfort throughout your vehicle.",
-    price: 8500,
-    image: IMG1,
-  },
-  {
-    id: 3,
-    title: "Cut and Polish",
-    description:
-      "A professional paint correction treatment that reduces light scratches, swirl marks and oxidation while restoring a glossy finish.",
-    price: 12000,
-    image: IMG1,
-  },
-  {
-    id: 4,
-    title: "Interior Vacuum",
-    description:
-      "Thorough vacuum cleaning for seats, carpets, floor mats and difficult-to-reach areas to refresh your vehicle interior.",
-    price: 1800,
-    image: IMG1,
-  },
-];
-
 export default function CarwashPricing() {
   const [selectedItem, setSelectedItem] = useState<PricingItem | null>(null);
   const [showAll, setShowAll] = useState(false);
+  const [services, setServices] = useState<PricingItem[]>([])
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const visibleItems = showAll ? pricingItems : pricingItems.slice(0, 10);
-  const hasMoreItems = pricingItems.length > 10;
+  const visibleItems = showAll ? services : services.slice(0, 10);
+  const hasMoreItems = services.length > 10;
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("en-LK").format(price);
@@ -70,6 +36,27 @@ export default function CarwashPricing() {
       behavior: "smooth",
     });
   };
+
+  const fetchServices = async () => {
+  try {
+    const response = await getCarServices();
+
+    const data = response.data.map((item: any) => ({
+      ...item,
+      image: item.image
+        ? `data:image/jpeg;base64,${item.image}`
+        : "",
+    }));
+
+    setServices(data);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+  useEffect(() => {
+    fetchServices()
+  },[])
 
   useEffect(() => {
     document.body.style.overflow = selectedItem ? "hidden" : "";
