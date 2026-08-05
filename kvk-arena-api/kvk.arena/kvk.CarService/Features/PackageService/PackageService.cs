@@ -84,6 +84,7 @@ public class PackageService(CarServiceDbContext dbContext) : IPackageService
         // Update mapped services
         dbContext.PackageServices.RemoveRange(existingPackage.PackageServices);
 
+
         if (request.ServiceIds.Count > 0)
         {
             var validServiceIds = await dbContext.Services
@@ -93,13 +94,16 @@ public class PackageService(CarServiceDbContext dbContext) : IPackageService
 
             foreach (var serviceId in validServiceIds)
             {
-                existingPackage.PackageServices.Add(new Domain.PackageService
+               var newPackageService = new Domain.PackageService
                 {
                     Id = Guid.NewGuid(),
-                    PackageId = existingPackage.Id,
+                    PackageId = request.Id,
                     ServiceId = serviceId
-                });
+                };
+                dbContext.PackageServices.Add(newPackageService);
+                
             }
+            
         }
 
         dbContext.Packages.Update(existingPackage);
