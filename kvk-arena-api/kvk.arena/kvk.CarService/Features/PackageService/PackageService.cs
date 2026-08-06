@@ -207,10 +207,27 @@ public class PackageService(CarServiceDbContext dbContext) : IPackageService
     }
 
 
-    public async Task<List<CarWashPackagesResponseWithServices>> GetPackagesWithServicesAsync(
+    public async Task<CarWashAPackagesServicesCombineResponse> GetPackagesWithServicesAsync(
         CancellationToken cancellationToken = default)
     {
-        var results = await dbContext.Packages
+        var allServices = await dbContext.Services
+            .AsNoTracking()
+            .Where(s => s.ServiceCategory == ServiceCategory.CarWash)
+            .Select(s => new ServiceResponseWithoutImage
+            {
+                Id = s.Id,
+                Title = s.Title,
+                Description = s.Description,
+                DurationInMinutes = s.DurationInMinutes,
+                Price = s.Price,
+                Features = s.Features,
+                ServiceCategory = s.ServiceCategory
+            })
+            .ToListAsync(cancellationToken);
+        
+        
+        
+        var packagesWithServices = await dbContext.Packages
             .AsNoTracking()
             .Include(p => p.PackageServices)
             .ThenInclude(ps => ps.Service)
@@ -239,7 +256,13 @@ public class PackageService(CarServiceDbContext dbContext) : IPackageService
             })
             .ToListAsync(cancellationToken);
 
-        return results;
+        
+        return new CarWashAPackagesServicesCombineResponse
+        {
+            AllServices = allServices,
+            PackagesWithServices = packagesWithServices
+        };
+        
     }
 
 

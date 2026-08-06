@@ -2,6 +2,13 @@ using kvk.CarService.Enums;
 
 namespace kvk.CarService.Features.PackageService;
 
+public class CarWashAPackagesServicesCombineResponse
+{
+    public List<ServiceResponseWithoutImage>? AllServices { get; set; }
+
+    public List<CarWashPackagesResponseWithServices>? PackagesWithServices { get; set; }
+}
+
 public class CarWashPackagesResponseWithServices
 {
     public Guid Id { get; set; }

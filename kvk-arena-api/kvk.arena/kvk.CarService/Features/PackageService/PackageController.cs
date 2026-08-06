@@ -59,7 +59,7 @@ public class PackageController(IPackageService packageService) : ControllerBase
     }
 
     [HttpGet("with-services")]
-    public async Task<ActionResult<List<CarWashPackagesResponseWithServices>>> GetPackagesWithServices(
+    public async Task<ActionResult<CarWashAPackagesServicesCombineResponse>> GetPackagesWithServices(
         CancellationToken cancellationToken = default)
     {
         var packagesWithServices = await packageService.GetPackagesWithServicesAsync(cancellationToken);
