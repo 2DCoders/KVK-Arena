@@ -57,4 +57,12 @@ public class PackageController(IPackageService packageService) : ControllerBase
         }
         return Ok(package);
     }
+
+    [HttpGet("with-services")]
+    public async Task<ActionResult<List<CarWashPackagesResponseWithServices>>> GetPackagesWithServices(
+        CancellationToken cancellationToken = default)
+    {
+        var packagesWithServices = await packageService.GetPackagesWithServicesAsync(cancellationToken);
+        return Ok(packagesWithServices);
+    }
 }

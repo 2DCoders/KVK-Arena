@@ -14,4 +14,6 @@ public interface IPackageService
     Task<List<PackageResponse>> GetPackagesAsync(Guid packageId = default, CancellationToken cancellationToken = default);
 
     Task<PackageResponse?> GetPackageByIdAsync(Guid packageId, CancellationToken cancellationToken = default);
+    
+    Task<List<CarWashPackagesResponseWithServices>> GetPackagesWithServicesAsync(CancellationToken cancellationToken = default);
 }

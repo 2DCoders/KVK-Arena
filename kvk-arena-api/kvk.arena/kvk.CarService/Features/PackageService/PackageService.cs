@@ -1,15 +1,16 @@
 using kvk.BuildingBlocks.Common;
 using kvk.CarService.Domain;
+using kvk.CarService.Enums;
 using kvk.CarService.Features.CarWashService;
 using kvk.CarService.Interfaces;
-using kvk.Gaming;
 using Microsoft.EntityFrameworkCore;
 
 namespace kvk.CarService.Features.PackageService;
 
 public class PackageService(CarServiceDbContext dbContext) : IPackageService
 {
-    public async Task<Result> CreatePackageAsync(PackageCreateRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> CreatePackageAsync(PackageCreateRequest request,
+        CancellationToken cancellationToken = default)
     {
         byte[] imageBytes = [];
         if (request.Image is not null && request.Image.Length > 0)
@@ -56,7 +57,8 @@ public class PackageService(CarServiceDbContext dbContext) : IPackageService
         return Result.Success("Package created successfully");
     }
 
-    public async Task<Result> UpdatePackageAsync(PackageUpdateRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> UpdatePackageAsync(PackageUpdateRequest request,
+        CancellationToken cancellationToken = default)
     {
         var existingPackage = await dbContext.Packages
             .Include(p => p.PackageServices)
@@ -94,16 +96,14 @@ public class PackageService(CarServiceDbContext dbContext) : IPackageService
 
             foreach (var serviceId in validServiceIds)
             {
-               var newPackageService = new Domain.PackageService
+                var newPackageService = new Domain.PackageService
                 {
                     Id = Guid.NewGuid(),
                     PackageId = request.Id,
                     ServiceId = serviceId
                 };
                 dbContext.PackageServices.Add(newPackageService);
-                
             }
-            
         }
 
         dbContext.Packages.Update(existingPackage);
@@ -130,12 +130,13 @@ public class PackageService(CarServiceDbContext dbContext) : IPackageService
         return Result.Success("Package deleted successfully");
     }
 
-    public async Task<List<PackageResponse>> GetPackagesAsync(Guid packageId = default, CancellationToken cancellationToken = default)
+    public async Task<List<PackageResponse>> GetPackagesAsync(Guid packageId = default,
+        CancellationToken cancellationToken = default)
     {
         var query = dbContext.Packages
             .AsNoTracking()
             .Include(p => p.PackageServices)
-                .ThenInclude(ps => ps.Service)
+            .ThenInclude(ps => ps.Service)
             .AsQueryable();
 
         if (packageId != Guid.Empty)
@@ -167,12 +168,13 @@ public class PackageService(CarServiceDbContext dbContext) : IPackageService
         }).ToListAsync(cancellationToken);
     }
 
-    public async Task<PackageResponse?> GetPackageByIdAsync(Guid packageId, CancellationToken cancellationToken = default)
+    public async Task<PackageResponse?> GetPackageByIdAsync(Guid packageId,
+        CancellationToken cancellationToken = default)
     {
         var package = await dbContext.Packages
             .AsNoTracking()
             .Include(p => p.PackageServices)
-                .ThenInclude(ps => ps.Service)
+            .ThenInclude(ps => ps.Service)
             .FirstOrDefaultAsync(p => p.Id == packageId, cancellationToken);
 
         if (package is null)
@@ -203,4 +205,45 @@ public class PackageService(CarServiceDbContext dbContext) : IPackageService
             }).ToList()
         };
     }
+
+
+    public async Task<List<CarWashPackagesResponseWithServices>> GetPackagesWithServicesAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var results = await dbContext.Packages
+            .AsNoTracking()
+            .Include(p => p.PackageServices)
+            .ThenInclude(ps => ps.Service)
+            .Where(p => p.PackageServices.Any(ps => ps.Service.ServiceCategory == ServiceCategory.CarWash))
+            .Select(p => new CarWashPackagesResponseWithServices
+            {
+                Id = p.Id,
+                Title = p.Title,
+                Description = p.Description,
+                DurationInMinutes = p.DurationInMinutes,
+                BasPrice = p.BasPrice,
+                PricesWithoutDiscounts = p.PricesWithoutDiscounts,
+                IsActive = p.IsActive,
+                Services = p.PackageServices
+                    .Where(ps => ps.Service.ServiceCategory == ServiceCategory.CarWash)
+                    .Select(ps => new ServiceResponseWithoutImage
+                    {
+                        Id = ps.Service.Id,
+                        Title = ps.Service.Title,
+                        Description = ps.Service.Description,
+                        DurationInMinutes = ps.Service.DurationInMinutes,
+                        Price = ps.Service.Price,
+                        Features = ps.Service.Features,
+                        ServiceCategory = ps.Service.ServiceCategory
+                    }).ToList()
+            })
+            .ToListAsync(cancellationToken);
+
+        return results;
+    }
+
+
+
+
+   
 }
