@@ -2,6 +2,7 @@ using kvk.BuildingBlocks.Common;
 using kvk.Identity.Domain;
 using kvk.Identity.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Throw;
 
 namespace kvk.Identity.Features.Role;
 
@@ -179,7 +180,7 @@ public class RoleService
                 return Result.Failure("Role not found");
 
             // Check if role is assigned to staff
-            var hasStaffAssignments = await _db.Set<StaffRole>()
+            var hasStaffAssignments = await _db.Set<Domain.StaffRole>()
                 .AnyAsync(sr => sr.RoleId == id, cancellationToken);
             if (hasStaffAssignments)
                 return Result.Failure("Cannot delete role that is assigned to staff members");
@@ -194,6 +195,89 @@ public class RoleService
             return Result.Failure($"Failed to delete role: {ex.Message}");
         }
     }
+
+
+    /// <summary>
+    /// Add Permissions to the Roles
+    /// </summary>
+    public async Task<Result> AssignPermissionsToRoleAsync(Guid roleId, List<string> permissionIds,
+        CancellationToken cancellationToken = default)
+    {
+        
+        try
+        {
+            var role = await _db.Roles
+                .SingleOrDefaultAsync(r => r.Id == roleId, cancellationToken);
+
+            role.ThrowIfNull($"Role with ID {roleId} not found");
+
+            var permissions = await _db.ApplicationPermissions
+                .Where(p => permissionIds.Contains(p.Code))
+                .ToListAsync(cancellationToken);
+
+            if (permissions.Count != permissionIds.Count)
+                return Result.Failure("One or more permissions not found");
+
+            //For After
+            
+            // Remove existing permissions
+            // var existingPermissions = await _db.Set<RolePermission>()
+            //     .Where(rp => rp.RoleId == roleId)
+            //     .ToListAsync(cancellationToken);
+            // _db.Set<RolePermission>().RemoveRange(existingPermissions);
+
+            // Add new permissions
+            foreach (var permission in permissions)
+            {
+                var rolePermission = new RolePermission
+                {
+                    RoleId = roleId,
+                    Code = permission.Code,
+                    IsActive = true
+                };
+                _db.RolePermissions.Add(rolePermission);
+            }
+
+            await _db.SaveChangesAsync(cancellationToken);
+
+            return Result.Success($"Permissions assigned to role '{role.Name}' successfully");
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure($"Failed to assign permissions to role: {ex.Message}");
+        }
+    }
+    
+    /// <summary>
+    /// Get Permissions to  the specific Role
+    /// </summary>
+    public async Task<PermissionsForTheRoleResponse> GetPermissionsForTheRoleAsync(Guid roleId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var role = await _db.Roles
+                .SingleOrDefaultAsync(r => r.Id == roleId, cancellationToken);
+
+            role.ThrowIfNull($"Role with ID {roleId} not found");
+
+            var permissions = await _db.RolePermissions
+                .Where(rp => rp.RoleId == roleId)
+                .Select(rp => rp.Code)
+                .ToListAsync(cancellationToken);
+
+            return new PermissionsForTheRoleResponse
+            {
+                RoleId = roleId,
+                RoleName = role.Name,
+                Permissions = permissions
+            };
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Failed to get permissions for role: {ex.Message}", ex);
+        }
+    }
+
 
     /// <summary>
     /// Map Role entity to RoleResponse DTO.
@@ -211,4 +295,16 @@ public class RoleService
         };
     }
 }
+
+public class PermissionsForTheRoleResponse
+{
+    public Guid RoleId { get; set; }
+    
+    public string RoleName { get; set; }
+    
+    public List<string> Permissions { get; set; }
+    
+    
+}
+
 

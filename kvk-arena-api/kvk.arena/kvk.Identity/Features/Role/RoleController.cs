@@ -89,5 +89,23 @@ public class RoleController : ControllerBase
 
         return Ok(result);
     }
+
+
+    [HttpPost("assign-permissions-to-role")]
+    public async Task<IActionResult> AssignPermissionsToRoleAsync(Guid roleId, List<string> permissionIds,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _roleService.AssignPermissionsToRoleAsync(roleId, permissionIds, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet("get-permissions-by-role-id")]
+    public async Task<IActionResult> GetPermissionsByRoleIdAsync(Guid roleId,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _roleService.GetPermissionsForTheRoleAsync(roleId, cancellationToken);
+        return Ok(result);
+    }
+
 }
 
