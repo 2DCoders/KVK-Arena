@@ -255,6 +255,32 @@ public class CarWashOrderService(CarServiceDbContext db) : ICarWashOrderService
 
         return order;
     }
+    
+    
+
+    public async Task<Result> CompleteTheOrderAsync(Guid orderId,
+        CancellationToken cancellationToken = default)
+    {
+        
+        var order = await db.CarWashOrders
+            .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken);
+        
+        if (order is null)
+            return Result.Failure($"Car wash order with id {orderId} was not found.");
+        
+        
+        order.CarWashOrderStatus = CarWashOrderStatus.Completed;
+        order.IsPaid = true;
+        
+        //calculated spent time 
+        order.TotalMinutesSpent = DateTime.Now.Subtract(order.OrderDate).Minutes;
+        
+        await db.SaveChangesAsync(cancellationToken);
+
+        return Result.Success("Car wash order completed successfully.");
+        
+    }
+    
 
     private async Task<string> GenerateOrderNumberAsync(CancellationToken cancellationToken = default)
     {

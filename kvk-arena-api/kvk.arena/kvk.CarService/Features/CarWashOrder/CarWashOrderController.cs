@@ -45,8 +45,21 @@ public class CarWashOrderController(ICarWashOrderService orderService) : Control
 
         return Ok(result);
     }
-    
-    
+
+    [HttpPatch("update-status")]
+    public async Task<IActionResult> UpdateStatus(Guid orderId,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await orderService.CompleteTheOrderAsync(orderId, cancellationToken);
+        if (!result.Succeeded)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+
     [HttpGet]
     public async Task<ActionResult<List<CarWashOrderResponse>>> Get([FromQuery] Guid orderId = default,
         CancellationToken cancellationToken = default)
@@ -54,9 +67,10 @@ public class CarWashOrderController(ICarWashOrderService orderService) : Control
         var orders = await orderService.GetCarWashOrdersAsync(cancellationToken);
         return Ok(orders);
     }
-    
+
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<CarWashOrderResponse>> GetById(Guid id, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<CarWashOrderResponse>> GetById(Guid id,
+        CancellationToken cancellationToken = default)
     {
         var order = await orderService.GetCarWashOrderByIdAsync(id, cancellationToken);
         return Ok(order);
