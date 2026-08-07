@@ -17,6 +17,7 @@ using Serilog;
 using System.Text.Json.Serialization;
 using Newtonsoft.Json.Serialization;
 using kvk.BuildingBlocks.Common;
+using kvk.CarService;
 
 
 var builder = WebApplication.CreateBuilder(args);

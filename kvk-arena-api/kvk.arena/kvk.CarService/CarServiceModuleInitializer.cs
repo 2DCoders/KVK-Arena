@@ -1,13 +1,13 @@
 using kvk.BuildingBlocks.Interfaces;
-using kvk.CarService;
+using kvk.CarService.Features.CarWashOrder;
 using kvk.CarService.Features.CarWashService;
-using kvk.CarService.Features.PackageService;
 using kvk.CarService.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PackageService = kvk.CarService.Features.PackageService.PackageService;
 
-namespace kvk.Gaming;
+namespace kvk.CarService;
 
 public class CarServiceModuleInitializer : IModuleInitializer
 {
@@ -29,5 +29,6 @@ public class CarServiceModuleInitializer : IModuleInitializer
 
         services.AddScoped<ICarWashService, CarWashService>();
         services.AddScoped<IPackageService, PackageService>();
+        services.AddScoped<ICarWashOrderService,CarWashOrderService>();
     }
 }
