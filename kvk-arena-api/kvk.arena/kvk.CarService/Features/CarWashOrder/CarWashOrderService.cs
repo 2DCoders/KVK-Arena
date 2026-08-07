@@ -23,6 +23,7 @@ public class CarWashOrderService(CarServiceDbContext db) : ICarWashOrderService
             IsPaid = request.IsPaid,
             PaymentMethod = request.PaymentMethod,
             VehicleType = request.VehicleType,
+            VehicleNumber = request.VehicleNumber,
             CarWashOrderStatus = request.CarWashOrderStatus,
             TotalMinutesSpent = 0
         };
@@ -93,6 +94,7 @@ public class CarWashOrderService(CarServiceDbContext db) : ICarWashOrderService
         exist.CustomerName = request.CustomerName;
         exist.CustomerPhone = request.CustomerPhone;
         exist.VehicleType = request.VehicleType;
+        exist.VehicleNumber = request.VehicleNumber;
 
         exist.SubTotalAmount = request.SubTotalAmount;
         exist.Discount = request.Discount;
@@ -177,6 +179,7 @@ public class CarWashOrderService(CarServiceDbContext db) : ICarWashOrderService
                 CustomerName = order.CustomerName,
                 CustomerPhone = order.CustomerPhone,
                 VehicleType = order.VehicleType,
+                VehicleNumber = order.VehicleNumber,
                 TotalMinutesSpent = order.TotalMinutesSpent,
                 SubTotalAmount = order.SubTotalAmount,
                 Discount = order.Discount,
@@ -218,6 +221,7 @@ public class CarWashOrderService(CarServiceDbContext db) : ICarWashOrderService
                 CustomerName = order.CustomerName,
                 CustomerPhone = order.CustomerPhone,
                 VehicleType = order.VehicleType,
+                VehicleNumber = order.VehicleNumber,
                 TotalMinutesSpent = order.TotalMinutesSpent,
                 SubTotalAmount = order.SubTotalAmount,
                 Discount = order.Discount,

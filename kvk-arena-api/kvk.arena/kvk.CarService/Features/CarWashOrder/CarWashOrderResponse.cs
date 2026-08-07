@@ -16,6 +16,8 @@ public class CarWashOrderResponse
     public string? CustomerPhone { get; set; } =  string.Empty;
 
     public VehicleType VehicleType { get; set; }
+    public string? VehicleNumber { get; set; } =  string.Empty;
+
 
     public int TotalMinutesSpent { get; set; }
 

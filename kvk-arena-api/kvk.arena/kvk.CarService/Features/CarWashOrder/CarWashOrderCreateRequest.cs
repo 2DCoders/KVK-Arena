@@ -11,6 +11,9 @@ public class CarWashOrderCreateRequest
 
     public VehicleType VehicleType { get; set; }
     
+    public string? VehicleNumber { get; set; } =  string.Empty;
+
+    
     public decimal SubTotalAmount { get; set; }
 
     public decimal Discount { get; set; } = 0;

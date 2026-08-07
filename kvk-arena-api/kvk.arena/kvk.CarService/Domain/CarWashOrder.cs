@@ -18,6 +18,9 @@ public class CarWashOrder : AuditableEntity
 
     [MaxLength(10)]
     public string? CustomerPhone { get; set; } =  string.Empty;
+    
+    [MaxLength(15)]
+    public string? VehicleNumber { get; set; } =  string.Empty;
 
     public VehicleType VehicleType { get; set; }
 

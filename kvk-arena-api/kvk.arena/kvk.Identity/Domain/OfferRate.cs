@@ -23,7 +23,6 @@ public class OfferRate : AuditableEntity
     public decimal? RateRetail { get; set; } = int.MinValue;
 
     public decimal? Price { get; set; } = int.MinValue;
-
     public bool IsPurchaseRequired { get; set; } = false;
     
     public bool IsActive { get; set; } = true;
