@@ -158,7 +158,7 @@ public class KvkMemberService(IdentityApplicationDbContext db, ISmsService smsSe
             {
                 Id = Guid.NewGuid(),
                 MemberId = member.Id,
-                OfferId = offer.Id,
+                OfferRateId = offer.Id,
                 IsEligible = true,
             };
             _db.MemberEligibleOffers.Add(memberEligibleOffer);

@@ -5,6 +5,7 @@ public enum OfferType
     GeneralOffer = 1,
     SeasonalOffer = 2,
     MembershipOffer = 3,
-    SpecialOffer = 4
+    SpecialOffer = 4,
+    CouponCode = 5
     
 }

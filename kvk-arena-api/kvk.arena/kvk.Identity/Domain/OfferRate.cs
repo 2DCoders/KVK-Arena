@@ -28,4 +28,6 @@ public class OfferRate : AuditableEntity
     public bool IsActive { get; set; } = true;
     
     public OfferType OfferType { get; set; } = OfferType.GeneralOffer;
+    
+    public ICollection<MemberEligibleOffer>? EligibleOffers { get; set; } = new List<MemberEligibleOffer>();
 }

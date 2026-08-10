@@ -2,7 +2,7 @@ using kvk.Identity.Domain;
 
 namespace kvk.Identity.Features.OfferRate;
 
-public abstract class OfferRateCreateRequest
+public  class OfferRateCreateRequest
 {
     public string? OfferName { get; set; } = string.Empty;
 
