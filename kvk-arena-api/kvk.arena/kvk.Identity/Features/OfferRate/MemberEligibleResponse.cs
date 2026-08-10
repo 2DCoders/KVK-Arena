@@ -7,6 +7,7 @@ public class MemberEligibleResponse
     public Guid MemberId { get; set; }
     
     public required string UserName { get; set; }
+    public string PhoneNumber { get; set; }
     
     //this is only for the case when the offer is a coupon code, otherwise it will be null
     public string? CouponCode { get; set; }

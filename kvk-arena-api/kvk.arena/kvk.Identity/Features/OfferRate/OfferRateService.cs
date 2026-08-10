@@ -215,7 +215,8 @@ public class OfferRateService : IOfferRateService
         {
             Id = x.Id,
             MemberId = x.MemberId,
-            UserName = x.Member.UserName,
+            UserName = x.Member.FirstName + " " + x.Member.LastName,
+            PhoneNumber = x.Member.Phone,
             OfferRateId = x.OfferRateId,
             CouponCode = x.CouponCode,
             IsEligible = x.IsEligible,
