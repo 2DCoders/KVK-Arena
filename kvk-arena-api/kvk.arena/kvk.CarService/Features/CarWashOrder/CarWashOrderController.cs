@@ -1,3 +1,4 @@
+using Humanizer;
 using kvk.CarService.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -61,10 +62,10 @@ public class CarWashOrderController(ICarWashOrderService orderService) : Control
 
 
     [HttpGet]
-    public async Task<ActionResult<List<CarWashOrderResponse>>> Get([FromQuery] Guid orderId = default,
+    public async Task<ActionResult<List<CarWashOrderResponse>>> Get([FromQuery] Guid orderId = default,[FromQuery] DateTime dateTime = default,
         CancellationToken cancellationToken = default)
     {
-        var orders = await orderService.GetCarWashOrdersAsync(cancellationToken);
+        var orders = await orderService.GetCarWashOrdersAsync(dateTime,cancellationToken);
         return Ok(orders);
     }
 

@@ -168,7 +168,7 @@ public class CarWashOrderService(CarServiceDbContext db) : ICarWashOrderService
         return Result.Success("Car wash order deleted successfully.");
     }
 
-    public async Task<List<CarWashOrderResponse>> GetCarWashOrdersAsync(CancellationToken cancellationToken = default)
+    public async Task<List<CarWashOrderResponse>> GetCarWashOrdersAsync(DateTime dateTime,CancellationToken cancellationToken = default)
     {
         return await db.CarWashOrders
             .Select(order => new CarWashOrderResponse
@@ -206,6 +206,7 @@ public class CarWashOrderService(CarServiceDbContext db) : ICarWashOrderService
                     })
                     .ToList()
             })
+            .Where(order => order.OrderDate.Date == dateTime.Date)
             .ToListAsync(cancellationToken);
     }
 
