@@ -6,6 +6,7 @@ using kvk.Gym.Interfaces;
 using System.Security.Cryptography;
 using kvk.BuildingBlocks.Auth;
 using kvk.BuildingBlocks.Constants;
+using kvk.BuildingBlocks.Enums;
 using kvk.BuildingBlocks.Interfaces;
 using kvk.Gym.Enums;
 
@@ -109,7 +110,7 @@ public class MembershipService : IMembershipService
                 {
                     MembershipId = member.Id,
                     Amount = plan.Price,
-                    PaymentType = kvk.Gym.Enums.PaymentType.Cash,
+                    PaymentType = PaymentType.Cash,
                     PaymentStatus = kvk.Gym.Enums.PaymentStatus.Pending
                 };
 

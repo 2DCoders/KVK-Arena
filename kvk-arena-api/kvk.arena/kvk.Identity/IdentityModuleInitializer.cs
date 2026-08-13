@@ -48,6 +48,7 @@ public class IdentityModuleInitializer : IModuleInitializer
         services.AddScoped<IKvkMemberService, KvkMemberService>();
         services.AddScoped<IOfferRateService, OfferRateService>();
         services.AddScoped<ICustomerFeedBackService, CustomerFeedBackService>();
+        services.AddScoped<ICouponValidationService, CouponValidationService>();
         // JWT service from BuildingBlocks - simple dev implementation registered here
         services.AddSingleton<IJwtService, JwtService>();
         

@@ -20,6 +20,9 @@ public class BadmintonDbContext(
     public DbSet<CourtBooking> CourtBookings => Set<Domain.CourtBooking>();
     public DbSet<BookingHold> BookingHolds => Set<Domain.BookingHold>();
     public DbSet<BadmintonDayEnd> BadmintonDayEnds => Set<Domain.BadmintonDayEnd>();
+    
+    public DbSet<CourtBookingTemporary> CourtBookingTemporaries => Set<Domain.CourtBookingTemporary>();
+    public DbSet<CourtBookingTemporarySchedule> CourtBookingTemporarySchedules => Set<Domain.CourtBookingTemporarySchedule>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -36,6 +39,8 @@ public class BadmintonDbContext(
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(BadmintonDbContext).Assembly);
         
-  
+        modelBuilder.Entity<CourtBookingTemporarySchedule>()
+            .Property(x => x.DayOfWeek)
+            .HasConversion<string>();
     }
 }

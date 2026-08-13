@@ -19,16 +19,6 @@ public enum PaymentStatus
 }
 
 
-public enum PaymentType
-{
-    Cash = 1,
-    CreditCard = 2,
-    DebitCard = 3,
-    PayPal = 4
-}
-
-
-
 public enum Gender
 {
     Male = 1,

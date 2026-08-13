@@ -27,6 +27,26 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
         return MapToResponse(config);
     }
 
+    public async Task<List<CourtSlotsResponse>> GetSlotsByCourtIdAsync(Guid courtId, CancellationToken cancellationToken = default)
+    {
+        var allSlots =await _db.CourtSlots
+            .AsNoTracking()
+            .Where(x => x.CourtId == courtId)
+            .OrderBy(x => x.StartTime)
+            .Select(slot => new CourtSlotsResponse
+            {
+                SlotId = slot.Id,
+                CourtId = slot.CourtId,
+                StartTime = slot.StartTime,
+                EndTime = slot.EndTime,
+                Price = slot.Price,
+ 
+            }).ToListAsync(cancellationToken);
+        
+        return allSlots;
+      
+    }
+
     public async Task<IEnumerable<CourtSlotResponse>> GetByCourtIdAndDateAsync(Guid courtId, DateOnly date, CancellationToken cancellationToken = default)
     {
         var now =  DateTime.Now;

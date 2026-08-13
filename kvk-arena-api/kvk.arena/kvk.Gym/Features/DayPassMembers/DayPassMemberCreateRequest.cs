@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Enums;
 using kvk.Gym.Enums;
 
 namespace kvk.Gym.Features.DayPassMembers;

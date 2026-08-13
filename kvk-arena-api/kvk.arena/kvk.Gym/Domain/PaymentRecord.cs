@@ -1,4 +1,5 @@
 using kvk.BuildingBlocks.Common;
+using kvk.BuildingBlocks.Enums;
 
 namespace kvk.Gym.Domain;
 
@@ -13,7 +14,7 @@ public class PaymentRecord : AuditableEntity
 
     public decimal Amount { get; set; }
 
-    public Enums.PaymentType PaymentType { get; set; }
+    public PaymentType PaymentType { get; set; }
 
     public Enums.PaymentStatus PaymentStatus { get; set; }
 
