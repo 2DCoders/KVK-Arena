@@ -1,10 +1,12 @@
+using kvk.BuildingBlocks.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Identity.Features.OfferRate;
 
 [ApiController]
 [Route("api/identity/offer-rate")]
-public class OfferRateController(IOfferRateService offerRateService) : ControllerBase
+public class OfferRateController(IOfferRateService offerRateService, ICouponValidationService couponValidationService)
+    : ControllerBase
 {
     private readonly IOfferRateService _offerRateService = offerRateService;
 
@@ -87,5 +89,22 @@ public class OfferRateController(IOfferRateService offerRateService) : Controlle
     {
         var eligibleMembers = await _offerRateService.GetEligibleMembersAsync(offerRateId, memberId, cancellationToken);
         return Ok(eligibleMembers);
+    }
+
+    //module name eka badminton or gym kiyala ewpn @LordDaziya
+    [HttpGet("validate-coupons")]
+    public async Task<IActionResult> ValidateCoupons([FromQuery] Guid memberId, [FromQuery] string couponCode,
+        [FromQuery] decimal originalAmount, [FromQuery] string moduleName,
+        CancellationToken cancellationToken = default)
+    {
+        var result =
+            await couponValidationService.ValidateAndCalculateDiscountAsync(memberId, couponCode, originalAmount,
+                moduleName);
+        if (!result.IsValid)
+        {
+            return BadRequest(new { error = result.ErrorMessage });
+        }
+
+        return Ok(result);
     }
 }
