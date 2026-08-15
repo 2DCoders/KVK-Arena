@@ -23,19 +23,21 @@ public class CourtBookingTemporaryService
     {
         var response = new CourtBookingTemporaryAvailabilityCheckResponse();
 
+        int durationInWeeks = request.NumberOfSlots;
+        response.DurationInWeeks = durationInWeeks;
+
         int weeklySlotCount = request.DaysOfWeek.Count * request.SlotIds.Count;
-        if (weeklySlotCount == 0 || request.NumberOfSlots % weeklySlotCount != 0)
+        int totalSlots = durationInWeeks * weeklySlotCount;
+
+        if (weeklySlotCount == 0 || durationInWeeks <= 0)
         {
             response.IsAvailable = false;
             response.UnavailableSchedules.Add(new UnavailableScheduleResponse
             {
-                Message = "NumberOfSlots must be a multiple of the selected days and slots."
+                Message = "Please select valid days, slots, and duration."
             });
             return response;
         }
-
-        int durationInWeeks = request.NumberOfSlots / weeklySlotCount;
-        response.DurationInWeeks = durationInWeeks;
 
         // Check if court exists and get price
         var court = await _context.Courts.FirstOrDefaultAsync(c => c.Id == request.CourtId);
@@ -46,20 +48,14 @@ public class CourtBookingTemporaryService
             return response;
         }
 
-        response.OriginalAmount = court.PricePerSlot * request.NumberOfSlots;
+        response.OriginalAmount = court.PricePerSlot * totalSlots;
 
         // Check overlap
-        var existingSchedules = await _context.CourtBookingTemporarySchedules
+        var existingSchedules = await _context.Set<CourtBookingTemporarySchedule>()
             .Include(s => s.CourtBookingTemporary)
             .Where(s => s.CourtBookingTemporary.CourtId == request.CourtId
                         && s.CourtBookingTemporary.StartDate <= request.StartDate.AddDays(durationInWeeks * 7)
-                        && s.CourtBookingTemporary.StartDate.AddDays((s.CourtBookingTemporary.NumberOfSlots /
-                                                                      (s.CourtBookingTemporary.Schedules.Count == 0
-                                                                          ? 1
-                                                                          : (s.CourtBookingTemporary.Schedules.Count /
-                                                                             s.CourtBookingTemporary.Schedules
-                                                                                 .Select(x => x.SlotId).Distinct()
-                                                                                 .Count()))) * 7) >= request.StartDate)
+                        && s.CourtBookingTemporary.StartDate.AddDays(s.CourtBookingTemporary.NumberOfSlots * 7) >= request.StartDate)
             .ToListAsync();
 
         bool hasOverlap = false;
