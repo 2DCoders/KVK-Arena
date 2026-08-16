@@ -164,7 +164,10 @@ public class CouponValidationService : ICouponValidationService
         if (eligibleOffer != null)
         {
             eligibleOffer.IsRedeemed = true;
-            eligibleOffer.RedeemedDate = DateTime.UtcNow;
+            eligibleOffer.RedeemedDate = DateTime.SpecifyKind(
+                DateTime.UtcNow,
+                DateTimeKind.Unspecified
+            );
             await _context.SaveChangesAsync();
         }
     }
