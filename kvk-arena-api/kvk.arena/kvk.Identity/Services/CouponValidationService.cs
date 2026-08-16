@@ -18,7 +18,7 @@ public class CouponValidationService : ICouponValidationService
     {
         var eligibleOffer = await _context.MemberEligibleOffers
             .Include(x => x.OfferRate)
-            .FirstOrDefaultAsync(x => x.MemberId == memberId && x.CouponCode == couponCode);
+            .FirstOrDefaultAsync(x => x.CouponCode == couponCode);
 
         if (eligibleOffer == null)
         {
