@@ -93,12 +93,12 @@ public class OfferRateController(IOfferRateService offerRateService, ICouponVali
 
     //module name eka badminton or gym kiyala ewpn @LordDaziya
     [HttpGet("validate-coupons")]
-    public async Task<IActionResult> ValidateCoupons([FromQuery] Guid memberId, [FromQuery] string couponCode,
+    public async Task<IActionResult> ValidateCoupons([FromQuery] string couponCode,
         [FromQuery] decimal originalAmount, [FromQuery] string moduleName,
         CancellationToken cancellationToken = default)
     {
         var result =
-            await couponValidationService.ValidateAndCalculateDiscountAsync(memberId, couponCode, originalAmount,
+            await couponValidationService.ValidateAndCalculateDiscountAsync(couponCode, originalAmount,
                 moduleName);
         if (!result.IsValid)
         {

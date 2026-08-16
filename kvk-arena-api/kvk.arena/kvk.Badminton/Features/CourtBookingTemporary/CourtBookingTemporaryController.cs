@@ -14,7 +14,7 @@ public class CourtBookingTemporaryController : ControllerBase
     }
 
     [HttpPost("check-availability")]
-    public async Task<IActionResult> CheckAvailability([FromBody] CourtBookingTemporaryAvailabilityCheckRequest request, [FromQuery] Guid memberId, [FromQuery] string? couponCode = null)
+    public async Task<IActionResult> CheckAvailability([FromBody] CourtBookingTemporaryAvailabilityCheckRequest request, [FromQuery] string memberId, [FromQuery] string? couponCode = null)
     {
         var response = await _service.CheckAvailabilityAsync(request, memberId, couponCode);
         return Ok(response);

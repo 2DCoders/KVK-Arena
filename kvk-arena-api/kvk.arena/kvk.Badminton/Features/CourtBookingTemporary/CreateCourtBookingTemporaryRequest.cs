@@ -16,7 +16,7 @@ public class CreateCourtBookingTemporaryRequest
 
     public required List<DaysOfWeek> DaysOfWeek { get; set; }
 
-    public Guid MemberId { get; set; }
+    public string MemberId { get; set; }
 
     public string? CouponCode { get; set; }
 

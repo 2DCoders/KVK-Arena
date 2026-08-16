@@ -19,7 +19,7 @@ public class CourtBookingTemporaryService
     }
 
     public async Task<CourtBookingTemporaryAvailabilityCheckResponse> CheckAvailabilityAsync(
-        CourtBookingTemporaryAvailabilityCheckRequest request, Guid memberId, string? couponCode = null)
+        CourtBookingTemporaryAvailabilityCheckRequest request, string memberId, string? couponCode = null)
     {
         var response = new CourtBookingTemporaryAvailabilityCheckResponse();
 
@@ -125,11 +125,13 @@ public class CourtBookingTemporaryService
             imageBytes = memoryStream.ToArray();
         }
 
-
+        var memberIdGuid = await _couponValidationService.GetMemberIdAsync(request.MemberId);
+        
+        
         var booking = new Domain.CourtBookingTemporary
         {
             CourtId = request.CourtId,
-            MemberId = request.MemberId,
+            MemberId = memberIdGuid,
             StartDate = request.StartDate,
             NumberOfSlots = request.NumberOfSlots,
             Amount = availability.OriginalAmount,
