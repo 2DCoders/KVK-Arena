@@ -95,11 +95,11 @@ public class OfferRateController(IOfferRateService offerRateService, ICouponVali
     [HttpGet("validate-coupons")]
     public async Task<IActionResult> ValidateCoupons([FromQuery] string couponCode,
         [FromQuery] decimal originalAmount, [FromQuery] string moduleName,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,[FromQuery] int slotCountForBadminton = 0)
     {
         var result =
             await couponValidationService.ValidateAndCalculateDiscountAsync(couponCode, originalAmount,
-                moduleName);
+                moduleName,slotCountForBadminton);
         if (!result.IsValid)
         {
             return BadRequest(new { error = result.ErrorMessage });

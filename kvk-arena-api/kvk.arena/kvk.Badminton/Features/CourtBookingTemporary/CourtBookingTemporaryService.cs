@@ -86,7 +86,7 @@ public class CourtBookingTemporaryService
         {
             var couponResult =
                 await _couponValidationService.ValidateAndCalculateDiscountAsync(memberId, couponCode,
-                    response.OriginalAmount, "badminton");
+                    response.OriginalAmount, "badminton",request.NumberOfSlots,court.PricePerSlot);
             if (couponResult.IsValid)
             {
                 response.DiscountAmount = couponResult.DiscountAmount;
