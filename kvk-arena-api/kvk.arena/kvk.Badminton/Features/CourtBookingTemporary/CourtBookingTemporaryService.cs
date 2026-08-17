@@ -55,7 +55,8 @@ public class CourtBookingTemporaryService
             .Include(s => s.CourtBookingTemporary)
             .Where(s => s.CourtBookingTemporary.CourtId == request.CourtId
                         && s.CourtBookingTemporary.StartDate <= request.StartDate.AddDays(durationInWeeks * 7)
-                        && s.CourtBookingTemporary.StartDate.AddDays(s.CourtBookingTemporary.NumberOfSlots * 7) >= request.StartDate)
+                        && s.CourtBookingTemporary.StartDate.AddDays(s.CourtBookingTemporary.NumberOfSlots * 7) >=
+                        request.StartDate)
             .ToListAsync();
 
         bool hasOverlap = false;
@@ -73,7 +74,9 @@ public class CourtBookingTemporaryService
                     {
                         DayOfWeek = day,
                         SlotId = slotId,
-                        SlotName = (await _context.CourtSlots.Where(s => s.Id == slotId).Select(s => s.StartTime.ToString(@"hh\:mm") + " - " + s.EndTime.ToString(@"hh\:mm")).FirstOrDefaultAsync())!,
+                        SlotName = (await _context.CourtSlots.Where(s => s.Id == slotId)
+                            .Select(s => s.StartTime.ToString(@"hh\:mm") + " - " + s.EndTime.ToString(@"hh\:mm"))
+                            .FirstOrDefaultAsync())!,
                         Message = "Slot is already booked for the selected period."
                     });
                 }
@@ -86,7 +89,7 @@ public class CourtBookingTemporaryService
         {
             var couponResult =
                 await _couponValidationService.ValidateAndCalculateDiscountAsync(memberId, couponCode,
-                    response.OriginalAmount, "badminton",request.NumberOfSlots,court.PricePerSlot);
+                    response.OriginalAmount, "badminton", request.NumberOfSlots, court.PricePerSlot);
             if (couponResult.IsValid)
             {
                 response.DiscountAmount = couponResult.DiscountAmount;
@@ -115,7 +118,7 @@ public class CourtBookingTemporaryService
         {
             throw new InvalidOperationException("Selected slots are not available.");
         }
-        
+
         //convert to byte array and upload
         byte[] imageBytes = [];
         if (request.PaymentProof is not null && request.PaymentProof.Length > 0)
@@ -126,8 +129,8 @@ public class CourtBookingTemporaryService
         }
 
         var memberIdGuid = await _couponValidationService.GetMemberIdAsync(request.MemberId);
-        
-        
+
+
         var booking = new Domain.CourtBookingTemporary
         {
             CourtId = request.CourtId,
@@ -142,8 +145,7 @@ public class CourtBookingTemporaryService
             IsHalfPayment = request.IsHalfPayment,
             PaymentProof = imageBytes
         };
-        
-    
+
 
         foreach (var day in request.DaysOfWeek)
         {
@@ -170,8 +172,136 @@ public class CourtBookingTemporaryService
         //     //create a customized message this is the given amount and it already deducted from the final amount and paid for number of slots
         //     _ = $"Half payment of {availability.FinalAmount - availability.} has been made. Please pay the remaining amount of {availability.FinalAmount / 2} before the booking date.";
         // }
-        
-        
+
+
         return Result.Success("Booking created successfully.");
     }
+
+
+    public async Task<List<AvailabilityForCertainPeriodResponse>> CheckAvailabilityForPeriodAsync(
+        List<DaysOfWeek> daysOfWeek,
+        int futureWeeksCountToCheck,
+        DateTime startDate,
+        Guid courtId)
+    {
+        if (daysOfWeek == null || daysOfWeek.Count == 0)
+            return new List<AvailabilityForCertainPeriodResponse>();
+
+        var requestedDays = daysOfWeek
+            .Distinct()
+            .ToList();
+
+        var endDate = startDate.Date.AddDays(futureWeeksCountToCheck * 7);
+
+        var courtSlots = await _context.CourtSlots
+            .Where(s => s.CourtId == courtId)
+            .OrderBy(s => s.StartTime)
+            .ToListAsync();
+
+        var existingSchedules = await _context
+            .Set<CourtBookingTemporarySchedule>()
+            .Include(s => s.CourtBookingTemporary)
+            .Where(s =>
+                s.CourtBookingTemporary.CourtId == courtId &&
+                s.CourtBookingTemporary.StartDate <= endDate &&
+                s.CourtBookingTemporary.StartDate
+                    .AddDays(s.CourtBookingTemporary.NumberOfSlots * 7) >= startDate)
+            .ToListAsync();
+
+        var result = requestedDays
+            .Select(day => new AvailabilityForCertainPeriodResponse
+            {
+                DayOfWeekName = day.ToString(),
+                DayOfWeekDetails = new List<DayOfWeekDetails>()
+            })
+            .ToList();
+
+        for (var date = startDate.Date;
+             date <= endDate.Date;
+             date = date.AddDays(1))
+        {
+            var dayOfWeek = ConvertToDaysOfWeek(date.DayOfWeek);
+
+            // Only process days requested by the caller.
+            if (!requestedDays.Contains(dayOfWeek))
+                continue;
+
+            var responseGroup = result.First(x =>
+                x.DayOfWeekName == dayOfWeek.ToString());
+
+            foreach (var slot in courtSlots)
+            {
+                var isOccupied = existingSchedules.Any(schedule =>
+                {
+                    var temporary = schedule.CourtBookingTemporary;
+
+                    var scheduleStartDate = temporary.StartDate.Date;
+
+                    var scheduleEndDate = scheduleStartDate
+                        .AddDays(temporary.NumberOfSlots * 7);
+
+                    // Outside schedule period.
+                    if (date.Date < scheduleStartDate ||
+                        date.Date > scheduleEndDate)
+                    {
+                        return false;
+                    }
+
+                    // Different slot.
+                    if (schedule.SlotId != slot.Id)
+                        return false;
+
+                    // Different day of week.
+                    var scheduleDay = ConvertToDaysOfWeek(
+                        scheduleStartDate.DayOfWeek);
+
+                    return scheduleDay == dayOfWeek;
+                });
+
+                if (isOccupied)
+                    continue;
+
+                responseGroup.DayOfWeekDetails!.Add(new DayOfWeekDetails
+                {
+                    Date = date,
+                    AvailableSlotId = slot.Id,
+                    AvailableSlotName =
+                        $"{slot.StartTime:hh\\:mm} - {slot.EndTime:hh\\:mm}"
+                });
+            }
+        }
+
+        return result;
+    }
+
+    private static DaysOfWeek ConvertToDaysOfWeek(DayOfWeek dayOfWeek)
+    {
+        return dayOfWeek switch
+        {
+            DayOfWeek.Monday => DaysOfWeek.Monday,
+            DayOfWeek.Tuesday => DaysOfWeek.Tuesday,
+            DayOfWeek.Wednesday => DaysOfWeek.Wednesday,
+            DayOfWeek.Thursday => DaysOfWeek.Thursday,
+            DayOfWeek.Friday => DaysOfWeek.Friday,
+            DayOfWeek.Saturday => DaysOfWeek.Saturday,
+            DayOfWeek.Sunday => DaysOfWeek.Sunday,
+            _ => throw new ArgumentOutOfRangeException(nameof(dayOfWeek))
+        };
+    }
+}
+
+public class AvailabilityForCertainPeriodResponse
+{
+    public required string DayOfWeekName { get; set; }
+
+    public List<DayOfWeekDetails>? DayOfWeekDetails { get; set; }
+}
+
+public class DayOfWeekDetails
+{
+    public DateTime Date { get; set; }
+
+    public Guid AvailableSlotId { get; set; }
+
+    public string AvailableSlotName { get; set; }
 }

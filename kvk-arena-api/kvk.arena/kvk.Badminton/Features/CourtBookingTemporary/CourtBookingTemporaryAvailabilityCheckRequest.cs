@@ -25,4 +25,4 @@ public enum DaysOfWeek
     Friday,
     Saturday,
     Sunday
-}
+}   
