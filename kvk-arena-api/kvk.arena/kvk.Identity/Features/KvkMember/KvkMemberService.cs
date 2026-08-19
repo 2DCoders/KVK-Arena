@@ -2,6 +2,7 @@ using kvk.BuildingBlocks.Common;
 using kvk.BuildingBlocks.Constants;
 using kvk.BuildingBlocks.Enums;
 using kvk.BuildingBlocks.Interfaces;
+using kvk.BuildingBlocks.Services;
 using kvk.Identity.Domain;
 using kvk.Identity.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -178,6 +179,45 @@ public class KvkMemberService(IdentityApplicationDbContext db, ISmsService smsSe
 
         await _db.SaveChangesAsync(cancellationToken);
         return Result.Success();
+    }
+
+    public async Task<Result> SendSmsCouponCodeBulkAsync(CancellationToken cancellationToken)
+    {
+        
+        var eligibleMembersWithCouponCodes = await _db.MemberEligibleOffers
+            .Include(m => m.Member)
+            .Include(m => m.OfferRate)
+            .Where(m => m.IsEligible && !m.IsRedeemed && m.CouponCode != null)
+            .Select(m => new SmsService.BulkSmsItem
+            {
+                PhoneNumber = m.Member.Phone!,
+                Message = MessageList.GetKvkMemberCouponCodeMessage(m.Member.FirstName, m.CouponCode!)
+            })
+            .ToListAsync(cancellationToken);
+        
+        await _smsService.SendBulkMessageAsync(eligibleMembersWithCouponCodes, cancellationToken);
+        
+        return Result.Success("SMS sent successfully");
+        
+    }
+
+    public async Task<Result> SendSmsCouponCodeSingleAsync(string memberId, CancellationToken cancellationToken)
+    {
+        var eligibleMemberWithCouponCodes = await _db.MemberEligibleOffers
+            .Include(m => m.Member)
+            .Include(m => m.OfferRate)
+            .Where(m => m.IsEligible && !m.IsRedeemed && m.CouponCode != null && m.Member.MemberId == memberId)
+            .Select(m => new
+            {
+                FirstName = m.Member.FirstName,
+                PhoneNumber = m.Member.Phone!,
+                CouponCode = m.CouponCode
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+        
+        await _smsService.SendSingleMessageAsync(eligibleMemberWithCouponCodes!.PhoneNumber,MessageList.GetKvkMemberCouponCodeMessage(eligibleMemberWithCouponCodes.FirstName, eligibleMemberWithCouponCodes.CouponCode!), cancellationToken);
+        
+        return Result.Success("SMS sent successfully");
     }
 
 

@@ -75,4 +75,30 @@ public class KvkMemberController(IKvkMemberService kvkMemberService) : Controlle
         }
         return Ok(result);
     }
+    
+    [HttpPost("send-sms-coupon-code-bulk")]
+    public async Task<IActionResult> SendSmsCouponCodeBulk(CancellationToken cancellationToken)
+    {
+        var result = await _kvkMemberService.SendSmsCouponCodeBulkAsync(cancellationToken);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { error = result.Errors });
+        }
+        return Ok(result);
+    }
+
+
+    [HttpPost("send-sms-coupon-code-single")]
+    public async Task<IActionResult> SendSmsCouponCodeSingle([FromForm] string memberId,
+        CancellationToken cancellationToken)
+    {
+        var result = await _kvkMemberService.SendSmsCouponCodeSingleAsync(memberId, cancellationToken);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { error = result.Errors });
+        }
+
+        return Ok(result);
+    }
+
 }

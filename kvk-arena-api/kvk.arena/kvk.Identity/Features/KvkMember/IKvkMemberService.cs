@@ -16,4 +16,8 @@ public interface IKvkMemberService
     Task<Result> RecordMemberAsPaidAsync(MemberPayRequest request,CancellationToken cancellationToken);
     
     Task<Result> ActiveOrDeactivateMemberAsync(Guid id,bool isActive,CancellationToken cancellationToken);
+    
+    Task<Result> SendSmsCouponCodeBulkAsync(CancellationToken cancellationToken);
+    
+    Task<Result> SendSmsCouponCodeSingleAsync(string memberId,CancellationToken cancellationToken);
 }

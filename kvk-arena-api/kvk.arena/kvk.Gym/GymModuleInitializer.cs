@@ -5,7 +5,7 @@ using kvk.Gym.Interfaces;
 using kvk.Gym.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore;
 using kvk.Gym.Features.Trainers;
 using kvk.Gym.Features.TrainersApprovalRequest;
 

@@ -28,4 +28,11 @@ public static class MessageList
             $"Congratulations, {firstName}! Your KVK Arena registration has been completed successfully. " +
             $"Thank you for registering. Once the pre-registration period ends on 20th August 2026, the KVK Arena team will contact you with the next steps. Stay tuned!";
     }
+
+    public static string GetKvkMemberCouponCodeMessage(string firstName, string couponCode)
+    {
+        return
+            $"Congratulations, {firstName}! Your KVK Arena coupon code has been applied successfully. " +
+            $"Coupon code: {couponCode}. Thank you for using our services.";
+    }
 }
