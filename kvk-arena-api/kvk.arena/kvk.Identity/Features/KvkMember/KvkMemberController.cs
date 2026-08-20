@@ -89,7 +89,7 @@ public class KvkMemberController(IKvkMemberService kvkMemberService) : Controlle
 
 
     [HttpPost("send-sms-coupon-code-single")]
-    public async Task<IActionResult> SendSmsCouponCodeSingle([FromForm] string memberId,
+    public async Task<IActionResult> SendSmsCouponCodeSingle([FromForm] Guid memberId,
         CancellationToken cancellationToken)
     {
         var result = await _kvkMemberService.SendSmsCouponCodeSingleAsync(memberId, cancellationToken);

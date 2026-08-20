@@ -19,5 +19,5 @@ public interface IKvkMemberService
     
     Task<Result> SendSmsCouponCodeBulkAsync(CancellationToken cancellationToken);
     
-    Task<Result> SendSmsCouponCodeSingleAsync(string memberId,CancellationToken cancellationToken);
+    Task<Result> SendSmsCouponCodeSingleAsync(Guid memberId,CancellationToken cancellationToken);
 }

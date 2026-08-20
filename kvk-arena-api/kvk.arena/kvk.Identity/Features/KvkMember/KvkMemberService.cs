@@ -201,12 +201,12 @@ public class KvkMemberService(IdentityApplicationDbContext db, ISmsService smsSe
         
     }
 
-    public async Task<Result> SendSmsCouponCodeSingleAsync(string memberId, CancellationToken cancellationToken)
+    public async Task<Result> SendSmsCouponCodeSingleAsync(Guid memberId, CancellationToken cancellationToken)
     {
         var eligibleMemberWithCouponCodes = await _db.MemberEligibleOffers
             .Include(m => m.Member)
             .Include(m => m.OfferRate)
-            .Where(m => m.IsEligible && !m.IsRedeemed && m.CouponCode != null && m.Member.MemberId == memberId)
+            .Where(m => m.IsEligible && !m.IsRedeemed && m.CouponCode != null && m.Member.Id == memberId)
             .Select(m => new
             {
                 FirstName = m.Member.FirstName,
