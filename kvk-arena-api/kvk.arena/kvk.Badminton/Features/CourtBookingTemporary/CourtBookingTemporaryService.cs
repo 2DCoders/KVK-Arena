@@ -94,6 +94,10 @@ public class CourtBookingTemporaryService
             {
                 response.DiscountAmount = couponResult.DiscountAmount;
             }
+            else
+            {
+                throw new InvalidOperationException($"Coupon validation failed: {couponResult.ErrorMessage}");
+            }
         }
 
         response.FinalAmount = response.OriginalAmount - response.DiscountAmount;
