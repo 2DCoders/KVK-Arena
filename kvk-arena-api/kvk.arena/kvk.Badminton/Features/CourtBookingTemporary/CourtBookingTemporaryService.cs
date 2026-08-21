@@ -130,6 +130,11 @@ public class CourtBookingTemporaryService
 
         var memberIdGuid = await _couponValidationService.GetMemberIdAsync(request.MemberId);
 
+        if (memberIdGuid == Guid.Empty)
+        {
+            throw new Exception($"Member with MemberId '{request.MemberId}' not found.");
+        }
+
 
         var booking = new Domain.CourtBookingTemporary
         {

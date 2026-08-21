@@ -29,11 +29,17 @@ public class CouponValidationService : ICouponValidationService
         int slotCountForBadminton = 0,
         decimal pricePerSlot = 0)
     {
+        var memberIdGuid = await GetMemberIdAsync(memberId);
+        if (memberIdGuid == Guid.Empty)
+        {
+            throw new Exception($"Member with MemberId '{memberId}' not found.");
+        }
+
         var eligibleOffer = await _context.MemberEligibleOffers
             .Include(x => x.OfferRate)
             .FirstOrDefaultAsync(x =>
                 x.CouponCode == couponCode &&
-                x.MemberId == GetMemberIdAsync(memberId).Result);
+                x.MemberId == memberIdGuid);
 
         if (eligibleOffer == null)
         {
@@ -299,7 +305,7 @@ public class CouponValidationService : ICouponValidationService
             .Where(m => m.MemberId == memberId)
             .Select(m => m.Id)
             .FirstOrDefaultAsync();
-        
+
         memberIdGuid.ContinueWith(task =>
         {
             if (task.Result == Guid.Empty)
@@ -310,7 +316,5 @@ public class CouponValidationService : ICouponValidationService
 
 
         return memberIdGuid;
-
-
     }
 }
