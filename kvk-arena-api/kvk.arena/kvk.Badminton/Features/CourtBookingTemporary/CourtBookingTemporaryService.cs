@@ -221,7 +221,7 @@ public class CourtBookingTemporaryService
             var slotsForRequestedDay = courtSlots
                 .Select(s => new DayOfWeekDetails
                 {
-                    Date = firstDate,
+                    Date = firstDate.AddDays(1),
                     AvailableSlotId = s.Id,
                     AvailableSlotName =
                         s.StartTime.ToString(@"hh\:mm") +
