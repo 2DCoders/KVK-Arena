@@ -32,7 +32,8 @@ public static class MessageList
     public static string GetKvkMemberCouponCodeMessage(string firstName, string couponCode)
     {
         return
-            $"Congratulations, {firstName}! Your KVK Arena coupon code has been applied successfully. " +
-            $"Coupon code: {couponCode}. Thank you for using our services.";
+            $"Hi {firstName}! 🎉 Your KVK Arena coupon code is {couponCode}. " +
+            $"Use this code when booking badminton courts and enjoy a special discount on your booking. " +
+            $"We look forward to seeing you at KVK Arena!";
     }
 }
