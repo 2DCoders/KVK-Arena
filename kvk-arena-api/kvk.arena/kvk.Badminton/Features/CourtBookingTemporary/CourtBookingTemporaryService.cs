@@ -207,115 +207,53 @@ public class CourtBookingTemporaryService
                 s.CourtBookingTemporary.StartDate <= end &&
                 s.CourtBookingTemporary.StartDate
                     .AddDays(s.CourtBookingTemporary.NumberOfSlots * 7) >= start)
+            .GroupBy(s => s.DayOfWeek)
             .ToListAsync();
 
         var result = new List<AvailabilityForCertainPeriodResponse>();
 
         foreach (var requestedDay in requestedDays)
         {
-            // Find the first occurrence of the requested day
-            // on or after startDate.
-            var firstDate = GetNextOrSameDay(start, requestedDay);
+            // Get the first occurrence of the requested day.
+            var firstDate = start.AddDays(
+                ((int)requestedDay - (int)start.DayOfWeek + 7) % 7);
 
-            var responseGroup = new AvailabilityForCertainPeriodResponse
-            {
-                DayOfWeekName = requestedDay.ToString(),
-                DayOfWeekDetails = new List<DayOfWeekDetails>()
-            };
-
-            // Check the requested day once per week.
-            for (var week = 0; week < futureWeeksCountToCheck; week++)
-            {
-                var currentDate = firstDate.AddDays(week * 7);
-
-                // Safety check in case the calculated date exceeds the period.
-                if (currentDate > end)
-                    break;
-
-                foreach (var slot in courtSlots)
+            var slotsForRequestedDay = courtSlots
+                .Select(s => new DayOfWeekDetails
                 {
-                    var isOccupied = existingSchedules.Any(schedule =>
-                    {
-                        var temporary = schedule.CourtBookingTemporary;
+                    Date = firstDate,
+                    AvailableSlotId = s.Id,
+                    AvailableSlotName =
+                        s.StartTime.ToString(@"hh\:mm") +
+                        " - " +
+                        s.EndTime.ToString(@"hh\:mm")
+                })
+                .ToList();
 
-                        var scheduleStartDate = temporary.StartDate.Date;
+            // Get existing schedules for this requested day.
+            var existingDay = existingSchedules
+                .FirstOrDefault(x => x.Key == requestedDay);
 
-                        // Schedule does not cover this date.
-                        var scheduleEndDate = scheduleStartDate
-                            .AddDays(temporary.NumberOfSlots * 7);
+            if (existingDay != null)
+            {
+                // Remove all slots that are already booked.
+                var bookedSlotIds = existingDay
+                    .Select(x => x.SlotId)
+                    .ToList();
 
-                        if (currentDate < scheduleStartDate ||
-                            currentDate > scheduleEndDate)
-                        {
-                            return false;
-                        }
-
-                        // Different slot.
-                        if (schedule.SlotId != slot.Id)
-                            return false;
-
-                        // The schedule repeats on the same
-                        // day of the week as its start date.
-                        var scheduleDay = ConvertToDaysOfWeek(
-                            scheduleStartDate.DayOfWeek);
-
-                        return scheduleDay == requestedDay;
-                    });
-
-                    if (isOccupied)
-                        continue;
-
-                    responseGroup.DayOfWeekDetails.Add(new DayOfWeekDetails
-                    {
-                        Date = currentDate,
-                        AvailableSlotId = slot.Id,
-                        AvailableSlotName =
-                            $"{slot.StartTime:hh\\:mm} - {slot.EndTime:hh\\:mm}"
-                    });
-                }
+                slotsForRequestedDay = slotsForRequestedDay
+                    .Where(x => !bookedSlotIds.Contains(x.AvailableSlotId))
+                    .ToList();
             }
 
-            result.Add(responseGroup);
+            result.Add(new AvailabilityForCertainPeriodResponse
+            {
+                DayOfWeekName = requestedDay.ToString(),
+                DayOfWeekDetails = slotsForRequestedDay
+            });
         }
 
         return result;
-    }
-
-    private static DaysOfWeek ConvertToDaysOfWeek(DayOfWeek dayOfWeek)
-    {
-        return dayOfWeek switch
-        {
-            DayOfWeek.Monday => DaysOfWeek.Monday,
-            DayOfWeek.Tuesday => DaysOfWeek.Tuesday,
-            DayOfWeek.Wednesday => DaysOfWeek.Wednesday,
-            DayOfWeek.Thursday => DaysOfWeek.Thursday,
-            DayOfWeek.Friday => DaysOfWeek.Friday,
-            DayOfWeek.Saturday => DaysOfWeek.Saturday,
-            DayOfWeek.Sunday => DaysOfWeek.Sunday,
-            _ => throw new ArgumentOutOfRangeException(nameof(dayOfWeek))
-        };
-    }
-    
-    private static DateTime GetNextOrSameDay(
-        DateTime startDate,
-        DaysOfWeek requestedDay)
-    {
-        var targetDay = requestedDay switch
-        {
-            DaysOfWeek.Monday => DayOfWeek.Monday,
-            DaysOfWeek.Tuesday => DayOfWeek.Tuesday,
-            DaysOfWeek.Wednesday => DayOfWeek.Wednesday,
-            DaysOfWeek.Thursday => DayOfWeek.Thursday,
-            DaysOfWeek.Friday => DayOfWeek.Friday,
-            DaysOfWeek.Saturday => DayOfWeek.Saturday,
-            DaysOfWeek.Sunday => DayOfWeek.Sunday,
-            _ => throw new ArgumentOutOfRangeException(nameof(requestedDay))
-        };
-
-        var daysUntilTarget =
-            ((int)targetDay - (int)startDate.DayOfWeek + 7) % 7;
-
-        return startDate.AddDays(daysUntilTarget);
     }
 }
 
