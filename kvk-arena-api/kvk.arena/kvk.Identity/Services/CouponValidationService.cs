@@ -306,13 +306,11 @@ public class CouponValidationService : ICouponValidationService
             .Select(m => m.Id)
             .FirstOrDefaultAsync();
 
-        memberIdGuid.ContinueWith(task =>
+
+        if (memberIdGuid.Result == Guid.Empty)
         {
-            if (task.Result == Guid.Empty)
-            {
-                throw new Exception($"Member with MemberId '{memberId}' not found.");
-            }
-        });
+            throw new Exception($"Member with MemberId '{memberId}' not found.");
+        }
 
 
         return memberIdGuid;
