@@ -295,9 +295,22 @@ public class CouponValidationService : ICouponValidationService
 
     public Task<Guid> GetMemberIdAsync(string memberId)
     {
-        return _context.KvkMembers
+        var memberIdGuid = _context.KvkMembers
             .Where(m => m.MemberId == memberId)
             .Select(m => m.Id)
             .FirstOrDefaultAsync();
+        
+        memberIdGuid.ContinueWith(task =>
+        {
+            if (task.Result == Guid.Empty)
+            {
+                throw new Exception($"Member with MemberId '{memberId}' not found.");
+            }
+        });
+
+
+        return memberIdGuid;
+
+
     }
 }
