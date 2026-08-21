@@ -191,7 +191,8 @@ public class CourtBookingTemporaryService
             .Distinct()
             .ToList();
 
-        var endDate = startDate.Date.AddDays(futureWeeksCountToCheck * 7);
+        var start = startDate.Date;
+        var end = start.AddDays(futureWeeksCountToCheck * 7);
 
         var courtSlots = await _context.CourtSlots
             .Where(s => s.CourtId == courtId)
@@ -203,72 +204,78 @@ public class CourtBookingTemporaryService
             .Include(s => s.CourtBookingTemporary)
             .Where(s =>
                 s.CourtBookingTemporary.CourtId == courtId &&
-                s.CourtBookingTemporary.StartDate <= endDate &&
+                s.CourtBookingTemporary.StartDate <= end &&
                 s.CourtBookingTemporary.StartDate
-                    .AddDays(s.CourtBookingTemporary.NumberOfSlots * 7) >= startDate)
+                    .AddDays(s.CourtBookingTemporary.NumberOfSlots * 7) >= start)
             .ToListAsync();
 
-        var result = requestedDays
-            .Select(day => new AvailabilityForCertainPeriodResponse
-            {
-                DayOfWeekName = day.ToString(),
-                DayOfWeekDetails = new List<DayOfWeekDetails>()
-            })
-            .ToList();
+        var result = new List<AvailabilityForCertainPeriodResponse>();
 
-        for (var date = startDate.Date;
-             date <= endDate.Date;
-             date = date.AddDays(1))
+        foreach (var requestedDay in requestedDays)
         {
-            var dayOfWeek = ConvertToDaysOfWeek(date.DayOfWeek);
+            // Find the first occurrence of the requested day
+            // on or after startDate.
+            var firstDate = GetNextOrSameDay(start, requestedDay);
 
-            // Only process days requested by the caller.
-            if (!requestedDays.Contains(dayOfWeek))
-                continue;
-
-            var responseGroup = result.First(x =>
-                x.DayOfWeekName == dayOfWeek.ToString());
-
-            foreach (var slot in courtSlots)
+            var responseGroup = new AvailabilityForCertainPeriodResponse
             {
-                var isOccupied = existingSchedules.Any(schedule =>
+                DayOfWeekName = requestedDay.ToString(),
+                DayOfWeekDetails = new List<DayOfWeekDetails>()
+            };
+
+            // Check the requested day once per week.
+            for (var week = 0; week < futureWeeksCountToCheck; week++)
+            {
+                var currentDate = firstDate.AddDays(week * 7);
+
+                // Safety check in case the calculated date exceeds the period.
+                if (currentDate > end)
+                    break;
+
+                foreach (var slot in courtSlots)
                 {
-                    var temporary = schedule.CourtBookingTemporary;
-
-                    var scheduleStartDate = temporary.StartDate.Date;
-
-                    var scheduleEndDate = scheduleStartDate
-                        .AddDays(temporary.NumberOfSlots * 7);
-
-                    // Outside schedule period.
-                    if (date.Date < scheduleStartDate ||
-                        date.Date > scheduleEndDate)
+                    var isOccupied = existingSchedules.Any(schedule =>
                     {
-                        return false;
-                    }
+                        var temporary = schedule.CourtBookingTemporary;
 
-                    // Different slot.
-                    if (schedule.SlotId != slot.Id)
-                        return false;
+                        var scheduleStartDate = temporary.StartDate.Date;
 
-                    // Different day of week.
-                    var scheduleDay = ConvertToDaysOfWeek(
-                        scheduleStartDate.DayOfWeek);
+                        // Schedule does not cover this date.
+                        var scheduleEndDate = scheduleStartDate
+                            .AddDays(temporary.NumberOfSlots * 7);
 
-                    return scheduleDay == dayOfWeek;
-                });
+                        if (currentDate < scheduleStartDate ||
+                            currentDate > scheduleEndDate)
+                        {
+                            return false;
+                        }
 
-                if (isOccupied)
-                    continue;
+                        // Different slot.
+                        if (schedule.SlotId != slot.Id)
+                            return false;
 
-                responseGroup.DayOfWeekDetails!.Add(new DayOfWeekDetails
-                {
-                    Date = date,
-                    AvailableSlotId = slot.Id,
-                    AvailableSlotName =
-                        $"{slot.StartTime:hh\\:mm} - {slot.EndTime:hh\\:mm}"
-                });
+                        // The schedule repeats on the same
+                        // day of the week as its start date.
+                        var scheduleDay = ConvertToDaysOfWeek(
+                            scheduleStartDate.DayOfWeek);
+
+                        return scheduleDay == requestedDay;
+                    });
+
+                    if (isOccupied)
+                        continue;
+
+                    responseGroup.DayOfWeekDetails.Add(new DayOfWeekDetails
+                    {
+                        Date = currentDate,
+                        AvailableSlotId = slot.Id,
+                        AvailableSlotName =
+                            $"{slot.StartTime:hh\\:mm} - {slot.EndTime:hh\\:mm}"
+                    });
+                }
             }
+
+            result.Add(responseGroup);
         }
 
         return result;
@@ -287,6 +294,28 @@ public class CourtBookingTemporaryService
             DayOfWeek.Sunday => DaysOfWeek.Sunday,
             _ => throw new ArgumentOutOfRangeException(nameof(dayOfWeek))
         };
+    }
+    
+    private static DateTime GetNextOrSameDay(
+        DateTime startDate,
+        DaysOfWeek requestedDay)
+    {
+        var targetDay = requestedDay switch
+        {
+            DaysOfWeek.Monday => DayOfWeek.Monday,
+            DaysOfWeek.Tuesday => DayOfWeek.Tuesday,
+            DaysOfWeek.Wednesday => DayOfWeek.Wednesday,
+            DaysOfWeek.Thursday => DayOfWeek.Thursday,
+            DaysOfWeek.Friday => DayOfWeek.Friday,
+            DaysOfWeek.Saturday => DayOfWeek.Saturday,
+            DaysOfWeek.Sunday => DayOfWeek.Sunday,
+            _ => throw new ArgumentOutOfRangeException(nameof(requestedDay))
+        };
+
+        var daysUntilTarget =
+            ((int)targetDay - (int)startDate.DayOfWeek + 7) % 7;
+
+        return startDate.AddDays(daysUntilTarget);
     }
 }
 
