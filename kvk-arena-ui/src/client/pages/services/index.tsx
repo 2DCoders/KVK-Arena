@@ -10,7 +10,7 @@ import cafe from "@/assets/coffee.jpg";
 import clothing from "@/assets/clothing.jpg";
 import AOS from "aos";
 import { useNavigate } from "react-router-dom";
-import ConstructionModal from "@/components/404";
+// import ConstructionModal from "@/components/404";
 
 const services = [
   {
@@ -82,8 +82,8 @@ const tabs = [
 export default function Services() {
   const [activeTab, setActiveTab] = useState("all");
   const scrollerRef = useRef<HTMLDivElement | null>(null);
-  const [open404, setOpen404] = useState(false);
-  const [pageName, setPageName] = useState("Services Section");
+  // const [open404, setOpen404] = useState(false);
+  // const [pageName, setPageName] = useState("Services Section");
 
   const navigate = useNavigate();
 
@@ -109,18 +109,13 @@ export default function Services() {
     AOS.refresh();
   }, [visibleServices]);
 
-  const handleOpen404 = (serviceName: string) => {
-    setPageName(serviceName);
-    setOpen404(true);
-  };
-
   return (
     <section className="relative overflow-hidden bg-white/5 py-10 lg:py-16">
-      <ConstructionModal
+      {/* <ConstructionModal
         open={open404}
         onClose={() => setOpen404(false)}
         pageName={pageName}
-      />
+      /> */}
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <h2

@@ -1,7 +1,6 @@
 import {
   ArrowRight,
   Check,
-  Gamepad2,
   LoaderCircle,
   Shield,
   Swords,
@@ -432,15 +431,6 @@ export default function GamingHero() {
             100,
         )
       : 0;
-
-  const currentStep =
-    scrollProgress < 0.25
-      ? 0
-      : scrollProgress < 0.5
-        ? 1
-        : scrollProgress < 0.75
-          ? 2
-          : 3;
 
   return (
     <section

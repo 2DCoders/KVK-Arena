@@ -1,15 +1,11 @@
 import {
   ArrowRight,
-  Badge,
-  CalendarDays,
   Check,
   Crosshair,
   LoaderCircle,
-  Trophy,
   Zap,
 } from "lucide-react";
 import {
-  type ElementType,
   useCallback,
   useEffect,
   useMemo,
@@ -718,35 +714,5 @@ export default function BadmintonHero() {
         </div>
       </div>
     </section>
-  );
-}
-
-type FeatureProps = {
-  icon: ElementType;
-  title: string;
-  description: string;
-};
-
-function Feature({
-  icon: Icon,
-  title,
-  description,
-}: FeatureProps) {
-  return (
-    <div className="flex items-center gap-3">
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#D98B4D]/30 bg-[#D98B4D]/15">
-        <Icon className="h-5 w-5 text-[#F1B17B]" />
-      </div>
-
-      <div>
-        <p className="font-semibold text-white">
-          {title}
-        </p>
-
-        <p className="mt-0.5 text-sm text-white/55">
-          {description}
-        </p>
-      </div>
-    </div>
   );
 }

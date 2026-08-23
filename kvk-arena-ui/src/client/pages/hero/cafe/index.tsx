@@ -3,7 +3,6 @@ import {
   Clock3,
   Coffee,
   MapPin,
-  Sparkles,
   Star,
   UtensilsCrossed,
 } from "lucide-react";
@@ -479,9 +478,6 @@ export default function CafeHero() {
 
   const finalOpacity =
     easeInOut(finalProgress);
-
-  const progressPercentage =
-    scrollProgress * 100;
 
   return (
     <section
