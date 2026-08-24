@@ -66,7 +66,7 @@ builder.Services.AddSwaggerGen(c =>
     { 
         Title = "KVK Arena API", 
         Version = "v1",
-        Description = "A multi-tenant Hotel ERD API built with .NET 10 and PostgreSQL"
+        Description = "A multi-tenant Arena API built with .NET 10 and PostgreSQL"
     });
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
