@@ -13,8 +13,8 @@ public class CarServiceDbContext(
     ILogger<AppDbContextBase> logger,
     IHttpContextAccessor? httpContextAccessor = null)
     : AppDbContextBase(options, tenantService, logger, httpContextAccessor)
-{
-    // public DbSet<CarServiceDayEnd> CarServiceDayEnds => Set<CarServiceDayEnd>();
+{ 
+    public DbSet<CarServiceDayEnd> CarServiceDayEnds => Set<CarServiceDayEnd>();
 
     public DbSet<CarService.Domain.CarService> Services => Set<CarService.Domain.CarService>();
     public DbSet<Package> Packages => Set<Package>();

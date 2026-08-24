@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using kvk.BuildingBlocks.Interfaces;
+using kvk.CarService.Services;
 
 namespace kvk.Gaming.Features.DayEnd;
 
@@ -7,15 +8,17 @@ namespace kvk.Gaming.Features.DayEnd;
 [Route("api/car-service/dayend")]
 public class DayEndController : ControllerBase
 {
-    private readonly IDayEndService _service;
+    private readonly CarServiceDayEndService _service;
 
-    public DayEndController(IDayEndService service)
+
+    public DayEndController(CarServiceDayEndService service)
     {
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] kvk.BuildingBlocks.Common.DayEnd request, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Create([FromBody] kvk.BuildingBlocks.Common.DayEnd request,
+        CancellationToken cancellationToken = default)
     {
         var result = await _service.CreateDayEndAsync(request, cancellationToken);
         if (!result.Succeeded)
