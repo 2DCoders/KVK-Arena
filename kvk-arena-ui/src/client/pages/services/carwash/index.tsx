@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
   ArrowUpRight,
   Check,
-  ChevronRight,
 } from "lucide-react";
 
 import cutImg from "@/assets/cut.png";
