@@ -31,6 +31,6 @@ public class CarServiceModuleInitializer : IModuleInitializer
         services.AddScoped<ICarWashService, CarWashService>();
         services.AddScoped<IPackageService, PackageService>();
         services.AddScoped<ICarWashOrderService,CarWashOrderService>();
-        services.AddScoped<IDayEndService, CarServiceDayEndService>(); // Register the new service
+        services.AddScoped<CarServiceDayEndService>(); // Register the new service
     }
 }
