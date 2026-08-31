@@ -12,6 +12,7 @@ public class FinancialModuleInitializer : IModuleInitializer
         services.AddScoped<Features.GymAnalytics.GymAnalyticsService>();
         services.AddScoped<Features.BadmintonAnalytics.BadmintonAnalyticsService>();
         services.AddScoped<Features.GamingAnalytics.GamingAnalyticsService>();
+        services.AddScoped<Features.CarserviceAnalytics.CarServiceAnalyticsService>();
     }
 }
 
