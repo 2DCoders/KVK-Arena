@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Financial.Features.CarserviceAnalytics;
 [ApiController]
-[Route("api/financial/badminton-analytics")]
+[Route("api/financial/car-service-analytics")]
 public class CarServiceAnalyticsController : ControllerBase
 {
     private readonly CarServiceAnalyticsService _service;
