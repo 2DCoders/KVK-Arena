@@ -62,10 +62,10 @@ public class CarWashOrderController(ICarWashOrderService orderService) : Control
 
 
     [HttpGet]
-    public async Task<ActionResult<List<CarWashOrderResponse>>> Get([FromQuery] Guid orderId = default,[FromQuery] DateTime dateTime = default,
+    public async Task<ActionResult<List<CarWashOrderResponse>>> Get([FromQuery] Guid orderId = default,
         CancellationToken cancellationToken = default)
     {
-        var orders = await orderService.GetCarWashOrdersAsync(dateTime,cancellationToken);
+        var orders = await orderService.GetCarWashOrdersAsync(DateTime.Now,cancellationToken);
         return Ok(orders);
     }
 
