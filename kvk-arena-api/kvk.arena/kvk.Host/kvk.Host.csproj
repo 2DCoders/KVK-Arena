@@ -32,6 +32,7 @@
         <!-- Project References -->
         <ProjectReference Include="..\kvk.Badminton\kvk.Badminton.csproj" />
         <ProjectReference Include="..\kvk.BuildingBlocks\kvk.BuildingBlocks.csproj" />
+        <ProjectReference Include="..\kvk.Cafe\kvk.Cafe.csproj" />
         <ProjectReference Include="..\kvk.CarService\kvk.CarService.csproj" />
         <ProjectReference Include="..\kvk.Gaming\kvk.Gaming.csproj" />
         <ProjectReference Include="..\kvk.Gym\kvk.Gym.csproj" />

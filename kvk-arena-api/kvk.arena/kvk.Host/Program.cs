@@ -17,6 +17,7 @@ using Serilog;
 using System.Text.Json.Serialization;
 using Newtonsoft.Json.Serialization;
 using kvk.BuildingBlocks.Common;
+using Kvk.Cafe;
 using kvk.CarService;
 
 
@@ -150,6 +151,9 @@ gamingInitializer.RegisterModule(builder.Services, builder.Configuration);
 
 var carServiceInitializer  = new CarServiceModuleInitializer();
 carServiceInitializer.RegisterModule(builder.Services, builder.Configuration);
+
+var cafeInitializer  = new CafeModuleInitializer();
+cafeInitializer.RegisterModule(builder.Services, builder.Configuration);
 
 
 
