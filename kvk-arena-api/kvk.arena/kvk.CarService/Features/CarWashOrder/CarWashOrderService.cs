@@ -24,7 +24,7 @@ public class CarWashOrderService(CarServiceDbContext db) : ICarWashOrderService
             PaymentMethod = request.PaymentMethod,
             VehicleType = request.VehicleType,
             VehicleNumber = request.VehicleNumber,
-            CarWashOrderStatus = request.CarWashOrderStatus,
+            CarWashOrderStatus =CarWashOrderStatus.Completed,
             TotalMinutesSpent = 0
         };
 
@@ -102,7 +102,7 @@ public class CarWashOrderService(CarServiceDbContext db) : ICarWashOrderService
 
         exist.IsPaid = request.IsPaid;
         exist.PaymentMethod = request.PaymentMethod;
-        exist.CarWashOrderStatus = request.CarWashOrderStatus;
+        exist.CarWashOrderStatus = CarWashOrderStatus.Completed;
 
         // Remove existing package/service items
         db.CarWashOrderPackages.RemoveRange(exist.Packages);
