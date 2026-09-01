@@ -15,6 +15,7 @@ public class CafeDbContext(
     : AppDbContextBase(options, tenantService, logger, httpContextAccessor)
 { 
     public DbSet<CafeDayEnd> CafeDayEnds => Set<CafeDayEnd>();
+    public DbSet<Menu> Menus => Set<Menu>();
     
 
 
