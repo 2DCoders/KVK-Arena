@@ -60,6 +60,70 @@ namespace Kvk.Cafe.Migrations
 
                     b.ToTable("CafeDayEnds", "cafe");
                 });
+
+            modelBuilder.Entity("kvk.Cafe.Domain.Menu", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Facts")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<byte[]>("Image")
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("Ingredients")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastModifiedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("PreparationTimeInMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_Menu_TenantId");
+
+                    b.HasIndex("TenantId", "CreatedAt")
+                        .HasDatabaseName("IX_Menu_TenantId_CreatedAt");
+
+                    b.ToTable("Menus", "cafe");
+                });
 #pragma warning restore 612, 618
         }
     }
