@@ -16,6 +16,8 @@ public class CafeDbContext(
 { 
     public DbSet<CafeDayEnd> CafeDayEnds => Set<CafeDayEnd>();
     public DbSet<Menu> Menus => Set<Menu>();
+    public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     
 
 
