@@ -17,4 +17,5 @@ public class MenuResponse
     public string? Ingredients { get; set; }
     
     public int PreparationTimeInMinutes { get; set; } = 0;
+    public PortionSize PortionSize { get; set; } = PortionSize.Unknown;
 }

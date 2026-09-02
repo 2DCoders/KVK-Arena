@@ -35,7 +35,8 @@ public class MenuService(CafeDbContext db) : IMenuService
             IsActive = request.IsActive,
             Facts = request.Facts,
             PreparationTimeInMinutes = request.PreparationTimeInMinutes,
-            Ingredients = request.Ingredients
+            Ingredients = request.Ingredients,
+            PortionSize = request.PortionSize,
         };
 
         db.Menus.Add(newMenu);
@@ -71,6 +72,7 @@ public class MenuService(CafeDbContext db) : IMenuService
         exist.Facts = request.Facts;
         exist.PreparationTimeInMinutes = request.PreparationTimeInMinutes;
         exist.Ingredients = request.Ingredients;
+        exist.PortionSize = request.PortionSize;
 
         await db.SaveChangesAsync(cancellationToken);
 
@@ -105,7 +107,8 @@ public class MenuService(CafeDbContext db) : IMenuService
                 IsActive = m.IsActive,
                 Facts = m.Facts,
                 Ingredients = m.Ingredients,
-                PreparationTimeInMinutes = m.PreparationTimeInMinutes
+                PreparationTimeInMinutes = m.PreparationTimeInMinutes,
+                PortionSize = m.PortionSize
                 
             })
             .ToListAsync(cancellationToken);
@@ -125,7 +128,8 @@ public class MenuService(CafeDbContext db) : IMenuService
                 IsActive = m.IsActive,
                 Facts = m.Facts,
                 Ingredients = m.Ingredients,
-                PreparationTimeInMinutes = m.PreparationTimeInMinutes
+                PreparationTimeInMinutes = m.PreparationTimeInMinutes,
+                PortionSize = m.PortionSize
             })
             .FirstOrDefaultAsync(m => m.Id == menuId, cancellationToken);
 
@@ -152,7 +156,8 @@ public class MenuService(CafeDbContext db) : IMenuService
                 IsActive = m.IsActive,
                 Facts = m.Facts,
                 Ingredients = m.Ingredients,
-                PreparationTimeInMinutes = m.PreparationTimeInMinutes
+                PreparationTimeInMinutes = m.PreparationTimeInMinutes,
+                PortionSize = m.PortionSize
                 
             })
             .Where(x=> x.Category == menuCategory)
