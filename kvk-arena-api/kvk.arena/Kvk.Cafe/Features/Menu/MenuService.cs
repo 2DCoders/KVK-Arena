@@ -45,38 +45,47 @@ public class MenuService(CafeDbContext db) : IMenuService
         return Result.Success("Menu created successfully.");
     }
 
-    public async Task<Result> UpdateMenuAsync(MenuUpdateRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> UpdateMenuAsync(
+        MenuUpdateRequest request,
+        CancellationToken cancellationToken = default)
     {
         var exist = await db.Menus
-            .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+            .FirstOrDefaultAsync(
+                x => x.Id == request.Id,
+                cancellationToken);
 
         if (exist is null)
-            return Result.Failure($"Menu with id {request.Id} was not found.");
-        
-        byte[] imageBytes = [];
+            return Result.Failure(
+                $"Menu with id {request.Id} was not found.");
+
+        // Only update image when a new image is provided
         if (request.Image is not null && request.Image.Length > 0)
         {
             using var memoryStream = new MemoryStream();
-            await request.Image.CopyToAsync(memoryStream, cancellationToken);
-            imageBytes = memoryStream.ToArray();
+
+            await request.Image.CopyToAsync(
+                memoryStream,
+                cancellationToken);
+
+            exist.Image = memoryStream.ToArray();
         }
 
-        
-
+        // Update other fields
         exist.Name = request.Name;
-        exist.Image = imageBytes;
         exist.Category = request.Category;
         exist.Price = request.Price;
         exist.Description = request.Description;
         exist.IsActive = request.IsActive;
         exist.Facts = request.Facts;
-        exist.PreparationTimeInMinutes = request.PreparationTimeInMinutes;
+        exist.PreparationTimeInMinutes =
+            request.PreparationTimeInMinutes;
         exist.Ingredients = request.Ingredients;
         exist.PortionSize = request.PortionSize;
 
         await db.SaveChangesAsync(cancellationToken);
 
-        return Result.Success("Menu updated successfully.");
+        return Result.Success(
+            "Menu updated successfully.");
     }
 
     public async Task<Result> DeleteMenuAsync(Guid menuId, CancellationToken cancellationToken = default)
