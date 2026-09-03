@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using kvk.BuildingBlocks.Common;
+using kvk.BuildingBlocks.Enums;
 
 namespace kvk.Cafe.Domain;
 
@@ -29,7 +30,7 @@ public class Order : AuditableEntity
 
     public bool IsPaid { get; set; }
 
-    public PaymentMethod PaymentMethod { get; set; }
+    public PaymentType PaymentMethod { get; set; }
     
     public OrderType OrderType { get; set; }
     
@@ -59,10 +60,3 @@ public enum OrderType
     Delivery = 3
 }
 
-public enum PaymentMethod
-{
-    Cash = 1,
-    Card = 2,
-    BankTransfer = 3,
-    Online = 4
-}

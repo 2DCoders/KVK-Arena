@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Enums;
 using kvk.Cafe.Domain;
 
 namespace Kvk.Cafe.Features.Order;
@@ -14,7 +15,7 @@ public class OrderResponse
     public decimal Discount { get; set; }
     public decimal DiscountedTotalAmount { get; set; }
     public bool IsPaid { get; set; }
-    public PaymentMethod PaymentMethod { get; set; }
+    public PaymentType PaymentMethod { get; set; }
     public OrderType OrderType { get; set; }
     public string? Remark { get; set; }
     public string? Address { get; set; }
