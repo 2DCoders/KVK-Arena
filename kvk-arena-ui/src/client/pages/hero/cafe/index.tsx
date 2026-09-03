@@ -12,6 +12,7 @@ import {
   useRef,
   useState,
 } from "react";
+import MOBILE_BG from "@/assets/cafe-mobile.png";
 
 const FRAME_COUNT = 283;
 
@@ -484,13 +485,77 @@ export default function CafeHero() {
       id="cafe-hero"
       ref={sectionRef}
       className="
-        relative h-[420vh]
-        bg-[#120a05]
+        relative bg-[#120a05]
         sm:h-[460vh]
         lg:h-[500vh]
       "
     >
-      <div className="sticky top-0 h-screen overflow-hidden bg-[#120a05]">
+      {/* Mobile hero */}
+      <div className="relative min-h-[100svh] overflow-hidden bg-[#120a05] sm:hidden">
+        <img
+          src={MOBILE_BG}
+          alt="Warm cafe interior with coffee and pastries"
+          className="absolute inset-0 h-full w-full scale-[1.02] object-cover object-center"
+        />
+
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(18,10,5,0.72)_0%,rgba(18,10,5,0.1)_34%,rgba(18,10,5,0.28)_52%,rgba(18,10,5,0.96)_88%,#120a05_100%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(18,10,5,0.78)_0%,rgba(18,10,5,0.18)_58%,rgba(18,10,5,0.08)_100%)]" />
+        <div className="pointer-events-none absolute -left-28 top-[24%] h-72 w-72 rounded-full bg-[#d89a3d]/10 blur-[90px]" />
+
+        <div className="relative z-10 flex min-h-[100svh] items-end px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-32">
+          <div className="w-full">
+            <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.28em] text-[#efb55d]">
+              Cafe Bee
+            </p>
+
+            <h1 className="max-w-[350px] text-[2.85rem] font-black leading-[0.9] tracking-[-0.055em] text-white min-[390px]:text-[3.15rem]">
+              TASTE THE
+              <span className="block bg-gradient-to-r from-[#fff5dc] via-[#e8ad54] to-[#b77527] bg-clip-text text-transparent">
+                GOOD MOMENTS.
+              </span>
+            </h1>
+
+            <p className="mt-6 max-w-[340px] text-[13px] leading-6 text-stone-200/80">
+              Handcrafted coffee, fresh meals and sweet moments, served in one warm and welcoming space.
+            </p>
+
+            <div className="mt-7 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={scrollToMenu}
+                className="group inline-flex h-12 cursor-pointer items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#b97828] via-[#dc9d42] to-[#efbd69] px-4 text-[11px] font-extrabold text-[#241207] shadow-[0_14px_35px_rgba(202,135,48,0.32)] transition active:scale-[0.98]"
+              >
+                Menu
+                <ArrowRight size={15} className="transition-transform duration-300 group-hover:translate-x-1" />
+              </button>
+
+              <a
+                href={MAP_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex h-12 cursor-pointer items-center justify-center gap-2 rounded-full border border-white/20 bg-black/25 px-3 text-[11px] font-bold text-white backdrop-blur-md transition active:scale-[0.98]"
+              >
+                <MapPin className="h-4 w-4 text-[#f0b75b]" />
+                Visit Us
+              </a>
+            </div>
+
+            <div className="mt-6 flex items-center gap-5 border-t border-white/15 pt-4">
+              <div className="flex items-center gap-2">
+                <Coffee className="h-4 w-4 text-[#efb55d]" />
+                <span className="text-[10px] font-semibold text-white/70">Premium coffee</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Clock3 className="h-4 w-4 text-[#efb55d]" />
+                <span className="text-[10px] font-semibold text-white/70">Open every day</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="sticky top-0 hidden h-screen overflow-hidden bg-[#120a05] sm:block">
         {/* Image sequence canvas */}
         <canvas
           ref={canvasRef}
