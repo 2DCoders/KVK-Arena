@@ -185,7 +185,9 @@ export default function CafeJourney() {
     const section = horizontalSectionRef.current;
     const track = horizontalTrackRef.current;
 
-    if (!section || !track) return;
+    if (!section || !track || !window.matchMedia("(min-width: 768px)").matches) {
+      return;
+    }
 
     const gsapContext = gsap.context(() => {
       const getScrollDistance = () => {
@@ -235,7 +237,7 @@ export default function CafeJourney() {
 
         <div className="pointer-events-none absolute left-[48%] top-24 hidden h-24 w-24 rounded-full bg-[#d38443]/10 blur-2xl lg:block" />
 
-        <div className="relative z-10 mx-auto grid min-h-screen w-full max-w-7xl items-center gap-14 px-5 py-24 sm:px-8 lg:grid-cols-[0.95fr_1.05fr] lg:px-12 lg:py-20">
+        <div className="relative z-10 mx-auto grid min-h-screen w-full max-w-7xl items-center gap-10 px-5 py-20 sm:gap-14 sm:px-8 sm:py-24 lg:grid-cols-[0.95fr_1.05fr] lg:px-12 lg:py-20">
           {/* Left content */}
           <div className="max-w-xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#a96a3b]/30 bg-[#21140d]/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#e4ad7a] backdrop-blur-md">
@@ -243,7 +245,7 @@ export default function CafeJourney() {
               Breakfast and coffee
             </div>
 
-            <h2 className="mt-7 text-4xl font-black leading-[1.05] tracking-[-0.05em] text-[#fff8f0] sm:text-5xl lg:text-6xl xl:text-7xl">
+            <h2 className="mt-6 text-4xl font-black leading-[1.05] tracking-[-0.05em] text-[#fff8f0] sm:mt-7 sm:text-5xl lg:text-6xl xl:text-7xl">
               Begin your day
               <span className="mt-2 block text-[#d98745]">
                 with something special.
@@ -294,12 +296,12 @@ export default function CafeJourney() {
           </div>
 
           {/* Right image area */}
-          <div className="relative mx-auto flex min-h-[560px] w-full max-w-[620px] items-center justify-center">
-            <div className="absolute h-[500px] w-[500px] rounded-full border border-[#d18a50]/25" />
+          <div className="relative mx-auto flex min-h-[390px] w-full max-w-[620px] items-center justify-center sm:min-h-[560px]">
+            <div className="absolute h-[320px] w-[320px] rounded-full border border-[#d18a50]/25 sm:h-[500px] sm:w-[500px]" />
 
-            <div className="absolute h-[430px] w-[430px] rounded-full bg-gradient-to-br from-[#d68643] via-[#9b5129] to-[#4e2515] shadow-[0_40px_100px_rgba(0,0,0,0.45)]" />
+            <div className="absolute h-[280px] w-[280px] rounded-full bg-gradient-to-br from-[#d68643] via-[#9b5129] to-[#4e2515] shadow-[0_40px_100px_rgba(0,0,0,0.45)] sm:h-[430px] sm:w-[430px]" />
 
-            <div className="absolute h-[350px] w-[350px] rounded-full border border-white/10" />
+            <div className="absolute h-[230px] w-[230px] rounded-full border border-white/10 sm:h-[350px] sm:w-[350px]" />
 
             <div className="absolute right-8 top-12 h-24 w-24 rounded-full bg-[#db8d4f]/20 blur-3xl" />
 
@@ -386,18 +388,18 @@ export default function CafeJourney() {
       {/* Horizontal choices section */}
       <div
         ref={horizontalSectionRef}
-        className="relative min-h-screen overflow-hidden border-t border-white/10 bg-[#21130c]"
+        className="relative overflow-hidden border-t border-white/10 bg-[#21130c] md:min-h-screen"
       >
-        <div className="flex h-screen flex-col justify-center">
+        <div className="flex flex-col justify-center py-16 md:h-screen md:py-0">
           {/* Title */}
-          <div className="mx-auto mb-10 flex w-full max-w-7xl items-end justify-between px-5 sm:px-8 lg:px-12">
+          <div className="mx-auto mb-8 flex w-full max-w-7xl items-end justify-between px-5 sm:mb-10 sm:px-8 lg:px-12">
             <div>
               <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#d8894d]">
                 <Flame className="h-4 w-4" />
                 Customer favourites
               </div>
 
-              <h3 className="mt-4 text-3xl font-black tracking-[-0.04em] text-white sm:text-4xl lg:text-5xl">
+              <h3 className="mt-4 max-w-[18rem] text-3xl font-black tracking-[-0.04em] text-white sm:max-w-none sm:text-4xl lg:text-5xl">
                 Popular breakfast choices
               </h3>
 
@@ -416,12 +418,12 @@ export default function CafeJourney() {
           {/* Horizontal track */}
           <div
             ref={horizontalTrackRef}
-            className="flex w-max gap-6 pl-[max(1.25rem,calc((100vw-80rem)/2+3rem))] pr-[10vw]"
+            className="flex w-full flex-col gap-5 px-5 sm:gap-6 sm:pl-[max(1.25rem,calc((100vw-80rem)/2+3rem))] sm:pr-[10vw] md:w-max md:flex-row md:px-0"
           >
             {popularChoices.map((item, index) => (
               <article
                 key={item.id}
-                className="group relative h-[430px] w-[310px] shrink-0 overflow-hidden rounded-[2rem] border border-white/10 bg-[#18100b] shadow-[0_30px_80px_rgba(0,0,0,0.4)] sm:w-[360px] lg:h-[470px] lg:w-[390px]"
+                className="group relative h-[390px] w-full shrink-0 overflow-hidden rounded-[2rem] border border-white/10 bg-[#18100b] shadow-[0_30px_80px_rgba(0,0,0,0.4)] sm:w-[360px] sm:h-[430px] md:w-[360px] lg:h-[470px] lg:w-[390px]"
               >
                 <div className="absolute inset-0">
                   <img
@@ -468,7 +470,7 @@ export default function CafeJourney() {
             ))}
 
             {/* Ending card */}
-            <div className="flex h-[430px] w-[300px] shrink-0 items-center justify-center rounded-[2rem] border border-dashed border-[#bc7442]/35 bg-[#18100b]/70 p-8 text-center lg:h-[470px]">
+            <div className="flex h-[300px] w-full shrink-0 items-center justify-center rounded-[2rem] border border-dashed border-[#bc7442]/35 bg-[#18100b]/70 p-8 text-center sm:w-[300px] sm:h-[430px] lg:h-[470px]">
               <div>
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#c9783d]/15 text-[#e59a61]">
                   <Users className="h-7 w-7" />
@@ -495,7 +497,7 @@ export default function CafeJourney() {
           </div>
 
           {/* Progress line */}
-          <div className="mx-auto mt-10 w-full max-w-7xl px-5 sm:px-8 lg:px-12">
+          <div className="mx-auto mt-8 w-full max-w-7xl px-5 sm:mt-10 sm:px-8 lg:px-12 md:block">
             <div className="h-px w-full bg-white/10">
               <div className="h-px w-1/3 bg-gradient-to-r from-[#d17f43] to-[#f0b178]" />
             </div>
