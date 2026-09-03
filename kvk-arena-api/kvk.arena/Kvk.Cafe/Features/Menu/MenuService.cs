@@ -109,7 +109,6 @@ public class MenuService(CafeDbContext db) : IMenuService
             {
                 Id = m.Id,
                 Name = m.Name,
-                Image = m.Image,
                 Category = m.Category,
                 Price = m.Price,
                 Description = m.Description,
