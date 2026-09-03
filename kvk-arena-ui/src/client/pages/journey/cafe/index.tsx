@@ -224,7 +224,7 @@ export default function CafeJourney() {
   return (
     <section
       id="breakfast"
-      className="relative overflow-hidden bg-[#21130c] text-white"
+      className="relative max-w-full overflow-x-clip overflow-y-hidden bg-[#21130c] text-white"
     >
       {/* Hero area */}
       <div className="relative min-h-screen overflow-hidden">
@@ -296,7 +296,7 @@ export default function CafeJourney() {
           </div>
 
           {/* Right image area */}
-          <div className="relative mx-auto flex min-h-[390px] w-full max-w-[620px] items-center justify-center sm:min-h-[560px]">
+          <div className="relative mx-auto hidden min-h-[390px] w-full max-w-[620px] items-center justify-center sm:min-h-[560px] md:flex">
             <div className="absolute h-[320px] w-[320px] rounded-full border border-[#d18a50]/25 sm:h-[500px] sm:w-[500px]" />
 
             <div className="absolute h-[280px] w-[280px] rounded-full bg-gradient-to-br from-[#d68643] via-[#9b5129] to-[#4e2515] shadow-[0_40px_100px_rgba(0,0,0,0.45)] sm:h-[430px] sm:w-[430px]" />
@@ -418,12 +418,12 @@ export default function CafeJourney() {
           {/* Horizontal track */}
           <div
             ref={horizontalTrackRef}
-            className="flex w-full flex-col gap-5 px-5 sm:gap-6 sm:pl-[max(1.25rem,calc((100vw-80rem)/2+3rem))] sm:pr-[10vw] md:w-max md:flex-row md:px-0"
+            className="flex max-w-full flex-col gap-5 px-5 sm:gap-6 sm:pl-[max(1.25rem,calc((100vw-80rem)/2+3rem))] sm:pr-[10vw] md:w-max md:flex-row md:px-0"
           >
             {popularChoices.map((item, index) => (
               <article
                 key={item.id}
-                className="group relative h-[390px] w-full shrink-0 overflow-hidden rounded-[2rem] border border-white/10 bg-[#18100b] shadow-[0_30px_80px_rgba(0,0,0,0.4)] sm:w-[360px] sm:h-[430px] md:w-[360px] lg:h-[470px] lg:w-[390px]"
+                className="group relative h-[390px] w-full max-w-full shrink-0 overflow-hidden rounded-[2rem] border border-white/10 bg-[#18100b] shadow-[0_30px_80px_rgba(0,0,0,0.4)] sm:h-[430px] sm:w-[360px] md:w-[360px] lg:h-[470px] lg:w-[390px]"
               >
                 <div className="absolute inset-0">
                   <img
