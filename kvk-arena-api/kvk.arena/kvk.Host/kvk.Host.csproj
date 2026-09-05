@@ -38,6 +38,7 @@
         <ProjectReference Include="..\kvk.Gym\kvk.Gym.csproj" />
         <ProjectReference Include="..\kvk.Identity\kvk.Identity.csproj" />
         <ProjectReference Include="..\kvk.Financial\kvk.Financial.csproj" />
+        <ProjectReference Include="..\kvk.Saloon\kvk.Saloon.csproj" />
     </ItemGroup>
 
 </Project>
