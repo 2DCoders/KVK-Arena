@@ -169,13 +169,13 @@ export default function Footer() {
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          setConstructionPageName("Clothing Section");
+                          setConstructionPageName("Salon Section");
                           setOpenConstructionModal(true);
-                          // navigate("/clothing");
+                          // navigate("/salon");
                         }}
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
-                        Clothing
+                        Salon
                       </a>
                     </li>
                   </ul>

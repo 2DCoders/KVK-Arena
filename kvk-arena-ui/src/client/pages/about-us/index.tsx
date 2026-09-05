@@ -30,7 +30,7 @@ export default function AboutUs() {
                             </h2>
 
                             <p data-aos="fade-right" data-aos-delay="100" className="mt-5 text-base leading-8 text-slate-500">
-                                KVK Arena brings together a gym, car wash, badminton court, café, clothing store, and gaming zone, creating a complete lifestyle experience where fitness, entertainment, convenience, and style come together under one roof. We design every service around convenience, comfort, and creating a seamless experience for our members.                            </p>
+                                KVK Arena brings together a gym, car wash, badminton court, café, salon, and gaming zone, creating a complete lifestyle experience where fitness, entertainment, convenience, and style come together under one roof. We design every service around convenience, comfort, and creating a seamless experience for our members.                            </p>
 
                             <p data-aos="fade-right" data-aos-delay="150" className="mt-4 text-base leading-8 text-slate-500">
                                 From the first booking to the final visit, our goal is to keep everything easy, fast, and dependable. Whether you are here to move, relax, or get things done, the arena is built to keep your routine flowing.

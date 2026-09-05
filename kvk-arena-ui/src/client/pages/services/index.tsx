@@ -7,7 +7,7 @@ import carwash from "@/assets/carwash.jpg";
 import badminton from "@/assets/badminton.jpg";
 import gaming from "@/assets/billiard.jpg";
 import cafe from "@/assets/coffee.jpg";
-import clothing from "@/assets/clothing.jpg";
+import salon from "@/assets/salon.png";
 import AOS from "aos";
 import { useNavigate } from "react-router-dom";
 // import ConstructionModal from "@/components/404";
@@ -60,12 +60,12 @@ const services = [
   },
   {
     id: 6,
-    title: "Clothing Store",
-    tag: "Retail",
-    category: "clothing",
-    desc: "Browse our collection of high-quality apparel and accessories.",
-    img: clothing,
-    navigateTo: "/clothing",
+    title: "Salon",
+    tag: "Beauty",
+    category: "salon",
+    desc: "Indulge in a range of beauty and wellness services to enhance your look and feel.",
+    img: salon,
+    navigateTo: "/salon",
   }
 ];
 
@@ -76,7 +76,7 @@ const tabs = [
   { key: "badminton", label: "Badminton" },
   { key: "gaming", label: "Gaming" },
   { key: "cafe", label: "Cafe" },
-  { key: "clothing", label: "Clothing" },
+  { key: "salon", label: "Salon" },
 ];
 
 export default function Services() {
@@ -220,7 +220,6 @@ export default function Services() {
                         <button
                           onClick={() => {
                             navigate(service.navigateTo)
-                            // handleOpen404(service.title);
                           }}
                           type="button"
                           className="inline-flex cursor-pointer h-11 w-11 items-center justify-center rounded-full bg-white text-[#296BE1] shadow-[0_10px_25px_rgba(255,255,255,0.18)] transition hover:scale-105"

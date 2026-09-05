@@ -44,11 +44,11 @@ const services = [
       "Take a break at the café with coffee, snacks, and light refreshments in a cozy setting. It is the ideal stop to recharge before or after your workout, game, or sports session. The café completes the arena experience by turning a quick pause into a relaxed part of the visit.",
   },
   {
-    title: "Clothing Store",
+    title: "Salon",
     icon: Trophy,
-    highlight: "High-quality apparel and accessories",
+    highlight: "High-quality beauty and wellness services",
     description:
-      "Browse our collection of high-quality apparel and accessories. The clothing store offers a curated selection of items designed for comfort, style, and performance. Whether you're looking for workout gear or casual wear, you'll find products that meet your needs and enhance your experience at KVK Arena.",
+      "Indulge in a range of beauty and wellness services to enhance your look and feel. The salon offers a curated selection of services designed for comfort, style, and performance. Whether you're looking for a haircut or a full spa experience, you'll find services that meet your needs and enhance your experience at KVK Arena.",
   },
 ];
 
