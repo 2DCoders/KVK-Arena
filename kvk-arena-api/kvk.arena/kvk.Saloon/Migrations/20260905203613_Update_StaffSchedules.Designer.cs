@@ -3,6 +3,7 @@ using System;
 using Kvk.Cafe;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace kvk.Saloon.Migrations
 {
     [DbContext(typeof(SaloonDbContext))]
-    partial class SaloonDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260905203613_Update_StaffSchedules")]
+    partial class Update_StaffSchedules
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

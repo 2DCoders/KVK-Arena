@@ -17,6 +17,7 @@
       <!-- Project references required to access shared building blocks and gym DbContext -->
       <ProjectReference Include="..\kvk.Badminton\kvk.Badminton.csproj" />
       <ProjectReference Include="..\kvk.BuildingBlocks\kvk.BuildingBlocks.csproj" />
+      <ProjectReference Include="..\Kvk.Cafe\Kvk.Cafe.csproj" />
       <ProjectReference Include="..\kvk.CarService\kvk.CarService.csproj" />
       <ProjectReference Include="..\kvk.Gaming\kvk.Gaming.csproj" />
       <ProjectReference Include="..\kvk.Gym\kvk.Gym.csproj" />

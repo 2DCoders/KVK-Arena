@@ -1,8 +1,10 @@
 using System.Text.Json;
 using kvk.BuildingBlocks.Interfaces;
+using kvk.BuildingBlocks.Persistence;
 using Kvk.Cafe;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace kvk.Saloon.Persistence.DesignTime;
 
@@ -57,10 +59,9 @@ public class SaloonDbContextFactory : IDesignTimeDbContextFactory<SaloonDbContex
 
         // Provide minimal services required by GamingDbContext constructor at design-time.
         var tenantService = new DesignTimeTenantService();
-        var logger = Microsoft.Extensions.Logging.Abstractions
-            .NullLogger<kvk.BuildingBlocks.Persistence.AppDbContextBase>.Instance;
+        var logger = NullLogger<AppDbContextBase>.Instance;
 
-        return new SaloonDbContext(optionsBuilder.Options, tenantService, logger, null);
+        return new SaloonDbContext(optionsBuilder.Options, tenantService, logger);
     }
     
     internal class DesignTimeTenantService : ITenantService

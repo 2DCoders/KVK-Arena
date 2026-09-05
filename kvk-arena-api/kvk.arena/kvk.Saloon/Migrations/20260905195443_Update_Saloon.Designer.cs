@@ -3,6 +3,7 @@ using System;
 using Kvk.Cafe;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace kvk.Saloon.Migrations
 {
     [DbContext(typeof(SaloonDbContext))]
-    partial class SaloonDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260905195443_Update_Saloon")]
+    partial class Update_Saloon
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -66,6 +69,9 @@ namespace kvk.Saloon.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<int>("BranchId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
@@ -377,10 +383,15 @@ namespace kvk.Saloon.Migrations
                     b.Property<string>("Phone")
                         .HasColumnType("text");
 
+                    b.Property<Guid>("SaloonId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SaloonId");
 
                     b.HasIndex("TenantId")
                         .HasDatabaseName("IX_SaloonStaff_TenantId");
@@ -418,7 +429,10 @@ namespace kvk.Saloon.Migrations
                     b.Property<Guid?>("LastModifiedBy")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("SaloonStaffId")
+                    b.Property<int>("SaloonStaffId")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("StaffId")
                         .HasColumnType("uuid");
 
                     b.Property<TimeSpan>("StartTime")
@@ -429,7 +443,7 @@ namespace kvk.Saloon.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SaloonStaffId");
+                    b.HasIndex("StaffId");
 
                     b.HasIndex("TenantId")
                         .HasDatabaseName("IX_SaloonStaffSchedule_TenantId");
@@ -542,11 +556,22 @@ namespace kvk.Saloon.Migrations
                     b.Navigation("Saloon");
                 });
 
+            modelBuilder.Entity("kvk.Saloon.Domain.SaloonStaff", b =>
+                {
+                    b.HasOne("kvk.Saloon.Domain.Saloon", "Saloon")
+                        .WithMany("Staff")
+                        .HasForeignKey("SaloonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Saloon");
+                });
+
             modelBuilder.Entity("kvk.Saloon.Domain.SaloonStaffSchedule", b =>
                 {
                     b.HasOne("kvk.Saloon.Domain.SaloonStaff", "Staff")
                         .WithMany("Schedules")
-                        .HasForeignKey("SaloonStaffId")
+                        .HasForeignKey("StaffId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -579,6 +604,8 @@ namespace kvk.Saloon.Migrations
                     b.Navigation("Services");
 
                     b.Navigation("SlotConfigurations");
+
+                    b.Navigation("Staff");
                 });
 
             modelBuilder.Entity("kvk.Saloon.Domain.SaloonBooking", b =>

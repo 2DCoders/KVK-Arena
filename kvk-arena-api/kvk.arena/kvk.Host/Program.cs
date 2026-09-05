@@ -19,6 +19,7 @@ using Newtonsoft.Json.Serialization;
 using kvk.BuildingBlocks.Common;
 using Kvk.Cafe;
 using kvk.CarService;
+using kvk.Saloon;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -154,6 +155,9 @@ carServiceInitializer.RegisterModule(builder.Services, builder.Configuration);
 
 var cafeInitializer  = new CafeModuleInitializer();
 cafeInitializer.RegisterModule(builder.Services, builder.Configuration);
+
+var saloonInitializer  = new SaloonModuleInitializer();
+saloonInitializer.RegisterModule(builder.Services, builder.Configuration);
 
 
 

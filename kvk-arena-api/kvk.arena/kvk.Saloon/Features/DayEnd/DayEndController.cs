@@ -1,6 +1,5 @@
-using Microsoft.AspNetCore.Mvc;
-using kvk.BuildingBlocks.Interfaces;
 using kvk.Saloon.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Gaming.Features.DayEnd;
 
@@ -17,7 +16,7 @@ public class DayEndController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] kvk.BuildingBlocks.Common.DayEnd request,
+    public async Task<IActionResult> Create([FromBody] BuildingBlocks.Common.DayEnd request,
         CancellationToken cancellationToken = default)
     {
         var result = await _service.CreateDayEndAsync(request, cancellationToken);

@@ -3,6 +3,7 @@ using System;
 using Kvk.Cafe;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace kvk.Saloon.Migrations
 {
     [DbContext(typeof(SaloonDbContext))]
-    partial class SaloonDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260905202352_Update_Staff")]
+    partial class Update_Staff
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -418,7 +421,10 @@ namespace kvk.Saloon.Migrations
                     b.Property<Guid?>("LastModifiedBy")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("SaloonStaffId")
+                    b.Property<int>("SaloonStaffId")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("StaffId")
                         .HasColumnType("uuid");
 
                     b.Property<TimeSpan>("StartTime")
@@ -429,7 +435,7 @@ namespace kvk.Saloon.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SaloonStaffId");
+                    b.HasIndex("StaffId");
 
                     b.HasIndex("TenantId")
                         .HasDatabaseName("IX_SaloonStaffSchedule_TenantId");
@@ -546,7 +552,7 @@ namespace kvk.Saloon.Migrations
                 {
                     b.HasOne("kvk.Saloon.Domain.SaloonStaff", "Staff")
                         .WithMany("Schedules")
-                        .HasForeignKey("SaloonStaffId")
+                        .HasForeignKey("StaffId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
