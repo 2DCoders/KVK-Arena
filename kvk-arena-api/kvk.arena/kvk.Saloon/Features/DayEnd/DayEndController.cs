@@ -5,7 +5,7 @@ using kvk.Saloon.Services;
 namespace kvk.Gaming.Features.DayEnd;
 
 [ApiController]
-[Route("api/cafe/dayend")]
+[Route("api/saloon/dayend")]
 public class DayEndController : ControllerBase
 {
     private readonly SaloonDayEndService _service;
