@@ -1,4 +1,5 @@
 using kvk.BuildingBlocks.Common;
+using kvk.Financial.Features.CafeAnalytics;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Financial.Features.CarserviceAnalytics;
@@ -6,16 +7,16 @@ namespace kvk.Financial.Features.CarserviceAnalytics;
 [Route("api/financial/cafe-analytics")]
 public class CafeAnalyticsController : ControllerBase
 {
-    private readonly CarServiceAnalyticsService _service;
+    private readonly CafeAnalyticsService _service;
 
-    public CafeAnalyticsController(CarServiceAnalyticsService service)
+    public CafeAnalyticsController(CafeAnalyticsService service)
     {
         _service = service;
     }
     
     
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] CarServiceAnalyticsRequest request, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Get([FromQuery] CafeAnalyticsRequest request, CancellationToken cancellationToken = default)
     {
         if (request == null)
             return BadRequest(Result.Failure("Request cannot be null"));
