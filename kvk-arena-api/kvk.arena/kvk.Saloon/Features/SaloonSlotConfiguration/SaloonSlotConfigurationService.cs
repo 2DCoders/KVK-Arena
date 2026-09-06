@@ -68,9 +68,6 @@ public class SaloonSlotConfigurationService : ISaloonSlotConfigurationService
 
         if (request.EndTime <= request.StartTime)
             return Result.Failure("End time must be after start time");
-            
-        if (request.SlotIntervalMinutes <= 0)
-            return Result.Failure("Slot interval must be greater than 0");
 
         try
         {

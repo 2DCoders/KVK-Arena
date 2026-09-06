@@ -155,6 +155,7 @@ public class OrderService(CafeDbContext db) : IOrderService
                     DiscountedPrice = oi.DiscountedPrice
                 }).ToList()
             })
+            .Where(o => o.OrderDate.Date == DateTime.Now.Date)
             .ToListAsync(cancellationToken);
     }
 

@@ -216,7 +216,7 @@ export default function CarwashAdd1() {
               </span>
             </div>
 
-            <div className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {allServices.map(
                 ({
                   icon: Icon,
