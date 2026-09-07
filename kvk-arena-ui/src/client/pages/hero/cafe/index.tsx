@@ -680,7 +680,7 @@ export default function CafeHero() {
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </button>
 
-                <a
+                {/* <a
                   href={MAP_URL}
                   target="_blank"
                   rel="noreferrer"
@@ -705,7 +705,7 @@ export default function CafeHero() {
                   <MapPin className="h-4 w-4 text-[#f0b75b]" />
 
                   Visit Our Cafe
-                </a>
+                </a> */}
               </div>
 
               <div className="mt-9 flex flex-wrap gap-6 border-t border-white/15 pt-6">
