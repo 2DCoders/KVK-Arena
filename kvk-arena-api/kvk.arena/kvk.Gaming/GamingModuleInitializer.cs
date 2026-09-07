@@ -44,6 +44,6 @@ public class GamingModuleInitializer : IModuleInitializer
         services.AddScoped<IGamingSlotGenerationService, GamingSlotGenerationService>();
         // Register GamingBookingService
         services.AddScoped<IGamingBookingService, GamingBookingService>();
-        services.AddScoped<IDayEndService, GamingDayEndService>(); // Register the new service
+        services.AddScoped<GamingDayEndService>(); // Register the new service
     }
 }
