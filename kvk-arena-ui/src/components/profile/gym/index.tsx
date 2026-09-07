@@ -887,15 +887,13 @@ export default function UserProfileModal({
                       />
 
                       {/* Gender */}
-                      <select
+                      <input
                         name="gender"
-                        value={form.gender}
+                        value={form.gender === 1 ? "Male" : "Female"}
                         disabled={!isEditing}
                         className="w-full p-3 rounded-xl border bg-slate-50 disabled:bg-slate-100"
-                      >
-                        <option value={1}>Male</option>
-                        <option value={2}>Female</option>
-                      </select>
+                        placeholder="Gender"
+                      />
 
                       {/* Update Button */}
                       {isEditing && (
