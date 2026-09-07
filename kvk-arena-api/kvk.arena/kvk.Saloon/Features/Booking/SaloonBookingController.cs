@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace kvk.Saloon.Features.Booking;
 
 [ApiController]
-[Route("api/saloon/saloons/{saloonId:guid}/bookings")]
+[Route("api/saloon/saloons/bookings")]
 public class SaloonBookingController : ControllerBase
 {
     private readonly ISaloonBookingService _service;
@@ -15,25 +15,22 @@ public class SaloonBookingController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll(Guid saloonId, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        var bookings = await _service.GetAllAsync(saloonId, cancellationToken);
+        var bookings = await _service.GetAllAsync(cancellationToken);
         return Ok(bookings);
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid saloonId, Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _service.GetByIdAsync(id, cancellationToken);
         return Ok(result);
     }
 
-    [HttpPost]
-    public async Task<IActionResult> Create(Guid saloonId, [FromBody] SaloonBookingCreateRequest request, CancellationToken cancellationToken)
+    [HttpPost("~/api/saloon/bookings")]
+    public async Task<IActionResult> Create([FromBody] SaloonBookingCreateRequest request, CancellationToken cancellationToken)
     {
-        if (request.SaloonId != saloonId)
-            return BadRequest("SaloonId mismatch");
-
         var result = await _service.CreateAsync(request, cancellationToken);
 
         if (!result.Succeeded)
@@ -42,8 +39,19 @@ public class SaloonBookingController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("~/api/saloon/bookings/availability")]
+    public async Task<IActionResult> CheckAvailability([FromQuery] SaloonBookingAvailabilityRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _service.CheckAvailabilityAsync(request, cancellationToken);
+
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid saloonId, Guid id, [FromBody] SaloonBookingUpdateRequest request,
+    public async Task<IActionResult> Update(Guid id, [FromBody] SaloonBookingUpdateRequest request,
         CancellationToken cancellationToken)
     {
         if (id != request.Id)
@@ -58,7 +66,7 @@ public class SaloonBookingController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid saloonId, Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         var result = await _service.DeleteAsync(id, cancellationToken);
 

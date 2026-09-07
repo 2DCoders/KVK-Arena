@@ -11,7 +11,6 @@ public class SaloonBookingUpdateRequest
     public string? MemberId { get; set; }
     public DateOnly BookingDate { get; set; }
     public TimeSpan StartTime { get; set; }
-    public TimeSpan EndTime { get; set; }
     public SaloonBookingStatus Status { get; set; }
     public decimal TotalAmount { get; set; }
     public decimal DiscountAmount { get; set; }
@@ -25,10 +24,6 @@ public class SaloonBookingServiceUpdateRequest
 {
     public Guid? Id { get; set; }
     public Guid SaloonServiceId { get; set; }
-    public Guid SaloonStaffId { get; set; }
-    public int DurationMinutes { get; set; }
     public decimal Price { get; set; }
     public decimal DiscountAmount { get; set; }
-    public TimeSpan StartTime { get; set; }
-    public TimeSpan EndTime { get; set; }
 }

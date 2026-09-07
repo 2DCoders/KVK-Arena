@@ -2,7 +2,6 @@ using kvk.BuildingBlocks.Interfaces;
 using Kvk.Cafe;
 using kvk.Saloon.Features.Booking;
 using kvk.Saloon.Features.Saloon;
-using kvk.Saloon.Features.SaloonSlotConfiguration;
 using kvk.Saloon.Features.ServiceItem;
 using kvk.Saloon.Features.Staff;
 using kvk.Saloon.Features.StaffSchedule;
@@ -35,7 +34,6 @@ public class SaloonModuleInitializer : IModuleInitializer
         services.AddScoped<ISaloonStaffService, SaloonStaffService>();
         services.AddScoped<ISaloonServiceItemService, SaloonServiceItemService>();
         services.AddScoped<ISaloonStaffScheduleService, SaloonStaffScheduleService>();
-        services.AddScoped<ISaloonSlotConfigurationService, SaloonSlotConfigurationService>();
         services.AddScoped<ISaloonBookingService, SaloonBookingService>();
         services.AddScoped<SaloonDayEndService>(); // Register the new service
 
