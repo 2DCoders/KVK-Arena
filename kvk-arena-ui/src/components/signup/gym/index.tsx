@@ -99,7 +99,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                 visible: true,
                 variant: "error",
                 title: "Login Failed",
-                description: error.response?.data?.message || "An error occurred while logging in. Please try again.",
+                description: "Invalid credentials. Please try again.",
             });
 
             localStorage.removeItem("memberToken");
@@ -489,7 +489,8 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                                         onClick={() => {
                                             handleLogin();
                                         }}
-                                        className="mt-4 h-11 w-full rounded-xl bg-[#296BE1] text-white text-sm font-semibold hover:bg-[#2158bc] transition cursor-pointer"
+                                        // disabled styles
+                                        className="mt-4 h-11 w-full rounded-xl bg-[#296BE1] text-white text-sm font-semibold hover:bg-[#2158bc] transition cursor-pointer disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
                                     >
                                         Sign In
                                     </button>
