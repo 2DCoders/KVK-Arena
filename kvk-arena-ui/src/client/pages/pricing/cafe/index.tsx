@@ -1,5 +1,9 @@
 import IMG from "@/assets/demo-coffee.png";
 import {
+  getCafeMenu,
+  type CafeMenuResponse,
+} from "@/services/cafe-service-api";
+import {
   ArrowLeft,
   ArrowRight,
   Coffee,
@@ -10,124 +14,42 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 type CafeItem = {
-  id: number;
+  id: string | number;
   name: string;
   category: string;
   price: number;
   description: string;
   ingredients: string[];
+  facts?: string;
+  image?: string | null;
 };
 
-const cafeItems: CafeItem[] = [
-  {
-    id: 1,
-    name: "Classic Espresso",
-    category: "Hot Coffee",
-    price: 450,
-    description:
-      "A rich and concentrated espresso made using carefully selected coffee beans for a bold and balanced finish.",
-    ingredients: ["Premium coffee beans", "Filtered water"],
-  },
-  {
-    id: 2,
-    name: "Caffè Americano",
-    category: "Hot Coffee",
-    price: 520,
-    description:
-      "A smooth espresso combined with hot water, delivering a lighter body while preserving its rich coffee flavour.",
-    ingredients: ["Espresso", "Hot water"],
-  },
-  {
-    id: 3,
-    name: "Creamy Cappuccino",
-    category: "Hot Coffee",
-    price: 650,
-    description:
-      "Freshly brewed espresso finished with steamed milk and a generous layer of silky milk foam.",
-    ingredients: ["Espresso", "Steamed milk", "Milk foam"],
-  },
-  {
-    id: 4,
-    name: "Signature Latte",
-    category: "Hot Coffee",
-    price: 680,
-    description:
-      "A comforting combination of espresso and smooth steamed milk, finished with handcrafted latte art.",
-    ingredients: ["Espresso", "Steamed milk", "Milk foam"],
-  },
-  {
-    id: 5,
-    name: "Chocolate Mocha",
-    category: "Special Coffee",
-    price: 750,
-    description:
-      "A luxurious blend of espresso, chocolate and steamed milk, created for coffee and chocolate lovers.",
-    ingredients: ["Espresso", "Chocolate", "Steamed milk"],
-  },
-  {
-    id: 6,
-    name: "Caramel Latte",
-    category: "Special Coffee",
-    price: 780,
-    description:
-      "Smooth espresso and creamy milk enhanced with a sweet caramel flavour for a rich café favourite.",
-    ingredients: ["Espresso", "Steamed milk", "Caramel"],
-  },
-  {
-    id: 7,
-    name: "Iced Americano",
-    category: "Cold Coffee",
-    price: 580,
-    description:
-      "Fresh espresso poured over chilled water and ice for a clean, bold and refreshing coffee experience.",
-    ingredients: ["Espresso", "Chilled water", "Ice"],
-  },
-  {
-    id: 8,
-    name: "Iced Latte",
-    category: "Cold Coffee",
-    price: 720,
-    description:
-      "A refreshing combination of espresso, cold milk and ice with a smooth and creamy finish.",
-    ingredients: ["Espresso", "Cold milk", "Ice"],
-  },
-  {
-    id: 9,
-    name: "Vanilla Cold Coffee",
-    category: "Cold Coffee",
-    price: 790,
-    description:
-      "Cold coffee blended with creamy milk and aromatic vanilla for a refreshing and flavourful drink.",
-    ingredients: ["Coffee", "Cold milk", "Vanilla", "Ice"],
-  },
-  {
-    id: 10,
-    name: "Coffee Frappe",
-    category: "Blended Coffee",
-    price: 850,
-    description:
-      "A chilled blended coffee drink with a creamy texture, topped with a delicate layer of foam.",
-    ingredients: ["Coffee", "Milk", "Ice", "Cream"],
-  },
-  {
-    id: 11,
-    name: "Hazelnut Latte",
-    category: "Special Coffee",
-    price: 820,
-    description:
-      "A smooth latte enriched with roasted hazelnut flavour, offering a warm and nutty finish.",
-    ingredients: ["Espresso", "Steamed milk", "Hazelnut"],
-  },
-  {
-    id: 12,
-    name: "Double Espresso",
-    category: "Hot Coffee",
-    price: 580,
-    description:
-      "Two full shots of premium espresso created for customers who enjoy a stronger coffee experience.",
-    ingredients: ["Double espresso shot", "Filtered water"],
-  },
-];
+const categoryNames: Record<number, string> = {
+  1: "Breakfast",
+  2: "Lunch",
+  3: "Dinner",
+  4: "Drinks",
+  5: "Hot drinks",
+};
+
+const getImageSource = (image?: string | null) => {
+  if (!image) return IMG;
+  if (image.startsWith("data:image/")) return image;
+  return `data:image/png;base64,${image}`;
+};
+
+const mapCafeMenuItem = (item: CafeMenuResponse): CafeItem => ({
+  id: item.id,
+  name: item.name,
+  category: categoryNames[item.category] ?? "Drinks",
+  price: item.price,
+  description: item.description ?? "",
+  ingredients: item.ingredients
+    ? item.ingredients.split(",").map((ingredient) => ingredient.trim())
+    : [],
+  facts: item.facts ?? "Every drink is prepared after ordering to ensure the best possible flavour and quality.",
+  image: item.image,
+});
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat("en-LK", {
@@ -138,11 +60,26 @@ const formatPrice = (price: number) =>
 
 export default function CafePricing() {
   const [selectedItem, setSelectedItem] = useState<CafeItem | null>(null);
+  const [menuItems, setMenuItems] = useState<CafeItem[]>([]);
   const [showAll, setShowAll] = useState(false);
+
+  const handleGetCafeMenu = async () => {
+    try {
+      const response = await getCafeMenu(4);
+      const items = Array.isArray(response.data) ? response.data : [response.data];
+      setMenuItems(items.filter((item) => item.isActive).map(mapCafeMenuItem));
+    } catch (error) {
+      console.error("Error fetching cafe menu:", error);
+    }
+  };
+
+  useEffect(() => {
+    void handleGetCafeMenu();
+  }, []);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const visibleItems = showAll ? cafeItems : cafeItems.slice(0, 10);
+  const visibleItems = showAll ? menuItems : menuItems.slice(0, 10);
 
   const scrollItems = (direction: "left" | "right") => {
     const container = scrollContainerRef.current;
@@ -257,7 +194,7 @@ export default function CafePricing() {
                   {/* Image */}
                   <div className="relative aspect-[4/4.6] overflow-hidden rounded-[2rem] bg-[#ead8c8]">
                     <img
-                      src={IMG}
+                      src={getImageSource(item.image)}
                       alt={item.name}
                       className="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-105"
                     />
@@ -330,7 +267,7 @@ export default function CafePricing() {
           </div>
 
           {/* View more */}
-          {cafeItems.length > 10 && (
+          {menuItems.length > 10 && (
             <div className="mt-10 flex justify-center">
               <button
                 type="button"
@@ -348,7 +285,7 @@ export default function CafePricing() {
               >
                 {showAll
                   ? "Show fewer items"
-                  : `View more items (${cafeItems.length - 10})`}
+                  : `View more items (${menuItems.length - 10})`}
 
                 <ArrowRight
                   className={`h-4 w-4 cursor-pointer transition-transform duration-300 ${
@@ -389,7 +326,7 @@ export default function CafePricing() {
               {/* Fixed image side */}
               <div className="relative hidden min-h-[520px] overflow-hidden md:block">
                 <img
-                  src={IMG}
+                  src={getImageSource(selectedItem.image)}
                   alt={selectedItem.name}
                   className="absolute inset-0 h-full w-full object-cover"
                 />
@@ -412,7 +349,7 @@ export default function CafePricing() {
                 {/* Mobile image */}
                 <div className="relative mb-7 aspect-[16/10] overflow-hidden rounded-2xl md:hidden">
                   <img
-                    src={IMG}
+                    src={getImageSource(selectedItem.image)}
                     alt={selectedItem.name}
                     className="h-full w-full object-cover"
                   />
@@ -476,8 +413,8 @@ export default function CafePricing() {
                       </p>
 
                       <p className="mt-1 text-sm leading-6 text-[#796459]">
-                        Every drink is prepared after ordering to ensure the
-                        best possible flavour and quality.
+                        {selectedItem.facts ??
+                          "Every drink is prepared after ordering to ensure the best possible flavour and quality."}
                       </p>
                     </div>
                   </div>
