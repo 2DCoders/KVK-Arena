@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import gymImage from "@/assets/gym-signup.jpg";
 import { getMembershipPlans } from "@/services/memberships-api";
 import { loginMember, registerMember } from "@/services/auth-api";
 import Alert from "@/components/alert";
-import { createPayment } from "@/services/pay-api";
+import { createPayment, reversePayment } from "@/services/pay-api";
 import { getEnv } from "@/env";
 import { X } from "lucide-react";
 
@@ -27,6 +27,8 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
   const [loading, setLoading] = useState(false);
   const [paymentInProgress, setPaymentInProgress] = useState(false);
   const [loadingLogin, setLoadingLogin] = useState(false);
+
+  const reverseInProgressRef = useRef(false);
 
   const fetchMembershipPlans = async () => {
     try {
@@ -166,6 +168,42 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
     gender &&
     confirm;
 
+  const handleReverse = async () => {
+    if (reverseInProgressRef.current) {
+      return;
+    }
+
+    const pendingPayment = localStorage.getItem("pendingMembershipPayment");
+
+    if (!pendingPayment) {
+      return;
+    }
+
+    reverseInProgressRef.current = true;
+
+    try {
+      const paymentData = JSON.parse(pendingPayment);
+
+      const body = {
+        memberId: paymentData.memberId,
+        membershipPlanId: paymentData.membershipPlanId,
+        orderId: paymentData.orderId,
+      };
+
+      console.log("Reversing payment:", body);
+
+      await reversePayment(body);
+
+      localStorage.removeItem("pendingMembershipPayment");
+
+      console.log("Payment reversed successfully");
+    } catch (error) {
+      console.error("Error reversing payment:", error);
+    } finally {
+      reverseInProgressRef.current = false;
+    }
+  };
+
   useEffect(() => {
     const interval = setInterval(() => {
       if (window.payhere) {
@@ -173,16 +211,19 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
 
         window.payhere.onCompleted = (orderId: string) => {
           console.log("Payment success:", orderId);
+          localStorage.removeItem("pendingMembershipPayment");
           setPaymentInProgress(false);
           window.location.reload();
         };
 
-        window.payhere.onDismissed = () => {
+        window.payhere.onDismissed = async () => {
+          await handleReverse();
           console.log("Payment cancelled");
           setPaymentInProgress(false);
         };
 
-        window.payhere.onError = (error: any) => {
+        window.payhere.onError = async (error: any) => {
+          await handleReverse();
           console.log("Payment error:", error);
           setPaymentInProgress(false);
         };
@@ -190,6 +231,24 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
     }, 300);
 
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const checkPendingPayment = async () => {
+      const pendingPayment = localStorage.getItem("pendingMembershipPayment");
+
+      if (!pendingPayment) {
+        return;
+      }
+
+      console.log("Pending payment found after page refresh");
+
+      await handleReverse();
+
+      setPaymentInProgress(false);
+    };
+
+    checkPendingPayment();
   }, []);
 
   const handleRegister = async () => {
@@ -265,6 +324,15 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
       if (!window.payhere) {
         throw new Error("PayHere not loaded");
       }
+
+      localStorage.setItem(
+        "pendingMembershipPayment",
+        JSON.stringify({
+          memberId: localStorage.getItem("newMemberId") ?? "",
+          membershipPlanId: selectedPlan,
+          orderId: payment.orderId,
+        }),
+      );
 
       const paymentDetails = {
         sandbox: true,
