@@ -542,6 +542,8 @@ public class MembershipService : IMembershipService
                     .AnyAsync(m => m.Email == request.Email && m.Id != memberId, cancellationToken);
                 if (existingMember)
                     return Result.Failure("Email is already registered");
+                
+                member.Email = request.Email;
             }
 
             if (!string.IsNullOrWhiteSpace(request.FirstName))
