@@ -40,6 +40,7 @@ public class GymPaymentGatewayService : IGymPaymentGatewayService
 
         if (existingMember != null)
         {
+            existingMember.MembershipPlanPendingId =  existingMember.MembershipPlanId;
             existingMember.MembershipPlanId = request.MembershipPlanId;
         }
 
@@ -91,8 +92,12 @@ public class GymPaymentGatewayService : IGymPaymentGatewayService
             .Where(m => m.Id == request.MemberId)
             .FirstOrDefaultAsync(cancellationToken);
 
-        existingMember?.MembershipPlanId = request.MembershipPlanId;
-
+        if (existingMember != null && existingMember.MembershipPlanPendingId != null)
+        {
+            existingMember?.MembershipPlanId = existingMember.MembershipPlanPendingId;   
+        }
+        
+        
         //remove payment record
         var paymentRecord =
             await _db.PaymentRecords.FirstOrDefaultAsync(p => p.TransactionReference == request.OrderId && p.PaymentStatus == PaymentStatus.Pending,

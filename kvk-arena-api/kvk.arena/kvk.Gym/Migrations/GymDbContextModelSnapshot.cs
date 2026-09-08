@@ -306,6 +306,9 @@ namespace kvk.Gym.Migrations
                     b.Property<Guid?>("MembershipPlanId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("MembershipPlanPendingId")
+                        .HasColumnType("uuid");
+
                     b.Property<int>("MembershipStatus")
                         .HasColumnType("integer");
 
