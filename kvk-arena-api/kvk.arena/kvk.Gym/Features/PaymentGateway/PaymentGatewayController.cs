@@ -22,7 +22,7 @@ public class PaymentGatewayController : ControllerBase
         return Ok(response);
     }
     
-    [HttpDelete("reverse")]
+    [HttpPost("reverse")]
     public async Task<IActionResult> DeletePendingPayment([FromBody]PendingPaymentDeleteRequest request)
     {
         var response = await _paymentGatewayService.DeletePendingPayment(request);
