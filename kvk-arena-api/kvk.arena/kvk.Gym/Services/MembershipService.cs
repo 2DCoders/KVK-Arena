@@ -674,6 +674,32 @@ public class MembershipService : IMembershipService
                 latestPayment.MemberShipRenewalDate = renewalDate;
                 latestPayment.MemberShipEndDate = newStartDate.AddDays(plan.DurationInDays);
                 latestPayment.PaymentStatus = kvk.Gym.Enums.PaymentStatus.Paid;
+            } else if (latestPayment != null && latestPayment.MemberShipEndDate == null)
+            {
+                latestPayment.Amount = plan.Price;
+                latestPayment.PaymentType = request.PaymentType;
+
+                var newStartDate = DateTime.UtcNow;
+
+                latestPayment.MemberShipStartDate = newStartDate;
+                latestPayment.MemberShipRenewalDate = renewalDate;
+                latestPayment.MemberShipEndDate = newStartDate.AddDays(plan.DurationInDays);
+                latestPayment.PaymentStatus = kvk.Gym.Enums.PaymentStatus.Paid;
+            }
+            else
+            {
+                // create a new payment record for the upgraded plan
+                payment = new MemberPayment
+                {
+                    MembershipId = member.Id,
+                    Amount = plan.Price,
+                    PaymentType = request.PaymentType,
+                    MemberShipStartDate = startDate,
+                    MemberShipRenewalDate = renewalDate,
+                    MemberShipEndDate = endDate,
+                    PaymentStatus = kvk.Gym.Enums.PaymentStatus.Paid
+                };
+                _db.MemberPayments.Add(payment);
             }
 
 
