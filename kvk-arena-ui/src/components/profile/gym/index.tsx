@@ -2,7 +2,7 @@ import Alert from "@/components/alert";
 import { getEnv } from "@/env";
 import { changePassword, getMember, updateMember } from "@/services/auth-api";
 import { getMembershipPlans } from "@/services/memberships-api";
-import { createPayment } from "@/services/pay-api";
+import { createPayment, reversePayment } from "@/services/pay-api";
 import {
   createRequest,
   getRequestById,
@@ -263,6 +263,19 @@ export default function UserProfileModal({
     }
   };
 
+  const handleReverse = async () => {
+    try {
+      const body = {
+        memberId,
+        membershipPlanId: localStorage.getItem("actualMembershipPlanId") || "N/A",
+        orderId: memberData?.memberPayment?.orderId,
+      };
+      await reversePayment(body);
+    } catch (error) {
+      console.error("Error reversing payment:", error);
+    }
+  }
+
   useEffect(() => {
     const interval = setInterval(() => {
       if (window.payhere) {
@@ -394,6 +407,9 @@ export default function UserProfileModal({
     try {
       const memberData = await getMember(memberId, memberToken);
       setMemberData(memberData);
+      console.log(memberData.membershipPlanId);
+      
+      localStorage.setItem("actualMembershipPlanId", memberData?.memberType || "N/A"); // Store memberType in localStorage
       if (
         memberData?.additionalData?.response?.memberPayment
           ?.memberShipEndDate === null
