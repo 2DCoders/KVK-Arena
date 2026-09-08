@@ -64,6 +64,7 @@ export default function UserProfileModal({
     oldPassword: "",
   });
   const [loading, setLoading] = useState(false);
+  const [paymentInProgress, setPaymentInProgress] = useState(false);
   const [showEditTrainerModal, setShowEditTrainerModal] = useState(false);
   const [isExistRequest, setIsExistRequest] = useState(false);
   const [pendingRequestData, setPendingRequestData] = useState<any>(null);
@@ -269,14 +270,18 @@ export default function UserProfileModal({
 
         window.payhere.onCompleted = (orderId: string) => {
           console.log("Payment success:", orderId);
+          setPaymentInProgress(false);
+          window.location.reload();
         };
 
         window.payhere.onDismissed = () => {
           console.log("Payment cancelled");
+          setPaymentInProgress(false);
         };
 
         window.payhere.onError = (error: any) => {
           console.log("Payment error:", error);
+          setPaymentInProgress(false);
         };
       }
     }, 300);
@@ -329,6 +334,9 @@ export default function UserProfileModal({
       .filter(Boolean) || [];
 
   const handleInitPayment = async () => {
+    if (paymentInProgress || selectedPlan === null) return;
+
+    setPaymentInProgress(true);
     try {
       const body = {
         amount: plans.find((p) => p.id === selectedPlan)?.price ?? 0,
@@ -371,6 +379,7 @@ export default function UserProfileModal({
       window.payhere.startPayment(paymentDetails);
       setShowUpgradeModal(false);
     } catch (error) {
+      setPaymentInProgress(false);
       setPageAlert({
         visible: true,
         variant: "error",
@@ -551,7 +560,7 @@ export default function UserProfileModal({
                       <h4
                         className={`font-semibold ${selectedPlan !== null ? "text-white" : "text-slate-900"}`}
                       >
-                        Pay Now
+                        {paymentInProgress ? "Payment in progress..." : "Pay Now"}
                       </h4>
                     </div>
                   </button>

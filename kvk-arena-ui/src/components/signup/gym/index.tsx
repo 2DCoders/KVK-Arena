@@ -19,6 +19,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
     const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
     const [pageAlert, setPageAlert] = useState<{ visible: boolean; variant?: 'success' | 'error' | 'warning' | 'info'; title?: string; description?: string }>({ visible: false });
     const [loading, setLoading] = useState(false);
+    const [paymentInProgress, setPaymentInProgress] = useState(false);
     const [loadingLogin, setLoadingLogin] = useState(false);
 
     const fetchMembershipPlans = async () => {
@@ -169,14 +170,18 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
 
                 window.payhere.onCompleted = (orderId: string) => {
                     console.log("Payment success:", orderId);
+                    setPaymentInProgress(false);
+                    window.location.reload();
                 };
 
                 window.payhere.onDismissed = () => {
                     console.log("Payment cancelled");
+                    setPaymentInProgress(false);
                 };
 
                 window.payhere.onError = (error: any) => {
                     console.log("Payment error:", error);
+                    setPaymentInProgress(false);
                 };
             }
         }, 300);
@@ -239,6 +244,9 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
     };
 
     const handleInitPayment = async () => {
+        if (paymentInProgress || !selectedPlan) return;
+
+        setPaymentInProgress(true);
         try {
             const body = {
                 amount: plans.find(p => p.id === selectedPlan)?.price ?? 0,
@@ -281,6 +289,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
             window.payhere.startPayment(paymentDetails);
 
         } catch (error) {
+            setPaymentInProgress(false);
 
             setPageAlert({
                 visible: true,
