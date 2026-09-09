@@ -131,41 +131,85 @@ export default function CafeJourney() {
     const section = horizontalSectionRef.current;
     const track = horizontalTrackRef.current;
 
+    // Run the horizontal pinned animation only on desktop/tablet.
     if (!section || !track || !window.matchMedia("(min-width: 768px)").matches) {
       return;
     }
 
-    const gsapContext = gsap.context(() => {
-      const getScrollDistance = () => {
-        return Math.max(0, track.scrollWidth - window.innerWidth);
-      };
+    let refreshTimer: number | undefined;
 
-      gsap.to(track, {
+    const ctx = gsap.context(() => {
+      const getScrollDistance = () =>
+        Math.max(0, track.scrollWidth - window.innerWidth);
+
+      const getPinDuration = () =>
+        Math.max(getScrollDistance(), window.innerHeight * 0.35);
+
+      // Use one controlled tween instead of creating a new tween every
+      // refresh. This prevents stale tweens from fighting each other.
+      const horizontalTween = gsap.to(track, {
         x: () => -getScrollDistance(),
         ease: "none",
-        scrollTrigger: {
-          trigger: section,
-          start: "top top",
-          end: () => `+=${getScrollDistance() + window.innerHeight * 0.8}`,
-          scrub: 0.8,
-          pin: true,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-        },
+        paused: true,
+        overwrite: "auto",
       });
+
+      const trigger = ScrollTrigger.create({
+        trigger: section,
+        animation: horizontalTween,
+        start: "top top",
+        end: () => `+=${getPinDuration()}`,
+        scrub: 0.8,
+        pin: true,
+        pinSpacing: true,
+        anticipatePin: 0,
+        invalidateOnRefresh: true,
+        fastScrollEnd: false,
+        preventOverlaps: true,
+        refreshPriority: 1,
+      });
+
+      const refreshSafely = () => {
+        window.clearTimeout(refreshTimer);
+
+        refreshTimer = window.setTimeout(() => {
+          if (!section.isConnected || !track.isConnected) return;
+
+          // Reset before measuring so ScrollTrigger never measures an
+          // already-translated track.
+          gsap.set(track, { x: 0 });
+
+          trigger.refresh();
+          ScrollTrigger.refresh();
+        }, 80);
+      };
+
+      refreshSafely();
+
+      window.addEventListener("load", refreshSafely);
+      window.addEventListener("resize", refreshSafely);
+      window.addEventListener("orientationchange", refreshSafely);
+
+      // Dynamic menu images/content can change the track width after mount.
+      const resizeObserver = new ResizeObserver(refreshSafely);
+      resizeObserver.observe(section);
+      resizeObserver.observe(track);
+
+      return () => {
+        window.removeEventListener("load", refreshSafely);
+        window.removeEventListener("resize", refreshSafely);
+        window.removeEventListener("orientationchange", refreshSafely);
+        resizeObserver.disconnect();
+        window.clearTimeout(refreshTimer);
+
+        trigger.kill();
+        horizontalTween.kill();
+      };
     }, section);
 
-    ScrollTrigger.refresh();
-
-    const handleLoad = () => {
-      ScrollTrigger.refresh();
-    };
-
-    window.addEventListener("load", handleLoad);
-
     return () => {
-      window.removeEventListener("load", handleLoad);
-      gsapContext.revert();
+      window.clearTimeout(refreshTimer);
+      ctx.revert();
     };
   }, [menuItems.length]);
 
@@ -340,7 +384,7 @@ export default function CafeJourney() {
       {/* Horizontal choices section */}
       <div
         ref={horizontalSectionRef}
-        className="relative isolate z-20 overflow-hidden border-t border-white/10 bg-[#21130c] md:min-h-screen"
+        className="relative isolate z-20 overflow-x-clip border-t border-white/10 bg-[#21130c] md:min-h-screen"
       >
         <div className="cafe-journey-content flex flex-col justify-center py-16 md:h-screen md:py-0">
           {/* Title */}
@@ -370,7 +414,7 @@ export default function CafeJourney() {
           {/* Horizontal track */}
           <div
             ref={horizontalTrackRef}
-            className="flex max-w-full flex-col gap-5 px-5 sm:gap-6 sm:pl-[max(1.25rem,calc((100vw-80rem)/2+3rem))] sm:pr-[10vw] md:w-max md:flex-row md:px-0"
+            className="flex max-w-full flex-col gap-5 px-5 sm:gap-6 sm:pl-[max(1.25rem,calc((100vw-80rem)/2+3rem))] sm:pr-[10vw] md:w-max md:flex-row md:px-0 md:will-change-transform"
           >
             {menuItems.map((item, index) => (
               <article
