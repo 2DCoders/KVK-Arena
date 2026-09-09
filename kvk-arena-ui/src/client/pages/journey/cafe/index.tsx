@@ -340,7 +340,7 @@ export default function CafeJourney() {
       {/* Horizontal choices section */}
       <div
         ref={horizontalSectionRef}
-        className="relative overflow-hidden border-t border-white/10 bg-[#21130c] md:min-h-screen"
+        className="relative isolate z-20 overflow-hidden border-t border-white/10 bg-[#21130c] md:min-h-screen"
       >
         <div className="cafe-journey-content flex flex-col justify-center py-16 md:h-screen md:py-0">
           {/* Title */}
@@ -424,7 +424,7 @@ export default function CafeJourney() {
             ))}
 
             {/* Ending card */}
-            <div className="flex h-[300px] w-full shrink-0 items-center justify-center rounded-[2rem] border border-dashed border-[#bc7442]/35 bg-[#18100b]/70 p-8 text-center sm:w-[300px] sm:h-[430px] lg:h-[470px]">
+            <div className="cafe-choice-card flex h-[390px] w-full shrink-0 items-center justify-center rounded-[2rem] border border-dashed border-[#bc7442]/35 bg-[#18100b]/70 p-8 text-center sm:h-[430px] sm:w-[300px] lg:h-[470px]">
               <div>
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#c9783d]/15 text-[#e59a61]">
                   <Users className="h-7 w-7" />
