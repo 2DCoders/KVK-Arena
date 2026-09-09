@@ -56,25 +56,25 @@ public class DayPassMemberService : IDayPassMemberService
                 TemporaryMembershipNumber = MembershipNumberFormatter.GymFormat("tempMember", year, token)
             };
             //add also record for PaymentRecord
-            var record = new PaymentRecord
-            {
-                MembershipId = Guid.Empty,
-                MemberPaymentId = null,
-                Amount = request.Amount,
-                PaymentType = request.PaymentType,
-                PaymentStatus = request.PaymentStatus,
-                MemberShipStartDate = DateTime.UtcNow,
-                MemberShipEndDate = DateTime.UtcNow,
-                TransactionReference = "Day Pass Payment",
-                MembershipNumber = MembershipNumberFormatter.GymFormat("tempMember", year, token),
-                MembershipPlanId = request.MembershipPlanId,
-                MembershipPlanTitle = await _db.MembershipPlans
-                    .Where(p => p.Id == request.MembershipPlanId)
-                    .Select(p => p.Title)
-                    .FirstOrDefaultAsync(cancellationToken)
-            };
-
-            _db.PaymentRecords.Add(record);
+            // var record = new PaymentRecord
+            // {
+            //     MembershipId = Guid.Empty,
+            //     MemberPaymentId = null,
+            //     Amount = request.Amount,
+            //     PaymentType = request.PaymentType,
+            //     PaymentStatus = request.PaymentStatus,
+            //     MemberShipStartDate = DateTime.UtcNow,
+            //     MemberShipEndDate = DateTime.UtcNow,
+            //     TransactionReference = "Day Pass Payment",
+            //     MembershipNumber = MembershipNumberFormatter.GymFormat("tempMember", year, token),
+            //     MembershipPlanId = request.MembershipPlanId,
+            //     MembershipPlanTitle = await _db.MembershipPlans
+            //         .Where(p => p.Id == request.MembershipPlanId)
+            //         .Select(p => p.Title)
+            //         .FirstOrDefaultAsync(cancellationToken)
+            // };
+            //
+            // _db.PaymentRecords.Add(record);
 
 
             _db.DayPassMembers.Add(dayPass);

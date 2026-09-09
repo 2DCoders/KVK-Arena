@@ -223,6 +223,31 @@ public class PaymentService : IPaymentService
             // default to last 30 days when no range provided
             var fromDate = from ?? DateTime.Now.AddDays(-30);
             var toDate = to ?? DateTime.Now;
+            
+            
+            //add daypass payments for the date range
+            var dayPassPayments = await _db.DayPassMembers
+                .AsNoTracking()
+                .Where(p => p.CreatedAt.Date >= fromDate.Date && p.CreatedAt.Date <= toDate.Date && p.PaymentStatus == PaymentStatus.Paid)
+                .OrderByDescending(p => p.CreatedAt)
+                .Select(p => new PaymentResponse
+                {
+                    Id = p.Id,
+                    MembershipId = null,
+                    Amount = p.Amount,
+                    PaymentType = p.PaymentType,
+                    PaymentStatus = p.PaymentStatus,
+                    StartDate = p.Date,
+                    EndDate = p.Date,
+                    TransactionReference = p.TemporaryMembershipNumber,
+                    CreatedAt = p.CreatedAt,
+                    MemberFirstName = p.Name,
+                    MemberLastName = string.Empty,
+                    MembershipNumber = p.TemporaryMembershipNumber!,
+                    MembershipPlanTitle = "Day Pass"
+                })
+                .ToListAsync(cancellationToken);
+            
 
             var payments = await _db.PaymentRecords
                 .AsNoTracking()
@@ -246,8 +271,10 @@ public class PaymentService : IPaymentService
                     MembershipPlanTitle = p.MembershipPlanTitle
                 })
                 .ToListAsync(cancellationToken);
+            
+            var allPayments = payments.Concat(dayPassPayments).OrderByDescending(p => p.CreatedAt).ToList();
 
-            return payments;
+            return allPayments;
         }
         catch (Exception ex)
         {
