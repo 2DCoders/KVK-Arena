@@ -342,7 +342,7 @@ export default function CafeJourney() {
         ref={horizontalSectionRef}
         className="relative overflow-hidden border-t border-white/10 bg-[#21130c] md:min-h-screen"
       >
-        <div className="flex flex-col justify-center py-16 md:h-screen md:py-0">
+        <div className="cafe-journey-content flex flex-col justify-center py-16 md:h-screen md:py-0">
           {/* Title */}
           <div className="mx-auto mb-8 flex w-full max-w-7xl items-end justify-between px-5 sm:mb-10 sm:px-8 lg:px-12">
             <div>
@@ -375,7 +375,7 @@ export default function CafeJourney() {
             {menuItems.map((item, index) => (
               <article
                 key={item.id}
-                className="group relative h-[390px] w-full max-w-full shrink-0 overflow-hidden rounded-[2rem] border border-white/10 bg-[#18100b] shadow-[0_30px_80px_rgba(0,0,0,0.4)] sm:h-[430px] sm:w-[360px] md:w-[360px] lg:h-[470px] lg:w-[390px]"
+                className="cafe-choice-card group relative h-[390px] w-full max-w-full shrink-0 overflow-hidden rounded-[2rem] border border-white/10 bg-[#18100b] shadow-[0_30px_80px_rgba(0,0,0,0.4)] sm:h-[430px] sm:w-[360px] md:w-[360px] lg:h-[470px] lg:w-[390px]"
               >
                 <div className="absolute inset-0">
                   {item.image && (
