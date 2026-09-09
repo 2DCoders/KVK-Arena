@@ -15,7 +15,8 @@ public class DayPassMemberService : IDayPassMemberService
         _db = db ?? throw new ArgumentNullException(nameof(db));
     }
 
-    public async Task<Result> CreateAsync(DayPassMemberCreateRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> CreateAsync(DayPassMemberCreateRequest request,
+        CancellationToken cancellationToken = default)
     {
         if (request == null)
             return Result.Failure("Request cannot be null");
@@ -54,10 +55,31 @@ public class DayPassMemberService : IDayPassMemberService
                 PaymentStatus = request.PaymentStatus,
                 TemporaryMembershipNumber = MembershipNumberFormatter.GymFormat("tempMember", year, token)
             };
+            //add also record for PaymentRecord
+            var record = new PaymentRecord
+            {
+                MembershipId = Guid.Empty,
+                MemberPaymentId = null,
+                Amount = request.Amount,
+                PaymentType = request.PaymentType,
+                PaymentStatus = request.PaymentStatus,
+                MemberShipStartDate = DateTime.UtcNow,
+                MemberShipEndDate = DateTime.UtcNow,
+                TransactionReference = "Day Pass Payment",
+                MembershipNumber = MembershipNumberFormatter.GymFormat("tempMember", year, token),
+                MembershipPlanId = request.MembershipPlanId,
+                MembershipPlanTitle = await _db.MembershipPlans
+                    .Where(p => p.Id == request.MembershipPlanId)
+                    .Select(p => p.Title)
+                    .FirstOrDefaultAsync(cancellationToken)
+            };
+
+            _db.PaymentRecords.Add(record);
+
 
             _db.DayPassMembers.Add(dayPass);
             await _db.SaveChangesAsync(cancellationToken);
-            
+
             var response = MapToResponse(dayPass, plan.Title);
 
             return Result.Success("Day pass member created").WithData("response", response);
@@ -68,7 +90,8 @@ public class DayPassMemberService : IDayPassMemberService
         }
     }
 
-    public async Task<Result> UpdateAsync(Guid id, DayPassMemberUpdateRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> UpdateAsync(Guid id, DayPassMemberUpdateRequest request,
+        CancellationToken cancellationToken = default)
     {
         if (id == Guid.Empty)
             return Result.Failure("Id cannot be empty");
@@ -97,6 +120,23 @@ public class DayPassMemberService : IDayPassMemberService
                 existing.PaymentType = request.PaymentType.Value;
             if (request.PaymentStatus.HasValue)
                 existing.PaymentStatus = request.PaymentStatus.Value;
+            
+            
+            //udate also record for PaymentRecord
+            var record = await _db.PaymentRecords
+                .SingleOrDefaultAsync(r => r.MembershipNumber == existing.TemporaryMembershipNumber, cancellationToken);
+            if (record != null)
+            {
+                if (request.Amount.HasValue)
+                    record.Amount = request.Amount.Value;
+                if (request.PaymentType.HasValue)
+                    record.PaymentType = request.PaymentType.Value;
+                if (request.PaymentStatus.HasValue)
+                    record.PaymentStatus = request.PaymentStatus.Value;
+                
+            }
+            
+            
 
             await _db.SaveChangesAsync(cancellationToken);
 
@@ -201,7 +241,8 @@ public class DayPassMemberService : IDayPassMemberService
 
         var latest = await _db.DayPassMembers
             .AsNoTracking()
-            .Where(d => !string.IsNullOrEmpty(d.TemporaryMembershipNumber) && d.TemporaryMembershipNumber!.StartsWith(prefix))
+            .Where(d => !string.IsNullOrEmpty(d.TemporaryMembershipNumber) &&
+                        d.TemporaryMembershipNumber!.StartsWith(prefix))
             .OrderByDescending(d => d.TemporaryMembershipNumber)
             .Select(d => d.TemporaryMembershipNumber)
             .FirstOrDefaultAsync(cancellationToken);
@@ -217,4 +258,3 @@ public class DayPassMemberService : IDayPassMemberService
         return next.ToString("D4");
     }
 }
-

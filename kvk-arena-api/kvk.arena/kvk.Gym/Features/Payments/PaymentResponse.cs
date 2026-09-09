@@ -5,7 +5,7 @@ namespace kvk.Gym.Features.Payments;
 public class PaymentResponse
 {
     public Guid Id { get; set; }
-    public Guid MembershipId { get; set; }
+    public Guid? MembershipId { get; set; }
     public decimal Amount { get; set; }
     public PaymentType PaymentType { get; set; }
     public kvk.Gym.Enums.PaymentStatus PaymentStatus { get; set; }
