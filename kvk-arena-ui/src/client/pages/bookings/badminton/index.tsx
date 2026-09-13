@@ -9,6 +9,13 @@ import {
   Users,
   Star,
   X,
+  Clock3,
+  ChevronRight,
+  ShieldCheck,
+  Sparkles,
+  MapPin,
+  CircleCheck,
+  Info,
 } from "lucide-react";
 import { getCourts } from "@/services/court-api";
 import { bookingSlots, confirmBooking } from "@/services/booking-api";
@@ -495,26 +502,29 @@ export default function BadmintonBookings() {
   );
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-[#fafafa] via-white to-[#fafafa] py-20">
-      <div className="absolute top-0 left-0 h-72 w-72 rounded-full bg-amber-200/30 blur-3xl" />
-      <div className="absolute right-0 bottom-0 h-72 w-72 rounded-full bg-orange-200/30 blur-3xl" />
+    <section className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#fafafa] via-white to-[#fafafa] py-10 sm:py-14 lg:py-20">
+      {/* Ambient background */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-32 top-0 h-80 w-80 rounded-full bg-amber-200/25 blur-3xl" />
+        <div className="absolute -right-32 top-1/3 h-96 w-96 rounded-full bg-orange-200/25 blur-3xl" />
+        <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-amber-100/30 blur-3xl" />
+      </div>
 
       {loading && createPortal(
-        <div className="fixed inset-0 z-[9999999999] flex items-center justify-center bg-black/60 backdrop-blur-md">
-          <div className="flex flex-col items-center gap-3">
-            <div className="h-14 w-14 animate-spin rounded-full border-4 border-white/30 border-t-white"></div>
-            <p className="text-sm text-white font-medium">Loading</p>
+        <div className="fixed inset-0 z-[9999999999] flex items-center justify-center bg-black/60 px-4 backdrop-blur-md">
+          <div className="w-full max-w-xs rounded-3xl border border-white/20 bg-white/10 p-7 text-center shadow-2xl backdrop-blur-xl">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10">
+              <div className="h-10 w-10 animate-spin rounded-full border-4 border-white/25 border-t-white" />
+            </div>
+            <p className="mt-4 text-base font-bold text-white">Processing your booking</p>
+            <p className="mt-1 text-sm text-white/70">Please wait a moment...</p>
           </div>
         </div>,
         document.body
       )}
 
-      {holdIds.length > 0 && (
-        <></>
-      )}
-
       {pageAlert.visible && (
-        <div>
+        <div className="relative z-[100]">
           <Alert
             variant={pageAlert.variant as any}
             title={pageAlert.title}
@@ -524,230 +534,348 @@ export default function BadmintonBookings() {
         </div>
       )}
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4">
-        <div className="mb-12 text-center">
-          <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700">
-            🏸 Online Court Booking
-          </span>
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Hero */}
+        <div className="mx-auto mb-8 max-w-4xl text-center sm:mb-10 lg:mb-12">
+          <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-2 text-xs font-extrabold uppercase tracking-[0.14em] text-amber-700 shadow-sm sm:px-4 sm:text-sm">
+            <Sparkles size={15} />
+            Premium court booking
+          </div>
 
-          <h1 className="mt-5 bg-gradient-to-r from-black via-[#A65A2A] to-[#D48A52] bg-clip-text text-5xl font-black text-transparent md:text-5xl">
+          <h1 className="mt-5 bg-gradient-to-r from-black via-[#A65A2A] to-[#D48A52] bg-clip-text text-4xl font-black leading-[1.05] tracking-tight text-transparent sm:text-5xl lg:text-6xl">
             Book Your Court
           </h1>
 
-          <p className="mx-auto mt-4 max-w-2xl text-gray-600">
-            Reserve your preferred badminton court in seconds and enjoy a
-            premium playing experience at KVK Arena.
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base sm:leading-7">
+            Choose your date, pick an available court slot, and reserve your
+            badminton session in just a few steps.
           </p>
 
-          <div className="mt-8 flex flex-wrap justify-center gap-6">
-            <div className="flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-sm">
-              <Trophy size={18} className="text-amber-600" />
-              <span className="font-semibold">2 Premium Courts</span>
+          <div className="mx-auto mt-7 grid max-w-3xl grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3">
+            <div className="flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white/90 px-4 py-3 shadow-sm">
+              <Trophy size={17} className="shrink-0 text-amber-600" />
+              <span className="text-sm font-bold text-gray-800">Premium courts</span>
             </div>
-
-            <div className="flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-sm">
-              <Star size={18} className="text-amber-600" />
-              <span className="font-semibold">4.9 Rating</span>
+            <div className="flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white/90 px-4 py-3 shadow-sm">
+              <Star size={17} className="shrink-0 text-amber-600" />
+              <span className="text-sm font-bold text-gray-800">4.9 player rating</span>
             </div>
-
-            <div className="flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-sm">
-              <Users size={18} className="text-amber-600" />
-              <span className="font-semibold">500+ Players</span>
+            <div className="flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white/90 px-4 py-3 shadow-sm">
+              <ShieldCheck size={17} className="shrink-0 text-amber-600" />
+              <span className="text-sm font-bold text-gray-800">Secure booking</span>
             </div>
           </div>
         </div>
 
-        <div className="mb-10 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center gap-2">
-            <CalendarDays className="text-amber-600" />
-            <h3 className="text-lg font-black">Select Date</h3>
+        {/* Date selector */}
+        <div className="mb-7 overflow-hidden rounded-[1.75rem] border border-gray-200 bg-white shadow-[0_12px_45px_rgba(0,0,0,0.06)] sm:mb-8">
+          <div className="flex flex-col gap-3 border-b border-gray-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
+                <CalendarDays size={19} />
+              </div>
+              <div>
+                <h2 className="text-base font-black text-gray-900 sm:text-lg">Choose your date</h2>
+                <p className="text-xs text-gray-500 sm:text-sm">Select a working day to see live court availability.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
+              <Clock3 size={14} />
+              Live availability
+            </div>
           </div>
 
-          <div className="grid grid-cols-7 gap-4 p-2">
-            {displayedDays.map((item, index) => (
-              <button
-                key={item.fullDate}
-                onClick={() => setSelectedDate(index)}
-                className={`rounded-2xl border p-4 transition-all duration-300 cursor-pointer ${selectedDate === index
-                  ? "scale-105 border-amber-500 bg-[#A65A2A] text-white shadow-xl"
-                  : "border-gray-200 bg-white hover:border-amber-300"
+          <div className="overflow-x-auto px-3 py-4 sm:px-5">
+            <div className="flex min-w-max gap-2.5 sm:grid sm:min-w-0 sm:grid-cols-7 sm:gap-3">
+              {displayedDays.map((item, index) => (
+                <button
+                  key={item.fullDate}
+                  type="button"
+                  onClick={() => setSelectedDate(index)}
+                  className={`group min-w-[76px] cursor-pointer rounded-2xl border p-3 text-center transition-all duration-300 sm:min-w-0 sm:p-4 ${
+                    selectedDate === index
+                      ? "scale-[1.02] border-amber-500 bg-[#A65A2A] text-white shadow-lg shadow-amber-900/15"
+                      : "border-gray-200 bg-white text-gray-700 hover:-translate-y-0.5 hover:border-amber-300 hover:bg-amber-50/40 hover:shadow-md"
                   }`}
-              >
-                <p className="text-xs font-bold">{item.day}</p>
-                <p className="text-3xl font-black">{item.date}</p>
-                <p className="text-xs">{item.month}</p>
-              </button>
-            ))}
+                >
+                  <p className={`text-[10px] font-extrabold uppercase tracking-wider ${
+                    selectedDate === index ? "text-white/80" : "text-gray-400"
+                  }`}>
+                    {item.day}
+                  </p>
+                  <p className="mt-0.5 text-2xl font-black sm:text-3xl">{item.date}</p>
+                  <p className={`text-[10px] font-bold uppercase ${
+                    selectedDate === index ? "text-white/80" : "text-gray-400"
+                  }`}>
+                    {item.month}
+                  </p>
+                  {item.isToday && (
+                    <span className={`mt-2 inline-flex rounded-full px-2 py-0.5 text-[9px] font-extrabold ${
+                      selectedDate === index ? "bg-white/15 text-white" : "bg-amber-50 text-amber-700"
+                    }`}>
+                      TODAY
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch mb-5">
+        {/* Selected date heading */}
+        <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-amber-700">Court availability</p>
+            <h2 className="mt-1 text-2xl font-black tracking-tight text-gray-900 sm:text-3xl">
+              {selectedDateInfo?.date} {selectedDateInfo?.month}
+            </h2>
+          </div>
+          <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
+            <Info size={14} className="text-amber-600" />
+            Select adjacent slots for each court
+          </div>
+        </div>
+
+        {/* Courts */}
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
           {courts.map((courtItem) => {
             const slots = courtSlots[courtItem.id] ?? [];
             const selectedSlots = selectedSlotsByCourt[courtItem.id] ?? [];
             const isActiveCourt = selectedSlots.length > 0;
 
             return (
-              <div
+              <article
                 key={courtItem.id}
-                className={`group relative overflow-hidden rounded-3xl border bg-white transition-all duration-500 ${isActiveCourt
-                  ? "border-amber-500 shadow-2xl ring-4 ring-amber-200"
-                  : "border-gray-200 hover:-translate-y-1 hover:border-amber-300 hover:shadow-xl"
-                  } ${courtItem.status === 2 ? "opacity-60 grayscale" : ""}`}
+                className={`group relative overflow-hidden rounded-[1.75rem] border bg-white transition-all duration-300 ${
+                  isActiveCourt
+                    ? "border-amber-500 shadow-[0_18px_55px_rgba(166,90,42,0.14)] ring-2 ring-amber-100"
+                    : "border-gray-200 shadow-[0_10px_35px_rgba(0,0,0,0.05)] hover:-translate-y-1 hover:border-amber-300 hover:shadow-[0_18px_50px_rgba(0,0,0,0.09)]"
+                } ${courtItem.status === 2 ? "opacity-60 grayscale" : ""}`}
               >
-                <div className="relative h-52 overflow-hidden">
+                {/* Court image */}
+                <div className="relative h-48 overflow-hidden sm:h-56">
                   <img
                     src={courtItem.image}
                     alt={courtItem.name}
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                  <div className="absolute left-4 top-4 flex items-center gap-2">
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-extrabold text-white shadow-sm ${
+                      courtItem.status === 2 ? "bg-red-500/90" : "bg-green-500/90"
+                    }`}>
+                      <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                      {courtItem.status === 2 ? "Temporarily Closed" : "Available"}
+                    </span>
+                  </div>
 
-                  <span
-                    className={`absolute top-4 right-4 rounded-full px-3 py-1 text-xs font-bold text-white ${courtItem.status === 2 ? "bg-red-500" : "bg-green-500"
-                      }`}
-                  >
-                    {courtItem.status === 2 ? "Temporarily Closed" : "Available"}
-                  </span>
-
-                  <div className="absolute bottom-4 left-4 text-white">
-                    <h4 className="text-2xl font-black">{courtItem.name}</h4>
-                    <p className="text-lg font-bold">
-                      LKR {courtItem.price.toLocaleString()}
-                    </p>
+                  <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-4 text-white">
+                    <div>
+                      <p className="mb-1 text-[10px] font-extrabold uppercase tracking-[0.18em] text-white/70">
+                        KVK Arena
+                      </p>
+                      <h3 className="text-2xl font-black tracking-tight sm:text-3xl">
+                        {courtItem.name}
+                      </h3>
+                    </div>
+                    <div className="shrink-0 rounded-2xl bg-black/30 px-3 py-2 text-right backdrop-blur-md">
+                      <p className="text-[9px] font-bold uppercase tracking-wider text-white/70">Per slot</p>
+                      <p className="text-sm font-black sm:text-base">
+                        LKR {courtItem.price.toLocaleString()}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-5 p-5">
-                  <div className="flex flex-wrap gap-2">
+                <div className="p-4 sm:p-5">
+                  {/* Features */}
+                  <div className="mb-5 flex flex-wrap gap-2">
                     {courtItem.features.map((feature) => (
                       <span
                         key={feature}
-                        className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700"
+                        className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 text-[10px] font-bold text-amber-700"
                       >
+                        <CircleCheck size={12} />
                         {feature}
                       </span>
                     ))}
                   </div>
 
-                  <div>
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <h5 className="text-sm font-black text-gray-900">
-                        Available Slots
-                      </h5>
-                      <span className="text-xs font-semibold text-gray-500">
-                        Adjacent slots only
+                  {/* Slot heading */}
+                  <div className="mb-3 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock3 size={16} className="text-amber-600" />
+                      <h4 className="text-sm font-black text-gray-900">Available time slots</h4>
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-wide text-gray-400">
+                      Adjacent selection
+                    </span>
+                  </div>
+
+                  {/* Slots */}
+                  <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-4">
+                    {slots.length > 0 ? (
+                      slots.map((slot, index) => {
+                        const disabled =
+                          courtItem.status === 2 ||
+                          !slot.available ||
+                          isPastSlot(slot.label, selectedDate);
+                        const isSelected = selectedSlots.includes(index);
+
+                        return (
+                          <button
+                            key={slot.id}
+                            type="button"
+                            disabled={disabled}
+                            onClick={() => toggleSlot(courtItem.id, index)}
+                            className={`relative min-h-[58px] overflow-hidden rounded-xl border px-2.5 py-2.5 text-left transition-all duration-200 ${
+                              disabled
+                                ? "cursor-not-allowed border-red-100 bg-red-50/80 opacity-55"
+                                : isSelected
+                                  ? "cursor-pointer border-amber-500 bg-[#A65A2A] text-white shadow-md shadow-amber-900/15"
+                                  : "cursor-pointer border-gray-200 bg-white hover:-translate-y-0.5 hover:border-amber-300 hover:bg-amber-50/40 hover:shadow-sm"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-1">
+                              <Clock3 size={13} className={isSelected ? "text-white/80" : "text-amber-600"} />
+                              {isSelected && <CheckCircle2 size={14} />}
+                            </div>
+                            <p className={`mt-1.5 text-[10px] font-extrabold leading-4 sm:text-[10px] ${
+                              isSelected ? "text-white" : "text-gray-800"
+                            }`}>
+                              {slot.label}
+                            </p>
+                            <p className={`mt-0.5 text-[9px] font-semibold ${
+                              disabled
+                                ? "text-red-400"
+                                : isSelected
+                                  ? "text-white/70"
+                                  : "text-gray-400"
+                            }`}>
+                              {disabled ? "Unavailable" : "Available"}
+                            </p>
+                          </button>
+                        );
+                      })
+                    ) : (
+                      <div className="col-span-full flex min-h-[130px] items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50/80 p-5 text-center">
+                        <div>
+                          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm">
+                            <Clock3 size={18} className="text-amber-600" />
+                          </div>
+                          <p className="mt-3 text-sm font-bold text-gray-700">Loading slots...</p>
+                          <p className="mt-1 text-xs text-gray-400">Checking live availability</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {isActiveCourt && (
+                    <div className="mt-4 flex items-center justify-between rounded-xl bg-amber-50/70 px-3.5 py-3">
+                      <span className="text-xs font-bold text-amber-900">
+                        {selectedSlots.length} slot{selectedSlots.length > 1 ? "s" : ""} selected
+                      </span>
+                      <span className="text-xs font-black text-amber-700">
+                        LKR {selectedSlotDetails
+                          .filter((item) => item.courtId === courtItem.id)
+                          .reduce((sum, item) => sum + item.price, 0)
+                          .toLocaleString()}
                       </span>
                     </div>
-
-                    <div className="grid grid-cols-4 gap-3">
-                      {slots.length > 0 ? (
-                        slots.map((slot, index) => {
-                          const disabled =
-                            courtItem.status === 2 ||
-                            !slot.available ||
-                            isPastSlot(slot.label, selectedDate);
-                          const isSelected = selectedSlots.includes(index);
-
-                          return (
-                            <button
-                              key={slot.id}
-                              disabled={disabled}
-                              onClick={() => toggleSlot(courtItem.id, index)}
-                              className={`rounded-2xl border p-3 text-left text-sm transition-all duration-300 ${disabled
-                                ? "cursor-not-allowed border-red-200 bg-red-50 opacity-60"
-                                : isSelected
-                                  ? "border-amber-500 cursor-pointer bg-[#A65A2A] text-white shadow-lg"
-                                  : "border-gray-200 cursor-pointer hover:border-amber-300 hover:shadow-md"
-                                }`}
-                            >
-                              <p className="font-semibold text-[11px] whitespace-nowrap">
-                                {slot.label}
-                              </p>
-                            </button>
-                          );
-                        })
-                      ) : (
-                        <div className="col-span-2 rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-4 text-sm text-gray-500">
-                          Loading slots...
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  )}
                 </div>
-              </div>
+              </article>
             );
           })}
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-1">
+        {/* Booking summary */}
+        <div className="mt-6 rounded-[1.75rem] border border-gray-200 bg-white shadow-[0_12px_45px_rgba(0,0,0,0.06)]">
+          <div className="flex flex-col gap-4 border-b border-gray-100 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-50 text-green-600">
+                <CheckCircle2 size={21} />
+              </div>
+              <div>
+                <h2 className="text-lg font-black text-gray-900 sm:text-xl">Booking summary</h2>
+                <p className="text-xs text-gray-500 sm:text-sm">Review your selection before continuing.</p>
+              </div>
+            </div>
 
-          <div className="space-y-6">
-            <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-              <div className="mb-5 flex items-center gap-2">
-                <CheckCircle2 className="text-green-500" />
-                <h3 className="text-lg font-black">Booking Summary</h3>
+            <div className="rounded-full bg-gray-50 px-3.5 py-2 text-xs font-bold text-gray-600">
+              {selectedSlotDetails.length} slot{selectedSlotDetails.length !== 1 ? "s" : ""} selected
+            </div>
+          </div>
+
+          <div className="grid gap-0 lg:grid-cols-[1fr_360px]">
+            <div className="p-4 sm:p-6">
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-gray-100 bg-gray-50/70 p-4">
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400">Court</p>
+                  <p className="mt-1 text-sm font-black text-gray-900">
+                    {selectedCourtNames.length > 0 ? selectedCourtNames.join(", ") : "Select slots"}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-gray-100 bg-gray-50/70 p-4">
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400">Date</p>
+                  <p className="mt-1 text-sm font-black text-gray-900">
+                    {selectedDateInfo?.date} {selectedDateInfo?.month}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-gray-100 bg-gray-50/70 p-4">
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400">Slots</p>
+                  <p className="mt-1 text-sm font-black text-gray-900">
+                    {selectedSlotDetails.length}
+                  </p>
+                </div>
               </div>
 
-              <div className="space-y-3">
-                <div className="flex justify-between gap-4">
-                  <span className="text-gray-500">Courts</span>
-                  <span className="text-right font-semibold">
-                    {selectedCourtNames.length > 0
-                      ? selectedCourtNames.join(", ")
-                      : "Select slots"}
-                  </span>
-                </div>
-
-                <div className="flex justify-between gap-4">
-                  <span className="text-gray-500">Date</span>
-                  <span className="font-semibold">
-                    {selectedDateInfo?.date} {selectedDateInfo?.month}
-                  </span>
-                </div>
-
-                <div className="flex justify-between gap-4">
-                  <span className="text-gray-500">Selected Slots</span>
-                  <span className="text-right font-semibold">
-                    {selectedSlotDetails.length}
-                  </span>
-                </div>
-
-                {selectedSlotDetails.length > 0 && (
-                  <div className="max-h-72 space-y-2 overflow-auto rounded-2xl bg-gray-50 p-4">
-                    {selectedSlotDetails.map((slot) => (
-                      <div
-                        key={`${slot.courtId}-${slot.slotId}`}
-                        className="flex items-start justify-between gap-4 text-sm"
-                      >
-                        <div>
-                          <p className="font-semibold text-gray-900">
-                            {slot.courtName}
-                          </p>
-                          <p className="text-gray-500">{slot.label}</p>
+              {selectedSlotDetails.length > 0 ? (
+                <div className="mt-4 max-h-64 space-y-2 overflow-auto rounded-2xl border border-gray-100 bg-[#fcfaf8] p-3">
+                  {selectedSlotDetails.map((slot) => (
+                    <div
+                      key={`${slot.courtId}-${slot.slotId}`}
+                      className="flex items-center justify-between gap-4 rounded-xl border border-gray-100 bg-white px-3.5 py-3 shadow-sm"
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-700">
+                          <Clock3 size={15} />
                         </div>
-
-                        <p className="whitespace-nowrap font-semibold text-amber-700">
-                          LKR {slot.price.toLocaleString()}
-                        </p>
+                        <div className="min-w-0">
+                          <p className="truncate text-xs font-black text-gray-900 sm:text-sm">{slot.courtName}</p>
+                          <p className="truncate text-[11px] text-gray-500 sm:text-xs">{slot.label}</p>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                )}
+                      <p className="shrink-0 text-xs font-black text-amber-700 sm:text-sm">
+                        LKR {slot.price.toLocaleString()}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-4 rounded-2xl border border-dashed border-gray-200 bg-gray-50/70 px-4 py-5 text-center">
+                  <p className="text-sm font-bold text-gray-600">No slots selected yet</p>
+                  <p className="mt-1 text-xs text-gray-400">Choose one or more adjacent slots above to continue.</p>
+                </div>
+              )}
+            </div>
 
-                <div className="border-t pt-3">
-                  <div className="flex justify-between text-sm">
-                    <span>Subtotal</span>
-                    <span>LKR {subtotal.toLocaleString()}</span>
-                  </div>
+            <div className="border-t border-gray-100 bg-gradient-to-b from-[#fffaf5] to-[#f8eee5] p-4 sm:p-6 lg:border-l lg:border-t-0">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">Subtotal</span>
+                <span className="font-bold text-gray-900">LKR {subtotal.toLocaleString()}</span>
+              </div>
 
-                  <div className="mt-4 flex justify-between text-xl font-black">
-                    <span>Total</span>
-                    <span className="text-amber-700">
-                      LKR {total.toLocaleString()}
-                    </span>
-                  </div>
+              <div className="mt-4 flex items-end justify-between gap-4 border-t border-[#ead8c8] pt-4">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-gray-500">Total</p>
+                  <p className="mt-1 text-2xl font-black text-gray-900 sm:text-3xl">
+                    LKR {total.toLocaleString()}
+                  </p>
+                </div>
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white shadow-sm">
+                  <CreditCard size={19} className="text-amber-700" />
                 </div>
               </div>
 
@@ -755,149 +883,193 @@ export default function BadmintonBookings() {
                 type="button"
                 disabled={selectedSlotDetails.length === 0}
                 onClick={handleBookingMultipleSlots}
-                className="group relative mt-6 w-full overflow-hidden rounded-2xl bg-gradient-to-r from-[#A65A2A] via-[#D4A76A] to-[#A65A2A] px-8 py-4 font-bold text-white transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_15px_40px_rgba(201,119,58,0.35)] cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                className="group relative mt-5 flex min-h-[52px] w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-[#A65A2A] via-[#D4A76A] to-[#A65A2A] px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_14px_30px_rgba(166,90,42,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(166,90,42,0.3)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
               >
+                <CreditCard size={17} />
                 <span className="relative z-10">Proceed To Payment</span>
-
-                <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-1000 group-hover:translate-x-[100%]" />
+                <ChevronRight size={17} className="relative z-10 transition-transform group-hover:translate-x-0.5" />
+                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
               </button>
-            </div>
 
-            <div className="rounded-3xl border border-amber-100 bg-amber-50/70 p-6 text-sm text-amber-900">
-              Pick slots on any court to build your booking. Within each court,
-              selections still need to stay adjacent.
+              <div className="mt-3 flex items-start gap-2 text-[10px] leading-4 text-gray-500">
+                <ShieldCheck size={14} className="mt-0.5 shrink-0 text-green-600" />
+                <span>Your selected slots will be held while you complete the booking.</span>
+              </div>
             </div>
+          </div>
+        </div>
+
+        {/* Booking guidance */}
+        <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-amber-100 bg-amber-50/70 p-4 sm:flex-row sm:items-center sm:gap-4 sm:p-5">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-amber-700 shadow-sm">
+            <Info size={18} />
+          </div>
+          <div>
+            <p className="text-sm font-black text-amber-950">Quick booking tip</p>
+            <p className="mt-0.5 text-xs leading-5 text-amber-900/70 sm:text-sm">
+              Pick slots on any court to build your booking. Within each court,
+              selections need to stay adjacent.
+            </p>
           </div>
         </div>
       </div>
 
+      {/* Checkout modal */}
       {isBookingModalOpen && createPortal(
-        <div className="fixed inset-0 z-[9999999998] flex items-center justify-center bg-[#24170f]/70 px-4 py-6 backdrop-blur-md">
-          <div className="w-full max-w-3xl overflow-hidden rounded-[2rem] border border-white/70 bg-white shadow-[0_30px_90px_rgba(54,30,15,0.3)]">
-            <div className="flex items-start justify-between gap-4 bg-gradient-to-r from-[#fff8ef] via-white to-[#fff4e8] px-6 py-6 sm:px-8">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#A65A2A]">
-                  Booking checkout
-                </p>
-                <h3 className="mt-2 text-2xl font-black tracking-tight text-gray-900 sm:text-3xl">
-                  Review your booking
-                </h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Check your slots and contact details before payment.
-                </p>
+        <div className="fixed inset-0 z-[9999999998] flex items-center justify-center bg-[#24170f]/70 px-3 py-4 backdrop-blur-md sm:px-5 sm:py-6">
+          <div className="flex max-h-[94vh] w-full max-w-4xl flex-col overflow-hidden rounded-[1.75rem] border border-white/70 bg-white shadow-[0_30px_90px_rgba(54,30,15,0.3)] sm:max-h-[90vh] sm:rounded-[2rem]">
+            <div className="shrink-0 border-b border-gray-100 bg-gradient-to-r from-[#fff8ef] via-white to-[#fff4e8] px-4 py-4 sm:px-7 sm:py-6">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#A65A2A]">
+                    <CreditCard size={13} />
+                    Booking checkout
+                  </div>
+                  <h3 className="mt-1.5 text-xl font-black tracking-tight text-gray-900 sm:text-3xl">
+                    Review your booking
+                  </h3>
+                  <p className="mt-1 text-xs text-gray-500 sm:text-sm">
+                    Add your contact details and confirm the selected slots.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    closeBookingModal()
+                    setCustomerName('')
+                    setCustomerPhone('')
+                    setSelectedSlotsByCourt({})
+                    const selectedDateString = displayedDays[selectedDate]?.fullDate;
+                    if (selectedDateString) {
+                      courts.forEach(async (court) => {
+                        const slots = await getCourtSlotsAvailability(
+                          court.id,
+                          selectedDateString,
+                        );
+                        const formattedSlots = (Array.isArray(slots) ? slots : []).map(
+                          (slot: any) => ({
+                            id: slot.id,
+                            courtId: slot.courtId,
+                            startTime: slot.startTime,
+                            endTime: slot.endTime,
+                            isActive: slot.isActive,
+                            isBooked: slot.isBooked,
+                            price: slot.price,
+                            label: formatSlotLabel(slot.startTime, slot.endTime),
+                            available: slot.isActive && !slot.isBooked,
+                          })
+                        );
+                        setCourtSlots((prev) => ({
+                          ...prev,
+                          [court.id]: formattedSlots,
+                        }));
+                      });
+                    }
+                  }}
+                  aria-label="Close booking review"
+                  className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm transition hover:border-[#A65A2A] hover:bg-[#fff8ef] hover:text-[#A65A2A] sm:h-10 sm:w-10"
+                >
+                  <X size={18} />
+                </button>
               </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  closeBookingModal()
-                  setCustomerName('')
-                  setCustomerPhone('')
-                  // Reset selected slots when closing the modal
-                  setSelectedSlotsByCourt({})
-                  // update slots availability after closing the modal
-                  const selectedDateString = displayedDays[selectedDate]?.fullDate;
-                  if (selectedDateString) {
-                    courts.forEach(async (court) => {
-                      const slots = await getCourtSlotsAvailability(
-                        court.id,
-                        selectedDateString,
-                      );
-                      const formattedSlots = (Array.isArray(slots) ? slots : []).map(
-                        (slot: any) => ({
-                          id: slot.id,
-                          courtId: slot.courtId,
-                          startTime: slot.startTime,
-                          endTime: slot.endTime,
-                          isActive: slot.isActive,
-                          isBooked: slot.isBooked,
-                          price: slot.price,
-                          label: formatSlotLabel(slot.startTime, slot.endTime),
-                          available: slot.isActive && !slot.isBooked,
-                        })
-                      );
-                      setCourtSlots((prev) => ({
-                        ...prev,
-                        [court.id]: formattedSlots,
-                      }));
-                    });
-                  }
-                }}
-                aria-label="Close booking review"
-                className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm transition hover:border-[#A65A2A] hover:bg-[#fff8ef] hover:text-[#A65A2A]"
-              >
-                <X size={18} />
-              </button>
+              <div className="mt-4 flex items-center gap-2 overflow-x-auto text-[10px] font-bold sm:text-xs">
+                <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#A65A2A] px-3 py-1.5 text-white">
+                  <CircleCheck size={13} /> Slots selected
+                </span>
+                <ChevronRight size={13} className="shrink-0 text-gray-300" />
+                <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-gray-500">
+                  <Users size={13} /> Your details
+                </span>
+                <ChevronRight size={13} className="shrink-0 text-gray-300" />
+                <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-gray-500">
+                  <CreditCard size={13} /> Confirm
+                </span>
+              </div>
             </div>
 
-            <div className="max-h-[75vh] overflow-y-auto px-6 py-6 sm:px-8">
-              <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="min-h-0 overflow-y-auto px-4 py-4 sm:px-7 sm:py-6">
+              <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
                 <div className="space-y-4">
-                  <div className="rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50 to-orange-50 p-4">
-                    <p className="text-sm font-semibold text-amber-900">
-                      Booking Date
-                    </p>
-                    <p className="mt-1 text-lg font-black text-gray-900">
-                      {selectedDateInfo?.date} {selectedDateInfo?.month}
-                    </p>
+                  {/* Date */}
+                  <div className="flex items-center gap-3 rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50 to-orange-50 p-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-amber-700 shadow-sm">
+                      <CalendarDays size={18} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-extrabold uppercase tracking-wider text-amber-700">Booking date</p>
+                      <p className="mt-0.5 text-base font-black text-gray-900 sm:text-lg">
+                        {selectedDateInfo?.date} {selectedDateInfo?.month}
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <label className="block">
-                      <span className="mb-2 block text-sm font-semibold text-gray-700">
-                        Customer Name
-                      </span>
-                      <input
-                        type="text"
-                        value={customerName}
-                        onChange={(event) => setCustomerName(event.target.value)}
-                        placeholder="Enter customer name"
-                        className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-amber-500 focus:ring-4 focus:ring-amber-100"
-                      />
-                    </label>
+                  {/* Customer details */}
+                  <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-5">
+                    <div className="mb-4">
+                      <p className="text-xs font-extrabold uppercase tracking-wider text-[#A65A2A]">Contact details</p>
+                      <h4 className="mt-1 text-lg font-black text-gray-900">Who should receive the booking SMS?</h4>
+                    </div>
 
-                    <label className="block">
-                      <span className="mb-2 block text-sm font-semibold text-gray-700">
-                        Customer Mobile No
-                      </span>
-                      <input
-                        type="tel"
-                        value={customerPhone}
-                        onChange={(event) => setCustomerPhone(event.target.value)}
-                        placeholder="07X XXX XXXX"
-                        className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-amber-500 focus:ring-4 focus:ring-amber-100"
-                      />
-                    </label>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <label className="block">
+                        <span className="mb-2 block text-xs font-bold text-gray-700">Customer Name</span>
+                        <input
+                          type="text"
+                          value={customerName}
+                          onChange={(event) => setCustomerName(event.target.value)}
+                          placeholder="Enter customer name"
+                          className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm outline-none transition focus:border-amber-500 focus:ring-4 focus:ring-amber-100"
+                        />
+                      </label>
+
+                      <label className="block">
+                        <span className="mb-2 block text-xs font-bold text-gray-700">Customer Mobile No</span>
+                        <input
+                          type="tel"
+                          value={customerPhone}
+                          onChange={(event) => setCustomerPhone(event.target.value)}
+                          placeholder="07X XXX XXXX"
+                          className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm outline-none transition focus:border-amber-500 focus:ring-4 focus:ring-amber-100"
+                        />
+                      </label>
+                    </div>
+
+                    <div className="mt-4 flex items-start gap-2 rounded-xl border border-amber-100 bg-amber-50/80 p-3.5 text-xs leading-5 text-amber-900">
+                      <Info size={15} className="mt-0.5 shrink-0 text-amber-700" />
+                      <span>Please enter the correct mobile number because the booking ID will be sent by SMS.</span>
+                    </div>
                   </div>
 
-                  <div className="rounded-2xl border border-amber-100 bg-amber-50/80 p-4 text-sm text-amber-900">
-                    Please add correct mobile no because booking id goes to mobile no as SMS.
-                  </div>
-
-                  <div className="rounded-2xl border border-gray-100 bg-[#fcfaf8] p-4">
+                  {/* Selected slots */}
+                  <div className="rounded-2xl border border-gray-100 bg-[#fcfaf8] p-4 sm:p-5">
                     <div className="mb-3 flex items-center justify-between gap-3">
-                      <h4 className="text-sm font-black text-gray-900">
-                        Booking Summary
-                      </h4>
-                      <span className="text-xs font-semibold text-gray-500">
+                      <div>
+                        <p className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400">Your selection</p>
+                        <h4 className="mt-1 text-base font-black text-gray-900">Selected slots</h4>
+                      </div>
+                      <span className="rounded-full bg-white px-3 py-1.5 text-[10px] font-bold text-gray-500 shadow-sm">
                         {selectedSlotDetails.length} slot(s)
                       </span>
                     </div>
 
-                    <div className="max-h-56 space-y-2 overflow-auto pr-1">
+                    <div className="max-h-52 space-y-2 overflow-auto pr-1">
                       {selectedSlotDetails.map((slot) => (
                         <div
                           key={`${slot.courtId}-${slot.slotId}`}
-                          className="flex items-start justify-between gap-4 rounded-xl border border-gray-100 bg-white px-4 py-3 text-sm shadow-sm"
+                          className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 bg-white px-3 py-3 shadow-sm"
                         >
-                          <div>
-                            <p className="font-semibold text-gray-900">
-                              {slot.courtName}
-                            </p>
-                            <p className="text-gray-500">{slot.label}</p>
+                          <div className="flex min-w-0 items-center gap-2.5">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-700">
+                              <Clock3 size={14} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="truncate text-xs font-black text-gray-900">{slot.courtName}</p>
+                              <p className="truncate text-[11px] text-gray-500">{slot.label}</p>
+                            </div>
                           </div>
-
-                          <p className="whitespace-nowrap font-semibold text-amber-700">
+                          <p className="shrink-0 text-xs font-black text-amber-700">
                             LKR {slot.price.toLocaleString()}
                           </p>
                         </div>
@@ -906,50 +1078,60 @@ export default function BadmintonBookings() {
                   </div>
                 </div>
 
-                <div className="space-y-4 rounded-2xl border border-[#ead8c8] bg-gradient-to-b from-[#fffaf5] to-[#f8eee5] p-5">
-                  <div className="flex justify-between gap-4">
-                    <span className="text-sm text-gray-500">Courts</span>
-                    <span className="text-right text-sm font-semibold text-gray-900">
-                      {selectedCourtNames.length > 0
-                        ? selectedCourtNames.join(", ")
-                        : "Select slots"}
-                    </span>
+                {/* Checkout total */}
+                <div className="h-fit rounded-2xl border border-[#ead8c8] bg-gradient-to-b from-[#fffaf5] to-[#f8eee5] p-4 sm:p-5 lg:sticky lg:top-0">
+                  <div className="mb-5">
+                    <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#A65A2A]">Order total</p>
+                    <h4 className="mt-1 text-xl font-black text-gray-900">Booking payment</h4>
                   </div>
 
-                  <div className="flex justify-between gap-4">
-                    <span className="text-sm text-gray-500">Subtotal</span>
-                    <span className="text-sm font-semibold text-gray-900">
-                      LKR {subtotal.toLocaleString()}
-                    </span>
-                  </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between gap-4 text-sm">
+                      <span className="text-gray-500">Court(s)</span>
+                      <span className="max-w-[60%] text-right font-bold text-gray-900">
+                        {selectedCourtNames.length > 0 ? selectedCourtNames.join(", ") : "Select slots"}
+                      </span>
+                    </div>
 
-                  <div className="flex justify-between gap-4 border-t border-gray-200 pt-4">
-                    <span className="text-sm font-semibold text-gray-900">
-                      Total
-                    </span>
-                    <span className="text-lg font-black text-amber-700">
-                      LKR {total.toLocaleString()}
-                    </span>
+                    <div className="flex justify-between gap-4 text-sm">
+                      <span className="text-gray-500">Date</span>
+                      <span className="font-bold text-gray-900">
+                        {selectedDateInfo?.date} {selectedDateInfo?.month}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between gap-4 text-sm">
+                      <span className="text-gray-500">Slots</span>
+                      <span className="font-bold text-gray-900">{selectedSlotDetails.length}</span>
+                    </div>
+
+                    <div className="border-t border-[#ead8c8] pt-4">
+                      <div className="flex justify-between gap-4 text-sm">
+                        <span className="text-gray-500">Subtotal</span>
+                        <span className="font-bold text-gray-900">LKR {subtotal.toLocaleString()}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-end justify-between gap-4">
+                      <span className="text-sm font-black text-gray-900">Total</span>
+                      <span className="text-2xl font-black text-amber-700">LKR {total.toLocaleString()}</span>
+                    </div>
                   </div>
 
                   <button
                     type="button"
                     disabled={loading}
                     onClick={handleConfirmBooking}
-                    className="mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#A65A2A] via-[#D4A76A] to-[#A65A2A] px-6 py-4 text-sm font-bold text-white shadow-[0_14px_30px_rgba(166,90,42,0.22)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(166,90,42,0.3)] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="mt-5 flex min-h-[52px] w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#A65A2A] via-[#D4A76A] to-[#A65A2A] px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_14px_30px_rgba(166,90,42,0.22)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(166,90,42,0.3)] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <CreditCard size={17} />
                     {loading ? "Processing..." : "Confirm Booking"}
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={closeBookingModal}
-                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-6 py-4 text-sm font-semibold text-gray-700 transition hover:border-[#A65A2A] hover:bg-white hover:text-[#A65A2A]"
-                  >
-                    <ArrowLeft size={17} />
-                    Back
-                  </button>
+                  <div className="mt-4 flex items-start gap-2 text-[10px] leading-4 text-gray-500">
+                    <ShieldCheck size={14} className="mt-0.5 shrink-0 text-green-600" />
+                    <span>Your selected booking is being held while the confirmation is processed.</span>
+                  </div>
                 </div>
               </div>
             </div>
