@@ -89,6 +89,7 @@ export default function BadmintonBookings() {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [customerPhoneError, setCustomerPhoneError] = useState("");
   const [holdIds, setHoldIds] = useState<string[]>([]);
 
   const [loading, setLoading] = useState(false);
@@ -252,6 +253,7 @@ export default function BadmintonBookings() {
     setIsBookingModalOpen(false);
     setCustomerName("");
     setCustomerPhone("");
+    setCustomerPhoneError("");
     setHoldIds([]);
   };
 
@@ -317,6 +319,10 @@ export default function BadmintonBookings() {
 
   const handleConfirmBooking = async () => {
     if (!customerName.trim() || !customerPhone.trim()) {
+      if (!customerPhone.trim()) {
+        setCustomerPhoneError("Please enter a mobile number starting with 07 and containing exactly 10 digits.");
+      }
+
       setPageAlert({
         visible: true,
         variant: "warning",
@@ -326,6 +332,20 @@ export default function BadmintonBookings() {
 
       return;
     }
+
+    if (!/^07\d{8}$/.test(customerPhone)) {
+      setCustomerPhoneError("Please enter a valid mobile number starting with 07 and containing exactly 10 digits.");
+      setPageAlert({
+        visible: true,
+        variant: "warning",
+        title: "Invalid mobile number",
+        description: "Please enter a valid mobile number starting with 07 and containing exactly 10 digits.",
+      });
+
+      return;
+    }
+
+    setCustomerPhoneError("");
 
     if (holdIds.length === 0) {
       setPageAlert({
@@ -1028,11 +1048,32 @@ export default function BadmintonBookings() {
                         <span className="mb-2 block text-xs font-bold text-gray-700">Customer Mobile No</span>
                         <input
                           type="tel"
+                          inputMode="numeric"
+                          maxLength={10}
+                          pattern="07[0-9]{8}"
+                          aria-invalid={Boolean(customerPhoneError)}
                           value={customerPhone}
-                          onChange={(event) => setCustomerPhone(event.target.value)}
+                          onChange={(event) => {
+                            setCustomerPhone(
+                              event.target.value.replace(/\D/g, "").slice(0, 10)
+                            );
+                            setCustomerPhoneError("");
+                          }}
                           placeholder="07X XXX XXXX"
-                          className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm outline-none transition focus:border-amber-500 focus:ring-4 focus:ring-amber-100"
+                          className={`h-12 w-full rounded-xl border bg-white px-4 text-sm outline-none transition focus:ring-4 focus:ring-amber-100 ${
+                            customerPhoneError
+                              ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                              : "border-gray-200 focus:border-amber-500"
+                          }`}
                         />
+                        <span className="mt-1.5 block text-xs text-gray-500">
+                          Enter 10 digits starting with 07.
+                        </span>
+                        {customerPhoneError && (
+                          <span className="mt-1.5 block text-xs font-medium text-red-600" role="alert">
+                            {customerPhoneError}
+                          </span>
+                        )}
                       </label>
                     </div>
 
