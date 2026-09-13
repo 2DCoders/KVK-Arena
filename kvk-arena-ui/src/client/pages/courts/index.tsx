@@ -126,17 +126,6 @@ export default function Courts() {
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent pointer-events-none" />
 
-                {/* Price */}
-                <div className="absolute left-6 top-6 z-10 rounded-2xl bg-white/90 px-4 py-3 backdrop-blur-md">
-                  <p className="text-xs text-gray-500">
-                    Starting From
-                  </p>
-
-                  <p className="font-black text-[#A65A2A]">
-                    {courtItem.price}
-                  </p>
-                </div>
-
                 {/* Title */}
                 <div className="absolute bottom-6 left-6 z-10">
                   <h3 className="text-4xl font-black">
