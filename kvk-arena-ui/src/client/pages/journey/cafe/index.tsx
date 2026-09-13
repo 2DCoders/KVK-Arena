@@ -36,6 +36,7 @@ type PopularChoice = {
   serving: string;
   includes: string[];
   image?: string;
+  facts?: string;
 };
 
 const getImageSource = (image?: string | null) => {
@@ -59,6 +60,7 @@ const mapCafeMenuItem = (item: CafeMenuResponse): PopularChoice => ({
     ? item.ingredients.split(",").map((ingredient) => ingredient.trim())
     : [],
   image: getImageSource(item.image),
+  facts: item.facts ? item.facts : "Pair your breakfast with a rich, aromatic coffee for the ultimate morning experience.",
 });
 
 export default function CafeJourney() {
@@ -644,8 +646,8 @@ export default function CafeJourney() {
                   </p>
 
                   <p className="mt-2 text-sm leading-6 text-[#bda99b]">
-                    Pair this breakfast with an espresso, cappuccino or iced
-                    coffee for a complete cafe experience.
+                    {selectedChoice.facts ||
+                      "Pair your breakfast with a rich, aromatic coffee for the ultimate morning experience."}
                   </p>
                 </div>
               </div>
