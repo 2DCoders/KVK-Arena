@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import courtImg from "@/assets/court.png";
 import {
+  ArrowLeft,
   CalendarDays,
   CheckCircle2,
+  CreditCard,
   Trophy,
   Users,
   Star,
+  X,
 } from "lucide-react";
 import { getCourts } from "@/services/court-api";
-import { bookingSlots } from "@/services/booking-api";
+import { bookingSlots, confirmBooking } from "@/services/booking-api";
 import { getNextWorkingDays } from "@/services/holidays-api";
 import { getCourtSlotsAvailability } from "@/services/court-slot-api";
 import Alert from "@/components/alert";
@@ -242,6 +245,7 @@ export default function BadmintonBookings() {
     setIsBookingModalOpen(false);
     setCustomerName("");
     setCustomerPhone("");
+    setHoldIds([]);
   };
 
   const handleBookingMultipleSlots = async () => {
@@ -277,12 +281,16 @@ export default function BadmintonBookings() {
 
       const holdIds = Array.isArray(holdItems)
         ? holdItems
-            .map((item: any) => item?.holdId ?? item?.id)
-            .filter(Boolean)
+          .map((item: any) => item?.holdId ?? item?.id)
+          .filter(Boolean)
         : [];
 
+      if (holdIds.length === 0) {
+        throw new Error("The booking service did not return any hold IDs.");
+      }
+
       setHoldIds(holdIds);
-      setSelectedSlotsByCourt({});
+      setIsBookingModalOpen(true);
     } catch (error) {
       const message =
         (error as any)?.response?.data?.message ||
@@ -297,6 +305,97 @@ export default function BadmintonBookings() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleConfirmBooking = async () => {
+    if (!customerName.trim() || !customerPhone.trim()) {
+      setPageAlert({
+        visible: true,
+        variant: "warning",
+        title: "Missing customer details",
+        description: "Please enter the customer name and mobile number.",
+      });
+
+      return;
+    }
+
+    if (holdIds.length === 0) {
+      setPageAlert({
+        visible: true,
+        variant: "warning",
+        title: "Booking hold expired",
+        description: "Please select the slots again and proceed to payment.",
+      });
+
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await confirmBooking({
+        holdIds,
+        customerDetails: {
+          customerName: customerName.trim(),
+          phoneNumber: customerPhone.trim(),
+          paymentType: 1,
+        },
+      });
+
+      setPageAlert({
+        visible: true,
+        variant: "success",
+        title: "Booking confirmed",
+        description: "The badminton booking was confirmed successfully.",
+      });
+
+      setSelectedSlotsByCourt({});
+      closeBookingModal();
+    } catch (error) {
+      const message =
+        (error as any)?.response?.data?.message ||
+        (error as any)?.message ||
+        "Unable to confirm the booking.";
+
+      setPageAlert({
+        visible: true,
+        variant: "error",
+        title: "Confirmation failed",
+        description: message,
+      });
+    } finally {
+      setLoading(false);
+      setCustomerName('')
+      setCustomerPhone('')
+      // Reset selected slots when closing the modal
+      setSelectedSlotsByCourt({})
+      // update slots availability after closing the modal
+      const selectedDateString = displayedDays[selectedDate]?.fullDate;
+      if (selectedDateString) {
+        courts.forEach(async (court) => {
+          const slots = await getCourtSlotsAvailability(
+            court.id,
+            selectedDateString,
+          );
+          const formattedSlots = (Array.isArray(slots) ? slots : []).map(
+            (slot: any) => ({
+              id: slot.id,
+              courtId: slot.courtId,
+              startTime: slot.startTime,
+              endTime: slot.endTime,
+              isActive: slot.isActive,
+              isBooked: slot.isBooked,
+              price: slot.price,
+              label: formatSlotLabel(slot.startTime, slot.endTime),
+              available: slot.isActive && !slot.isBooked,
+            })
+          );
+          setCourtSlots((prev) => ({
+            ...prev,
+            [court.id]: formattedSlots,
+          }));
+        });
+      }
     }
   };
 
@@ -653,11 +752,9 @@ export default function BadmintonBookings() {
               </div>
 
               <button
+                type="button"
                 disabled={selectedSlotDetails.length === 0}
-                onClick={() => {
-                  setIsBookingModalOpen(true)
-                  handleBookingMultipleSlots()
-                }}
+                onClick={handleBookingMultipleSlots}
                 className="group relative mt-6 w-full overflow-hidden rounded-2xl bg-gradient-to-r from-[#A65A2A] via-[#D4A76A] to-[#A65A2A] px-8 py-4 font-bold text-white transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_15px_40px_rgba(201,119,58,0.35)] cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <span className="relative z-10">Proceed To Payment</span>
@@ -675,31 +772,68 @@ export default function BadmintonBookings() {
       </div>
 
       {isBookingModalOpen && createPortal(
-        <div className="fixed inset-0 z-[9999999998] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-md">
-          <div className="w-full max-w-2xl rounded-3xl border border-white/10 bg-white shadow-2xl">
-            <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-6 py-5">
+        <div className="fixed inset-0 z-[9999999998] flex items-center justify-center bg-[#24170f]/70 px-4 py-6 backdrop-blur-md">
+          <div className="w-full max-w-3xl overflow-hidden rounded-[2rem] border border-white/70 bg-white shadow-[0_30px_90px_rgba(54,30,15,0.3)]">
+            <div className="flex items-start justify-between gap-4 bg-gradient-to-r from-[#fff8ef] via-white to-[#fff4e8] px-6 py-6 sm:px-8">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-600">
-                  Confirm Booking
+                <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#A65A2A]">
+                  Booking checkout
                 </p>
-                <h3 className="mt-1 text-2xl font-black text-gray-900">
-                  Review your badminton booking
+                <h3 className="mt-2 text-2xl font-black tracking-tight text-gray-900 sm:text-3xl">
+                  Review your booking
                 </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Check your slots and contact details before payment.
+                </p>
               </div>
 
               <button
                 type="button"
-                onClick={closeBookingModal}
-                className="rounded-full border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-500 transition hover:border-gray-300 hover:text-gray-800"
+                onClick={() => {
+                  closeBookingModal()
+                  setCustomerName('')
+                  setCustomerPhone('')
+                  // Reset selected slots when closing the modal
+                  setSelectedSlotsByCourt({})
+                  // update slots availability after closing the modal
+                  const selectedDateString = displayedDays[selectedDate]?.fullDate;
+                  if (selectedDateString) {
+                    courts.forEach(async (court) => {
+                      const slots = await getCourtSlotsAvailability(
+                        court.id,
+                        selectedDateString,
+                      );
+                      const formattedSlots = (Array.isArray(slots) ? slots : []).map(
+                        (slot: any) => ({
+                          id: slot.id,
+                          courtId: slot.courtId,
+                          startTime: slot.startTime,
+                          endTime: slot.endTime,
+                          isActive: slot.isActive,
+                          isBooked: slot.isBooked,
+                          price: slot.price,
+                          label: formatSlotLabel(slot.startTime, slot.endTime),
+                          available: slot.isActive && !slot.isBooked,
+                        })
+                      );
+                      setCourtSlots((prev) => ({
+                        ...prev,
+                        [court.id]: formattedSlots,
+                      }));
+                    });
+                  }
+                }}
+                aria-label="Close booking review"
+                className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm transition hover:border-[#A65A2A] hover:bg-[#fff8ef] hover:text-[#A65A2A]"
               >
-                Close
+                <X size={18} />
               </button>
             </div>
 
-            <div className="max-h-[75vh] overflow-y-auto px-6 py-5">
+            <div className="max-h-[75vh] overflow-y-auto px-6 py-6 sm:px-8">
               <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
                 <div className="space-y-4">
-                  <div className="rounded-2xl bg-amber-50 p-4">
+                  <div className="rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50 to-orange-50 p-4">
                     <p className="text-sm font-semibold text-amber-900">
                       Booking Date
                     </p>
@@ -740,7 +874,7 @@ export default function BadmintonBookings() {
                     Please add correct mobile no because booking id goes to mobile no as SMS.
                   </div>
 
-                  <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                  <div className="rounded-2xl border border-gray-100 bg-[#fcfaf8] p-4">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <h4 className="text-sm font-black text-gray-900">
                         Booking Summary
@@ -754,7 +888,7 @@ export default function BadmintonBookings() {
                       {selectedSlotDetails.map((slot) => (
                         <div
                           key={`${slot.courtId}-${slot.slotId}`}
-                          className="flex items-start justify-between gap-4 rounded-xl bg-white px-4 py-3 text-sm"
+                          className="flex items-start justify-between gap-4 rounded-xl border border-gray-100 bg-white px-4 py-3 text-sm shadow-sm"
                         >
                           <div>
                             <p className="font-semibold text-gray-900">
@@ -772,7 +906,7 @@ export default function BadmintonBookings() {
                   </div>
                 </div>
 
-                <div className="space-y-4 rounded-2xl border border-gray-100 bg-gray-50 p-5">
+                <div className="space-y-4 rounded-2xl border border-[#ead8c8] bg-gradient-to-b from-[#fffaf5] to-[#f8eee5] p-5">
                   <div className="flex justify-between gap-4">
                     <span className="text-sm text-gray-500">Courts</span>
                     <span className="text-right text-sm font-semibold text-gray-900">
@@ -801,17 +935,19 @@ export default function BadmintonBookings() {
                   <button
                     type="button"
                     disabled={loading}
-                    onClick={handleBookingMultipleSlots}
-                    className="mt-4 w-full rounded-2xl bg-gradient-to-r from-[#A65A2A] via-[#D4A76A] to-[#A65A2A] px-6 py-4 text-sm font-bold text-white transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
+                    onClick={handleConfirmBooking}
+                    className="mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#A65A2A] via-[#D4A76A] to-[#A65A2A] px-6 py-4 text-sm font-bold text-white shadow-[0_14px_30px_rgba(166,90,42,0.22)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(166,90,42,0.3)] disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {loading ? "Processing..." : "Pay & Confirm"}
+                    <CreditCard size={17} />
+                    {loading ? "Processing..." : "Confirm Booking"}
                   </button>
 
                   <button
                     type="button"
                     onClick={closeBookingModal}
-                    className="w-full rounded-2xl border border-gray-200 px-6 py-4 text-sm font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-white"
+                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-6 py-4 text-sm font-semibold text-gray-700 transition hover:border-[#A65A2A] hover:bg-white hover:text-[#A65A2A]"
                   >
+                    <ArrowLeft size={17} />
                     Back
                   </button>
                 </div>
