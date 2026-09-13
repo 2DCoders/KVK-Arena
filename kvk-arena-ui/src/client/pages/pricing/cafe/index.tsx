@@ -124,7 +124,7 @@ export default function CafePricing() {
     <>
       <section
         id="menu"
-        className="relative overflow-hidden bg-[#fffaf5] py-20 sm:py-24 lg:py-28"
+        className="relative overflow-hidden bg-[#fffaf5] py-20 sm:py-24 lg:py-28 scroll-mt-16 sm:scroll-mt-20"
       >
         {/* Background decorations */}
         <div className="pointer-events-none absolute -left-32 top-12 h-80 w-80 rounded-full bg-[#eed8c4]/45 blur-[110px]" />

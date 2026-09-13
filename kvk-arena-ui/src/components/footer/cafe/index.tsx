@@ -155,7 +155,11 @@ export default function CafeFooter() {
                   <ul className="mt-5 space-y-3">
                     <li>
                       <a
-                        href="#"
+                        href="#cafe-hero"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
                         Home
@@ -165,6 +169,10 @@ export default function CafeFooter() {
                     <li>
                       <a
                         href="#about"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
+                        }}
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
                         About
@@ -174,6 +182,10 @@ export default function CafeFooter() {
                     <li>
                       <a
                         href="#menu"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          document.getElementById("menu")?.scrollIntoView({ behavior: "smooth" });
+                        }}
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
                         Menu

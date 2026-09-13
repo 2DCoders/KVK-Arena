@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import courtImg from "@/assets/court.png";
 import {
-  ArrowLeft,
   CalendarDays,
   CheckCircle2,
   CreditCard,
@@ -13,7 +12,6 @@ import {
   ChevronRight,
   ShieldCheck,
   Sparkles,
-  MapPin,
   CircleCheck,
   Info,
 } from "lucide-react";
