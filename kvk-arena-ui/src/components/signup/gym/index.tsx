@@ -143,8 +143,11 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
 
     if (!form.phone.trim()) {
       newErrors.phone = "Phone is required";
-    } else if (form.phone.length !== 9 || !/^\d+$/.test(form.phone)) {
-      newErrors.phone = "Invalid phone number";
+    } else if (
+      form.phone.length !== 9 ||
+      !/^7\d{8}$/.test(form.phone)
+    ) {
+      newErrors.phone = "Phone number must be 9 digits and start with 7";
     }
 
     if (!form.dob) newErrors.dob = "Date of birth is required";
@@ -685,6 +688,9 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
 
                       <input
                         name="phone"
+                        type="tel"
+                        inputMode="numeric"
+                        maxLength={9}
                         placeholder="XX XXX XXXX"
                         value={form.phone}
                         onChange={handleChange}
