@@ -87,7 +87,7 @@ function FeatureCard({
 
 export default function BadmintonServices() {
   return (
-    <section className="relative overflow-hidden bg-[#F8F5F1] py-20 lg:py-28" data-aos="fade-up">
+    <section className="relative overflow-hidden bg-[#F8F5F1] py-10 lg:py-10" data-aos="fade-up">
       {/* Background */}
       <div className="absolute inset-0 bg-[linear-gradient(135deg,#ffffff_0%,#faf7f2_40%,#f5ede5_100%)]" />
 
