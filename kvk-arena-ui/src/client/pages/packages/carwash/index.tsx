@@ -899,7 +899,12 @@ export default function CarwashPackages() {
                 <div className="absolute inset-x-4 bottom-4 sm:inset-x-5 sm:bottom-5">
                   <div className="rounded-2xl border border-white/15 bg-black/45 p-4 text-white shadow-lg backdrop-blur-xl">
                     <p className="pr-2 text-lg font-semibold">
-                      {selectedPackage.name}
+                      {selectedPackage.name.length > 25
+                        ? `${selectedPackage.name.slice(
+                            0,
+                            25,
+                          )}...`
+                        : selectedPackage.name}
                     </p>
 
                     <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -953,12 +958,16 @@ export default function CarwashPackages() {
                     id="package-modal-title"
                     className="mt-5 pr-10 text-2xl font-bold tracking-[-0.04em] text-slate-950 sm:text-4xl"
                   >
-                    {selectedPackage.name}
+                    {selectedPackage.name.length > 25
+                      ? `${selectedPackage.name.slice(0, 25)}...`
+                      : selectedPackage.name}
                   </h3>
 
                   <p className="mt-4 text-sm leading-7 text-slate-600 sm:mt-5 sm:text-base">
                     {
-                      selectedPackage.description
+                      selectedPackage.description.length > 200 
+                        ? `${selectedPackage.description.slice(0, 200)}...`
+                        : selectedPackage.description
                     }
                   </p>
 
