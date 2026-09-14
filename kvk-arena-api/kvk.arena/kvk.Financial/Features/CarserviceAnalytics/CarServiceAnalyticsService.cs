@@ -18,7 +18,7 @@ public class CarServiceAnalyticsService
     {
         var bookings = await _context.CarWashOrders.ToListAsync(cancellationToken);
 
-        var filteredBookings = bookings.Where(b => b.OrderDate >= startDate && b.OrderDate<= endDate).ToList();
+        var filteredBookings = bookings.Where(b => b.CreatedAt >= startDate && b.CreatedAt <= endDate).ToList();
 
         var response = new CarServiceAnalyticsResponse
         {

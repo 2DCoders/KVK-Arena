@@ -106,7 +106,6 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
             };
 
             _db.CourtSlotConfigurations.Add(config);
-            await _db.SaveChangesAsync(cancellationToken);
 
             await RegenerateSlotsInternalAsync(config, cancellationToken);
 
@@ -133,8 +132,6 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
             config.SlotDurationMinutes = request.SlotDurationMinutes;
             config.SlotGapMinutes = request.SlotGapMinutes;
             config.IsActive = request.IsActive;
-
-            await _db.SaveChangesAsync(cancellationToken);
 
             await RegenerateSlotsInternalAsync(config, cancellationToken);
 
@@ -172,14 +169,18 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
 
     private async Task RegenerateSlotsInternalAsync(Domain.CourtSlotConfiguration config, CancellationToken cancellationToken)
     {
-        // 1. Delete old slots
-        var oldSlots = await _db.Set<CourtSlot>()
-            .Where(x => x.CourtId == config.CourtId)
-            .ToListAsync(cancellationToken);
-        
-        _db.Set<CourtSlot>().RemoveRange(oldSlots);
+        // 1. Fetch court price early
+        var courtIdPrice = await _db.Courts
+            .Where(c => c.Id == config.CourtId)
+            .Select(c => c.PricePerSlot)
+            .FirstOrDefaultAsync(cancellationToken);
 
-        // 2. Generate new slots
+        // 2. Delete old slots directly on DB
+        await _db.CourtSlots
+            .Where(x => x.CourtId == config.CourtId)
+            .ExecuteDeleteAsync(cancellationToken);
+
+        // 3. Generate new slots
         var newSlots = new List<CourtSlot>();
         var currentTime = config.StartTime;
         
@@ -187,17 +188,14 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
         while (currentTime.AddMinutes(config.SlotDurationMinutes) <= config.EndTime)
         {
             var slotEndTime = currentTime.AddMinutes(config.SlotDurationMinutes);
-            
+
             newSlots.Add(new CourtSlot
             {
                 CourtId = config.CourtId,
                 StartTime = currentTime,
                 EndTime = slotEndTime,
                 IsActive = true,
-                Price = await _db.Courts
-                    .Where(c => c.Id == config.CourtId)
-                    .Select(c => c.PricePerSlot)
-                    .FirstOrDefaultAsync(cancellationToken)
+                Price = courtIdPrice,
             });
 
             currentTime = slotEndTime.AddMinutes(config.SlotGapMinutes);
@@ -206,10 +204,20 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
             if (currentTime < slotEndTime) break; 
         }
 
-        if (newSlots.Any())
+        if (newSlots.Count > 0)
         {
-            _db.Set<CourtSlot>().AddRange(newSlots);
-            await _db.SaveChangesAsync(cancellationToken);
+            // Optimize bulk insert by turning off change tracking temporarily
+            _db.ChangeTracker.AutoDetectChangesEnabled = false;
+            try
+            {
+                _db.CourtSlots.AddRange(newSlots);
+                // This single SaveChangesAsync will now save the Configuration (from Create/Update) AND the new slots together
+                await _db.SaveChangesAsync(cancellationToken);
+            }
+            finally
+            {
+                _db.ChangeTracker.AutoDetectChangesEnabled = true;
+            }
         }
     }
 
@@ -227,6 +235,20 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
             CreatedAt = entity.CreatedAt,
             LastModifiedAt = entity.LastModifiedAt
         };
+    }
+    
+    public class CourtSlotRequestList
+    {
+        public Guid CourtId { get; set; }
+        
+        public TimeOnly StartTime { get; set; }
+
+        public TimeOnly EndTime { get; set; }
+
+        public bool IsActive { get; set; }
+
+        public decimal Price { get; set; }
+    
     }
 
 }

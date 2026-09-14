@@ -20,7 +20,7 @@ public class CafeAnalyticsService
     {
         var bookings = await _context.Orders.ToListAsync(cancellationToken);
 
-        var filteredBookings = bookings.Where(b => b.OrderDate >= startDate && b.OrderDate<= endDate).ToList();
+        var filteredBookings = bookings.Where(b => b.CreatedAt >= startDate && b.CreatedAt<= endDate).ToList();
 
         var response = new CafeAnalyticsResponse
         {
