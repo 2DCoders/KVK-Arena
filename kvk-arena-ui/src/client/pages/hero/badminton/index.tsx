@@ -13,6 +13,7 @@ import {
   useState,
 } from "react";
 
+import MOBILE_BG from "@/assets/badminton-mobile.png";
 const FRAME_COUNT = 151;
 
 const getFramePath = (frame: number) => {
@@ -402,9 +403,73 @@ export default function BadmintonHero() {
   return (
     <section
       ref={sectionRef}
-      className="relative h-[420vh] bg-[#0d0805] sm:h-[460vh] lg:h-[500vh]"
+      className="relative bg-[#0d0805] sm:h-[460vh] lg:h-[500vh]"
     >
-      <div className="sticky top-0 h-[100svh] min-h-[620px] overflow-hidden bg-[#0d0805]">
+      <div className="relative min-h-[100svh] overflow-hidden bg-[#0d0805] sm:hidden">
+        <img
+          src={MOBILE_BG}
+          alt="Badminton court at KVK Arena"
+          className="absolute inset-0 h-full w-full scale-[1.02] object-cover object-center"
+        />
+
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(13,8,5,0.7)_0%,rgba(13,8,5,0.12)_34%,rgba(13,8,5,0.25)_54%,rgba(13,8,5,0.96)_88%,#0d0805_100%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(13,8,5,0.82)_0%,rgba(13,8,5,0.2)_62%,rgba(13,8,5,0.08)_100%)]" />
+        <div className="pointer-events-none absolute -right-28 top-[18%] h-72 w-72 rounded-full bg-[#D98B4D]/15 blur-[90px]" />
+
+        <div className="relative z-10 flex min-h-[100svh] items-end px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-28">
+          <div className="w-full">
+            <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.28em] text-[#F1B17B]">
+              KVK Arena Badminton
+            </p>
+
+            <h1 className="max-w-[350px] text-[2.85rem] font-black uppercase leading-[0.88] tracking-[-0.055em] text-white min-[390px]:text-[3.15rem]">
+              Train.
+              <span className="block bg-gradient-to-r from-[#F1B17B] via-[#D98B4D] to-[#A65A2A] bg-clip-text text-transparent">
+                Play.
+              </span>
+              <span className="block">Compete.</span>
+            </h1>
+
+            <p className="mt-6 max-w-[340px] text-[13px] leading-6 text-white/75">
+              Premium courts, fast rallies and an arena built for every level of play.
+            </p>
+
+            <div className="mt-7 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={scrollToBooking}
+                className="group inline-flex h-12 cursor-pointer items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#9B4E22] to-[#D98B4D] px-4 text-[11px] font-extrabold text-white shadow-[0_14px_35px_rgba(217,139,77,0.32)] transition active:scale-[0.98]"
+              >
+                Book a Court
+                <ArrowRight size={15} className="transition-transform duration-300 group-hover:translate-x-1" />
+              </button>
+
+              <button
+                type="button"
+                onClick={scrollToCourts}
+                className="inline-flex h-12 cursor-pointer items-center justify-center gap-2 rounded-full border border-white/20 bg-black/25 px-3 text-[11px] font-bold text-white backdrop-blur-md transition active:scale-[0.98]"
+              >
+                <Crosshair className="h-4 w-4 text-[#F1B17B]" />
+                Explore Courts
+              </button>
+            </div>
+
+            <div className="mt-6 flex items-center gap-5 border-t border-white/15 pt-4">
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-[#F1B17B]" />
+                <span className="text-[10px] font-semibold text-white/70">Premium courts</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Zap className="h-4 w-4 text-[#F1B17B]" />
+                <span className="text-[10px] font-semibold text-white/70">Fast booking</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="sticky top-0 hidden h-[100svh] min-h-[620px] overflow-hidden bg-[#0d0805] sm:block">
         {/* Scroll-controlled frame sequence */}
         <div
           className="absolute inset-0 will-change-transform"
