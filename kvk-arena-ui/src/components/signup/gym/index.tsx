@@ -150,7 +150,23 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
       newErrors.phone = "Phone number must be 9 digits and start with 7";
     }
 
-    if (!form.dob) newErrors.dob = "Date of birth is required";
+    if (!form.dob) {
+      newErrors.dob = "Date of birth is required";
+    } else {
+      const [year, month, day] = form.dob.split("-").map(Number);
+      const date = new Date(year, month - 1, day);
+      const today = new Date();
+      const isValidDate =
+        /^\d{4}-\d{2}-\d{2}$/.test(form.dob) &&
+        date.getFullYear() === year &&
+        date.getMonth() === month - 1 &&
+        date.getDate() === day;
+      const isReasonableDate = date >= new Date(1900, 0, 1) && date <= today;
+
+      if (!isValidDate || !isReasonableDate) {
+        newErrors.dob = "Please enter a valid date of birth";
+      }
+    }
 
     if (!gender) newErrors.gender = "Please select gender";
 
@@ -716,6 +732,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                       name="dob"
                       value={form.dob}
                       onChange={handleChange}
+                      min="1900-01-01"
                       max={new Date().toLocaleDateString("en-CA")}
                       className="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#296BE1] focus:ring-4 focus:ring-[#296BE1]/10"
                     />
