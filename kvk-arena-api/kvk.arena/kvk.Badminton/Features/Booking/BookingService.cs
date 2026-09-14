@@ -2,10 +2,14 @@ using System.Data;
 using kvk.Badminton.Domain;
 using kvk.Badminton.Enums;
 using kvk.Badminton.Interfaces;
+using kvk.BuildingBlocks;
 using kvk.BuildingBlocks.Common;
 using kvk.BuildingBlocks.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using kvk.BuildingBlocks.Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace kvk.Badminton.Features.Booking;
 
@@ -14,11 +18,22 @@ public class BookingService : IBookingService
     private readonly BadmintonDbContext _db;
     private readonly ISmsService _smsService;
     private const int DefaultHoldMinutes = 7;
+    private readonly IHashService _hashService;
+    private readonly PayHereOptions _payHereOptions;
+    private readonly ILogger<BookingService> _logger;
 
-    public BookingService(BadmintonDbContext db, ISmsService smsService)
+    public BookingService(
+        BadmintonDbContext db, 
+        ISmsService smsService,
+        IHashService hashService, 
+        IOptions<PayHereOptions> payHereOptions,
+        ILogger<BookingService> logger)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
         _smsService = smsService;
+        _hashService = hashService ?? throw new ArgumentNullException(nameof(hashService));
+        _payHereOptions = payHereOptions?.Value ?? throw new ArgumentNullException(nameof(payHereOptions));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public async Task<Result> CreateHoldAsync(BookingHoldRequest request, CancellationToken ct = default)
@@ -250,7 +265,7 @@ public class BookingService : IBookingService
                 CourtSlotId = hold.CourtSlotId,
                 BookingDate = hold.BookingDate,
                 BookingAmount = hold.Amount,
-                Status = BookingStatus.Confirmed,
+                Status = BookingStatus.Pending,
                 CustomerName = customerDetails.CustomerName,
                 PhoneNumber = customerDetails.PhoneNumber,
                 PaymentId = paymentIntentId,
@@ -361,7 +376,7 @@ public class BookingService : IBookingService
                     CourtSlotId = hold.CourtSlotId,
                     BookingDate = hold.BookingDate,
                     BookingAmount = hold.Amount,
-                    Status = BookingStatus.Confirmed,
+                    Status = BookingStatus.Pending,
                     CustomerName = request.CustomerDetails.CustomerName,
                     PhoneNumber = request.CustomerDetails.PhoneNumber,
                     PaymentId = request.PaymentIntentId, 
@@ -411,96 +426,61 @@ public class BookingService : IBookingService
 
     public async Task VerifyPaymentNotificationAsync(PaymentNotificationRequest request, CancellationToken ct = default)
     {
-        Console.WriteLine(
-            $"Received payment notification for OrderId: {request.OrderId}, PaymentId: {request.PaymentId}, Status: {request.StatusCode}");
+        var record = await _db.CourtBookings
+            .Where(x => x.BookingNumber == request.OrderId && x.Status == BookingStatus.Pending)
+            .FirstOrDefaultAsync(ct);
 
-        // Assuming OrderId in the notification corresponds to a BookingHold ID.
-        if (Guid.TryParse(request.OrderId, out var holdId))
+        if (record is null)
         {
-            using var transaction = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
-            try
-            {
-                var hold = await _db.BookingHolds.FirstOrDefaultAsync(h => h.Id == holdId, ct);
-                if (hold != null)
-                {
-                    if (request.StatusCode == 2) // Assuming 2 means success from the payment gateway
-                    {
-                        // Ensure idempotency: only process if the hold is still pending
-                        if (hold.Status == BookingHoldStatus.Pending)
-                        {
-                            // Re-validate availability inside the transaction
-                            bool isStillAvailable = await _db.CourtBookings
-                                .AnyAsync(b => b.CourtSlotId == hold.CourtSlotId
-                                               && b.BookingDate == hold.BookingDate
-                                               && b.Status != BookingStatus.Cancelled, ct);
-
-                            if (isStillAvailable)
-                            {
-                                Console.WriteLine(
-                                    $"Slot for hold {holdId} was booked by another confirmed transaction. Payment notification ignored.");
-                                await transaction.RollbackAsync(ct);
-                                return;
-                            }
-
-                            // Create Final Booking
-                            var booking = new CourtBooking
-                            {
-                                CourtId = hold.CourtId,
-                                CourtSlotId = hold.CourtSlotId,
-                                BookingDate = hold.BookingDate,
-                                BookingAmount = hold.Amount,
-                                Status = BookingStatus.Confirmed,
-                                CustomerName = hold.CustomerName,
-                                PhoneNumber = hold.PhoneNumber,
-                                PaymentId = request.PaymentId,
-                                PaymentType = PaymentTypes.Card,
-                                BookingNumber = GenerateUniqueBookingNumber()
-                                
-                            };
-
-                            hold.Status = BookingHoldStatus.Confirmed;
-                            hold.PaymentIntentId = request.PaymentId;
-
-                            _db.CourtBookings.Add(booking);
-                            await _db.SaveChangesAsync(ct);
-                            await transaction.CommitAsync(ct);
-                            Console.WriteLine($"Booking {booking.Id} confirmed via payment notification.");
-                        }
-                        else
-                        {
-                            Console.WriteLine(
-                                $"Hold {holdId} already in status {hold.Status}, skipping confirmation from notification.");
-                            await transaction.CommitAsync(ct); // Commit to release transaction lock
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine(
-                            $"Payment notification for hold {holdId} indicates non-success status: {request.StatusCode}");
-                        // Optionally update hold status to failed or pending review based on StatusCode
-                        // For example:
-                        // hold.Status = BookingHoldStatus.PaymentFailed;
-                        // await _db.SaveChangesAsync(ct);
-                        await transaction.CommitAsync(ct); // Commit to release transaction lock
-                    }
-                }
-                else
-                {
-                    Console.WriteLine(
-                        $"BookingHold with OrderId {request.OrderId} not found for payment notification.");
-                    await transaction.RollbackAsync(ct); // Rollback if no hold found
-                }
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync(ct);
-                Console.WriteLine($"Error processing payment notification for OrderId {request.OrderId}: {ex.Message}");
-            }
+            _logger.LogWarning("Pending payment with booking number {OrderId} was not found.", request.OrderId);
+            return;
         }
-        else
+
+        var expectedMd5Sig =
+            _hashService.GenerateNotificationMd5Sig(
+                request.MerchantId,
+                _payHereOptions.MerchantSecret,
+                request.OrderId,
+                request.PayhereAmount,
+                request.PayhereCurrency,
+                request.StatusCode);
+
+        _logger.LogInformation("Expected MD5 Signature: {ExpectedMd5Sig}, Received MD5 Signature: {ReceivedMd5Sig}",
+            expectedMd5Sig, request.Md5Sig);
+
+        if (!string.Equals(
+                expectedMd5Sig,
+                request.Md5Sig,
+                StringComparison.OrdinalIgnoreCase))
         {
-            Console.WriteLine($"Invalid OrderId format in payment notification: {request.OrderId}");
+            return;
         }
+
+        if (request.StatusCode != 2)
+            return;
+
+        if (record.BookingAmount != request.PayhereAmount)
+            return;
+
+        record.Status = BookingStatus.Confirmed;
+        record.PaymentId = request.PaymentId;
+        _db.CourtBookings.Update(record);
+        await _db.SaveChangesAsync(ct);
+    }
+
+    public async Task<Result> DeletePendingPayment(BadmintonPendingPaymentDeleteRequest request, CancellationToken ct = default)
+    {
+        var record = await _db.CourtBookings
+            .Where(x => x.BookingNumber == request.OrderId && x.Status == BookingStatus.Pending)
+            .FirstOrDefaultAsync(ct);
+
+        if (record is null)
+            return Result.Failure($"Pending payment with booking number {request.OrderId} was not found.");
+
+        _db.CourtBookings.Remove(record);
+        await _db.SaveChangesAsync(ct);
+
+        return Result.Success("Pending payment deleted successfully");
     }
 
     public async Task<Result> CleanupExpiredHoldsAsync(CancellationToken ct = default)

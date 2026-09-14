@@ -89,4 +89,15 @@ public class BookingController : ControllerBase
         var result = await _service.CleanupExpiredHoldsAsync(ct);
         return Ok(result);
     }
+
+    [HttpPost("reverse")]
+    public async Task<IActionResult> ReversePendingPayment([FromBody] BadmintonPendingPaymentDeleteRequest request, CancellationToken ct)
+    {
+        var result = await _service.DeletePendingPayment(request, ct);
+
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
 }

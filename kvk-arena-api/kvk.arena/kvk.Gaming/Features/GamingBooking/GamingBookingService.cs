@@ -1,21 +1,34 @@
 using System.Data;
 using kvk.Badminton.Features.Booking;
+using kvk.BuildingBlocks;
 using kvk.BuildingBlocks.Common;
 using kvk.Gaming.Domain;
 using kvk.Gaming.Enums;
 using kvk.Gaming.Interfaces;
 using Microsoft.EntityFrameworkCore;
-
+using kvk.BuildingBlocks.Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 namespace kvk.Gaming.Features.GamingBooking;
 
 public class GamingBookingService : IGamingBookingService
 {
     private readonly GamingDbContext _db;
+    private readonly IHashService _hashService;
+    private readonly PayHereOptions _payHereOptions;
+    private readonly ILogger<GamingBookingService> _logger;
     private const int DefaultHoldMinutes = 7;
 
-    public GamingBookingService(GamingDbContext db)
+    public GamingBookingService(
+        GamingDbContext db, 
+        IHashService hashService, 
+        IOptions<PayHereOptions> payHereOptions,
+        ILogger<GamingBookingService> logger)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
+        _hashService = hashService ?? throw new ArgumentNullException(nameof(hashService));
+        _payHereOptions = payHereOptions?.Value ?? throw new ArgumentNullException(nameof(payHereOptions));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public async Task<Result> CreateGamingBookingAsync(CreateGamingBookingRequest request,
@@ -358,7 +371,7 @@ public class GamingBookingService : IGamingBookingService
                 CustomerPhone = hold.CustomerPhone,
                 Amount = hold.Amount,
                 BookingDate = hold.BookingDate,
-                Status = GamingBookingStatus.Confirmed,
+                Status = GamingBookingStatus.Pending,
                 PaymentIntentId = paymentIntentId,
                 PaymentType = PaymentTypes.Card
             };
@@ -389,113 +402,62 @@ public class GamingBookingService : IGamingBookingService
     public async Task VerifyPaymentNotificationAsync(PaymentNotificationRequest request,
         CancellationToken cancellationToken = default)
     {
-        // Placeholder for MD5 signature verification.
-        // if (!VerifyMd5Signature(request)) {
-        //     Console.WriteLine("MD5 signature verification failed for gaming booking.");
-        //     return;
-        // }
+        var record = await _db.GamingBookings
+            .Where(x => x.BookingNumber == request.OrderId && x.Status == GamingBookingStatus.Pending)
+            .FirstOrDefaultAsync(cancellationToken);
 
-        Console.WriteLine(
-            $"Received gaming payment notification for OrderId: {request.OrderId}, PaymentId: {request.PaymentId}, Status: {request.StatusCode}");
-
-        if (Guid.TryParse(request.OrderId, out var holdId))
+        if (record is null)
         {
-            await using var transaction =
-                await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
-            try
-            {
-                var hold = await _db.GamingBookingHolds.FirstOrDefaultAsync(h => h.Id == holdId, cancellationToken);
-                if (hold != null)
-                {
-                    if (request.StatusCode == 2) // Assuming 2 means success from the payment gateway
-                    {
-                        if (hold.Status == GamingBookingHoldStatus.Pending)
-                        {
-                            bool isStillAvailable = await _db.GamingBookings
-                                .AnyAsync(b => b.GamingSlotId == hold.GamingSlotId
-                                               && b.BookingDate == hold.BookingDate
-                                               && b.Status != GamingBookingStatus.Cancelled, cancellationToken);
-
-                            if (isStillAvailable)
-                            {
-                                Console.WriteLine(
-                                    $"Gaming slot for hold {holdId} was booked by another confirmed transaction. Payment notification ignored.");
-                                await transaction.RollbackAsync(cancellationToken);
-                                return;
-                            }
-
-                            var gamingSlot = await _db.GamingSlots.FirstOrDefaultAsync(gs => gs.Id == hold.GamingSlotId,
-                                cancellationToken);
-                            if (gamingSlot == null)
-                            {
-                                Console.WriteLine(
-                                    $"Gaming slot associated with hold {holdId} not found during notification processing.");
-                                await transaction.RollbackAsync(cancellationToken);
-                                return;
-                            }
-
-                            gamingSlot.IsBooked = true;
-                            _db.GamingSlots.Update(gamingSlot);
-
-                            var bookingNumber = GenerateUniqueBookingNumber();
-                            var booking = new Domain.GamingBooking
-                            {
-                                BookingNumber = bookingNumber,
-                                GamingCategoryId = hold.GamingCategoryId,
-                                GamingStationId = hold.GamingStationId,
-                                GamingSlotId = hold.GamingSlotId,
-                                CustomerName = hold.CustomerName,
-                                CustomerPhone = hold.CustomerPhone,
-                                Amount = hold.Amount,
-                                BookingDate = hold.BookingDate,
-                                Status = GamingBookingStatus.Confirmed,
-                                PaymentIntentId = request.PaymentId,
-                                PaymentType = PaymentTypes.Card
-                            };
-
-                            hold.Status = GamingBookingHoldStatus.Confirmed;
-                            hold.PaymentIntentId = request.PaymentId;
-
-                            _db.GamingBookings.Add(booking);
-                            await _db.SaveChangesAsync(cancellationToken);
-                            await transaction.CommitAsync(cancellationToken);
-                            Console.WriteLine($"Gaming booking {booking.Id} confirmed via payment notification.");
-                        }
-                        else
-                        {
-                            Console.WriteLine(
-                                $"Gaming hold {holdId} already in status {hold.Status}, skipping confirmation from notification.");
-                            await transaction.CommitAsync(cancellationToken);
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine(
-                            $"Gaming payment notification for hold {holdId} indicates non-success status: {request.StatusCode}");
-                        // Optionally update hold status to failed or pending review
-                        // hold.Status = GamingBookingHoldStatus.PaymentFailed;
-                        // await _db.SaveChangesAsync(cancellationToken);
-                        await transaction.CommitAsync(cancellationToken);
-                    }
-                }
-                else
-                {
-                    Console.WriteLine(
-                        $"GamingBookingHold with OrderId {request.OrderId} not found for payment notification.");
-                    await transaction.RollbackAsync(cancellationToken);
-                }
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync(cancellationToken);
-                Console.WriteLine(
-                    $"Error processing gaming payment notification for OrderId {request.OrderId}: {ex.Message}");
-            }
+            _logger.LogWarning("Pending payment with booking number {OrderId} was not found.", request.OrderId);
+            return;
         }
-        else
+
+        var expectedMd5Sig =
+            _hashService.GenerateNotificationMd5Sig(
+                request.MerchantId,
+                _payHereOptions.MerchantSecret,
+                request.OrderId,
+                request.PayhereAmount,
+                request.PayhereCurrency,
+                request.StatusCode);
+
+        _logger.LogInformation("Expected MD5 Signature: {ExpectedMd5Sig}, Received MD5 Signature: {ReceivedMd5Sig}",
+            expectedMd5Sig, request.Md5Sig);
+
+        if (!string.Equals(
+                expectedMd5Sig,
+                request.Md5Sig,
+                StringComparison.OrdinalIgnoreCase))
         {
-            Console.WriteLine($"Invalid OrderId format in gaming payment notification: {request.OrderId}");
+            return;
         }
+
+        if (request.StatusCode != 2)
+            return;
+
+        if (record.Amount != request.PayhereAmount)
+            return;
+
+        record.Status = GamingBookingStatus.Confirmed;
+        record.PaymentIntentId = request.PaymentId; // Optional but good practice
+        _db.GamingBookings.Update(record);
+        await _db.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<Result> DeletePendingPayment(GamingPendingPaymentDeleteRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var record = await _db.GamingBookings
+            .Where(x => x.BookingNumber == request.OrderId && x.Status == GamingBookingStatus.Pending)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (record is null)
+            return Result.Failure($"Pending payment with booking number {request.OrderId} was not found.");
+
+        _db.GamingBookings.Remove(record);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return Result.Success("Pending payment deleted successfully");
     }
 
     public async Task<GamingBookingResponse?> GetGamingBookingByIdAsync(Guid id,

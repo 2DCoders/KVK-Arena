@@ -50,7 +50,6 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
             };
 
             _db.GamingSlotConfigurations.Add(config);
-            await _db.SaveChangesAsync(cancellationToken);
 
             await RegenerateSlotsInternalAsync(config, cancellationToken);
 
@@ -80,8 +79,6 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
             config.IsActive = request.IsActive;
             config.GamingCategoryId = request.GamingCategoryId;
             config.Price = request.Price; // Corrected to use request.Price
-
-            await _db.SaveChangesAsync(cancellationToken);
 
             await RegenerateSlotsInternalAsync(config, cancellationToken);
 
@@ -207,12 +204,10 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
             .Where(gs => gs.GamingCategoryId == config.GamingCategoryId && gs.IsActive)
             .ToListAsync(cancellationToken);
 
-        // 2. Delete old slots for all stations in this category
-        var oldSlots = await _db.GamingSlots
+        // 2. Delete old slots for all stations in this category directly on DB
+        await _db.GamingSlots
             .Where(x => x.GamingCategoryId == config.GamingCategoryId)
-            .ToListAsync(cancellationToken);
-
-        _db.GamingSlots.RemoveRange(oldSlots);
+            .ExecuteDeleteAsync(cancellationToken);
 
         // 3. Generate new slots for each gaming station
         var newSlots = new List<GamingSlot>();
@@ -244,10 +239,20 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
             }
         }
 
-        if (newSlots.Any())
+        if (newSlots.Count > 0)
         {
-            _db.GamingSlots.AddRange(newSlots);
-            await _db.SaveChangesAsync(cancellationToken);
+            // Optimize bulk insert by turning off change tracking temporarily
+            _db.ChangeTracker.AutoDetectChangesEnabled = false;
+            try
+            {
+                _db.GamingSlots.AddRange(newSlots);
+                // This single SaveChangesAsync will now save the Configuration (from Create/Update) AND the new slots together
+                await _db.SaveChangesAsync(cancellationToken);
+            }
+            finally
+            {
+                _db.ChangeTracker.AutoDetectChangesEnabled = true;
+            }
         }
     }
 }

@@ -111,4 +111,15 @@ public class GamingBookingController : ControllerBase
         var result = await _service.GetBookingsByCustomerAsync(request, cancellationToken);
         return Ok(result);
     }
+
+    [HttpPost("reverse")]
+    public async Task<IActionResult> ReversePendingPayment([FromBody] GamingPendingPaymentDeleteRequest request, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.DeletePendingPayment(request, cancellationToken);
+
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
 }
