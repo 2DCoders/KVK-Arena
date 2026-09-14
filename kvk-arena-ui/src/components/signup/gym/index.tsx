@@ -67,6 +67,35 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
     password: "",
   });
 
+  const resetSignupState = () => {
+    setStep(1);
+    setGender(null);
+    setConfirm(false);
+    setSelectedPlan(null);
+    setPageAlert({ visible: false });
+    setLoading(false);
+    setPaymentInProgress(false);
+    setServerError(null);
+    setErrors({});
+    setAuthMode("signup");
+    setForm({
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      dob: "",
+      password: "",
+    });
+    setLoginForm({ email: "", password: "" });
+    localStorage.removeItem("newMemberId");
+  };
+
+  const handleClose = async () => {
+    await handleReverse();
+    resetSignupState();
+    onClose();
+  };
+
   const handleChange = (e: any) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -232,6 +261,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
           console.log("Payment success:", orderId);
           localStorage.removeItem("pendingMembershipPayment");
           setPaymentInProgress(false);
+          resetSignupState();
           window.location.reload();
         };
 
@@ -427,7 +457,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
       <div className="relative w-full max-w-6xl min-h-[90vh] overflow-y-auto max-h-[95vh] md:overflow-hidden rounded-[32px] bg-white shadow-[0_40px_100px_rgba(0,0,0,0.25)]">
         {/* CLOSE */}
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute right-5 top-5 z-50 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-black/10 hover:bg-black/20"
         >
           <X className="h-4 w-4" />
