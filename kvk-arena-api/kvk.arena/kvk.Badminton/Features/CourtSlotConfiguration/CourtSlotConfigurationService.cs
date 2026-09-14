@@ -134,6 +134,9 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
             config.IsActive = request.IsActive;
 
             await RegenerateSlotsInternalAsync(config, cancellationToken);
+            
+            _db.CourtSlotConfigurations.Update(config);
+            await _db.SaveChangesAsync(cancellationToken); 
 
             return Result.Success("Configuration updated and slots regenerated");
         }
