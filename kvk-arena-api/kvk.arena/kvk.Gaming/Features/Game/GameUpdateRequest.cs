@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace kvk.Gaming.Features.Game;
 
@@ -17,4 +18,6 @@ public class GameUpdateRequest
     public string? Description { get; set; }
 
     public bool IsActive { get; set; }
+    
+    public IFormFile? Image { get; set; }
 }

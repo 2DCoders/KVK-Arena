@@ -33,7 +33,7 @@ public class GamingModuleInitializer : IModuleInitializer
         // Register GamingCategoryService
         services.AddScoped<IGamingCategoryService,GamingCategoryService>();
         // Register GameService
-        // services.AddScoped<IGameService,GameService>();
+         services.AddScoped<IGameService,GameService>();
         // Register GamingStationService
         services.AddScoped<IGamingStationService, GamingStationService>();
         // Register GamingStationGameMappingService
