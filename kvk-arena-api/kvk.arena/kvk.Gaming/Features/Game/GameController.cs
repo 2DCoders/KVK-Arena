@@ -77,4 +77,15 @@ public class GameController : ControllerBase
 
         return Ok(result);
     }
+    
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.DeactivateAsync(id, cancellationToken);
+
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
 }

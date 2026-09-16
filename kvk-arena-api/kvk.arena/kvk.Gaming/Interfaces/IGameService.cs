@@ -11,4 +11,5 @@ public interface IGameService
     Task<List<GameResponse>> GetListAsync(GameListRequest request, CancellationToken cancellationToken = default);
     Task<Result> ActivateAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Result> DeactivateAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }

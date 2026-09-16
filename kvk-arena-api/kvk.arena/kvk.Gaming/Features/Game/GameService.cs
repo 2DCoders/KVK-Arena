@@ -234,4 +234,29 @@ public class GameService : IGameService
             return Result.Failure($"Failed to deactivate game: {ex.Message}");
         }
     }
+    
+    public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        if (id == Guid.Empty)
+            return Result.Failure("Id is required.");
+
+        var game = await _db.Games.FindAsync(new object[] { id }, cancellationToken);
+        if (game == null)
+            return Result.Failure($"Game with ID '{id}' not found.");
+
+        if (!game.IsActive)
+            return Result.Failure("Game is already inactive.");
+
+        try
+        {
+            _db.Games.Remove(game);
+            await _db.SaveChangesAsync(cancellationToken);
+
+            return Result.Success("Game deactivated successfully.");
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure($"Failed to deactivate game: {ex.Message}");
+        }
+    }
 }
