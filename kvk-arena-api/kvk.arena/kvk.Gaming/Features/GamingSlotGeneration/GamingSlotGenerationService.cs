@@ -50,6 +50,7 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
             };
 
             _db.GamingSlotConfigurations.Add(config);
+            await _db.SaveChangesAsync(cancellationToken);
 
             await RegenerateSlotsInternalAsync(config, cancellationToken);
 
@@ -199,60 +200,82 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
     private async Task RegenerateSlotsInternalAsync(Domain.GamingSlotConfiguration config,
         CancellationToken cancellationToken)
     {
-        // 1. Get all active gaming stations for the category
-        var gamingStations = await _db.GamingStations
+        // 1. Get all active gaming station IDs for the category
+        var stationIds = await _db.GamingStations
             .Where(gs => gs.GamingCategoryId == config.GamingCategoryId && gs.IsActive)
+            .Select(gs => gs.Id)
             .ToListAsync(cancellationToken);
+
+        if (stationIds.Count == 0) return;
 
         // 2. Delete old slots for all stations in this category directly on DB
         await _db.GamingSlots
             .Where(x => x.GamingCategoryId == config.GamingCategoryId)
             .ExecuteDeleteAsync(cancellationToken);
 
-        // 3. Generate new slots for each gaming station
-        var newSlots = new List<GamingSlot>();
+        // 3. Precalculate time slots once for the category configuration
+        var timeSlots = GenerateSlotTimeIntervals(
+            config.StartTime,
+            config.EndTime,
+            config.SlotDurationMinutes,
+            config.SlotGapMinutes);
 
-        foreach (var station in gamingStations)
+        if (timeSlots.Count == 0) return;
+
+        // 4. Create new slots for each gaming station
+        var newSlots = new List<GamingSlot>(stationIds.Count * timeSlots.Count);
+
+        foreach (var stationId in stationIds)
         {
-            var currentTime = config.StartTime;
-
-            // Simple safety check to prevent infinite loops if end time is before start time or duration is 0
-            while (currentTime.AddMinutes(config.SlotDurationMinutes) <= config.EndTime)
+            foreach (var (startTime, endTime) in timeSlots)
             {
-                var slotEndTime = currentTime.AddMinutes(config.SlotDurationMinutes);
-
                 newSlots.Add(new GamingSlot
                 {
                     GamingCategoryId = config.GamingCategoryId,
-                    GamingSlotConfigurationId = config.Id, // Assign the configuration ID to satisfy the foreign key
-                    GamingStationId = station.Id, // Assign the station ID
-                    StartTime = currentTime,
-                    EndTime = slotEndTime,
+                    GamingSlotConfigurationId = config.Id,
+                    GamingStationId = stationId,
+                    StartTime = startTime,
+                    EndTime = endTime,
                     IsActive = true,
                     Price = config.Price
                 });
-
-                currentTime = slotEndTime.AddMinutes(config.SlotGapMinutes);
-
-                // Prevent infinite loop if crossing midnight (though TimeOnly handles 24h)
-                if (currentTime < slotEndTime) break;
             }
         }
 
-        if (newSlots.Count > 0)
+        // Optimize bulk insert by turning off change tracking temporarily
+        _db.ChangeTracker.AutoDetectChangesEnabled = false;
+        try
         {
-            // Optimize bulk insert by turning off change tracking temporarily
-            _db.ChangeTracker.AutoDetectChangesEnabled = false;
-            try
-            {
-                _db.GamingSlots.AddRange(newSlots);
-                // This single SaveChangesAsync will now save the Configuration (from Create/Update) AND the new slots together
-                await _db.SaveChangesAsync(cancellationToken);
-            }
-            finally
-            {
-                _db.ChangeTracker.AutoDetectChangesEnabled = true;
-            }
+            _db.GamingSlots.AddRange(newSlots);
+            await _db.SaveChangesAsync(cancellationToken);
         }
+        finally
+        {
+            _db.ChangeTracker.AutoDetectChangesEnabled = true;
+        }
+    }
+
+    private static List<(TimeOnly StartTime, TimeOnly EndTime)> GenerateSlotTimeIntervals(
+        TimeOnly startTime,
+        TimeOnly endTime,
+        int durationMinutes,
+        int gapMinutes)
+    {
+        var slots = new List<(TimeOnly StartTime, TimeOnly EndTime)>();
+        if (durationMinutes <= 0) return slots;
+
+        var currentTime = startTime;
+        while (currentTime.AddMinutes(durationMinutes) <= endTime)
+        {
+            var slotEndTime = currentTime.AddMinutes(durationMinutes);
+            slots.Add((currentTime, slotEndTime));
+
+            var nextTime = slotEndTime.AddMinutes(gapMinutes);
+            if (nextTime <= currentTime) break;
+
+            currentTime = nextTime;
+        }
+
+        return slots;
     }
 }

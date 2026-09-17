@@ -60,9 +60,6 @@ public class GamingBookingService : IGamingBookingService
             if (!gamingSlot.IsActive)
                 return Result.Failure($"Gaming Slot is inactive and cannot be booked.");
 
-            if (gamingSlot.IsBooked)
-                return Result.Failure($"Gaming Slot is already booked.");
-
             var gamingStation = gamingSlot.GamingStation;
             if (gamingStation == null)
                 return Result.Failure("Associated Gaming Station not found.");
@@ -78,10 +75,6 @@ public class GamingBookingService : IGamingBookingService
             {
                 return Result.Failure($"Booking amount must match the Gaming Slot price of {gamingSlot.Price:C}.");
             }
-
-            // Mark slot as booked
-            gamingSlot.IsBooked = true;
-            _db.GamingSlots.Update(gamingSlot);
 
             // Generate unique booking number
             var bookingNumber = GenerateUniqueBookingNumber();
@@ -159,14 +152,7 @@ public class GamingBookingService : IGamingBookingService
 
             booking.Status = GamingBookingStatus.Cancelled;
             _db.GamingBookings.Update(booking);
-
-            // If the slot was marked as booked, unmark it.
-            if (booking.GamingSlot != null && booking.GamingSlot.IsBooked)
-            {
-                booking.GamingSlot.IsBooked = false;
-                _db.GamingSlots.Update(booking.GamingSlot);
-            }
-
+            
             await _db.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
 
@@ -356,9 +342,7 @@ public class GamingBookingService : IGamingBookingService
             {
                 return Result.Failure("Gaming slot associated with the hold not found.");
             }
-
-            gamingSlot.IsBooked = true;
-            _db.GamingSlots.Update(gamingSlot);
+            
 
             var bookingNumber = GenerateUniqueBookingNumber();
             var booking = new Domain.GamingBooking
