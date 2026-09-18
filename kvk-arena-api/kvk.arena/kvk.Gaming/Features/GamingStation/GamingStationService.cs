@@ -462,16 +462,23 @@ public class GamingStationService : IGamingStationService
         var slots = new List<(TimeOnly StartTime, TimeOnly EndTime)>();
         if (durationMinutes <= 0) return slots;
 
-        var currentTime = startTime;
-        while (currentTime.AddMinutes(durationMinutes) <= endTime)
+        var baseDate = DateTime.Today;
+        var startDateTime = baseDate.Add(startTime.ToTimeSpan());
+        var endDateTime = baseDate.Add(endTime.ToTimeSpan());
+
+        if (endDateTime <= startDateTime)
         {
-            var slotEndTime = currentTime.AddMinutes(durationMinutes);
-            slots.Add((currentTime, slotEndTime));
+            endDateTime = endDateTime.AddDays(1);
+        }
 
-            var nextTime = slotEndTime.AddMinutes(gapMinutes);
-            if (nextTime <= currentTime) break;
+        var current = startDateTime;
 
-            currentTime = nextTime;
+        while (current.AddMinutes(durationMinutes) <= endDateTime)
+        {
+            var slotEnd = current.AddMinutes(durationMinutes);
+            slots.Add((TimeOnly.FromDateTime(current), TimeOnly.FromDateTime(slotEnd)));
+
+            current = slotEnd.AddMinutes(gapMinutes);
         }
 
         return slots;

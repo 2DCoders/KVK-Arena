@@ -183,28 +183,35 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
             .Where(x => x.CourtId == config.CourtId)
             .ExecuteDeleteAsync(cancellationToken);
 
-        // 3. Generate new slots
+        // 3. Generate new slots using DateTime to prevent midnight wrap-around issues
         var newSlots = new List<CourtSlot>();
-        var currentTime = config.StartTime;
-        
-        // Simple safety check to prevent infinite loops if end time is before start time or duration is 0
-        while (currentTime.AddMinutes(config.SlotDurationMinutes) <= config.EndTime)
+
+        var baseDate = DateTime.Today;
+        var startDateTime = baseDate.Add(config.StartTime.ToTimeSpan());
+        var endDateTime = baseDate.Add(config.EndTime.ToTimeSpan());
+
+        // Handle midnight (00:00) end boundary or overnight operations
+        if (endDateTime <= startDateTime)
         {
-            var slotEndTime = currentTime.AddMinutes(config.SlotDurationMinutes);
+            endDateTime = endDateTime.AddDays(1);
+        }
+
+        var current = startDateTime;
+
+        while (current.AddMinutes(config.SlotDurationMinutes) <= endDateTime)
+        {
+            var slotEnd = current.AddMinutes(config.SlotDurationMinutes);
 
             newSlots.Add(new CourtSlot
             {
                 CourtId = config.CourtId,
-                StartTime = currentTime,
-                EndTime = slotEndTime,
+                StartTime = TimeOnly.FromDateTime(current),
+                EndTime = TimeOnly.FromDateTime(slotEnd),
                 IsActive = true,
                 Price = courtIdPrice,
             });
 
-            currentTime = slotEndTime.AddMinutes(config.SlotGapMinutes);
-            
-            // Prevent infinite loop if crossing midnight (though TimeOnly handles 24h)
-            if (currentTime < slotEndTime) break; 
+            current = slotEnd.AddMinutes(config.SlotGapMinutes);
         }
 
         if (newSlots.Count > 0)
@@ -214,7 +221,7 @@ public class CourtSlotConfigurationService : ICourtSlotConfigurationService
             try
             {
                 _db.CourtSlots.AddRange(newSlots);
-                // This single SaveChangesAsync will now save the Configuration (from Create/Update) AND the new slots together
+                // Save the Configuration and the new slots together
                 await _db.SaveChangesAsync(cancellationToken);
             }
             finally
