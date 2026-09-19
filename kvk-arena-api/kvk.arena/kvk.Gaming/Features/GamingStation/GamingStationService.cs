@@ -318,15 +318,14 @@ public class GamingStationService : IGamingStationService
 
         try
         {
-            gamingStation.IsDeleted = false; // Soft delete by setting IsActive to false
-            _db.GamingStations.Update(gamingStation);
+            _db.GamingStations.Remove(gamingStation);
             await _db.SaveChangesAsync(cancellationToken);
 
-            return Result.Success("Gaming station soft deleted successfully.");
+            return Result.Success("Gaming station deleted successfully.");
         }
         catch (Exception ex)
         {
-            return Result.Failure($"Failed to soft delete gaming station: {ex.Message}");
+            return Result.Failure($"Failed to delete gaming station: {ex.Message}");
         }
     }
 

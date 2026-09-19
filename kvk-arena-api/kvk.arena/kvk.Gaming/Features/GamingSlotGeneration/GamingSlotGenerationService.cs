@@ -82,6 +82,9 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
             config.Price = request.Price; // Corrected to use request.Price
 
             await RegenerateSlotsInternalAsync(config, cancellationToken);
+            
+            _db.GamingSlotConfigurations.Update(config);
+            await _db.SaveChangesAsync(cancellationToken);
 
             return Result.Success("Configuration updated and slots regenerated");
         }
