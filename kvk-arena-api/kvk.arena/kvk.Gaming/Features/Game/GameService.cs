@@ -74,9 +74,6 @@ public class GameService : IGameService
         if (request.Id == Guid.Empty)
             return Result.Failure("Id is required.");
 
-        if (request.GamingCategoryId == Guid.Empty)
-            return Result.Failure("Gaming Category ID is required.");
-
         if (string.IsNullOrWhiteSpace(request.Name))
             return Result.Failure("Name is required.");
 
