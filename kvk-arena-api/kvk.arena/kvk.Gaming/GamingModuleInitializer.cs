@@ -1,4 +1,5 @@
 using kvk.BuildingBlocks.Interfaces;
+using kvk.Gaming.Features.AdditionalPurchase;
 using kvk.Gaming.Features.GamingCategory;
 using kvk.Gaming.Features.Game;
 using kvk.Gaming.Features.GamingStation;
@@ -44,6 +45,7 @@ public class GamingModuleInitializer : IModuleInitializer
         services.AddScoped<IGamingSlotGenerationService, GamingSlotGenerationService>();
         // Register GamingBookingService
         services.AddScoped<IGamingBookingService, GamingBookingService>();
+        services.AddScoped<IAdditionalPurchaseService, AdditionalPurchaseService>();
         services.AddScoped<GamingDayEndService>(); // Register the new service
     }
 }

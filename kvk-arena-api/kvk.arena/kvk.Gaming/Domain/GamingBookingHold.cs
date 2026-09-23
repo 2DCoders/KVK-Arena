@@ -15,4 +15,6 @@ public class GamingBookingHold : AuditableEntity
     public GamingBookingHoldStatus Status { get; set; }
     public DateTime ExpiresAt { get; set; }
     public string? PaymentIntentId { get; set; } // To store payment gateway intent ID
+    
+    public virtual ICollection<GamingBookingHoldAdditionalPurchase> AdditionalPurchases { get; set; } = new List<GamingBookingHoldAdditionalPurchase>();
 }

@@ -30,6 +30,8 @@ public class GamingBooking : AuditableEntity
     public string PaymentIntentId { get; set; }
     
     public PaymentTypes PaymentType { get; set; }
+    
+    public virtual ICollection<GamingBookingAdditionalPurchase> AdditionalPurchases { get; set; } = new List<GamingBookingAdditionalPurchase>();
 }
 
 
