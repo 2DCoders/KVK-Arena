@@ -62,6 +62,20 @@ public class GamingBookingController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("confirm-multi")]
+    public async Task<IActionResult> ConfirmMulti([FromBody] MultiGamingPaymentRequest request, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.ProcessMultiPaymentSuccessAsync(request, cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            if (result.Message.Contains("not found")) return NotFound(result);
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
     [HttpPost("notify")]
     public async Task<IActionResult> GamingPaymentNotification([FromForm] PaymentNotificationRequest request, CancellationToken cancellationToken = default)
     {

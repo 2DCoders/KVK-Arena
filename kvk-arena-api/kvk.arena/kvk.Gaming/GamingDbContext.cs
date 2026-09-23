@@ -25,6 +25,7 @@ public class GamingDbContext(
     public DbSet<GamingBooking> GamingBookings { get; set; } = null!;
     public DbSet<GamingBookingHold> GamingBookingHolds { get; set; } = null!; // Added GamingBookingHold DbSet
     public DbSet<Domain.GamingDayEnd> GamingDayEnds => Set<Domain.GamingDayEnd>();
+    public DbSet<AdditionalPurchase> AdditionalPurchases { get; set; } = null!;
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -99,6 +100,13 @@ public class GamingDbContext(
             .Entity<GamingBookingHold>()
             .Property(x => x.ExpiresAt)
             .HasColumnType("timestamp without time zone");
+
+        // Configure relationships for AdditionalPurchase
+        modelBuilder.Entity<AdditionalPurchase>()
+            .HasOne(ap => ap.GamingCategory)
+            .WithMany(gc => gc.AdditionalPurchases)
+            .HasForeignKey(ap => ap.GamingCategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
 
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(GamingDbContext).Assembly);
