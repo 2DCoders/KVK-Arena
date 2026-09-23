@@ -23,4 +23,6 @@ public class CreateGamingBookingRequest
     [Phone(ErrorMessage = "Invalid phone number format.")]
     [StringLength(20, ErrorMessage = "Customer Phone cannot exceed 20 characters.")]
     public required string CustomerPhone { get; set; }
+    
+    public List<BookingAdditionalPurchaseRequest>? AdditionalPurchases { get; set; }
 }

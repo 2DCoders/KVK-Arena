@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using kvk.Gaming;
@@ -11,9 +12,11 @@ using kvk.Gaming;
 namespace kvk.Gaming.Migrations
 {
     [DbContext(typeof(GamingDbContext))]
-    partial class GamingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260923124827_Add_AdditionalPurchase")]
+    partial class Add_AdditionalPurchase
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -197,54 +200,6 @@ namespace kvk.Gaming.Migrations
                     b.ToTable("GamingBookings", "game");
                 });
 
-            modelBuilder.Entity("kvk.Gaming.Domain.GamingBookingAdditionalPurchase", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("AdditionalPurchaseId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("GamingBookingId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("LastModifiedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<Guid?>("LastModifiedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AdditionalPurchaseId");
-
-                    b.HasIndex("GamingBookingId");
-
-                    b.HasIndex("TenantId")
-                        .HasDatabaseName("IX_GamingBookingAdditionalPurchase_TenantId");
-
-                    b.HasIndex("TenantId", "CreatedAt")
-                        .HasDatabaseName("IX_GamingBookingAdditionalPurchase_TenantId_CreatedAt");
-
-                    b.ToTable("GamingBookingAdditionalPurchases", "game");
-                });
-
             modelBuilder.Entity("kvk.Gaming.Domain.GamingBookingHold", b =>
                 {
                     b.Property<Guid>("Id")
@@ -311,54 +266,6 @@ namespace kvk.Gaming.Migrations
                         .HasDatabaseName("IX_GamingBookingHold_TenantId_CreatedAt");
 
                     b.ToTable("GamingBookingHolds", "game");
-                });
-
-            modelBuilder.Entity("kvk.Gaming.Domain.GamingBookingHoldAdditionalPurchase", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("AdditionalPurchaseId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("GamingBookingHoldId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("LastModifiedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<Guid?>("LastModifiedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AdditionalPurchaseId");
-
-                    b.HasIndex("GamingBookingHoldId");
-
-                    b.HasIndex("TenantId")
-                        .HasDatabaseName("IX_GamingBookingHoldAdditionalPurchase_TenantId");
-
-                    b.HasIndex("TenantId", "CreatedAt")
-                        .HasDatabaseName("IX_GamingBookingHoldAdditionalPurchase_TenantId_CreatedAt");
-
-                    b.ToTable("GamingBookingHoldAdditionalPurchases", "game");
                 });
 
             modelBuilder.Entity("kvk.Gaming.Domain.GamingCategory", b =>
@@ -650,25 +557,6 @@ namespace kvk.Gaming.Migrations
                     b.Navigation("GamingStation");
                 });
 
-            modelBuilder.Entity("kvk.Gaming.Domain.GamingBookingAdditionalPurchase", b =>
-                {
-                    b.HasOne("kvk.Gaming.Domain.AdditionalPurchase", "AdditionalPurchase")
-                        .WithMany()
-                        .HasForeignKey("AdditionalPurchaseId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("kvk.Gaming.Domain.GamingBooking", "GamingBooking")
-                        .WithMany("AdditionalPurchases")
-                        .HasForeignKey("GamingBookingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AdditionalPurchase");
-
-                    b.Navigation("GamingBooking");
-                });
-
             modelBuilder.Entity("kvk.Gaming.Domain.GamingBookingHold", b =>
                 {
                     b.HasOne("kvk.Gaming.Domain.GamingCategory", null)
@@ -688,25 +576,6 @@ namespace kvk.Gaming.Migrations
                         .HasForeignKey("GamingStationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("kvk.Gaming.Domain.GamingBookingHoldAdditionalPurchase", b =>
-                {
-                    b.HasOne("kvk.Gaming.Domain.AdditionalPurchase", "AdditionalPurchase")
-                        .WithMany()
-                        .HasForeignKey("AdditionalPurchaseId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("kvk.Gaming.Domain.GamingBookingHold", "GamingBookingHold")
-                        .WithMany("AdditionalPurchases")
-                        .HasForeignKey("GamingBookingHoldId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AdditionalPurchase");
-
-                    b.Navigation("GamingBookingHold");
                 });
 
             modelBuilder.Entity("kvk.Gaming.Domain.GamingSlot", b =>
@@ -756,16 +625,6 @@ namespace kvk.Gaming.Migrations
                         .IsRequired();
 
                     b.Navigation("GamingCategory");
-                });
-
-            modelBuilder.Entity("kvk.Gaming.Domain.GamingBooking", b =>
-                {
-                    b.Navigation("AdditionalPurchases");
-                });
-
-            modelBuilder.Entity("kvk.Gaming.Domain.GamingBookingHold", b =>
-                {
-                    b.Navigation("AdditionalPurchases");
                 });
 
             modelBuilder.Entity("kvk.Gaming.Domain.GamingCategory", b =>

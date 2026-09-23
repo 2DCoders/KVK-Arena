@@ -14,4 +14,6 @@ public class GamingBookingDetailRequest
     public Guid GamingSlotId { get; set; }
     
     public DateOnly BookingDate { get; set; }
+    
+    public List<BookingAdditionalPurchaseRequest>? AdditionalPurchases { get; set; }
 }

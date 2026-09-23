@@ -24,7 +24,10 @@ public class GamingDbContext(
     public DbSet<GamingSlot> GamingSlots { get; set; } = null!;
     public DbSet<GamingBooking> GamingBookings { get; set; } = null!;
     public DbSet<GamingBookingHold> GamingBookingHolds { get; set; } = null!; // Added GamingBookingHold DbSet
+    public DbSet<GamingBookingAdditionalPurchase> GamingBookingAdditionalPurchases { get; set; } = null!;
+    public DbSet<GamingBookingHoldAdditionalPurchase> GamingBookingHoldAdditionalPurchases { get; set; } = null!;
     public DbSet<Domain.GamingDayEnd> GamingDayEnds => Set<Domain.GamingDayEnd>();
+    public DbSet<AdditionalPurchase> AdditionalPurchases { get; set; } = null!;
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -99,6 +102,39 @@ public class GamingDbContext(
             .Entity<GamingBookingHold>()
             .Property(x => x.ExpiresAt)
             .HasColumnType("timestamp without time zone");
+
+        // Configure relationships for AdditionalPurchase
+        modelBuilder.Entity<AdditionalPurchase>()
+            .HasOne(ap => ap.GamingCategory)
+            .WithMany(gc => gc.AdditionalPurchases)
+            .HasForeignKey(ap => ap.GamingCategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Configure relationships for GamingBookingAdditionalPurchase
+        modelBuilder.Entity<GamingBookingAdditionalPurchase>()
+            .HasOne(gbap => gbap.GamingBooking)
+            .WithMany(gb => gb.AdditionalPurchases)
+            .HasForeignKey(gbap => gbap.GamingBookingId)
+            .OnDelete(DeleteBehavior.Cascade);
+            
+        modelBuilder.Entity<GamingBookingAdditionalPurchase>()
+            .HasOne(gbap => gbap.AdditionalPurchase)
+            .WithMany()
+            .HasForeignKey(gbap => gbap.AdditionalPurchaseId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Configure relationships for GamingBookingHoldAdditionalPurchase
+        modelBuilder.Entity<GamingBookingHoldAdditionalPurchase>()
+            .HasOne(gbhap => gbhap.GamingBookingHold)
+            .WithMany(gbh => gbh.AdditionalPurchases)
+            .HasForeignKey(gbhap => gbhap.GamingBookingHoldId)
+            .OnDelete(DeleteBehavior.Cascade);
+            
+        modelBuilder.Entity<GamingBookingHoldAdditionalPurchase>()
+            .HasOne(gbhap => gbhap.AdditionalPurchase)
+            .WithMany()
+            .HasForeignKey(gbhap => gbhap.AdditionalPurchaseId)
+            .OnDelete(DeleteBehavior.Restrict);
 
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(GamingDbContext).Assembly);

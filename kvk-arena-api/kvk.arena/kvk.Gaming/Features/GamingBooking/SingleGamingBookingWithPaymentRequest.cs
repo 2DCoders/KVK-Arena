@@ -29,4 +29,6 @@ public class SingleGamingBookingWithPaymentRequest
     public string PhoneNumber { get; set; } = string.Empty;
     
     public PaymentTypes PaymentTypes { get; set; }
+    
+    public List<BookingAdditionalPurchaseRequest>? AdditionalPurchases { get; set; }
 }

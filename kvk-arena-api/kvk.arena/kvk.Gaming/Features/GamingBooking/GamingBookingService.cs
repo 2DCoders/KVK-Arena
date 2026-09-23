@@ -90,8 +90,31 @@ public class GamingBookingService : IGamingBookingService
                 Amount = gamingSlot.Price,
                 Status = GamingBookingStatus.Confirmed,
                 BookingDate = request.BookingDate,
-                PaymentType = request.PaymentType
+                PaymentType = request.PaymentType,
+                AdditionalPurchases = new List<GamingBookingAdditionalPurchase>()
             };
+            
+            if (request.AdditionalPurchases != null && request.AdditionalPurchases.Any())
+            {
+                var additionalPurchaseIds = request.AdditionalPurchases.Select(ap => ap.AdditionalPurchaseId).ToList();
+                var additionalPurchasesFromDb = await _db.AdditionalPurchases
+                    .Where(ap => additionalPurchaseIds.Contains(ap.Id))
+                    .ToDictionaryAsync(ap => ap.Id, cancellationToken);
+                    
+                foreach(var apReq in request.AdditionalPurchases)
+                {
+                    if (additionalPurchasesFromDb.TryGetValue(apReq.AdditionalPurchaseId, out var apDb))
+                    {
+                        booking.AdditionalPurchases.Add(new GamingBookingAdditionalPurchase
+                        {
+                            AdditionalPurchaseId = apReq.AdditionalPurchaseId,
+                            Quantity = apReq.Quantity,
+                            UnitPrice = apDb.Price
+                        });
+                        booking.Amount += apDb.Price * apReq.Quantity;
+                    }
+                }
+            }
 
             _db.GamingBookings.Add(booking);
             await _db.SaveChangesAsync(cancellationToken);
@@ -220,8 +243,29 @@ public class GamingBookingService : IGamingBookingService
                     CustomerPhone = request.CustomerPhone,
                     Status = GamingBookingHoldStatus.Pending,
                     ExpiresAt = DateTime.Now.AddMinutes(DefaultHoldMinutes),
-                    
+                    AdditionalPurchases = new List<GamingBookingHoldAdditionalPurchase>()
                 };
+                
+                if (bookingDetail.AdditionalPurchases != null && bookingDetail.AdditionalPurchases.Any())
+                {
+                    var additionalPurchaseIds = bookingDetail.AdditionalPurchases.Select(ap => ap.AdditionalPurchaseId).ToList();
+                    var additionalPurchasesFromDb = await _db.AdditionalPurchases
+                        .Where(ap => additionalPurchaseIds.Contains(ap.Id))
+                        .ToDictionaryAsync(ap => ap.Id, cancellationToken);
+                        
+                    foreach(var apReq in bookingDetail.AdditionalPurchases)
+                    {
+                        if (additionalPurchasesFromDb.TryGetValue(apReq.AdditionalPurchaseId, out var apDb))
+                        {
+                            hold.AdditionalPurchases.Add(new GamingBookingHoldAdditionalPurchase
+                            {
+                                AdditionalPurchaseId = apReq.AdditionalPurchaseId,
+                                Quantity = apReq.Quantity,
+                                UnitPrice = apDb.Price
+                            });
+                        }
+                    }
+                }
 
                 _db.GamingBookingHolds.Add(hold);
                 createdHolds.Add(hold);
@@ -285,8 +329,30 @@ public class GamingBookingService : IGamingBookingService
                 CustomerName = request.CustomerName,
                 CustomerPhone = request.PhoneNumber,
                 Status = GamingBookingHoldStatus.Pending,
-                ExpiresAt = DateTime.Now.AddMinutes(DefaultHoldMinutes)
+                ExpiresAt = DateTime.Now.AddMinutes(DefaultHoldMinutes),
+                AdditionalPurchases = new List<GamingBookingHoldAdditionalPurchase>()
             };
+
+            if (request.AdditionalPurchases != null && request.AdditionalPurchases.Any())
+            {
+                var additionalPurchaseIds = request.AdditionalPurchases.Select(ap => ap.AdditionalPurchaseId).ToList();
+                var additionalPurchasesFromDb = await _db.AdditionalPurchases
+                    .Where(ap => additionalPurchaseIds.Contains(ap.Id))
+                    .ToDictionaryAsync(ap => ap.Id, cancellationToken);
+                    
+                foreach(var apReq in request.AdditionalPurchases)
+                {
+                    if (additionalPurchasesFromDb.TryGetValue(apReq.AdditionalPurchaseId, out var apDb))
+                    {
+                        hold.AdditionalPurchases.Add(new GamingBookingHoldAdditionalPurchase
+                        {
+                            AdditionalPurchaseId = apReq.AdditionalPurchaseId,
+                            Quantity = apReq.Quantity,
+                            UnitPrice = apDb.Price
+                        });
+                    }
+                }
+            }
 
             _db.GamingBookingHolds.Add(hold);
             await _db.SaveChangesAsync(cancellationToken);
@@ -310,6 +376,7 @@ public class GamingBookingService : IGamingBookingService
         try
         {
             var hold = await _db.GamingBookingHolds
+                .Include(h => h.AdditionalPurchases)
                 .FirstOrDefaultAsync(h => h.Id == holdId, cancellationToken);
 
             if (hold == null)
@@ -357,7 +424,13 @@ public class GamingBookingService : IGamingBookingService
                 BookingDate = hold.BookingDate,
                 Status = GamingBookingStatus.Pending,
                 PaymentIntentId = paymentIntentId,
-                PaymentType = PaymentTypes.Card
+                PaymentType = PaymentTypes.Card,
+                AdditionalPurchases = hold.AdditionalPurchases.Select(ap => new GamingBookingAdditionalPurchase
+                {
+                    AdditionalPurchaseId = ap.AdditionalPurchaseId,
+                    Quantity = ap.Quantity,
+                    UnitPrice = ap.UnitPrice
+                }).ToList()
             };
 
             hold.Status = GamingBookingHoldStatus.Confirmed;
@@ -380,6 +453,120 @@ public class GamingBookingService : IGamingBookingService
         {
             await transaction.RollbackAsync(cancellationToken);
             return Result.Failure($"Confirmation failed: {ex.Message}");
+        }
+    }
+
+    public async Task<Result> ProcessMultiPaymentSuccessAsync(MultiGamingPaymentRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (!request.HoldIds.Any())
+            return Result.Failure("No hold IDs provided for multi-payment processing.");
+
+        await using var transaction = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+        try
+        {
+            var confirmedBookings = new List<GamingBookingHoldResponse>();
+
+            foreach (var holdId in request.HoldIds)
+            {
+                var hold = await _db.GamingBookingHolds
+                    .Include(h => h.AdditionalPurchases)
+                    .FirstOrDefaultAsync(h => h.Id == holdId, cancellationToken);
+
+                if (hold == null)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    return Result.Failure($"Gaming booking hold with ID {holdId} not found.");
+                }
+
+                if (hold.Status == GamingBookingHoldStatus.Confirmed)
+                {
+                    // Already confirmed, skip and continue
+                    var existingBooking = await _db.GamingBookings.FirstOrDefaultAsync(
+                        b => b.PaymentIntentId == hold.PaymentIntentId && b.GamingSlotId == hold.GamingSlotId && b.BookingDate == hold.BookingDate, cancellationToken);
+                    
+                    if (existingBooking != null)
+                    {
+                        var existingResponse = MapToResponse(hold);
+                        existingResponse.BookingId = existingBooking.Id;
+                        confirmedBookings.Add(existingResponse);
+                        continue;
+                    }
+                }
+
+                var now = DateTime.Now;
+                if (hold.Status == GamingBookingHoldStatus.Expired || hold.ExpiresAt < now)
+                {
+                    hold.Status = GamingBookingHoldStatus.Expired;
+                    await _db.SaveChangesAsync(cancellationToken);
+                    await transaction.RollbackAsync(cancellationToken);
+                    return Result.Failure($"Gaming booking hold with ID {holdId} has expired. Payment must be refunded.");
+                }
+
+                bool isStillAvailable = await _db.GamingBookings
+                    .AnyAsync(b => b.GamingSlotId == hold.GamingSlotId
+                                   && b.BookingDate == hold.BookingDate
+                                   && b.Status != GamingBookingStatus.Cancelled, cancellationToken);
+
+                if (isStillAvailable)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    return Result.Failure($"Gaming slot for hold ID {holdId} was booked by another confirmed transaction.");
+                }
+
+                var gamingSlot = await _db.GamingSlots.FirstOrDefaultAsync(gs => gs.Id == hold.GamingSlotId, cancellationToken);
+                if (gamingSlot == null)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    return Result.Failure($"Gaming slot associated with the hold {holdId} not found.");
+                }
+
+                var bookingNumber = GenerateUniqueBookingNumber();
+                var booking = new Domain.GamingBooking
+                {
+                    BookingNumber = bookingNumber,
+                    GamingCategoryId = hold.GamingCategoryId,
+                    GamingStationId = hold.GamingStationId,
+                    GamingSlotId = hold.GamingSlotId,
+                    CustomerName = hold.CustomerName,
+                    CustomerPhone = hold.CustomerPhone,
+                    Amount = hold.Amount,
+                    BookingDate = hold.BookingDate,
+                    Status = GamingBookingStatus.Pending,
+                    PaymentIntentId = request.PaymentIntentId,
+                    PaymentType = PaymentTypes.Card,
+                    AdditionalPurchases = hold.AdditionalPurchases.Select(ap => new GamingBookingAdditionalPurchase
+                    {
+                        AdditionalPurchaseId = ap.AdditionalPurchaseId,
+                        Quantity = ap.Quantity,
+                        UnitPrice = ap.UnitPrice
+                    }).ToList()
+                };
+
+                hold.Status = GamingBookingHoldStatus.Confirmed;
+                hold.PaymentIntentId = request.PaymentIntentId;
+
+                _db.GamingBookings.Add(booking);
+                
+                var response = MapToResponse(hold);
+                response.BookingId = booking.Id;
+                confirmedBookings.Add(response);
+            }
+
+            await _db.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+
+            return Result.Success("Multiple gaming bookings confirmed.").WithData("response", confirmedBookings);
+        }
+        catch (DbUpdateException)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            return Result.Failure("Concurrency conflict: One or more gaming slots already booked.");
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            return Result.Failure($"Multi-booking confirmation failed: {ex.Message}");
         }
     }
 
