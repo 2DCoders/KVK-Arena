@@ -13,16 +13,10 @@ public class CreateGamingBookingRequest
     public PaymentTypes PaymentType { get; set; }
     
     public decimal Amount { get; set; }
-
-
-    [Required(ErrorMessage = "Customer Name is required.")]
-    [StringLength(100, ErrorMessage = "Customer Name cannot exceed 100 characters.")]
-    public required string CustomerName { get; set; }
-
-    [Required(ErrorMessage = "Customer Phone is required.")]
-    [Phone(ErrorMessage = "Invalid phone number format.")]
-    [StringLength(20, ErrorMessage = "Customer Phone cannot exceed 20 characters.")]
-    public required string CustomerPhone { get; set; }
+    
+    public string? CustomerName { get; set; }
+    
+    public  string? CustomerPhone { get; set; }
     
     public List<BookingAdditionalPurchaseRequest>? AdditionalPurchases { get; set; }
 }

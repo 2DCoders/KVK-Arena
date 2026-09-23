@@ -528,13 +528,13 @@ public class GamingBookingService : IGamingBookingService
                     GamingCategoryId = hold.GamingCategoryId,
                     GamingStationId = hold.GamingStationId,
                     GamingSlotId = hold.GamingSlotId,
-                    CustomerName = hold.CustomerName,
-                    CustomerPhone = hold.CustomerPhone,
+                    CustomerName = request.CustomerDetails.CustomerName ?? hold.CustomerName,
+                    CustomerPhone = request.CustomerDetails.PhoneNumber ?? hold.CustomerPhone,
                     Amount = hold.Amount,
                     BookingDate = hold.BookingDate,
                     Status = GamingBookingStatus.Pending,
                     PaymentIntentId = request.PaymentIntentId,
-                    PaymentType = PaymentTypes.Card,
+                    PaymentType = request.CustomerDetails.PaymentType,
                     AdditionalPurchases = hold.AdditionalPurchases.Select(ap => new GamingBookingAdditionalPurchase
                     {
                         AdditionalPurchaseId = ap.AdditionalPurchaseId,

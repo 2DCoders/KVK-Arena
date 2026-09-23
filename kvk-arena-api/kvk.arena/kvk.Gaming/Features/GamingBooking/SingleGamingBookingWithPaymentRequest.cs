@@ -19,14 +19,12 @@ public class SingleGamingBookingWithPaymentRequest
     [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be greater than 0.")]
     public decimal Amount { get; set; }
 
-    [Required(ErrorMessage = "Customer Name is required.")]
     [StringLength(100, ErrorMessage = "Customer Name cannot exceed 100 characters.")]
-    public string CustomerName { get; set; } = string.Empty;
+    public string? CustomerName { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Customer Phone is required.")]
-    [Phone(ErrorMessage = "Invalid phone number format.")]
+    
     [StringLength(20, ErrorMessage = "Customer Phone cannot exceed 20 characters.")]
-    public string PhoneNumber { get; set; } = string.Empty;
+    public string? PhoneNumber { get; set; } = string.Empty;
     
     public PaymentTypes PaymentTypes { get; set; }
     
