@@ -15,7 +15,7 @@ import {
   useState,
 } from "react";
 
-import MOBILE_BG from "@/assets/cafe-mobile.png";
+import MOBILE_BG from "@/assets/salon-mobile.png";
 
 const FRAME_COUNT = 300;
 

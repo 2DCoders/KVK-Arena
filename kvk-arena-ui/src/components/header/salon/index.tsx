@@ -387,10 +387,7 @@ export default function SalonHeader() {
                   rounded-full
                   border
                   border-[#A78BFA]/30
-                  bg-gradient-to-r
-                  from-[#4C1D95]
-                  via-[#4C1D95]
-                  to-[#A78BFA]
+                  bg-white
                   px-7 py-2.5
                   text-sm
                   font-extrabold
