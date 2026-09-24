@@ -5,6 +5,7 @@ import CafeFooter from "@/components/footer/cafe";
 import SalonHeader from "@/components/header/salon";
 import SalonHero from "../../hero/salon";
 import SalonAdd1 from "../../adds/salon";
+import SalonBooking from "../../bookings/salon";
 
 export default function SalonHome() {
   useLayoutEffect(() => {
@@ -43,6 +44,7 @@ export default function SalonHome() {
       <SalonHeader />
       <SalonHero />
       <SalonAdd1 />
+      <SalonBooking />
       <CafeFooter />
 
       <div className="fixed bottom-6 right-4 z-50 flex items-end gap-3 sm:bottom-8 sm:right-6">
