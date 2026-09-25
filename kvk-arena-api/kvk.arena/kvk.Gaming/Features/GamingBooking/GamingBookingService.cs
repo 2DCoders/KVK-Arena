@@ -533,7 +533,7 @@ public class GamingBookingService : IGamingBookingService
                     Amount = hold.Amount,
                     BookingDate = hold.BookingDate,
                     Status = GamingBookingStatus.Pending,
-                    PaymentIntentId = request.PaymentIntentId,
+                    PaymentIntentId = request.PaymentIntentId ?? string.Empty,
                     PaymentType = request.CustomerDetails.PaymentType,
                     AdditionalPurchases = hold.AdditionalPurchases.Select(ap => new GamingBookingAdditionalPurchase
                     {
@@ -544,7 +544,7 @@ public class GamingBookingService : IGamingBookingService
                 };
 
                 hold.Status = GamingBookingHoldStatus.Confirmed;
-                hold.PaymentIntentId = request.PaymentIntentId;
+                hold.PaymentIntentId = request.PaymentIntentId ?? string.Empty;
 
                 _db.GamingBookings.Add(booking);
                 
