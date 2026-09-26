@@ -1,10 +1,27 @@
 import { useEffect, useMemo, useState } from "react";
-import { Monitor, Gamepad2, Trophy, Film, Minus, Plus, Joystick } from "lucide-react";
+import { createPortal } from "react-dom";
+import {
+  Monitor,
+  Gamepad2,
+  Trophy,
+  Film,
+  Minus,
+  Plus,
+  Joystick,
+  X,
+  Clock3,
+  CreditCard,
+  ShieldCheck,
+  Info,
+  AlertTriangle,
+} from "lucide-react";
 import { getNextWorkingDays } from "@/services/holidays-api";
 import { getGamingCategories } from "@/services/gaming-category-api";
 import { getGamingStationsByCategory } from "@/services/gaming-station-api";
 import { getGamingSlotAvailability } from "@/services/gaming-slot-api";
 import { getAdditionalPurchasesByCategory } from "@/services/additional-purchase-api";
+import { holdGamingBookingSlots, confirmGamingBooking } from "@/services/gaming-booking-api";
+import Alert from "@/components/alert";
 
 type GamingCategory = {
   id: string;
@@ -55,6 +72,8 @@ type BookingDay = {
   isToday: boolean;
 };
 
+type PaymentType = 1 | 2;
+
 const CATEGORY_ICONS: Record<string, any> = {
   PC: Monitor,
   PS5: Gamepad2,
@@ -65,6 +84,7 @@ const CATEGORY_ICONS: Record<string, any> = {
 const getCategoryIcon = (code: string) => CATEGORY_ICONS[code?.toUpperCase()] ?? Joystick;
 
 const MAX_ADDITIONAL_PURCHASE_QUANTITY = 4;
+const HOLD_DURATION_SECONDS = 7 * 60;
 
 const formatTime = (time: string) => {
   const [hoursText, minutesText] = time.split(":");
@@ -75,6 +95,16 @@ const formatTime = (time: string) => {
   const displayHours = hoursNumber % 12 === 0 ? 12 : hoursNumber % 12;
 
   return `${displayHours}.${minutes} ${period}`;
+};
+
+const formatCountdown = (totalSeconds: number) => {
+  const clamped = Math.max(0, totalSeconds);
+  const minutes = Math.floor(clamped / 60)
+    .toString()
+    .padStart(2, "0");
+  const seconds = (clamped % 60).toString().padStart(2, "0");
+
+  return `${minutes}:${seconds}`;
 };
 
 export default function BookingGaming() {
@@ -94,6 +124,26 @@ export default function BookingGaming() {
 
   const [loadingStations, setLoadingStations] = useState(false);
   const [loadingSlots, setLoadingSlots] = useState(false);
+
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isCloseConfirmOpen, setIsCloseConfirmOpen] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [customerPhoneError, setCustomerPhoneError] = useState("");
+  const [paymentType, setPaymentType] = useState<PaymentType>(1);
+  const [holdIds, setHoldIds] = useState<string[]>([]);
+  const [holdExpiresAt, setHoldExpiresAt] = useState<number | null>(null);
+  const [remainingSeconds, setRemainingSeconds] = useState(HOLD_DURATION_SECONDS);
+
+  const [isHolding, setIsHolding] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
+
+  const [pageAlert, setPageAlert] = useState<{
+    visible: boolean;
+    variant?: "success" | "error" | "warning" | "info";
+    title?: string;
+    description?: string;
+  }>({ visible: false });
 
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
@@ -222,50 +272,51 @@ export default function BookingGaming() {
   const selectedDateString =
     selectedDate !== null ? workingDays[selectedDate]?.fullDate.split("T")[0] : null;
 
-  useEffect(() => {
+  const refreshStationSlots = async () => {
     if (!selectedCategory || !selectedDateString || stations.length === 0) {
       setStationSlots({});
       return;
     }
 
-    const fetchStationSlots = async () => {
-      setLoadingSlots(true);
+    setLoadingSlots(true);
 
-      try {
-        const results = await Promise.all(
-          stations.map(async (station) => {
-            const slots = await getGamingSlotAvailability(
-              station.id,
-              selectedCategory.id,
-              selectedDateString
-            );
+    try {
+      const results = await Promise.all(
+        stations.map(async (station) => {
+          const slots = await getGamingSlotAvailability(
+            station.id,
+            selectedCategory.id,
+            selectedDateString
+          );
 
-            const formattedSlots: StationSlot[] = (Array.isArray(slots) ? slots : []).map(
-              (slot: any) => ({
-                id: slot.id,
-                stationId: slot.stationId,
-                categoryId: slot.categoryId,
-                startTime: slot.startTime,
-                endTime: slot.endTime,
-                isActive: slot.isActive,
-                isBooked: slot.isBooked,
-                price: slot.price,
-              })
-            );
+          const formattedSlots: StationSlot[] = (Array.isArray(slots) ? slots : []).map(
+            (slot: any) => ({
+              id: slot.id,
+              stationId: slot.stationId,
+              categoryId: slot.categoryId,
+              startTime: slot.startTime,
+              endTime: slot.endTime,
+              isActive: slot.isActive,
+              isBooked: slot.isBooked,
+              price: slot.price,
+            })
+          );
 
-            return [station.id, formattedSlots] as const;
-          })
-        );
+          return [station.id, formattedSlots] as const;
+        })
+      );
 
-        setStationSlots(Object.fromEntries(results));
-      } catch (error) {
-        console.error("Error fetching gaming slot availability:", error);
-      } finally {
-        setLoadingSlots(false);
-      }
-    };
+      setStationSlots(Object.fromEntries(results));
+    } catch (error) {
+      console.error("Error fetching gaming slot availability:", error);
+    } finally {
+      setLoadingSlots(false);
+    }
+  };
 
-    fetchStationSlots();
+  useEffect(() => {
+    refreshStationSlots();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory, selectedDateString, stations]);
 
   /* -------------------------------------------------------------------------- */
@@ -373,10 +424,11 @@ export default function BookingGaming() {
     const baseAmount =
       (selectedStationsPrice || selectedCategory.price) * selectedSlots.length;
 
-    const additionalAmount = additionalPurchases.reduce((sum, purchase) => {
-      const quantity = purchaseQuantities[purchase.id] ?? 0;
-      return sum + quantity * purchase.price;
-    }, 0) * selectedSlots.length;
+    const additionalAmount =
+      additionalPurchases.reduce((sum, purchase) => {
+        const quantity = purchaseQuantities[purchase.id] ?? 0;
+        return sum + quantity * purchase.price;
+      }, 0) * selectedSlots.length;
 
     return baseAmount + additionalAmount;
   }, [
@@ -388,8 +440,286 @@ export default function BookingGaming() {
     purchaseQuantities,
   ]);
 
+  /* -------------------------------------------------------------------------- */
+  /* Hold countdown                                                             */
+  /* -------------------------------------------------------------------------- */
+
+  useEffect(() => {
+    if (!isBookingModalOpen || !holdExpiresAt) return;
+
+    const updateRemaining = () => {
+      const secondsLeft = Math.max(0, Math.round((holdExpiresAt - Date.now()) / 1000));
+      setRemainingSeconds(secondsLeft);
+      return secondsLeft;
+    };
+
+    if (updateRemaining() <= 0) {
+      window.location.reload();
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      if (updateRemaining() <= 0) {
+        window.clearInterval(interval);
+        window.location.reload();
+      }
+    }, 1000);
+
+    return () => window.clearInterval(interval);
+  }, [isBookingModalOpen, holdExpiresAt]);
+
+  /* -------------------------------------------------------------------------- */
+  /* Hold selected slots + open checkout modal                                  */
+  /* -------------------------------------------------------------------------- */
+
+  const handleStartBooking = async () => {
+    if (
+      !selectedCategory ||
+      selectedDate === null ||
+      !selectedDateString ||
+      selectedSlots.length === 0 ||
+      selectedStations.length === 0
+    ) {
+      return;
+    }
+
+    setIsHolding(true);
+
+    try {
+      const sortedSlotIndexes = [...selectedSlots].sort((a, b) => a - b);
+
+      const bookings = selectedStations
+        .flatMap((stationId) =>
+          sortedSlotIndexes.map((slotIndex) => {
+            const slotTime = masterSlots[slotIndex];
+
+            const stationSlot = (stationSlots[stationId] ?? []).find(
+              (slot) => slot.startTime === slotTime?.startTime
+            );
+
+            if (!slotTime || !stationSlot) return null;
+
+            return {
+              gamingCategoryId: selectedCategory.id,
+              gamingStationId: stationId,
+              gamingSlotId: stationSlot.id,
+              bookingDate: selectedDateString,
+            };
+          })
+        )
+        .filter((booking): booking is NonNullable<typeof booking> => booking !== null);
+
+      if (bookings.length === 0) {
+        throw new Error("Unable to resolve the selected slots. Please try again.");
+      }
+
+      const additionalPurchasesPayload = additionalPurchases
+        .filter((purchase) => (purchaseQuantities[purchase.id] ?? 0) > 0)
+        .map((purchase) => ({
+          additionalPurchaseId: purchase.id,
+          quantity: purchaseQuantities[purchase.id],
+        }));
+
+      if (additionalPurchasesPayload.length > 0) {
+        bookings[0] = { ...bookings[0], additionalPurchases: additionalPurchasesPayload } as any;
+      }
+
+      const requestBody = {
+        bookings,
+        totalAmount: total,
+        paymentTypes: 1,
+      };
+
+      const holdResponse = await holdGamingBookingSlots(requestBody);
+
+      const holdItems =
+        holdResponse?.additionalData?.response ??
+        holdResponse?.response ??
+        holdResponse ??
+        [];
+
+      const ids = Array.isArray(holdItems)
+        ? holdItems.map((item: any) => item?.holdId ?? item?.id).filter(Boolean)
+        : [];
+
+      if (ids.length === 0) {
+        throw new Error("The booking service did not return any hold IDs.");
+      }
+
+      const firstExpiresAt = Array.isArray(holdItems) ? holdItems[0]?.expiresAt : null;
+      const expiresAtMs = firstExpiresAt
+        ? new Date(firstExpiresAt).getTime()
+        : Date.now() + HOLD_DURATION_SECONDS * 1000;
+
+      setHoldIds(ids);
+      setHoldExpiresAt(expiresAtMs);
+      setRemainingSeconds(Math.max(0, Math.round((expiresAtMs - Date.now()) / 1000)));
+      setIsBookingModalOpen(true);
+    } catch (error) {
+      const message =
+        (error as any)?.response?.data?.message ||
+        (error as any)?.message ||
+        "Unable to hold the selected slots.";
+
+      setPageAlert({
+        visible: true,
+        variant: "error",
+        title: "Booking failed",
+        description: message,
+      });
+    } finally {
+      setIsHolding(false);
+    }
+  };
+
+  /* -------------------------------------------------------------------------- */
+  /* Close modal                                                                 */
+  /* -------------------------------------------------------------------------- */
+
+  const requestCloseBookingModal = () => {
+    setIsCloseConfirmOpen(true);
+  };
+
+  const cancelCloseBookingModal = () => {
+    setIsCloseConfirmOpen(false);
+  };
+
+  const confirmCloseBookingModal = () => {
+    if (remainingSeconds <= 0) {
+      window.location.reload();
+      return;
+    }
+
+    setIsCloseConfirmOpen(false);
+    setIsBookingModalOpen(false);
+    setCustomerName("");
+    setCustomerPhone("");
+    setCustomerPhoneError("");
+    setHoldIds([]);
+    setHoldExpiresAt(null);
+
+    setPageAlert({
+      visible: true,
+      variant: "warning",
+      title: "Slots still on hold",
+      description:
+        "Your selected slots are still reserved for a few more minutes. If you don't complete the booking, they will automatically become available again once the 7-minute hold expires.",
+    });
+  };
+
+  /* -------------------------------------------------------------------------- */
+  /* Confirm booking                                                            */
+  /* -------------------------------------------------------------------------- */
+
+  const handleConfirmBooking = async () => {
+    if (!customerName.trim() || !customerPhone.trim()) {
+      if (!customerPhone.trim()) {
+        setCustomerPhoneError(
+          "Please enter a mobile number starting with 07 and containing exactly 10 digits."
+        );
+      }
+
+      setPageAlert({
+        visible: true,
+        variant: "warning",
+        title: "Missing customer details",
+        description: "Please enter the customer name and mobile number.",
+      });
+
+      return;
+    }
+
+    if (!/^07\d{8}$/.test(customerPhone)) {
+      setCustomerPhoneError(
+        "Please enter a valid mobile number starting with 07 and containing exactly 10 digits."
+      );
+
+      setPageAlert({
+        visible: true,
+        variant: "warning",
+        title: "Invalid mobile number",
+        description:
+          "Please enter a valid mobile number starting with 07 and containing exactly 10 digits.",
+      });
+
+      return;
+    }
+
+    setCustomerPhoneError("");
+
+    if (remainingSeconds <= 0 || holdIds.length === 0) {
+      setPageAlert({
+        visible: true,
+        variant: "warning",
+        title: "Booking hold expired",
+        description: "Please select the slots again and proceed to payment.",
+      });
+
+      return;
+    }
+
+    setIsConfirming(true);
+
+    try {
+      await confirmGamingBooking({
+        holdIds,
+        customerDetails: {
+          customerName: customerName.trim(),
+          phoneNumber: customerPhone.trim(),
+          paymentType,
+        },
+      });
+
+      setPageAlert({
+        visible: true,
+        variant: "success",
+        title: "Booking confirmed",
+        description: "The gaming booking was confirmed successfully.",
+      });
+
+      setSelectedSlots([]);
+      setSelectedStations([]);
+      setPurchaseQuantities({});
+      setIsBookingModalOpen(false);
+      setCustomerName("");
+      setCustomerPhone("");
+      setHoldIds([]);
+      setHoldExpiresAt(null);
+
+      await refreshStationSlots();
+    } catch (error) {
+      const message =
+        (error as any)?.response?.data?.message ||
+        (error as any)?.message ||
+        "Unable to confirm the booking.";
+
+      setPageAlert({
+        visible: true,
+        variant: "error",
+        title: "Confirmation failed",
+        description: message,
+      });
+    } finally {
+      setIsConfirming(false);
+    }
+  };
+
+  const selectedStationNames = stations
+    .filter((station) => selectedStations.includes(station.id))
+    .map((station) => station.name);
+
   return (
     <section className="bg-gray-50 pt-25 pb-10">
+      {/* Alert */}
+      {pageAlert.visible && (
+        <Alert
+          variant={pageAlert.variant as any}
+          title={pageAlert.title}
+          description={pageAlert.description}
+          onClose={() => setPageAlert((s) => ({ ...s, visible: false }))}
+        />
+      )}
+
       <div className="max-w-7xl mx-auto px-4 lg:px-6">
         {/* Header */}
         <div className="text-center mb-10">
@@ -664,12 +994,7 @@ export default function BookingGaming() {
                   <p className="text-xs text-gray-500">Selected Stations</p>
 
                   <p className="font-semibold">
-                    {selectedStations.length > 0
-                      ? stations
-                          .filter((station) => selectedStations.includes(station.id))
-                          .map((station) => station.name)
-                          .join(", ")
-                      : "-"}
+                    {selectedStationNames.length > 0 ? selectedStationNames.join(", ") : "-"}
                   </p>
                 </div>
 
@@ -716,17 +1041,275 @@ export default function BookingGaming() {
                     !selectedCategory ||
                     selectedDate === null ||
                     selectedSlots.length === 0 ||
-                    selectedStations.length === 0
+                    selectedStations.length === 0 ||
+                    isHolding
                   }
-                  className="w-full cursor-pointer h-12 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  onClick={handleStartBooking}
+                  className="w-full cursor-pointer h-12 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
                 >
-                  Confirm Booking
+                  {isHolding && (
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                  )}
+                  {isHolding ? "Holding Slots..." : "Confirm Booking"}
                 </button>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* ====================================================================== */}
+      {/* CHECKOUT MODAL                                                         */}
+      {/* ====================================================================== */}
+
+      {isBookingModalOpen &&
+        createPortal(
+          <div className="fixed inset-0 z-[9999999998] flex items-center justify-center bg-black/70 px-3 py-4 backdrop-blur-md sm:px-5 sm:py-6">
+            <div className="flex max-h-[94vh] w-full max-w-2xl flex-col overflow-hidden rounded-[1.75rem] border border-white/70 bg-white shadow-[0_30px_90px_rgba(0,0,0,0.3)] sm:max-h-[90vh] sm:rounded-[2rem]">
+              {/* Header */}
+              <div className="shrink-0 border-b border-gray-100 bg-gradient-to-r from-red-50 via-white to-red-50 px-4 py-4 sm:px-7 sm:py-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.2em] text-red-600">
+                      <CreditCard size={13} />
+                      Booking checkout
+                    </div>
+
+                    <h3 className="mt-1.5 text-xl font-black tracking-tight text-gray-900 sm:text-2xl">
+                      Review your booking
+                    </h3>
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={isConfirming}
+                    onClick={requestCloseBookingModal}
+                    aria-label="Close booking review"
+                    className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm transition hover:border-red-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 disabled:cursor-not-allowed sm:h-10 sm:w-10"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                {/* Countdown */}
+                <div
+                  className={`mt-4 flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-sm font-bold ${
+                    remainingSeconds <= 60
+                      ? "border-red-200 bg-red-50 text-red-700"
+                      : "border-amber-200 bg-amber-50 text-amber-700"
+                  }`}
+                >
+                  <Clock3 size={15} />
+                  {remainingSeconds > 0 ? (
+                    <span>
+                      Slots held for{" "}
+                      <span className="tabular-nums">{formatCountdown(remainingSeconds)}</span>{" "}
+                      minutes
+                    </span>
+                  ) : (
+                    <span>Your hold has expired. Please select the slots again.</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Body */}
+              <div className="min-h-0 overflow-y-auto px-4 py-4 sm:px-7 sm:py-6 space-y-4">
+                {/* Customer details */}
+                <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-5">
+                  <h4 className="text-sm font-bold text-gray-900 mb-4">Customer Details</h4>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <label className="block">
+                      <span className="mb-2 block text-xs font-bold text-gray-700">
+                        Customer Name
+                      </span>
+
+                      <input
+                        type="text"
+                        value={customerName}
+                        onChange={(event) => setCustomerName(event.target.value)}
+                        placeholder="Enter customer name"
+                        className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm outline-none transition focus:border-red-500 focus:ring-4 focus:ring-red-100"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="mb-2 block text-xs font-bold text-gray-700">
+                        Customer Mobile No
+                      </span>
+
+                      <input
+                        type="tel"
+                        inputMode="numeric"
+                        maxLength={10}
+                        pattern="07[0-9]{8}"
+                        aria-invalid={Boolean(customerPhoneError)}
+                        value={customerPhone}
+                        onChange={(event) => {
+                          setCustomerPhone(
+                            event.target.value.replace(/\D/g, "").slice(0, 10)
+                          );
+                          setCustomerPhoneError("");
+                        }}
+                        placeholder="07X XXX XXXX"
+                        className={`h-12 w-full rounded-xl border bg-white px-4 text-sm outline-none transition focus:ring-4 focus:ring-red-100 ${
+                          customerPhoneError
+                            ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                            : "border-gray-200 focus:border-red-500"
+                        }`}
+                      />
+
+                      {customerPhoneError && (
+                        <span className="mt-1.5 block text-xs font-medium text-red-600" role="alert">
+                          {customerPhoneError}
+                        </span>
+                      )}
+                    </label>
+                  </div>
+                </div>
+
+                {/* Payment type */}
+                <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-5">
+                  <h4 className="text-sm font-bold text-gray-900 mb-4">Payment Type</h4>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentType(1)}
+                      className={`h-12 rounded-xl border font-semibold text-sm transition cursor-pointer ${
+                        paymentType === 1
+                          ? "bg-red-500 border-red-500 text-white"
+                          : "bg-white border-gray-200 text-gray-700"
+                      }`}
+                    >
+                      Cash
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setPaymentType(2)}
+                      className={`h-12 rounded-xl border font-semibold text-sm transition cursor-pointer ${
+                        paymentType === 2
+                          ? "bg-red-500 border-red-500 text-white"
+                          : "bg-white border-gray-200 text-gray-700"
+                      }`}
+                    >
+                      Card
+                    </button>
+                  </div>
+                </div>
+
+                {/* Order summary */}
+                <div className="rounded-2xl border border-gray-100 bg-[#fafafa] p-4 sm:p-5">
+                  <h4 className="text-sm font-bold text-gray-900 mb-3">Order Summary</h4>
+
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Service</span>
+                      <span className="font-semibold text-gray-900">
+                        {selectedCategory?.name}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Stations</span>
+                      <span className="font-semibold text-gray-900 text-right">
+                        {selectedStationNames.join(", ")}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Time</span>
+                      <span className="font-semibold text-gray-900">{selectedTimeRange}</span>
+                    </div>
+
+                    <div className="border-t border-gray-200 mt-3 pt-3 flex justify-between items-center">
+                      <span className="font-bold text-gray-900">Total</span>
+                      <span className="text-xl font-black text-red-600">Rs. {total}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2 rounded-xl border border-amber-100 bg-amber-50/80 p-3.5 text-xs leading-5 text-amber-900">
+                  <Info size={15} className="mt-0.5 shrink-0 text-amber-700" />
+                  <span>
+                    If you close this window without confirming, your selected slots stay
+                    reserved until the countdown above runs out, then they become available to
+                    other customers again.
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={isConfirming || remainingSeconds <= 0}
+                  onClick={handleConfirmBooking}
+                  className="flex min-h-[52px] w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-red-500 px-6 py-3.5 text-sm font-extrabold text-white shadow-lg transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isConfirming && (
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                  )}
+                  <CreditCard size={17} />
+                  {isConfirming ? "Confirming..." : "Confirm Booking"}
+                </button>
+
+                <div className="flex items-start gap-2 text-[10px] leading-4 text-gray-500">
+                  <ShieldCheck size={14} className="mt-0.5 shrink-0 text-green-600" />
+                  <span>Your booking is held securely while the confirmation is processed.</span>
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+
+      {/* ====================================================================== */}
+      {/* CLOSE CONFIRMATION DIALOG                                              */}
+      {/* ====================================================================== */}
+
+      {isCloseConfirmOpen &&
+        createPortal(
+          <div className="fixed inset-0 z-[9999999999] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
+            <div className="w-full max-w-sm rounded-2xl border border-amber-200 bg-white p-6 shadow-2xl">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+                  <AlertTriangle size={20} />
+                </div>
+
+                <div>
+                  <h3 className="text-base font-bold text-gray-900">Close this booking?</h3>
+
+                  <p className="mt-1.5 text-sm text-gray-600">
+                    Your selected slots will stay reserved for{" "}
+                    <span className="font-bold text-amber-700">
+                      {formatCountdown(remainingSeconds)}
+                    </span>{" "}
+                    minutes, then they'll automatically become available to other customers
+                    again.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 flex gap-3">
+                <button
+                  type="button"
+                  onClick={cancelCloseBookingModal}
+                  className="h-11 flex-1 cursor-pointer rounded-xl border border-gray-200 bg-white text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                >
+                  Keep Booking
+                </button>
+
+                <button
+                  type="button"
+                  onClick={confirmCloseBookingModal}
+                  className="h-11 flex-1 cursor-pointer rounded-xl bg-amber-500 text-sm font-semibold text-white transition hover:bg-amber-600"
+                >
+                  Close Anyway
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </section>
   );
 }
