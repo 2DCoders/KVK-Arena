@@ -1,122 +1,126 @@
 import { useEffect, useMemo, useState } from "react";
-import { Monitor, Gamepad2, Trophy, Film, Minus, Plus } from "lucide-react";
+import { Monitor, Gamepad2, Trophy, Film, Minus, Plus, Joystick } from "lucide-react";
 import { getNextWorkingDays } from "@/services/holidays-api";
+import { getGamingCategories } from "@/services/gaming-category-api";
+import { getGamingStationsByCategory } from "@/services/gaming-station-api";
+import { getGamingSlotAvailability } from "@/services/gaming-slot-api";
+import { getAdditionalPurchasesByCategory } from "@/services/additional-purchase-api";
 
-const services = [
-  {
-    id: "pc",
-    title: "PC Games",
-    icon: Monitor,
-    price: 1000,
-    description: "High-end gaming PCs with latest titles",
-    resources: ["PC 1", "PC 2"],
-  },
-  {
-    id: "ps5",
-    title: "PS5 Games",
-    icon: Gamepad2,
-    price: 1500,
-    description: "2 PS5 consoles with popular games",
-    resources: ["PS5 1", "PS5 2", "PS5 3"],
-  },
-  {
-    id: "pool",
-    title: "Pool Table",
-    icon: Trophy,
-    price: 1200,
-    description: "Enjoy a game of pool with friends",
-    resources: ["Table 1", "Table 2"],
-  },
-  {
-    id: "movie",
-    title: "Movie Room",
-    icon: Film,
-    price: 2500,
-    description: "Private movie room with big screen and surround sound",
-    resources: ["Room 1", "Room 2"],
-  },
-];
+type GamingCategory = {
+  id: string;
+  name: string;
+  code: string;
+  price: number;
+  isActive: boolean;
+};
 
-const slots = [
-  { start: 9, end: 10 },
-  { start: 10, end: 11 },
-  { start: 11, end: 12 },
-  { start: 12, end: 13 },
-  { start: 13, end: 14 },
-  { start: 14, end: 15 },
-  { start: 15, end: 16 },
-  { start: 16, end: 17 },
-  { start: 17, end: 18 },
-  { start: 18, end: 19 },
-  { start: 19, end: 20 },
-  { start: 20, end: 21 },
-];
+type GamingStation = {
+  id: string;
+  gamingCategoryId: string;
+  stationCode: string;
+  name: string;
+  price: number;
+  isActive: boolean;
+};
 
-const existingBookings = [
-  {
-    serviceId: "pc",
-    resourceId: "PC 1",
-    date: "2026-06-11",
-    slotIndex: 1,
-  },
-  {
-    serviceId: "pc",
-    resourceId: "PC 2",
-    date: "2026-06-11",
-    slotIndex: 1,
-  },
+type AdditionalPurchase = {
+  id: string;
+  gamingCategoryId: string;
+  name: string;
+  price: number;
+  description?: string | null;
+};
 
-  {
-    serviceId: "ps5",
-    resourceId: "PS5 1",
-    date: "2026-06-11",
-    slotIndex: 3,
-  },
-];
+type StationSlot = {
+  id: string;
+  stationId: string;
+  categoryId: string;
+  startTime: string;
+  endTime: string;
+  isActive: boolean;
+  isBooked: boolean;
+  price: number;
+};
 
-const formatHour = (hour: number) => {
-  const period = hour >= 12 ? "PM" : "AM";
-  const displayHour = hour > 12 ? hour - 12 : hour;
-  return `${displayHour}.00 ${period}`;
+type MasterSlot = {
+  startTime: string;
+  endTime: string;
+};
+
+type BookingDay = {
+  fullDate: string;
+  day: string;
+  date: number;
+  month: string;
+  isToday: boolean;
+};
+
+const CATEGORY_ICONS: Record<string, any> = {
+  PC: Monitor,
+  PS5: Gamepad2,
+  POOL: Trophy,
+  MOVIE: Film,
+};
+
+const getCategoryIcon = (code: string) => CATEGORY_ICONS[code?.toUpperCase()] ?? Joystick;
+
+const MAX_ADDITIONAL_PURCHASE_QUANTITY = 4;
+
+const formatTime = (time: string) => {
+  const [hoursText, minutesText] = time.split(":");
+  const hoursNumber = Number(hoursText);
+  const minutes = minutesText ?? "00";
+
+  const period = hoursNumber >= 12 ? "PM" : "AM";
+  const displayHours = hoursNumber % 12 === 0 ? 12 : hoursNumber % 12;
+
+  return `${displayHours}.${minutes} ${period}`;
 };
 
 export default function BookingGaming() {
-  const [selectedService, setSelectedService] = useState<any>(null);
+  const [categories, setCategories] = useState<GamingCategory[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<GamingCategory | null>(null);
+
+  const [stations, setStations] = useState<GamingStation[]>([]);
+  const [additionalPurchases, setAdditionalPurchases] = useState<AdditionalPurchase[]>([]);
+  const [purchaseQuantities, setPurchaseQuantities] = useState<Record<string, number>>({});
+
+  const [stationSlots, setStationSlots] = useState<Record<string, StationSlot[]>>({});
+
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
-  const [extraConsoles, setExtraConsoles] = useState(0);
   const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
-  const [selectedResources, setSelectedResources] = useState<string[]>([]);
-  const [workingDays, setWorkingDays] = useState<any[]>([]);
+  const [selectedStations, setSelectedStations] = useState<string[]>([]);
+  const [workingDays, setWorkingDays] = useState<BookingDay[]>([]);
+
+  const [loadingStations, setLoadingStations] = useState(false);
+  const [loadingSlots, setLoadingSlots] = useState(false);
 
   const yesterday = new Date();
-yesterday.setDate(yesterday.getDate() - 1);
+  yesterday.setDate(yesterday.getDate() - 1);
 
-const startDate = yesterday.toISOString().split("T")[0];
+  const startDate = yesterday.toISOString().split("T")[0];
+
+  /* -------------------------------------------------------------------------- */
+  /* Working days                                                               */
+  /* -------------------------------------------------------------------------- */
 
   useEffect(() => {
     const fetchWorkingDays = async () => {
       try {
         const res = await getNextWorkingDays(startDate, 7);
 
-        const formattedDates = res.map(
-          (dateStr: string) => {
-            const date = new Date(dateStr);
-            const today = new Date();
+        const formattedDates = res.map((dateStr: string) => {
+          const date = new Date(dateStr);
+          const today = new Date();
 
-            return {
-              fullDate: dateStr,
-              day: date.toLocaleDateString("en-US", {
-                weekday: "short",
-              }),
-              date: date.getDate(),
-              month: date.toLocaleDateString("en-US", {
-                month: "short",
-              }),
-              isToday:
-                date.toDateString() === today.toDateString(),
-            };
-          }
-        );
+          return {
+            fullDate: dateStr,
+            day: date.toLocaleDateString("en-US", { weekday: "short" }),
+            date: date.getDate(),
+            month: date.toLocaleDateString("en-US", { month: "short" }),
+            isToday: date.toDateString() === today.toDateString(),
+          };
+        });
 
         setWorkingDays(formattedDates);
       } catch (error) {
@@ -126,6 +130,161 @@ const startDate = yesterday.toISOString().split("T")[0];
 
     fetchWorkingDays();
   }, []);
+
+  /* -------------------------------------------------------------------------- */
+  /* Gaming categories                                                          */
+  /* -------------------------------------------------------------------------- */
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await getGamingCategories(true);
+
+        const mappedCategories = (Array.isArray(response) ? response : []).map(
+          (category: any) => ({
+            id: category.id,
+            name: category.name,
+            code: category.code,
+            price: category.price,
+            isActive: category.isActive,
+          })
+        );
+
+        setCategories(mappedCategories);
+      } catch (error) {
+        console.error("Error fetching gaming categories:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  /* -------------------------------------------------------------------------- */
+  /* Stations + additional purchases for the selected category                  */
+  /* -------------------------------------------------------------------------- */
+
+  useEffect(() => {
+    if (!selectedCategory) {
+      setStations([]);
+      setAdditionalPurchases([]);
+      setPurchaseQuantities({});
+      setStationSlots({});
+      return;
+    }
+
+    const fetchCategoryData = async () => {
+      setLoadingStations(true);
+
+      try {
+        const [stationsResponse, purchasesResponse] = await Promise.all([
+          getGamingStationsByCategory(selectedCategory.id),
+          getAdditionalPurchasesByCategory(selectedCategory.id),
+        ]);
+
+        const mappedStations = (Array.isArray(stationsResponse) ? stationsResponse : []).map(
+          (station: any) => ({
+            id: station.id,
+            gamingCategoryId: station.gamingCategoryId,
+            stationCode: station.stationCode,
+            name: station.name,
+            price: station.price,
+            isActive: station.isActive,
+          })
+        );
+
+        const mappedPurchases = (Array.isArray(purchasesResponse) ? purchasesResponse : []).map(
+          (purchase: any) => ({
+            id: purchase.id,
+            gamingCategoryId: purchase.gamingCategoryId,
+            name: purchase.name,
+            price: purchase.price,
+            description: purchase.description,
+          })
+        );
+
+        setStations(mappedStations);
+        setAdditionalPurchases(mappedPurchases);
+        setPurchaseQuantities({});
+      } catch (error) {
+        console.error("Error fetching gaming stations/additional purchases:", error);
+      } finally {
+        setLoadingStations(false);
+      }
+    };
+
+    fetchCategoryData();
+  }, [selectedCategory]);
+
+  /* -------------------------------------------------------------------------- */
+  /* Slot availability per station for the selected date                       */
+  /* -------------------------------------------------------------------------- */
+
+  const selectedDateString =
+    selectedDate !== null ? workingDays[selectedDate]?.fullDate.split("T")[0] : null;
+
+  useEffect(() => {
+    if (!selectedCategory || !selectedDateString || stations.length === 0) {
+      setStationSlots({});
+      return;
+    }
+
+    const fetchStationSlots = async () => {
+      setLoadingSlots(true);
+
+      try {
+        const results = await Promise.all(
+          stations.map(async (station) => {
+            const slots = await getGamingSlotAvailability(
+              station.id,
+              selectedCategory.id,
+              selectedDateString
+            );
+
+            const formattedSlots: StationSlot[] = (Array.isArray(slots) ? slots : []).map(
+              (slot: any) => ({
+                id: slot.id,
+                stationId: slot.stationId,
+                categoryId: slot.categoryId,
+                startTime: slot.startTime,
+                endTime: slot.endTime,
+                isActive: slot.isActive,
+                isBooked: slot.isBooked,
+                price: slot.price,
+              })
+            );
+
+            return [station.id, formattedSlots] as const;
+          })
+        );
+
+        setStationSlots(Object.fromEntries(results));
+      } catch (error) {
+        console.error("Error fetching gaming slot availability:", error);
+      } finally {
+        setLoadingSlots(false);
+      }
+    };
+
+    fetchStationSlots();
+  }, [selectedCategory, selectedDateString, stations]);
+
+  /* -------------------------------------------------------------------------- */
+  /* Master slot grid (union of station slot times)                            */
+  /* -------------------------------------------------------------------------- */
+
+  const masterSlots = useMemo<MasterSlot[]>(() => {
+    const map = new Map<string, MasterSlot>();
+
+    Object.values(stationSlots).forEach((slotList) => {
+      slotList.forEach((slot) => {
+        if (!map.has(slot.startTime)) {
+          map.set(slot.startTime, { startTime: slot.startTime, endTime: slot.endTime });
+        }
+      });
+    });
+
+    return Array.from(map.values()).sort((a, b) => a.startTime.localeCompare(b.startTime));
+  }, [stationSlots]);
 
   const toggleSlot = (index: number) => {
     const availability = getSlotAvailability(index);
@@ -144,13 +303,11 @@ const startDate = yesterday.toISOString().split("T")[0];
     const min = sorted[0];
     const max = sorted[sorted.length - 1];
 
-    // Remove selected slot
     if (selectedSlots.includes(index)) {
       setSelectedSlots(selectedSlots.filter((i) => i !== index));
       return;
     }
 
-    // Only allow adjacent extension
     if (index === min - 1 || index === max + 1) {
       setSelectedSlots([...selectedSlots, index]);
     }
@@ -163,85 +320,72 @@ const startDate = yesterday.toISOString().split("T")[0];
 
     const sorted = [...selectedSlots].sort((a, b) => a - b);
 
-    const firstSlot = slots[sorted[0]];
-    const lastSlot = slots[sorted[sorted.length - 1]];
+    const firstSlot = masterSlots[sorted[0]];
+    const lastSlot = masterSlots[sorted[sorted.length - 1]];
 
-    return `${formatHour(firstSlot.start)} - ${formatHour(lastSlot.end)}`;
-  }, [selectedSlots]);
+    if (!firstSlot || !lastSlot) return "-";
 
-  const selectedDateString =
-    selectedDate !== null
-      ? workingDays[selectedDate]?.fullDate.split("T")[0]
-      : null;
+    return `${formatTime(firstSlot.startTime)} - ${formatTime(lastSlot.endTime)}`;
+  }, [selectedSlots, masterSlots]);
 
-  const isSlotDisabled = (
-    slotStart: number,
-    dateIndex: number | null,
-  ) => {
-    // Only disable for today
-    if (dateIndex !== 0) return false;
+  const isSlotDisabled = (startTime: string, dateIndex: number | null) => {
+    if (dateIndex === null || !workingDays[dateIndex]?.isToday) return false;
 
     const nowInSriLanka = new Date(
-      new Date().toLocaleString("en-US", {
-        timeZone: "Asia/Colombo",
-      }),
+      new Date().toLocaleString("en-US", { timeZone: "Asia/Colombo" })
     );
 
     const currentHour = nowInSriLanka.getHours();
     const currentMinute = nowInSriLanka.getMinutes();
-
     const currentTime = currentHour + currentMinute / 60;
 
-    // Disable if slot already started
+    const [hoursText, minutesText] = startTime.split(":");
+    const slotStart = Number(hoursText) + Number(minutesText ?? "0") / 60;
+
     return slotStart <= currentTime;
   };
 
   const getSlotAvailability = (slotIndex: number) => {
-    if (!selectedService || !selectedDateString) {
-      return {
-        availableResources: [],
-        full: false,
-      };
+    const slotTime = masterSlots[slotIndex];
+
+    if (!selectedCategory || !selectedDateString || !slotTime) {
+      return { availableStations: [] as GamingStation[], full: false };
     }
 
-    const availableResources = selectedService.resources.filter(
-      (resource: string) => {
-        const booking = existingBookings.find(
-          (b) =>
-            b.serviceId === selectedService.id &&
-            b.resourceId === resource &&
-            b.date === selectedDateString &&
-            b.slotIndex === slotIndex,
-        );
+    const availableStations = stations.filter((station) => {
+      const slot = (stationSlots[station.id] ?? []).find(
+        (item) => item.startTime === slotTime.startTime
+      );
 
-        return !booking;
-      },
-    );
+      return slot ? slot.isActive && !slot.isBooked : false;
+    });
 
-    return {
-      availableResources,
-      full: availableResources.length === 0,
-    };
+    return { availableStations, full: availableStations.length === 0 };
   };
 
   const total = useMemo(() => {
-    if (!selectedService) return 0;
+    if (!selectedCategory || selectedSlots.length === 0) return 0;
 
-    let amount =
-      selectedService.price *
-      selectedSlots.length *
-      Math.max(selectedResources.length, 1);
+    const selectedStationsPrice = stations
+      .filter((station) => selectedStations.includes(station.id))
+      .reduce((sum, station) => sum + (station.price || selectedCategory.price), 0);
 
-    if (selectedService.id === "ps5") {
-      amount += extraConsoles * 500 * selectedSlots.length;
-    }
+    const baseAmount =
+      (selectedStationsPrice || selectedCategory.price) * selectedSlots.length;
 
-    return amount;
+    const additionalAmount = additionalPurchases.reduce((sum, purchase) => {
+      const quantity = purchaseQuantities[purchase.id] ?? 0;
+      return sum + quantity * purchase.price;
+    }, 0) * selectedSlots.length;
+
+    return baseAmount + additionalAmount;
   }, [
-    selectedService,
+    selectedCategory,
     selectedSlots,
-    selectedResources,
-    extraConsoles,
+    selectedStations,
+    stations,
+    additionalPurchases,
+    purchaseQuantities,
   ]);
 
   return (
@@ -265,61 +409,56 @@ const startDate = yesterday.toISOString().split("T")[0];
         <div className="grid lg:grid-cols-[1fr_340px] gap-6">
           {/* LEFT */}
           <div className="space-y-6">
-            {/* Services */}
+            {/* Categories */}
             <div>
               <h3 className="text-lg font-semibold mb-3">Select Service</h3>
 
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                {services.map((service) => {
-                  const Icon = service.icon;
+              {categories.length === 0 ? (
+                <div className="text-sm text-gray-500">Loading categories...</div>
+              ) : (
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  {categories.map((category) => {
+                    const Icon = getCategoryIcon(category.code);
 
-                  return (
-                    <button
-                      key={service.id}
-                      onClick={() => {
-                        setSelectedService(service);
-                        setSelectedDate(null);
-                        setSelectedSlots([]);
-                        setExtraConsoles(0);
-                        setSelectedResources([]);
-                      }}
-                      className={`text-left cursor-pointer rounded-2xl border-2 p-4 transition-all ${selectedService?.id === service.id
-                        ? "border-red-500 bg-red-50 shadow-md"
-                        : "border-gray-200 bg-white hover:border-red-300"
+                    return (
+                      <button
+                        key={category.id}
+                        onClick={() => {
+                          setSelectedCategory(category);
+                          setSelectedDate(null);
+                          setSelectedSlots([]);
+                          setSelectedStations([]);
+                        }}
+                        className={`text-left cursor-pointer rounded-2xl border-2 p-4 transition-all ${
+                          selectedCategory?.id === category.id
+                            ? "border-red-500 bg-red-50 shadow-md"
+                            : "border-gray-200 bg-white hover:border-red-300"
                         }`}
-                    >
-                      <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center mb-3">
-                        <Icon className="w-5 h-5 text-red-600" />
-                      </div>
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center mb-3">
+                          <Icon className="w-5 h-5 text-red-600" />
+                        </div>
 
-                      <h4 className="font-bold text-sm text-gray-900">
-                        {service.title}
-                      </h4>
+                        <h4 className="font-bold text-sm text-gray-900">{category.name}</h4>
 
-                      <p className="text-xs text-gray-500 mt-1">
-                        {service.description}
-                      </p>
-
-                      <div className="mt-2 font-semibold text-red-600 text-sm">
-                        Rs. {service.price}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+                        <div className="mt-2 font-semibold text-red-600 text-sm">
+                          Rs. {category.price}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Dates */}
             <div
-              className={`transition-all ${!selectedService ? "opacity-40 pointer-events-none" : ""
-                }`}
+              className={`transition-all ${!selectedCategory ? "opacity-40 pointer-events-none" : ""}`}
             >
               <h3 className="text-lg font-semibold mb-3">Select Date</h3>
 
               {workingDays.length === 0 ? (
-                <div className="text-sm text-gray-500">
-                  Loading available dates...
-                </div>
+                <div className="text-sm text-gray-500">Loading available dates...</div>
               ) : (
                 <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
                   {workingDays.map((date, index) => (
@@ -328,30 +467,21 @@ const startDate = yesterday.toISOString().split("T")[0];
                       onClick={() => {
                         setSelectedDate(index);
                         setSelectedSlots([]);
-                        setSelectedResources([]);
+                        setSelectedStations([]);
                       }}
-                      className={`h-20 cursor-pointer rounded-xl border-2 flex flex-col items-center justify-center transition ${selectedDate === index
-                        ? "border-red-500 bg-red-500 text-white"
-                        : "border-gray-200 bg-white hover:border-red-300"
-                        }`}
+                      className={`h-20 cursor-pointer rounded-xl border-2 flex flex-col items-center justify-center transition ${
+                        selectedDate === index
+                          ? "border-red-500 bg-red-500 text-white"
+                          : "border-gray-200 bg-white hover:border-red-300"
+                      }`}
                     >
                       {date.isToday && (
-                        <div className="text-[9px] font-bold mb-1">
-                          TODAY
-                        </div>
+                        <div className="text-[9px] font-bold mb-1">TODAY</div>
                       )}
 
-                      <p className="text-[10px] font-semibold">
-                        {date.day}
-                      </p>
-
-                      <p className="text-lg font-bold">
-                        {date.date}
-                      </p>
-
-                      <p className="text-[10px]">
-                        {date.month}
-                      </p>
+                      <p className="text-[10px] font-semibold">{date.day}</p>
+                      <p className="text-lg font-bold">{date.date}</p>
+                      <p className="text-[10px]">{date.month}</p>
                     </button>
                   ))}
                 </div>
@@ -360,99 +490,95 @@ const startDate = yesterday.toISOString().split("T")[0];
 
             {/* Slots */}
             <div
-              className={`transition-all ${selectedDate === null ? "opacity-40 pointer-events-none" : ""
-                }`}
+              className={`transition-all ${selectedDate === null ? "opacity-40 pointer-events-none" : ""}`}
             >
               <h3 className="text-lg font-semibold mb-3">Select Time Slot</h3>
 
-              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                {slots.map((slot, index) => {
-                  const availability = getSlotAvailability(index);
+              {loadingStations || loadingSlots ? (
+                <div className="text-sm text-gray-500">Loading available slots...</div>
+              ) : masterSlots.length === 0 ? (
+                <div className="text-sm text-gray-500">
+                  {selectedDate === null
+                    ? "Select a date to see time slots."
+                    : "No time slots configured for this service."}
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                  {masterSlots.map((slot, index) => {
+                    const availability = getSlotAvailability(index);
 
-                  const disabled =
-                    isSlotDisabled(slot.start, selectedDate) ||
-                    availability.full;
+                    const disabled =
+                      isSlotDisabled(slot.startTime, selectedDate) || availability.full;
 
-                  const selected = selectedSlots.includes(index);
-
-                  return (
-                    <button
-                      key={index}
-                      disabled={disabled}
-                      onClick={() => {
-                        toggleSlot(index);
-                        setSelectedResources([]);
-                      }}
-                      className={`h-16 cursor-pointer rounded-lg border text-xs font-medium transition
-                      ${selected
-                          ? "bg-red-500 border-red-500 text-white"
-                          : availability.full
-                            ? "bg-gray-200 border-gray-300 text-gray-500"
-                            : "bg-white border-gray-200 hover:border-red-300"
-                        }
-                      ${disabled
-                          ? "opacity-40 cursor-not-allowed"
-                          : ""
-                        }
-                    `}
-                    >
-                      <div className="leading-tight">
-                        <div>{formatHour(slot.start)}</div>
-
-                        <div>{formatHour(slot.end)}</div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {selectedService && selectedSlots.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Select Resource</h3>
-
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {selectedService.resources.map((resource: string) => {
-                    const allSelectedSlotsAvailable = selectedSlots.every(
-                      (slotIndex) => {
-                        const availability = getSlotAvailability(slotIndex);
-
-                        return availability.availableResources.includes(
-                          resource,
-                        );
-                      },
-                    );
-
-                    const selected = selectedResources.includes(resource);
+                    const selected = selectedSlots.includes(index);
 
                     return (
                       <button
-                        key={resource}
+                        key={slot.startTime}
+                        disabled={disabled}
+                        onClick={() => {
+                          toggleSlot(index);
+                          setSelectedStations([]);
+                        }}
+                        className={`h-16 cursor-pointer rounded-lg border text-xs font-medium transition
+                        ${
+                          selected
+                            ? "bg-red-500 border-red-500 text-white"
+                            : availability.full
+                              ? "bg-gray-200 border-gray-300 text-gray-500"
+                              : "bg-white border-gray-200 hover:border-red-300"
+                        }
+                        ${disabled ? "opacity-40 cursor-not-allowed" : ""}
+                      `}
+                      >
+                        <div className="leading-tight">
+                          <div>{formatTime(slot.startTime)}</div>
+                          <div>{formatTime(slot.endTime)}</div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {selectedCategory && selectedSlots.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Select Station</h3>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {stations.map((station) => {
+                    const allSelectedSlotsAvailable = selectedSlots.every((slotIndex) => {
+                      const availability = getSlotAvailability(slotIndex);
+
+                      return availability.availableStations.some((s) => s.id === station.id);
+                    });
+
+                    const selected = selectedStations.includes(station.id);
+
+                    return (
+                      <button
+                        key={station.id}
                         disabled={!allSelectedSlotsAvailable}
                         onClick={() => {
                           if (selected) {
-                            setSelectedResources(
-                              selectedResources.filter((r) => r !== resource),
+                            setSelectedStations(
+                              selectedStations.filter((id) => id !== station.id)
                             );
                           } else {
-                            setSelectedResources([
-                              ...selectedResources,
-                              resource,
-                            ]);
+                            setSelectedStations([...selectedStations, station.id]);
                           }
                         }}
                         className={`h-12 cursor-pointer rounded-xl border font-medium transition
-                        ${selected
+                        ${
+                          selected
                             ? "bg-red-500 text-white border-red-500"
                             : "bg-white border-gray-200"
-                          }
-                        ${!allSelectedSlotsAvailable
-                            ? "opacity-40 cursor-not-allowed"
-                            : ""
-                          }
+                        }
+                        ${!allSelectedSlotsAvailable ? "opacity-40 cursor-not-allowed" : ""}
                       `}
                       >
-                        {resource}
+                        {station.name}
                       </button>
                     );
                   })}
@@ -460,55 +586,65 @@ const startDate = yesterday.toISOString().split("T")[0];
               </div>
             )}
 
-            {/* PS5 Extras */}
-            {selectedService?.id === "ps5" && (
+            {/* Additional purchases */}
+            {selectedCategory && additionalPurchases.length > 0 && (
               <div
-                className={`bg-white border cursor-pointer border-gray-200 rounded-2xl p-4 transition-all ${selectedSlots.length === 0
-                  ? "opacity-40 pointer-events-none"
-                  : ""
-                  }`}
+                className={`space-y-3 transition-all ${
+                  selectedSlots.length === 0 ? "opacity-40 pointer-events-none" : ""
+                }`}
               >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold">Additional Consoles</h3>
+                <h3 className="text-lg font-semibold">Additional Purchases</h3>
 
-                    <p className="text-xs text-gray-500">
-                      2 Consoles Included Free
-                    </p>
-                  </div>
+                {additionalPurchases.map((purchase) => {
+                  const quantity = purchaseQuantities[purchase.id] ?? 0;
 
-                  <div className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs">
-                    Max +2
-                  </div>
-                </div>
+                  return (
+                    <div
+                      key={purchase.id}
+                      className="bg-white border border-gray-200 rounded-2xl p-4"
+                    >
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold">{purchase.name}</h3>
 
-                <div className="flex items-center gap-3 mt-4">
-                  <button
-                    onClick={() =>
-                      setExtraConsoles(Math.max(0, extraConsoles - 1))
-                    }
-                    className="w-9 h-9 cursor-pointer rounded-lg border flex items-center justify-center"
-                  >
-                    <Minus size={16} />
-                  </button>
+                        <div className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs">
+                          Rs. {purchase.price}
+                        </div>
+                      </div>
 
-                  <span className="text-xl font-bold w-8 text-center">
-                    {extraConsoles}
-                  </span>
+                      <div className="flex items-center gap-3 mt-4">
+                        <button
+                          onClick={() =>
+                            setPurchaseQuantities((prev) => ({
+                              ...prev,
+                              [purchase.id]: Math.max(0, quantity - 1),
+                            }))
+                          }
+                          className="w-9 h-9 cursor-pointer rounded-lg border flex items-center justify-center"
+                        >
+                          <Minus size={16} />
+                        </button>
 
-                  <button
-                    onClick={() =>
-                      setExtraConsoles(Math.min(2, extraConsoles + 1))
-                    }
-                    className="w-9 h-9 cursor-pointer rounded-lg border flex items-center justify-center"
-                  >
-                    <Plus size={16} />
-                  </button>
-                </div>
+                        <span className="text-xl font-bold w-8 text-center">{quantity}</span>
 
-                <p className="text-xs text-gray-500 mt-3">
-                  Rs. 500 per additional console
-                </p>
+                        <button
+                          onClick={() =>
+                            setPurchaseQuantities((prev) => ({
+                              ...prev,
+                              [purchase.id]: Math.min(
+                                MAX_ADDITIONAL_PURCHASE_QUANTITY,
+                                quantity + 1
+                              ),
+                            }))
+                          }
+                          disabled={quantity >= MAX_ADDITIONAL_PURCHASE_QUANTITY}
+                          className="w-9 h-9 cursor-pointer rounded-lg border flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          <Plus size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -521,17 +657,18 @@ const startDate = yesterday.toISOString().split("T")[0];
               <div className="space-y-4">
                 <div>
                   <p className="text-xs text-gray-500">Service</p>
-                  <p className="font-semibold">
-                    {selectedService?.title || "-"}
-                  </p>
+                  <p className="font-semibold">{selectedCategory?.name || "-"}</p>
                 </div>
 
                 <div>
-                  <p className="text-xs text-gray-500">Selected Resources</p>
+                  <p className="text-xs text-gray-500">Selected Stations</p>
 
                   <p className="font-semibold">
-                    {selectedResources.length > 0
-                      ? selectedResources.join(", ")
+                    {selectedStations.length > 0
+                      ? stations
+                          .filter((station) => selectedStations.includes(station.id))
+                          .map((station) => station.name)
+                          .join(", ")
                       : "-"}
                   </p>
                 </div>
@@ -540,9 +677,7 @@ const startDate = yesterday.toISOString().split("T")[0];
                   <p className="text-xs text-gray-500">Date</p>
                   <p className="font-semibold">
                     {selectedDate !== null
-                      ? new Date(
-                        workingDays[selectedDate]?.fullDate
-                      ).toLocaleDateString()
+                      ? new Date(workingDays[selectedDate]?.fullDate).toLocaleDateString()
                       : "-"}
                   </p>
                 </div>
@@ -559,28 +694,29 @@ const startDate = yesterday.toISOString().split("T")[0];
                   </p>
                 </div>
 
-                {selectedService?.id === "ps5" && (
-                  <div>
-                    <p className="text-xs text-gray-500">Additional Consoles</p>
-                    <p className="font-semibold">{extraConsoles}</p>
-                  </div>
-                )}
+                {additionalPurchases
+                  .filter((purchase) => (purchaseQuantities[purchase.id] ?? 0) > 0)
+                  .map((purchase) => (
+                    <div key={purchase.id}>
+                      <p className="text-xs text-gray-500">{purchase.name}</p>
+                      <p className="font-semibold">{purchaseQuantities[purchase.id]}</p>
+                    </div>
+                  ))}
 
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center">
                     <span className="font-medium">Total Amount</span>
 
-                    <span className="text-xl font-bold text-red-600">
-                      Rs. {total}
-                    </span>
+                    <span className="text-xl font-bold text-red-600">Rs. {total}</span>
                   </div>
                 </div>
 
                 <button
                   disabled={
-                    !selectedService ||
+                    !selectedCategory ||
                     selectedDate === null ||
-                    selectedSlots.length === 0
+                    selectedSlots.length === 0 ||
+                    selectedStations.length === 0
                   }
                   className="w-full cursor-pointer h-12 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
