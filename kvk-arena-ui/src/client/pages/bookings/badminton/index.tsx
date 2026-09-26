@@ -15,6 +15,7 @@ import {
   Sparkles,
   CircleCheck,
   Info,
+  AlertTriangle,
 } from "lucide-react";
 import { getCourts } from "@/services/court-api";
 import { bookingSlots, confirmBooking } from "@/services/booking-api";
@@ -80,6 +81,18 @@ const formatSlotLabel = (startTime: string, endTime: string) => {
 const toDateOnlyString = (date: Date) =>
   date.toISOString().split("T")[0];
 
+const HOLD_DURATION_SECONDS = 7 * 60;
+
+const formatCountdown = (totalSeconds: number) => {
+  const clamped = Math.max(0, totalSeconds);
+  const minutes = Math.floor(clamped / 60)
+    .toString()
+    .padStart(2, "0");
+  const seconds = (clamped % 60).toString().padStart(2, "0");
+
+  return `${minutes}:${seconds}`;
+};
+
 export default function BadmintonBookings() {
   const [courts, setCourts] = useState<CourtCard[]>([]);
   const [workingDays, setWorkingDays] = useState<BookingDay[]>([]);
@@ -93,10 +106,13 @@ export default function BadmintonBookings() {
   >({});
 
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isCloseConfirmOpen, setIsCloseConfirmOpen] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerPhoneError, setCustomerPhoneError] = useState("");
   const [holdIds, setHoldIds] = useState<string[]>([]);
+  const [holdExpiresAt, setHoldExpiresAt] = useState<number | null>(null);
+  const [remainingSeconds, setRemainingSeconds] = useState(HOLD_DURATION_SECONDS);
 
   const [loading, setLoading] = useState(false);
 
@@ -281,6 +297,37 @@ export default function BadmintonBookings() {
   }, [selectedDate]);
 
   /* -------------------------------------------------------------------------- */
+  /* Hold countdown                                                             */
+  /* -------------------------------------------------------------------------- */
+
+  useEffect(() => {
+    if (!isBookingModalOpen || !holdExpiresAt) return;
+
+    const updateRemaining = () => {
+      const secondsLeft = Math.max(
+        0,
+        Math.round((holdExpiresAt - Date.now()) / 1000)
+      );
+      setRemainingSeconds(secondsLeft);
+      return secondsLeft;
+    };
+
+    if (updateRemaining() <= 0) {
+      window.location.reload();
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      if (updateRemaining() <= 0) {
+        window.clearInterval(interval);
+        window.location.reload();
+      }
+    }, 1000);
+
+    return () => window.clearInterval(interval);
+  }, [isBookingModalOpen, holdExpiresAt]);
+
+  /* -------------------------------------------------------------------------- */
   /* Past slot                                                                  */
   /* -------------------------------------------------------------------------- */
 
@@ -288,7 +335,7 @@ export default function BadmintonBookings() {
     slotTime: string,
     selectedDateIndex: number
   ) => {
-    if (selectedDateIndex !== 0) return false;
+    if (!displayedDays[selectedDateIndex]?.isToday) return false;
 
     const startTime = slotTime.split(" - ")[0];
 
@@ -317,12 +364,38 @@ export default function BadmintonBookings() {
   /* Close modal                                                                */
   /* -------------------------------------------------------------------------- */
 
-  const closeBookingModal = () => {
+  const requestCloseBookingModal = () => {
+    setIsCloseConfirmOpen(true);
+  };
+
+  const cancelCloseBookingModal = () => {
+    setIsCloseConfirmOpen(false);
+  };
+
+  const confirmCloseBookingModal = async () => {
+    if (remainingSeconds <= 0) {
+      window.location.reload();
+      return;
+    }
+
+    setIsCloseConfirmOpen(false);
     setIsBookingModalOpen(false);
     setCustomerName("");
     setCustomerPhone("");
     setCustomerPhoneError("");
     setHoldIds([]);
+    setHoldExpiresAt(null);
+    setSelectedSlotsByCourt({});
+
+    setPageAlert({
+      visible: true,
+      variant: "warning",
+      title: "Slots still on hold",
+      description:
+        "Your selected slots are still reserved for a few more minutes. If you don't complete the booking, they will automatically become available again once the 7-minute hold expires.",
+    });
+
+    await refreshSelectedDateSlots();
   };
 
   /* -------------------------------------------------------------------------- */
@@ -431,7 +504,20 @@ export default function BadmintonBookings() {
         );
       }
 
+      const firstExpiresAt = Array.isArray(holdItems)
+        ? holdItems[0]?.expiresAt
+        : null;
+
+      const nowMs = new Date().getTime();
+      const expiresAtMs = firstExpiresAt
+        ? new Date(firstExpiresAt).getTime()
+        : nowMs + HOLD_DURATION_SECONDS * 1000;
+
       setHoldIds(holdIds);
+      setHoldExpiresAt(expiresAtMs);
+      setRemainingSeconds(
+        Math.max(0, Math.round((expiresAtMs - nowMs) / 1000))
+      );
       setIsBookingModalOpen(true);
     } catch (error) {
       const message =
@@ -495,7 +581,7 @@ export default function BadmintonBookings() {
 
     setCustomerPhoneError("");
 
-    if (holdIds.length === 0) {
+    if (remainingSeconds <= 0 || holdIds.length === 0) {
       setPageAlert({
         visible: true,
         variant: "warning",
@@ -530,8 +616,11 @@ export default function BadmintonBookings() {
       });
 
       setSelectedSlotsByCourt({});
-
-      closeBookingModal();
+      setIsBookingModalOpen(false);
+      setCustomerName("");
+      setCustomerPhone("");
+      setHoldIds([]);
+      setHoldExpiresAt(null);
     } catch (error) {
       const message =
         (error as any)?.response?.data
@@ -1731,21 +1820,35 @@ export default function BadmintonBookings() {
 
                   <button
                     type="button"
-                    onClick={async () => {
-                      closeBookingModal();
-                      setCustomerName("");
-                      setCustomerPhone("");
-                      setSelectedSlotsByCourt(
-                        {}
-                      );
-
-                      await refreshSelectedDateSlots();
-                    }}
+                    disabled={loading}
+                    onClick={requestCloseBookingModal}
                     aria-label="Close booking review"
-                    className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm transition hover:border-[#A65A2A] hover:bg-[#fff8ef] hover:text-[#A65A2A] sm:h-10 sm:w-10"
+                    className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm transition hover:border-[#A65A2A] hover:bg-[#fff8ef] hover:text-[#A65A2A] disabled:opacity-50 disabled:cursor-not-allowed sm:h-10 sm:w-10"
                   >
                     <X size={18} />
                   </button>
+                </div>
+
+                {/* Countdown */}
+                <div
+                  className={`mt-4 flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-sm font-bold ${
+                    remainingSeconds <= 60
+                      ? "border-red-200 bg-red-50 text-red-700"
+                      : "border-amber-200 bg-amber-50 text-amber-700"
+                  }`}
+                >
+                  <Clock3 size={15} />
+                  {remainingSeconds > 0 ? (
+                    <span>
+                      Slots held for{" "}
+                      <span className="tabular-nums">
+                        {formatCountdown(remainingSeconds)}
+                      </span>{" "}
+                      minutes
+                    </span>
+                  ) : (
+                    <span>Your hold has expired. Please select the slots again.</span>
+                  )}
                 </div>
 
                 <div className="mt-4 flex items-center gap-2 overflow-x-auto text-[10px] font-bold sm:text-xs">
@@ -2041,7 +2144,7 @@ export default function BadmintonBookings() {
 
                     <button
                       type="button"
-                      disabled={loading}
+                      disabled={loading || remainingSeconds <= 0}
                       onClick={
                         handleConfirmBooking
                       }
@@ -2069,6 +2172,55 @@ export default function BadmintonBookings() {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+
+      {/* ====================================================================== */}
+      {/* CLOSE CONFIRMATION DIALOG                                              */}
+      {/* ====================================================================== */}
+
+      {isCloseConfirmOpen &&
+        createPortal(
+          <div className="fixed inset-0 z-[9999999999] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
+            <div className="w-full max-w-sm rounded-2xl border border-amber-200 bg-white p-6 shadow-2xl">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+                  <AlertTriangle size={20} />
+                </div>
+
+                <div>
+                  <h3 className="text-base font-bold text-gray-900">Close this booking?</h3>
+
+                  <p className="mt-1.5 text-sm text-gray-600">
+                    Your selected slots will stay reserved for{" "}
+                    <span className="font-bold text-amber-700">
+                      {formatCountdown(remainingSeconds)}
+                    </span>{" "}
+                    minutes, then they'll automatically become available to other customers
+                    again.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 flex gap-3">
+                <button
+                  type="button"
+                  onClick={cancelCloseBookingModal}
+                  className="h-11 flex-1 cursor-pointer rounded-xl border border-gray-200 bg-white text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                >
+                  Keep Booking
+                </button>
+
+                <button
+                  type="button"
+                  onClick={confirmCloseBookingModal}
+                  className="h-11 flex-1 cursor-pointer rounded-xl bg-amber-500 text-sm font-semibold text-white transition hover:bg-amber-600"
+                >
+                  Close Anyway
+                </button>
               </div>
             </div>
           </div>,
