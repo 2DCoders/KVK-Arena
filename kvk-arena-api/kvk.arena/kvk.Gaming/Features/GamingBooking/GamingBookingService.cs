@@ -422,7 +422,7 @@ public class GamingBookingService : IGamingBookingService
                 CustomerPhone = hold.CustomerPhone,
                 Amount = hold.Amount,
                 BookingDate = hold.BookingDate,
-                Status = GamingBookingStatus.Pending,
+                Status = GamingBookingStatus.Confirmed,
                 PaymentIntentId = paymentIntentId,
                 PaymentType = PaymentTypes.Card,
                 AdditionalPurchases = hold.AdditionalPurchases.Select(ap => new GamingBookingAdditionalPurchase
@@ -532,7 +532,7 @@ public class GamingBookingService : IGamingBookingService
                     CustomerPhone = request.CustomerDetails.PhoneNumber ?? hold.CustomerPhone,
                     Amount = hold.Amount,
                     BookingDate = hold.BookingDate,
-                    Status = GamingBookingStatus.Pending,
+                    Status = GamingBookingStatus.Confirmed,
                     PaymentIntentId = request.PaymentIntentId ?? string.Empty,
                     PaymentType = request.CustomerDetails.PaymentType,
                     AdditionalPurchases = hold.AdditionalPurchases.Select(ap => new GamingBookingAdditionalPurchase
