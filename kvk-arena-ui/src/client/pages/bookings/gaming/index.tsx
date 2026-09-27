@@ -709,7 +709,7 @@ export default function BookingGaming() {
     .map((station) => station.name);
 
   return (
-    <section className="bg-gray-50 pt-25 pb-10">
+    <section className="bg-gray-50 pt-15 md:pt-25 pb-10">
       {/* Alert */}
       {pageAlert.visible && (
         <Alert
@@ -746,7 +746,7 @@ export default function BookingGaming() {
               {categories.length === 0 ? (
                 <div className="text-sm text-gray-500">Loading categories...</div>
               ) : (
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
                   {categories.map((category) => {
                     const Icon = getCategoryIcon(category.code);
 
@@ -759,19 +759,19 @@ export default function BookingGaming() {
                           setSelectedSlots([]);
                           setSelectedStations([]);
                         }}
-                        className={`text-left cursor-pointer rounded-2xl border-2 p-4 transition-all ${
+                        className={`text-left cursor-pointer rounded-xl border-2 p-3 transition-all sm:rounded-2xl sm:p-4 ${
                           selectedCategory?.id === category.id
                             ? "border-red-500 bg-red-50 shadow-md"
                             : "border-gray-200 bg-white hover:border-red-300"
                         }`}
                       >
-                        <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center mb-3">
-                          <Icon className="w-5 h-5 text-red-600" />
+                        <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center mb-2 sm:w-10 sm:h-10 sm:rounded-xl sm:mb-3">
+                          <Icon className="w-4 h-4 text-red-600 sm:w-5 sm:h-5" />
                         </div>
 
-                        <h4 className="font-bold text-sm text-gray-900">{category.name}</h4>
+                        <h4 className="font-bold text-xs text-gray-900 sm:text-sm">{category.name}</h4>
 
-                        <div className="mt-2 font-semibold text-red-600 text-sm">
+                        <div className="mt-1 font-semibold text-red-600 text-xs sm:mt-2 sm:text-sm">
                           Rs. {category.price}
                         </div>
                       </button>
@@ -790,7 +790,7 @@ export default function BookingGaming() {
               {workingDays.length === 0 ? (
                 <div className="text-sm text-gray-500">Loading available dates...</div>
               ) : (
-                <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
+                <div className="grid grid-cols-7 gap-1 sm:gap-2">
                   {workingDays.map((date, index) => (
                     <button
                       key={index}
@@ -799,19 +799,19 @@ export default function BookingGaming() {
                         setSelectedSlots([]);
                         setSelectedStations([]);
                       }}
-                      className={`h-20 cursor-pointer rounded-xl border-2 flex flex-col items-center justify-center transition ${
+                      className={`cursor-pointer rounded-lg border-2 flex flex-col items-center justify-center py-2.5 transition sm:h-16 sm:rounded-xl sm:py-0 md:h-20 ${
                         selectedDate === index
                           ? "border-red-500 bg-red-500 text-white"
                           : "border-gray-200 bg-white hover:border-red-300"
                       }`}
                     >
                       {date.isToday && (
-                        <div className="text-[9px] font-bold mb-1">TODAY</div>
+                        <div className="text-[7px] font-bold mb-0.5 sm:text-[9px] sm:mb-1">TODAY</div>
                       )}
 
-                      <p className="text-[10px] font-semibold">{date.day}</p>
-                      <p className="text-lg font-bold">{date.date}</p>
-                      <p className="text-[10px]">{date.month}</p>
+                      <p className="text-[8px] font-semibold sm:text-[10px]">{date.day}</p>
+                      <p className="text-sm font-bold sm:text-lg">{date.date}</p>
+                      <p className="text-[8px] sm:text-[10px]">{date.month}</p>
                     </button>
                   ))}
                 </div>
@@ -981,7 +981,7 @@ export default function BookingGaming() {
 
           {/* SUMMARY */}
           <div>
-            <div className="sticky top-24 bg-white rounded-2xl border border-gray-200 p-6 shadow-sm mt-10">
+            <div className="lg:sticky lg:top-24 bg-white rounded-2xl border border-gray-200 p-5 sm:p-6 shadow-sm mt-6 lg:mt-10">
               <h3 className="text-xl font-bold mb-5">Booking Summary</h3>
 
               <div className="space-y-4">
@@ -1204,23 +1204,23 @@ export default function BookingGaming() {
                   <h4 className="text-sm font-bold text-gray-900 mb-3">Order Summary</h4>
 
                   <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Service</span>
-                      <span className="font-semibold text-gray-900">
+                    <div className="flex justify-between gap-3">
+                      <span className="shrink-0 text-gray-500">Service</span>
+                      <span className="min-w-0 truncate text-right font-semibold text-gray-900">
                         {selectedCategory?.name}
                       </span>
                     </div>
 
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Stations</span>
-                      <span className="font-semibold text-gray-900 text-right">
+                    <div className="flex justify-between gap-3">
+                      <span className="shrink-0 text-gray-500">Stations</span>
+                      <span className="max-w-[60%] text-right font-semibold text-gray-900">
                         {selectedStationNames.join(", ")}
                       </span>
                     </div>
 
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Time</span>
-                      <span className="font-semibold text-gray-900">{selectedTimeRange}</span>
+                    <div className="flex justify-between gap-3">
+                      <span className="shrink-0 text-gray-500">Time</span>
+                      <span className="text-right font-semibold text-gray-900">{selectedTimeRange}</span>
                     </div>
 
                     <div className="border-t border-gray-200 mt-3 pt-3 flex justify-between items-center">

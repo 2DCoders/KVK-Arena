@@ -69,7 +69,7 @@ export default function Movies() {
   const swiperRef = useRef<SwiperType | null>(null);
 
   return (
-    <section className="bg-black py-8">
+    <section className="bg-black py-6 sm:py-8">
       <div className="container mx-auto px-4">
         <Swiper
           modules={[Autoplay]}
@@ -84,7 +84,7 @@ export default function Movies() {
         >
           {movies.map((movie) => (
             <SwiperSlide key={movie.id}>
-              <div className="relative h-[700px] overflow-hidden rounded-3xl py-10">
+              <div className="relative h-[520px] overflow-hidden rounded-2xl py-6 sm:h-[600px] sm:rounded-3xl sm:py-10 lg:h-[700px]">
                 {/* Background */}
                 <img
                   src={movie.background}
@@ -102,27 +102,27 @@ export default function Movies() {
                 {/* <div className="absolute left-0 top-0 h-full w-full bg-[radial-gradient(circle_at_25%_50%,rgba(59,130,246,0),transparent_10%),radial-gradient(circle_at_80%_30%,rgba(239,68,68,0.3),transparent_40%)]" /> */}
 
                 {/* Content */}
-                <div className="relative z-10 flex h-full items-center px-8 lg:px-16 py-10">
-                  <div className="max-w-2xl">
-                    <h2 className="text-5xl font-black uppercase text-white lg:text-7xl">
+                <div className="relative z-10 flex h-full items-center px-5 py-6 sm:px-8 sm:py-10 lg:px-16">
+                  <div className="max-w-full sm:max-w-xl lg:max-w-2xl">
+                    <h2 className="text-2xl font-black uppercase leading-tight text-white sm:text-4xl lg:text-7xl">
                       {movie.title}
                     </h2>
 
-                    <h3 className="mt-3 text-2xl font-bold uppercase tracking-wide text-white lg:text-4xl">
+                    <h3 className="mt-2 text-base font-bold uppercase tracking-wide text-white sm:mt-3 sm:text-xl lg:text-4xl">
                       {movie.subtitle}
                     </h3>
 
-                    <p className="mt-6 max-w-xl text-base leading-relaxed text-gray-300 lg:text-lg">
+                    <p className="mt-3 max-w-xl text-xs leading-relaxed text-gray-300 line-clamp-3 sm:mt-6 sm:text-base sm:line-clamp-none lg:text-lg">
                       {movie.description}
                     </p>
 
                     {/* Rating & IMDB */}
-                    <div className="mt-8 flex items-center gap-6">
-                      <div className="flex gap-1">
+                    <div className="mt-5 flex flex-wrap items-center gap-3 sm:mt-8 sm:gap-6">
+                      <div className="flex gap-0.5 sm:gap-1">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <span
                             key={star}
-                            className={`text-2xl ${
+                            className={`text-base sm:text-2xl ${
                               star <= movie.rating
                                 ? "text-yellow-400"
                                 : "text-gray-600"
@@ -133,28 +133,28 @@ export default function Movies() {
                         ))}
                       </div>
 
-                      <div className="h-6 w-px bg-white/20" />
+                      <div className="h-5 w-px bg-white/20 sm:h-6" />
 
                       <div className="flex items-center gap-2">
-                        <span className="rounded bg-[#F5C518] px-2 py-1 text-xs font-bold text-black">
+                        <span className="rounded bg-[#F5C518] px-2 py-1 text-[10px] font-bold text-black sm:text-xs">
                           IMDb
                         </span>
 
-                        <span className="text-lg font-semibold text-white">
+                        <span className="text-sm font-semibold text-white sm:text-lg">
                           {movie.imdb}/10
                         </span>
                       </div>
                     </div>
 
                     {/* Buttons */}
-                    <div className="mt-10 flex flex-wrap gap-4">
+                    <div className="mt-6 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:gap-4">
 
-                      <a href="#bookings">
-                        <button className="rounded-xl cursor-pointer bg-red-600 px-8 py-4 font-semibold text-white transition hover:bg-red-500">
+                      <a href="#bookings" className="w-full sm:w-auto">
+                        <button className="w-full rounded-xl cursor-pointer bg-red-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-red-500 sm:w-auto sm:px-8 sm:py-4 sm:text-base">
                           Book Now
                         </button>
                       </a>
-                      <button className="rounded-xl cursor-pointer border border-white/10 bg-white/5 px-8 py-4 font-semibold text-white backdrop-blur-md transition hover:border-white/30">
+                      <button className="w-full rounded-xl cursor-pointer border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold text-white backdrop-blur-md transition hover:border-white/30 sm:w-auto sm:px-8 sm:py-4 sm:text-base">
                         View More
                       </button>
                     </div>
@@ -172,14 +172,14 @@ export default function Movies() {
           </div>
           <button
             onClick={() => swiperRef.current?.slidePrev()}
-            className="flex h-12 w-12 items-center justify-center cursor-pointer rounded-full border border-white/20 bg-white/5 text-white transition hover:bg-white/10"
+            className="flex h-10 w-10 shrink-0 items-center justify-center cursor-pointer rounded-full border border-white/20 bg-white/5 text-white transition hover:bg-white/10 sm:h-12 sm:w-12"
           >
             <ChevronLeft />
           </button>
 
           <button
             onClick={() => swiperRef.current?.slideNext()}
-            className="flex h-12 w-12 items-center justify-center cursor-pointer rounded-full border border-white/20 bg-white/5 text-white transition hover:bg-white/10"
+            className="flex h-10 w-10 shrink-0 items-center justify-center cursor-pointer rounded-full border border-white/20 bg-white/5 text-white transition hover:bg-white/10 sm:h-12 sm:w-12"
           >
             <ChevronRight />
           </button>
