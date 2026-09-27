@@ -265,7 +265,7 @@ public class BookingService : IBookingService
                 CourtSlotId = hold.CourtSlotId,
                 BookingDate = hold.BookingDate,
                 BookingAmount = hold.Amount,
-                Status = BookingStatus.Pending,
+                Status = BookingStatus.Confirmed,
                 CustomerName = customerDetails.CustomerName,
                 PhoneNumber = customerDetails.PhoneNumber,
                 PaymentId = paymentIntentId,
@@ -376,7 +376,7 @@ public class BookingService : IBookingService
                     CourtSlotId = hold.CourtSlotId,
                     BookingDate = hold.BookingDate,
                     BookingAmount = hold.Amount,
-                    Status = BookingStatus.Pending,
+                    Status = BookingStatus.Confirmed,
                     CustomerName = request.CustomerDetails.CustomerName,
                     PhoneNumber = request.CustomerDetails.PhoneNumber,
                     PaymentId = request.PaymentIntentId, 
@@ -503,6 +503,85 @@ public class BookingService : IBookingService
         {
             return Result.Failure($"Cleanup failed: {ex.Message}");
         }
+    }
+
+    public async Task<List<BookingListResponse>> GetBookingsListAsync(GetBookingsListRequest request,
+        CancellationToken ct = default)
+    {
+        var query = _db.CourtBookings
+            .Include(b => b.Court)
+            .Include(b => b.CourtSlot)
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+        {
+            query = query.Where(b => b.BookingNumber.Contains(request.SearchTerm) ||
+                                      b.CustomerName.Contains(request.SearchTerm) ||
+                                      b.PhoneNumber.Contains(request.SearchTerm));
+        }
+
+        if (request.CourtId.HasValue && request.CourtId != Guid.Empty)
+        {
+            query = query.Where(b => b.CourtId == request.CourtId.Value);
+        }
+
+        if (request.Status.HasValue)
+        {
+            query = query.Where(b => b.Status == request.Status.Value);
+        }
+
+        if (request.FromDate.HasValue)
+        {
+            query = query.Where(b => b.BookingDate >= request.FromDate.Value);
+        }
+
+        if (request.ToDate.HasValue)
+        {
+            query = query.Where(b => b.BookingDate <= request.ToDate.Value);
+        }
+
+        var bookings = await query
+            .OrderByDescending(b => b.CreatedAt)
+            .Skip((request.PageNumber - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .ToListAsync(ct);
+
+        return bookings.Select(booking => new BookingListResponse
+        {
+            Id = booking.Id,
+            BookingNumber = booking.BookingNumber,
+            CourtId = booking.CourtId,
+            CourtName = booking.Court.Name,
+            CourtSlotId = booking.CourtSlotId,
+            SlotDate = booking.BookingDate,
+            SlotStartTime = booking.CourtSlot.StartTime,
+            SlotEndTime = booking.CourtSlot.EndTime,
+            CustomerName = booking.CustomerName,
+            PhoneNumber = booking.PhoneNumber,
+            BookingAmount = booking.BookingAmount,
+            Status = booking.Status,
+            CreatedAt = booking.CreatedAt,
+            PaymentType = booking.PaymentType
+        }).ToList();
+    }
+
+    public async Task<Result> FixStalePendingBookingsAsync(CancellationToken ct = default)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Now);
+
+        var stalePendingBookings = await _db.CourtBookings
+            .Where(b => b.Status == BookingStatus.Pending && b.BookingDate >= today)
+            .ToListAsync(ct);
+
+        foreach (var booking in stalePendingBookings)
+        {
+            booking.Status = BookingStatus.Confirmed;
+        }
+
+        await _db.SaveChangesAsync(ct);
+
+        return Result.Success($"Updated {stalePendingBookings.Count} booking(s) from Pending to Confirmed.");
     }
 
     private async Task<bool> CheckAvailabilityInternalAsync(Guid slotId, DateOnly date, CancellationToken ct)

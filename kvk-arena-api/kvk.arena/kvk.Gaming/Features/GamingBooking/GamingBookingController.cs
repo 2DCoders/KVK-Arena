@@ -126,6 +126,13 @@ public class GamingBookingController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("internal/fix-stale-pending")]
+    public async Task<IActionResult> FixStalePendingBookings(CancellationToken cancellationToken = default)
+    {
+        var result = await _service.FixStalePendingBookingsAsync(cancellationToken);
+        return Ok(result);
+    }
+
     [HttpPost("reverse")]
     public async Task<IActionResult> ReversePendingPayment([FromBody] GamingPendingPaymentDeleteRequest request, CancellationToken cancellationToken = default)
     {

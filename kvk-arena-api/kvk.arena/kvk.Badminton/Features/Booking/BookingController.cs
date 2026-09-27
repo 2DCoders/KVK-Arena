@@ -90,6 +90,20 @@ public class BookingController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("internal/fix-stale-pending")]
+    public async Task<IActionResult> FixStalePendingBookings(CancellationToken ct)
+    {
+        var result = await _service.FixStalePendingBookingsAsync(ct);
+        return Ok(result);
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<List<BookingListResponse>>> GetBookingsList([FromQuery] GetBookingsListRequest request, CancellationToken ct = default)
+    {
+        var result = await _service.GetBookingsListAsync(request, ct);
+        return Ok(result);
+    }
+
     [HttpPost("reverse")]
     public async Task<IActionResult> ReversePendingPayment([FromBody] BadmintonPendingPaymentDeleteRequest request, CancellationToken ct)
     {

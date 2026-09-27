@@ -668,6 +668,24 @@ public class GamingBookingService : IGamingBookingService
         };
     }
 
+    public async Task<Result> FixStalePendingBookingsAsync(CancellationToken cancellationToken = default)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Now);
+
+        var stalePendingBookings = await _db.GamingBookings
+            .Where(b => b.Status == GamingBookingStatus.Pending && b.BookingDate >= today)
+            .ToListAsync(cancellationToken);
+
+        foreach (var booking in stalePendingBookings)
+        {
+            booking.Status = GamingBookingStatus.Confirmed;
+        }
+
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return Result.Success($"Updated {stalePendingBookings.Count} booking(s) from Pending to Confirmed.");
+    }
+
     public async Task<List<GamingBookingResponse>> GetGamingBookingsListAsync(GetGamingBookingsListRequest request,
         CancellationToken cancellationToken = default)
     {

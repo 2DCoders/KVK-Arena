@@ -19,4 +19,5 @@ public interface IGamingBookingService
     Task<Result> ProcessMultiPaymentSuccessAsync(MultiGamingPaymentRequest request, CancellationToken cancellationToken = default);
     Task VerifyPaymentNotificationAsync(PaymentNotificationRequest request, CancellationToken cancellationToken = default);
     Task<Result> DeletePendingPayment(GamingPendingPaymentDeleteRequest request, CancellationToken cancellationToken = default);
+    Task<Result> FixStalePendingBookingsAsync(CancellationToken cancellationToken = default);
 }

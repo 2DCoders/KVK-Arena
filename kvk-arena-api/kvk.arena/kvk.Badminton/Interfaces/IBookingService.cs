@@ -13,4 +13,6 @@ public interface IBookingService
     Task VerifyPaymentNotificationAsync(PaymentNotificationRequest request, CancellationToken ct = default);
     Task<Result> CleanupExpiredHoldsAsync(CancellationToken ct = default);
     Task<Result> DeletePendingPayment(BadmintonPendingPaymentDeleteRequest request, CancellationToken ct = default);
+    Task<List<BookingListResponse>> GetBookingsListAsync(GetBookingsListRequest request, CancellationToken ct = default);
+    Task<Result> FixStalePendingBookingsAsync(CancellationToken ct = default);
 }
