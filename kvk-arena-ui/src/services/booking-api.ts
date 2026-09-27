@@ -12,12 +12,15 @@ const getToken = () => {
   return cashier ? cashier.token : null;
 };
 
+const getAuthHeaders = () => {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 export const bookingSlots = async (bookingData: any) => {
     try {
         const response = await axios.post(`${BOOKING_API_URL}multi-hold`, bookingData, {
-            headers: {
-                Authorization: `Bearer ${getToken()}`,
-            },
+            headers: getAuthHeaders(),
         });
         return response.data;
     } catch (error) {
@@ -28,9 +31,7 @@ export const bookingSlots = async (bookingData: any) => {
 export const confirmBooking = async (customerData: any) => {
     try {
         const response = await axios.post(`${BOOKING_API_URL}confirm-multi`, customerData, {
-            headers: {
-                Authorization: `Bearer ${getToken()}`,
-            },
+            headers: getAuthHeaders(),
         });
         return response.data;
     } catch (error) {

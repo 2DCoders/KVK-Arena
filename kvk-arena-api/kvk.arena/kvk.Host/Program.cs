@@ -180,6 +180,14 @@ var app = builder.Build();
 // }
 
 
+// CORS must run before any middleware that can short-circuit the pipeline
+// (tenant/auth checks below), otherwise a 401/403/500 response they write
+// directly will be missing CORS headers and the browser reports it as a
+// CORS failure instead of the real status code.
+app.UseHttpsRedirection();
+app.UseRouting();
+app.UseCors();
+
 // Error handling middleware (should be first to catch all errors)
 
 
@@ -215,14 +223,11 @@ if (app.Environment.IsDevelopment())
 }
 
 
-app.UseHttpsRedirection();
-app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseHangfireDashboard("/hangfire");
 
-app.UseCors();
 app.MapControllers();
 
 // Log startup information
