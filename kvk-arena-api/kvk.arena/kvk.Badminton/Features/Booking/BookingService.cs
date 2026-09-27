@@ -562,7 +562,8 @@ public class BookingService : IBookingService
             BookingAmount = booking.BookingAmount,
             Status = booking.Status,
             CreatedAt = booking.CreatedAt,
-            PaymentType = booking.PaymentType
+            PaymentType = booking.PaymentType,
+            Notes = booking.Notes
         }).ToList();
     }
 

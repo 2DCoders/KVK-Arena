@@ -693,6 +693,8 @@ public class GamingBookingService : IGamingBookingService
             .Include(b => b.GamingSlot)
             .ThenInclude(gs => gs.GamingStation)
             .ThenInclude(station => station.GamingCategory)
+            .Include(b => b.AdditionalPurchases)
+            .ThenInclude(ap => ap.AdditionalPurchase)
             .AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
@@ -751,7 +753,15 @@ public class GamingBookingService : IGamingBookingService
             Status = booking.Status,
             CreatedAt = booking.CreatedAt,
             LastModifiedAt = booking.LastModifiedAt,
-            PaymentType = booking.PaymentType
+            PaymentType = booking.PaymentType,
+            AdditionalPurchases = booking.AdditionalPurchases.Select(ap => new GamingBookingAdditionalPurchaseResponse
+            {
+                Id = ap.Id,
+                AdditionalPurchaseId = ap.AdditionalPurchaseId,
+                Name = ap.AdditionalPurchase.Name,
+                Quantity = ap.Quantity,
+                UnitPrice = ap.UnitPrice
+            }).ToList()
         }).ToList();
 
         return responses;

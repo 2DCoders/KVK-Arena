@@ -18,4 +18,5 @@ public class BookingListResponse
     public BookingStatus Status { get; set; }
     public DateTime CreatedAt { get; set; }
     public PaymentTypes PaymentType { get; set; }
+    public string? Notes { get; set; }
 }
