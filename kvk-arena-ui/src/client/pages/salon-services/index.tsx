@@ -1,145 +1,62 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
+  AlertCircle,
   ArrowRight,
   ChevronLeft,
   ChevronRight,
   Clock3,
-  Droplets,
-  Gem,
-  Hand,
-  Palette,
-  Scissors,
+  ImageOff,
+  Loader2,
   Sparkles,
-  Star,
-  UserRound,
-  Waves,
   X,
-  type LucideIcon,
 } from "lucide-react";
+import { getSalonServiceItems } from "@/services/salon-service-api";
 
 type SalonService = {
   id: string;
   name: string;
-  category: string;
-  icon: LucideIcon;
   image: string;
   price: number;
   duration: number;
-  summary: string;
   description: string;
-  popular?: boolean;
 };
 
-const SALON_SERVICES: SalonService[] = [
-  {
-    id: "haircut-styling",
-    name: "Haircut & Styling",
-    category: "Hair",
-    icon: Scissors,
-    image:
-      "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80",
-    price: 1500,
-    duration: 45,
-    summary: "Precision cuts and finishing styled to suit your face and look.",
-    description:
-      "A full consultation, wash, precision cut and blow-dry finish tailored to your hair type and lifestyle. Our stylists take the time to understand the look you want before the first snip, so you leave with a cut that's easy to style and built to last between visits.",
-    popular: true,
-  },
-  {
-    id: "hair-coloring",
-    name: "Hair Coloring",
-    category: "Hair",
-    icon: Palette,
-    image:
-      "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80",
-    price: 4500,
-    duration: 90,
-    summary: "Full colour, balayage or root touch-up with premium products.",
-    description:
-      "From a subtle root touch-up to a complete colour transformation, our colourists use premium, low-ammonia formulas to protect hair health while delivering rich, long-lasting tone. Includes a patch test, colour consultation and a nourishing post-colour treatment.",
-  },
-  {
-    id: "facial-treatment",
-    name: "Facial Treatment",
-    category: "Skin",
-    icon: Sparkles,
-    image:
-      "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80",
-    price: 3500,
-    duration: 60,
-    summary: "Deep cleansing facial that leaves skin refreshed and glowing.",
-    description:
-      "A relaxing, deep-cleansing facial built around your skin type — cleansing, exfoliation, extraction, mask and moisturise. Designed to brighten dull skin, calm irritation and leave you with a healthy, natural glow you can see immediately.",
-    popular: true,
-  },
-  {
-    id: "manicure-pedicure",
-    name: "Manicure & Pedicure",
-    category: "Nails",
-    icon: Hand,
-    image:
-      "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80",
-    price: 2800,
-    duration: 75,
-    summary: "Hand and foot care with shaping, buffing and polish.",
-    description:
-      "A full hand and foot treatment including soak, exfoliation, cuticle care, shaping and your choice of polish finish. A relaxing pause that leaves your hands and feet looking neat, cared for and camera-ready.",
-  },
-  {
-    id: "deep-tissue-massage",
-    name: "Deep Tissue Massage",
-    category: "Body",
-    icon: Waves,
-    image:
-      "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80",
-    price: 5000,
-    duration: 60,
-    summary: "Targeted massage to release tension and relax the body.",
-    description:
-      "A firm, targeted massage designed to work through muscle tension and everyday stress. Our therapists focus on problem areas while keeping the session comfortable, leaving you loose, calm and recharged.",
-  },
-  {
-    id: "bridal-makeup",
-    name: "Bridal Makeup",
-    category: "Makeup",
-    icon: Gem,
-    image:
-      "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?auto=format&fit=crop&w=800&q=80",
-    price: 12000,
-    duration: 120,
-    summary: "Full bridal look with trial, styling and long-lasting finish.",
-    description:
-      "A complete bridal beauty experience — pre-event trial, skin prep, HD makeup application and hairstyling designed to photograph beautifully and last the whole event. Every detail is planned around your outfit, venue and personal style.",
-    popular: true,
-  },
-  {
-    id: "beard-grooming",
-    name: "Beard Grooming",
-    category: "Grooming",
-    icon: UserRound,
-    image:
-      "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=crop&w=800&q=80",
-    price: 1200,
-    duration: 30,
-    summary: "Sharp beard trim and shape with a hot towel finish.",
-    description:
-      "A precision beard trim and shape-up finished with a hot towel and skin-friendly balm. Quick, sharp and reliable — perfect on its own or paired with a haircut for a complete refresh.",
-  },
-  {
-    id: "hair-spa-keratin",
-    name: "Hair Spa & Keratin",
-    category: "Hair",
-    icon: Droplets,
-    image:
-      "https://images.unsplash.com/photo-1633681926022-84c23e8cb2d6?auto=format&fit=crop&w=800&q=80",
-    price: 6500,
-    duration: 100,
-    summary: "Deep-repair spa and smoothing treatment for damaged hair.",
-    description:
-      "An intensive repair treatment combining a nourishing hair spa massage with a smoothing keratin infusion. Ideal for dry, frizzy or damaged hair — it restores softness, cuts down styling time and leaves hair visibly smoother for weeks.",
-  },
-];
+const DEFAULT_IMAGE_MIME_TYPE = "image/jpeg";
+
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80";
+
+const DEFAULT_DESCRIPTION =
+  "Our team will walk you through everything this service includes during your visit.";
+
+const getImageSource = (image?: string | null) => {
+  if (!image) return FALLBACK_IMAGE;
+
+  const value = image.trim();
+
+  if (!value) return FALLBACK_IMAGE;
+
+  if (
+    value.startsWith("data:image/") ||
+    value.startsWith("blob:") ||
+    value.startsWith("http://") ||
+    value.startsWith("https://")
+  ) {
+    return value;
+  }
+
+  return `data:${DEFAULT_IMAGE_MIME_TYPE};base64,${value}`;
+};
+
+const normalizeService = (item: any): SalonService => ({
+  id: String(item.id),
+  name: String(item.name ?? "Salon Service"),
+  image: getImageSource(item.image),
+  price: Number(item.price ?? 0),
+  duration: Number(item.durationMinutes ?? 0),
+  description: String(item.description ?? "").trim() || DEFAULT_DESCRIPTION,
+});
 
 const formatDuration = (minutes: number) => {
   if (minutes < 60) return `${minutes} min`;
@@ -155,8 +72,41 @@ const scrollToBooking = () => {
 };
 
 export default function SalonServices() {
-  const [selectedService, setSelectedService] = useState<SalonService | null>(null);
+  const [services, setServices] = useState<SalonService[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [selectedService, setSelectedService] = useState<SalonService | null>(
+    null,
+  );
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        setIsLoading(true);
+        setErrorMessage("");
+
+        const response = await getSalonServiceItems();
+        const rows = Array.isArray(response.data) ? response.data : [];
+
+        setServices(
+          rows
+            .filter((item: any) => item.isActive !== false)
+            .map(normalizeService),
+        );
+      } catch (error) {
+        console.error("Unable to load salon services:", error);
+        setErrorMessage(
+          "We couldn't load our services right now. Please try again shortly.",
+        );
+        setServices([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void loadServices();
+  }, []);
 
   const scroll = (direction: "left" | "right") => {
     if (!scrollRef.current) return;
@@ -166,6 +116,8 @@ export default function SalonServices() {
       behavior: "smooth",
     });
   };
+
+  const showScrollControls = !isLoading && !errorMessage && services.length > 0;
 
   return (
     <section className="relative overflow-hidden bg-[linear-gradient(180deg,#ffffff,#faf5ff,#f5f0ff)] py-14 sm:py-20 lg:py-24">
@@ -207,37 +159,55 @@ export default function SalonServices() {
         {/* =========================================
             SCROLL CONTROLS
         ========================================= */}
-        <div className="flex items-center justify-end gap-2 sm:gap-3">
-          <button
-            type="button"
-            onClick={() => scroll("left")}
-            aria-label="Scroll services left"
-            className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-purple-200 bg-white text-purple-600 shadow-sm transition-all hover:-translate-y-1 hover:border-purple-400 hover:bg-purple-50 sm:h-12 sm:w-12"
-          >
-            <ChevronLeft size={18} />
-          </button>
+        {showScrollControls && (
+          <div className="flex items-center justify-end gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={() => scroll("left")}
+              aria-label="Scroll services left"
+              className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-purple-200 bg-white text-purple-600 shadow-sm transition-all hover:-translate-y-1 hover:border-purple-400 hover:bg-purple-50 sm:h-12 sm:w-12"
+            >
+              <ChevronLeft size={18} />
+            </button>
 
-          <button
-            type="button"
-            onClick={() => scroll("right")}
-            aria-label="Scroll services right"
-            className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-purple-200 bg-white text-purple-600 shadow-sm transition-all hover:-translate-y-1 hover:border-purple-400 hover:bg-purple-50 sm:h-12 sm:w-12"
-          >
-            <ChevronRight size={18} />
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() => scroll("right")}
+              aria-label="Scroll services right"
+              className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-purple-200 bg-white text-purple-600 shadow-sm transition-all hover:-translate-y-1 hover:border-purple-400 hover:bg-purple-50 sm:h-12 sm:w-12"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        )}
 
         {/* =========================================
             SERVICES — HORIZONTAL SCROLL
         ========================================= */}
-        <div
-          ref={scrollRef}
-          className="mt-4 flex gap-4 overflow-x-auto scroll-smooth pb-4 scrollbar-hide sm:gap-6"
-        >
-          {SALON_SERVICES.map((service) => {
-            const Icon = service.icon;
-
-            return (
+        {isLoading ? (
+          <StateMessage
+            icon={<Loader2 size={26} className="animate-spin" />}
+            title="Loading our services..."
+            description="Hang tight while we bring in the latest menu."
+          />
+        ) : errorMessage ? (
+          <StateMessage
+            icon={<AlertCircle size={26} />}
+            title="Something went wrong"
+            description={errorMessage}
+          />
+        ) : services.length === 0 ? (
+          <StateMessage
+            icon={<ImageOff size={26} />}
+            title="No services available yet"
+            description="Please check back soon — our menu is being updated."
+          />
+        ) : (
+          <div
+            ref={scrollRef}
+            className="mt-4 flex gap-4 overflow-x-auto scroll-smooth pb-4 scrollbar-hide sm:gap-6"
+          >
+            {services.map((service) => (
               <article
                 key={service.id}
                 className="group relative flex min-w-[240px] max-w-[240px] shrink-0 flex-col overflow-hidden rounded-3xl border border-purple-100 bg-white shadow-[0_10px_30px_rgba(124,58,237,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(124,58,237,0.16)] sm:min-w-[300px] sm:max-w-[300px]"
@@ -253,30 +223,19 @@ export default function SalonServices() {
 
                   <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/0 to-transparent" />
 
-                  {service.popular && (
-                    <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-purple-700 shadow-sm">
-                      <Star size={10} className="fill-purple-600 text-purple-600" />
-                      Popular
-                    </span>
-                  )}
-
                   <span className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-purple-600 shadow-sm">
-                    <Icon size={16} />
+                    <Sparkles size={16} />
                   </span>
                 </div>
 
                 {/* Content */}
                 <div className="flex flex-1 flex-col p-4 sm:p-5">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-purple-500">
-                    {service.category}
-                  </p>
-
-                  <h3 className="mt-1.5 text-base font-bold text-slate-900 sm:text-lg">
+                  <h3 className="text-base font-bold text-slate-900 sm:text-lg">
                     {service.name}
                   </h3>
 
                   <p className="mt-1.5 line-clamp-2 text-xs leading-5 text-slate-500 sm:text-sm">
-                    {service.summary}
+                    {service.description}
                   </p>
 
                   <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
@@ -300,9 +259,9 @@ export default function SalonServices() {
                   </button>
                 </div>
               </article>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {selectedService &&
@@ -317,6 +276,28 @@ export default function SalonServices() {
   );
 }
 
+function StateMessage({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="mt-8 flex flex-col items-center justify-center rounded-3xl border border-purple-100 bg-white/70 px-6 py-16 text-center">
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-50 text-purple-500">
+        {icon}
+      </div>
+
+      <h3 className="font-semibold text-slate-900">{title}</h3>
+
+      <p className="mt-1 max-w-sm text-sm text-slate-500">{description}</p>
+    </div>
+  );
+}
+
 function ServiceDetailsModal({
   service,
   onClose,
@@ -324,8 +305,6 @@ function ServiceDetailsModal({
   service: SalonService;
   onClose: () => void;
 }) {
-  const Icon = service.icon;
-
   useEffect(() => {
     document.body.style.overflow = "hidden";
 
@@ -366,19 +345,8 @@ function ServiceDetailsModal({
 
           <div className="absolute bottom-4 left-4 right-4 flex items-center gap-2">
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-purple-600 shadow-sm">
-              <Icon size={18} />
+              <Sparkles size={18} />
             </span>
-
-            <span className="rounded-full bg-white/95 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-purple-700 shadow-sm">
-              {service.category}
-            </span>
-
-            {service.popular && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-purple-600 px-2.5 py-1 text-[10px] font-bold text-white shadow-sm">
-                <Star size={10} className="fill-white text-white" />
-                Popular
-              </span>
-            )}
           </div>
         </div>
 

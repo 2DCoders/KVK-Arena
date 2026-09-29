@@ -16,16 +16,14 @@ public class SaloonServiceItemService : ISaloonServiceItemService
         _db = db ?? throw new ArgumentNullException(nameof(db));
     }
 
-    public async Task<IEnumerable<SaloonServiceItemResponse>> GetAllAsync(Guid saloonId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<SaloonServiceItemResponse>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _db.SaloonServices
             .AsNoTracking()
-            .Where(s => s.SaloonId == saloonId)
             .OrderBy(s => s.CreatedAt)
             .Select(s => new SaloonServiceItemResponse
             {
                 Id = s.Id,
-                SaloonId = s.SaloonId,
                 Name = s.Name,
                 Description = s.Description,
                 Price = s.Price,
@@ -67,9 +65,6 @@ public class SaloonServiceItemService : ISaloonServiceItemService
         if (string.IsNullOrWhiteSpace(request.Name))
             return Result.Failure("Service name is required");
 
-        if (request.SaloonId == Guid.Empty)
-            return Result.Failure("Saloon ID is required");
-            
         if (request.Price < 0)
             return Result.Failure("Price cannot be negative");
 
@@ -85,7 +80,6 @@ public class SaloonServiceItemService : ISaloonServiceItemService
 
             var serviceItem = new SaloonService
             {
-                SaloonId = request.SaloonId,
                 Name = request.Name,
                 Description = request.Description,
                 Price = request.Price,
@@ -178,7 +172,6 @@ public class SaloonServiceItemService : ISaloonServiceItemService
         return new SaloonServiceItemResponse
         {
             Id = serviceItem.Id,
-            SaloonId = serviceItem.SaloonId,
             Name = serviceItem.Name,
             Description = serviceItem.Description,
             Price = serviceItem.Price,

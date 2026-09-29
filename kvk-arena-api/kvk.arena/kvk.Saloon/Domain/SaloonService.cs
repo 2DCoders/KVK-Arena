@@ -4,8 +4,6 @@ namespace kvk.Saloon.Domain;
 
 public class SaloonService : AuditableEntity
 {
-    public Guid SaloonId { get; set; }
-
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
 
@@ -18,8 +16,6 @@ public class SaloonService : AuditableEntity
     public bool IsActive { get; set; } = true;
 
     public byte[]? Image { get; set; }
-
-    public virtual Saloon Saloon { get; set; } = null!;
 
     public virtual ICollection<SaloonStaffService> StaffServices { get; set; }
         = new List<SaloonStaffService>();

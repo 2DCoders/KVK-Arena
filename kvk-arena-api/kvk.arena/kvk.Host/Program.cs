@@ -240,7 +240,16 @@ using (var scope = app.Services.CreateScope())
     var backgroundProcessorInitializers = scopedServices.GetServices<IBackgroundProcessorInitializer>();
     foreach (var initializer in backgroundProcessorInitializers)
     {
-        await initializer.InitializeAsync(scopedServices, logger);
+        try
+        {
+            await initializer.InitializeAsync(scopedServices, logger);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex,
+                "Background processor initializer {Initializer} failed to initialize; the API will continue starting without it.",
+                initializer.GetType().Name);
+        }
     }
 }
 

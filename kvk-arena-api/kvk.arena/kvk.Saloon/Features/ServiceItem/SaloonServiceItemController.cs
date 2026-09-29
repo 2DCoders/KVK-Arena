@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace kvk.Saloon.Features.ServiceItem;
 
 [ApiController]
-[Route("api/saloon/saloons/{saloonId:guid}/service-items")]
+[Route("api/saloon/service-items")]
 public class SaloonServiceItemController : ControllerBase
 {
     private readonly ISaloonServiceItemService _service;
@@ -15,24 +15,22 @@ public class SaloonServiceItemController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll(Guid saloonId, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        var serviceItems = await _service.GetAllAsync(saloonId, cancellationToken);
+        var serviceItems = await _service.GetAllAsync(cancellationToken);
         return Ok(serviceItems);
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid saloonId, Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _service.GetByIdAsync(id, cancellationToken);
         return Ok(result);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(Guid saloonId, [FromForm] SaloonServiceItemCreateRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create([FromForm] SaloonServiceItemCreateRequest request, CancellationToken cancellationToken)
     {
-        request.SaloonId = saloonId;
-
         var result = await _service.CreateAsync(request, cancellationToken);
 
         if (!result.Succeeded)
@@ -42,7 +40,7 @@ public class SaloonServiceItemController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid saloonId, Guid id, [FromForm] SaloonServiceItemUpdateRequest request,
+    public async Task<IActionResult> Update(Guid id, [FromForm] SaloonServiceItemUpdateRequest request,
         CancellationToken cancellationToken)
     {
         if (id != request.Id)
@@ -57,7 +55,7 @@ public class SaloonServiceItemController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid saloonId, Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         var result = await _service.DeleteAsync(id, cancellationToken);
 
