@@ -18,7 +18,7 @@ public  class OfferRateCreateRequest
 
     public decimal? RateCafe { get; set; } = int.MinValue;
 
-    public decimal? RateRetail { get; set; } = int.MinValue;
+    public decimal? RateSalon { get; set; } = int.MinValue;
 
     public decimal? Price { get; set; } = int.MinValue;
 

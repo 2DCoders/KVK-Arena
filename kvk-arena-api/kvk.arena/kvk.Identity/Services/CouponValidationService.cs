@@ -101,8 +101,8 @@ public class CouponValidationService : ICouponValidationService
                 discountRate = eligibleOffer.OfferRate.RateCafe ?? 0;
                 break;
 
-            case "retail":
-                discountRate = eligibleOffer.OfferRate.RateRetail ?? 0;
+            case "salon":
+                discountRate = eligibleOffer.OfferRate.RateSalon ?? 0;
                 break;
 
             default:
@@ -227,8 +227,8 @@ public class CouponValidationService : ICouponValidationService
                 discountRate = eligibleOffer.OfferRate.RateCafe ?? 0;
                 break;
 
-            case "retail":
-                discountRate = eligibleOffer.OfferRate.RateRetail ?? 0;
+            case "salon":
+                discountRate = eligibleOffer.OfferRate.RateSalon ?? 0;
                 break;
 
             default:

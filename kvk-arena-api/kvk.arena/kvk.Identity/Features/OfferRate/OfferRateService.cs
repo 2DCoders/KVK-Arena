@@ -37,7 +37,7 @@ public class OfferRateService : IOfferRateService
             RateCarWash = request.RateCarWash,
             RateGaming = request.RateGaming,
             RateCafe = request.RateCafe,
-            RateRetail = request.RateRetail,
+            RateSalon = request.RateSalon,
             Price = request.Price,
             IsPurchaseRequired = request.IsPurchaseRequired,
             IsActive = request.IsActive,
@@ -70,7 +70,7 @@ public class OfferRateService : IOfferRateService
         existRate.RateCarWash = request.RateCarWash;
         existRate.RateGaming = request.RateGaming;
         existRate.RateCafe = request.RateCafe;
-        existRate.RateRetail = request.RateRetail;
+        existRate.RateSalon = request.RateSalon;
         existRate.Price = request.Price;
         existRate.IsPurchaseRequired = request.IsPurchaseRequired;
         existRate.IsActive = request.IsActive;
@@ -131,7 +131,7 @@ public class OfferRateService : IOfferRateService
                 RateCarWash = x.RateCarWash,
                 RateGaming = x.RateGaming,
                 RateCafe = x.RateCafe,
-                RateRetail = x.RateRetail,
+                RateSalon = x.RateSalon,
                 Price = x.Price,
                 IsPurchaseRequired = x.IsPurchaseRequired,
                 IsActive = x.IsActive,
@@ -155,7 +155,7 @@ public class OfferRateService : IOfferRateService
                 RateCarWash = x.RateCarWash,
                 RateGaming = x.RateGaming,
                 RateCafe = x.RateCafe,
-                RateRetail = x.RateRetail,
+                RateSalon = x.RateSalon,
                 Price = x.Price,
                 IsPurchaseRequired = x.IsPurchaseRequired,
                 IsActive = x.IsActive,

@@ -31,7 +31,7 @@ public class IdentitySeeder
                 ModuleConstants.CarWash, 
                 ModuleConstants.BadmintonCourt, 
                 ModuleConstants.GamingCenter, 
-                ModuleConstants.Retail 
+                ModuleConstants.Salon
             };
 
             foreach (var moduleName in moduleNames)
