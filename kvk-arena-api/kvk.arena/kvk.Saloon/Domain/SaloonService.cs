@@ -17,6 +17,8 @@ public class SaloonService : AuditableEntity
 
     public bool IsActive { get; set; } = true;
 
+    public byte[]? Image { get; set; }
+
     public virtual Saloon Saloon { get; set; } = null!;
 
     public virtual ICollection<SaloonStaffService> StaffServices { get; set; }

@@ -29,10 +29,9 @@ public class SaloonServiceItemController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(Guid saloonId, [FromBody] SaloonServiceItemCreateRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create(Guid saloonId, [FromForm] SaloonServiceItemCreateRequest request, CancellationToken cancellationToken)
     {
-        if (request.SaloonId != saloonId)
-            return BadRequest("SaloonId mismatch");
+        request.SaloonId = saloonId;
 
         var result = await _service.CreateAsync(request, cancellationToken);
 
@@ -43,7 +42,7 @@ public class SaloonServiceItemController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid saloonId, Guid id, [FromBody] SaloonServiceItemUpdateRequest request,
+    public async Task<IActionResult> Update(Guid saloonId, Guid id, [FromForm] SaloonServiceItemUpdateRequest request,
         CancellationToken cancellationToken)
     {
         if (id != request.Id)

@@ -10,5 +10,5 @@ public class SaloonServiceItemResponse
     public int DurationMinutes { get; set; }
     public int BufferMinutes { get; set; }
     public bool IsActive { get; set; }
-    
+    public byte[]? Image { get; set; }
 }

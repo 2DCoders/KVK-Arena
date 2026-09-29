@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+
 namespace kvk.Saloon.Features.ServiceItem;
 
 public class SaloonServiceItemUpdateRequest
@@ -9,4 +11,5 @@ public class SaloonServiceItemUpdateRequest
     public int DurationMinutes { get; set; }
     public int BufferMinutes { get; set; }
     public bool IsActive { get; set; }
+    public IFormFile? Image { get; set; }
 }

@@ -32,6 +32,7 @@ public class SaloonServiceItemService : ISaloonServiceItemService
                 DurationMinutes = s.DurationMinutes,
                 BufferMinutes = s.BufferMinutes,
                 IsActive = s.IsActive,
+                Image = s.Image,
             })
             .ToListAsync(cancellationToken);
     }
@@ -74,6 +75,14 @@ public class SaloonServiceItemService : ISaloonServiceItemService
 
         try
         {
+            byte[]? imageBytes = null;
+            if (request.Image is not null && request.Image.Length > 0)
+            {
+                using var memoryStream = new MemoryStream();
+                await request.Image.CopyToAsync(memoryStream, cancellationToken);
+                imageBytes = memoryStream.ToArray();
+            }
+
             var serviceItem = new SaloonService
             {
                 SaloonId = request.SaloonId,
@@ -82,7 +91,8 @@ public class SaloonServiceItemService : ISaloonServiceItemService
                 Price = request.Price,
                 DurationMinutes = request.DurationMinutes,
                 BufferMinutes = request.BufferMinutes,
-                IsActive = request.IsActive
+                IsActive = request.IsActive,
+                Image = imageBytes
             };
 
             _db.Set<SaloonService>().Add(serviceItem);
@@ -121,6 +131,13 @@ public class SaloonServiceItemService : ISaloonServiceItemService
             serviceItem.DurationMinutes = request.DurationMinutes;
             serviceItem.BufferMinutes = request.BufferMinutes;
             serviceItem.IsActive = request.IsActive;
+
+            if (request.Image is not null && request.Image.Length > 0)
+            {
+                using var memoryStream = new MemoryStream();
+                await request.Image.CopyToAsync(memoryStream, cancellationToken);
+                serviceItem.Image = memoryStream.ToArray();
+            }
 
             await _db.SaveChangesAsync(cancellationToken);
 
@@ -168,6 +185,7 @@ public class SaloonServiceItemService : ISaloonServiceItemService
             DurationMinutes = serviceItem.DurationMinutes,
             BufferMinutes = serviceItem.BufferMinutes,
             IsActive = serviceItem.IsActive,
+            Image = serviceItem.Image,
         };
     }
 }
