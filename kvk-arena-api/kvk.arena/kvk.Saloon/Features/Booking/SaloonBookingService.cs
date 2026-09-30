@@ -125,8 +125,9 @@ public class SaloonBookingService : ISaloonBookingService
             foreach (var saloon in allSaloons)
             {
                 var overlappingBookings = saloon.Bookings.Where(b => b.BookingDate == request.BookingDate &&
+                    b.Status != kvk.Saloon.Domain.SaloonBookingStatus.Cancelled &&
                     b.StartTime < requestedEndTime && b.EndTime > request.StartTime);
-                
+
                 if (!overlappingBookings.Any())
                 {
                     assignedSaloonId = saloon.Id;
@@ -203,8 +204,9 @@ public class SaloonBookingService : ISaloonBookingService
         foreach (var saloon in allSaloons)
         {
             var overlappingBookings = saloon.Bookings.Where(b => b.BookingDate == request.Date &&
+                b.Status != kvk.Saloon.Domain.SaloonBookingStatus.Cancelled &&
                 b.StartTime < requestedEndTime && b.EndTime > request.Time);
-            
+
             if (!overlappingBookings.Any())
             {
                 assignedSaloonId = saloon.Id;
@@ -243,6 +245,7 @@ public class SaloonBookingService : ISaloonBookingService
             foreach (var saloon in allSaloons)
             {
                 var overlappingBookings = saloon.Bookings.Where(b => b.BookingDate == request.Date &&
+                    b.Status != kvk.Saloon.Domain.SaloonBookingStatus.Cancelled &&
                     b.StartTime < ctEnd && b.EndTime > ct);
                 
                 if (!overlappingBookings.Any())
@@ -254,8 +257,175 @@ public class SaloonBookingService : ISaloonBookingService
             }
         }
         response.SuggestedAlternativeTimes.Sort();
-        
+
         return Result.Success().WithData("Response", response);
+    }
+
+    // Fallback business hours used only when a seat has no SaloonSlotConfiguration
+    // row for the requested day (no admin UI exists yet to manage that table).
+    private static readonly TimeSpan DefaultOpenTime = TimeSpan.FromHours(9);
+    private static readonly TimeSpan DefaultCloseTime = TimeSpan.FromHours(19);
+    private const int DefaultSlotIntervalMinutes = 15;
+
+    public async Task<Result> CheckDayAvailabilityAsync(SaloonDayAvailabilityRequest request, CancellationToken cancellationToken = default)
+    {
+        if (request.SaloonServiceIds == null || !request.SaloonServiceIds.Any())
+            return Result.Failure("At least one service must be selected.");
+
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        if (request.Date < today)
+            return Result.Failure("Cannot check availability for a past date.");
+
+        var distinctServiceIds = request.SaloonServiceIds.Distinct().ToList();
+
+        var services = await _db.Set<kvk.Saloon.Domain.SaloonService>()
+            .Where(s => distinctServiceIds.Contains(s.Id))
+            .ToListAsync(cancellationToken);
+
+        if (services.Count != distinctServiceIds.Count)
+            return Result.Failure("One or more selected services could not be found.");
+
+        var totalDurationMinutes = services.Sum(s => s.DurationMinutes);
+
+        if (totalDurationMinutes <= 0)
+            return Result.Failure("Selected services do not have a valid duration.");
+
+        var dayOfWeek = MapDayOfWeek(request.Date.DayOfWeek);
+
+        var allSaloons = await _db.Set<kvk.Saloon.Domain.Saloon>()
+            .Where(s => s.IsActive)
+            .Include(s => s.Bookings)
+            .Include(s => s.SlotConfigurations)
+            .ToListAsync(cancellationToken);
+
+        if (allSaloons.Count == 0)
+            return Result.Failure("No active seats are configured for booking.");
+
+        var seatWindows = new List<(kvk.Saloon.Domain.Saloon Saloon, TimeSpan Open, TimeSpan Close)>();
+
+        foreach (var saloon in allSaloons)
+        {
+            var config = saloon.SlotConfigurations
+                .Where(c => c.IsActive && c.DayOfWeek == dayOfWeek)
+                .OrderBy(c => c.StartTime)
+                .FirstOrDefault();
+
+            var open = config?.StartTime ?? DefaultOpenTime;
+            var close = config?.EndTime ?? DefaultCloseTime;
+
+            if (close > open)
+                seatWindows.Add((saloon, open, close));
+        }
+
+        var response = new SaloonDayAvailabilityResponse
+        {
+            TotalDurationMinutes = totalDurationMinutes,
+        };
+
+        if (seatWindows.Count == 0)
+        {
+            response.Message = "The salon is closed on this date.";
+            return Result.Success().WithData("Response", response);
+        }
+
+        var globalOpen = seatWindows.Min(w => w.Open);
+        var globalClose = seatWindows.Max(w => w.Close);
+
+        var configuredIntervals = allSaloons
+            .SelectMany(s => s.SlotConfigurations)
+            .Where(c => c.IsActive && c.DayOfWeek == dayOfWeek && c.SlotIntervalMinutes > 0)
+            .Select(c => c.SlotIntervalMinutes)
+            .ToList();
+
+        var stepMinutes = configuredIntervals.Count > 0 ? configuredIntervals.Min() : DefaultSlotIntervalMinutes;
+
+        var earliestStart = globalOpen;
+
+        if (request.Date == today)
+        {
+            var now = DateTime.Now.TimeOfDay;
+            var roundedNowMinutes = Math.Ceiling(now.TotalMinutes / stepMinutes) * stepMinutes;
+            var roundedNow = TimeSpan.FromMinutes(roundedNowMinutes);
+
+            if (roundedNow > earliestStart)
+                earliestStart = roundedNow;
+        }
+
+        var serviceDuration = TimeSpan.FromMinutes(totalDurationMinutes);
+        var stepSpan = TimeSpan.FromMinutes(stepMinutes);
+        var availableStarts = new List<TimeSpan>();
+
+        for (var candidate = earliestStart; candidate.Add(serviceDuration) <= globalClose; candidate = candidate.Add(stepSpan))
+        {
+            var candidateEnd = candidate.Add(serviceDuration);
+
+            var seatFree = seatWindows.Any(w =>
+                candidate >= w.Open &&
+                candidateEnd <= w.Close &&
+                !w.Saloon.Bookings.Any(b =>
+                    b.BookingDate == request.Date &&
+                    b.Status != kvk.Saloon.Domain.SaloonBookingStatus.Cancelled &&
+                    b.StartTime < candidateEnd && b.EndTime > candidate));
+
+            if (seatFree)
+                availableStarts.Add(candidate);
+        }
+
+        if (availableStarts.Count == 0)
+        {
+            response.Message = "No available time slots for the selected services on this date.";
+            return Result.Success().WithData("Response", response);
+        }
+
+        response.IsAvailable = true;
+        response.NextAvailableStartTime = availableStarts[0];
+
+        var windows = new List<SaloonAvailableWindow>();
+        var windowStart = availableStarts[0];
+        var previous = availableStarts[0];
+
+        foreach (var time in availableStarts.Skip(1))
+        {
+            if ((time - previous) <= stepSpan)
+            {
+                previous = time;
+                continue;
+            }
+
+            windows.Add(new SaloonAvailableWindow { From = windowStart, To = previous });
+            windowStart = time;
+            previous = time;
+        }
+
+        windows.Add(new SaloonAvailableWindow { From = windowStart, To = previous });
+        response.AvailableWindows = windows;
+
+        var firstWindow = windows[0];
+        response.Message = firstWindow.From == firstWindow.To
+            ? $"Available at {FormatTime(firstWindow.From)}."
+            : $"Available from {FormatTime(firstWindow.From)} onwards.";
+
+        return Result.Success().WithData("Response", response);
+    }
+
+    private static string FormatTime(TimeSpan time)
+    {
+        return DateTime.Today.Add(time).ToString("h:mm tt");
+    }
+
+    private static kvk.Badminton.Features.CourtBookingTemporary.DaysOfWeek MapDayOfWeek(DayOfWeek dayOfWeek)
+    {
+        return dayOfWeek switch
+        {
+            DayOfWeek.Monday => kvk.Badminton.Features.CourtBookingTemporary.DaysOfWeek.Monday,
+            DayOfWeek.Tuesday => kvk.Badminton.Features.CourtBookingTemporary.DaysOfWeek.Tuesday,
+            DayOfWeek.Wednesday => kvk.Badminton.Features.CourtBookingTemporary.DaysOfWeek.Wednesday,
+            DayOfWeek.Thursday => kvk.Badminton.Features.CourtBookingTemporary.DaysOfWeek.Thursday,
+            DayOfWeek.Friday => kvk.Badminton.Features.CourtBookingTemporary.DaysOfWeek.Friday,
+            DayOfWeek.Saturday => kvk.Badminton.Features.CourtBookingTemporary.DaysOfWeek.Saturday,
+            DayOfWeek.Sunday => kvk.Badminton.Features.CourtBookingTemporary.DaysOfWeek.Sunday,
+            _ => throw new ArgumentOutOfRangeException(nameof(dayOfWeek)),
+        };
     }
 
     public async Task<Result> UpdateAsync(SaloonBookingUpdateRequest request, CancellationToken cancellationToken = default)
@@ -340,6 +510,7 @@ public class SaloonBookingService : ISaloonBookingService
             foreach (var saloon in allSaloons)
             {
                 var overlappingBookings = saloon.Bookings.Where(b => b.BookingDate == request.BookingDate && b.Id != booking.Id &&
+                    b.Status != kvk.Saloon.Domain.SaloonBookingStatus.Cancelled &&
                     b.StartTime < requestedEndTime && b.EndTime > request.StartTime);
                 
                 if (!overlappingBookings.Any())

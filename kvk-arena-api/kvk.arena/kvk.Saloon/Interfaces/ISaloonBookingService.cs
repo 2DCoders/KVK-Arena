@@ -11,6 +11,8 @@ public interface ISaloonBookingService
 
     Task<Result> CheckAvailabilityAsync(SaloonBookingAvailabilityRequest request, CancellationToken cancellationToken = default);
 
+    Task<Result> CheckDayAvailabilityAsync(SaloonDayAvailabilityRequest request, CancellationToken cancellationToken = default);
+
     Task<Result> CreateAsync(SaloonBookingCreateRequest request, CancellationToken cancellationToken = default);
 
     Task<Result> UpdateAsync(SaloonBookingUpdateRequest request, CancellationToken cancellationToken = default);

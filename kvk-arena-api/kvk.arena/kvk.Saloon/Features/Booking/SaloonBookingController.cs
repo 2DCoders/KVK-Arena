@@ -50,6 +50,17 @@ public class SaloonBookingController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("~/api/saloon/bookings/day-availability")]
+    public async Task<IActionResult> CheckDayAvailability([FromQuery] SaloonDayAvailabilityRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _service.CheckDayAvailabilityAsync(request, cancellationToken);
+
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] SaloonBookingUpdateRequest request,
         CancellationToken cancellationToken)
