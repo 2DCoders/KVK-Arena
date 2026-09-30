@@ -76,6 +76,17 @@ public class BookingController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("create-multi")] // Initiates PayHere payment for an existing batch of holds (from multi-hold)
+    public async Task<IActionResult> CreateMultiPayment([FromBody] MultiBookingPaymentRequest request, CancellationToken ct)
+    {
+        var result = await _service.CreateMultiPaymentAsync(request, ct);
+
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
     [HttpPost("notify")]
     public async Task<IActionResult> PaymentNotification([FromForm] PaymentNotificationRequest request, CancellationToken ct)
     {

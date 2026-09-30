@@ -35,3 +35,18 @@ export const confirmGamingBooking = async (customerData: any) => {
     throw error;
   }
 };
+
+export const createGamingMultiPayment = async (body: {
+  holdIds: string[];
+  customerName: string;
+  phoneNumber: string;
+}) => {
+  try {
+    const response = await axios.post(`${GAMING_BOOKING_API_URL}create-multi-payment`, body, {
+      headers: getAuthHeaders(),
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

@@ -20,7 +20,8 @@ import { getGamingCategories } from "@/services/gaming-category-api";
 import { getGamingStationsByCategory } from "@/services/gaming-station-api";
 import { getGamingSlotAvailability } from "@/services/gaming-slot-api";
 import { getAdditionalPurchasesByCategory } from "@/services/additional-purchase-api";
-import { holdGamingBookingSlots, confirmGamingBooking } from "@/services/gaming-booking-api";
+import { holdGamingBookingSlots, confirmGamingBooking, createGamingMultiPayment } from "@/services/gaming-booking-api";
+import { startPayHereCheckout } from "@/services/payhere";
 import Alert from "@/components/alert";
 
 type GamingCategory = {
@@ -660,47 +661,122 @@ export default function BookingGaming() {
 
     setIsConfirming(true);
 
+    const trimmedName = customerName.trim();
+    const trimmedPhone = customerPhone.trim();
+
+    const finalizeAfterPayment = async () => {
+      try {
+        await confirmGamingBooking({
+          holdIds,
+          customerDetails: {
+            customerName: trimmedName,
+            phoneNumber: trimmedPhone,
+            paymentType: 2,
+          },
+        });
+
+        setPageAlert({
+          visible: true,
+          variant: "success",
+          title: "Booking confirmed",
+          description: "The gaming booking was confirmed successfully.",
+        });
+
+        setSelectedSlots([]);
+        setSelectedStations([]);
+        setPurchaseQuantities({});
+        setIsBookingModalOpen(false);
+        setCustomerName("");
+        setCustomerPhone("");
+        setHoldIds([]);
+        setHoldExpiresAt(null);
+
+        await refreshStationSlots();
+      } catch (error) {
+        const message =
+          (error as any)?.response?.data?.message ||
+          (error as any)?.message ||
+          "Unable to confirm the booking.";
+
+        setPageAlert({
+          visible: true,
+          variant: "error",
+          title: "Confirmation failed",
+          description: message,
+        });
+      } finally {
+        setIsConfirming(false);
+      }
+    };
+
     try {
-      await confirmGamingBooking({
+      const paymentResponse = await createGamingMultiPayment({
         holdIds,
-        customerDetails: {
-          customerName: customerName.trim(),
-          phoneNumber: customerPhone.trim(),
-          paymentType,
+        customerName: trimmedName,
+        phoneNumber: trimmedPhone,
+      });
+
+      const payment =
+        paymentResponse?.additionalData?.response ??
+        paymentResponse?.response ??
+        paymentResponse;
+
+      startPayHereCheckout(
+        {
+          orderId: payment.orderId,
+          merchantId: payment.merchantId,
+          currency: payment.currency,
+          amount: payment.amount,
+          hash: payment.hash,
+          items: "Gaming Booking",
+          firstName: trimmedName,
+          phone: trimmedPhone,
+          notifyPath: "gaming-m/gaming-bookings/notify",
         },
-      });
+        {
+          onCompleted: () => {
+            void finalizeAfterPayment();
+          },
+          onDismissed: () => {
+            setIsConfirming(false);
+            setPageAlert({
+              visible: true,
+              variant: "warning",
+              title: "Payment cancelled",
+              description:
+                "Your selected slots are still held for a few more minutes. Complete payment to confirm your booking.",
+            });
+          },
+          onError: () => {
+            setIsConfirming(false);
+            setPageAlert({
+              visible: true,
+              variant: "error",
+              title: "Payment failed",
+              description:
+                "Something went wrong while processing your payment. Please try again.",
+            });
+          },
+        },
+      );
 
-      setPageAlert({
-        visible: true,
-        variant: "success",
-        title: "Booking confirmed",
-        description: "The gaming booking was confirmed successfully.",
-      });
-
-      setSelectedSlots([]);
-      setSelectedStations([]);
-      setPurchaseQuantities({});
-      setIsBookingModalOpen(false);
-      setCustomerName("");
-      setCustomerPhone("");
-      setHoldIds([]);
-      setHoldExpiresAt(null);
-
-      await refreshStationSlots();
+      // Hand off to the PayHere popup — turn off our own overlay so it isn't
+      // hidden behind it while the customer completes payment.
+      setIsConfirming(false);
     } catch (error) {
+      setIsConfirming(false);
+
       const message =
         (error as any)?.response?.data?.message ||
         (error as any)?.message ||
-        "Unable to confirm the booking.";
+        "Unable to initiate payment.";
 
       setPageAlert({
         visible: true,
         variant: "error",
-        title: "Confirmation failed",
+        title: "Payment initiation failed",
         description: message,
       });
-    } finally {
-      setIsConfirming(false);
     }
   };
 

@@ -18,9 +18,10 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { getCourts } from "@/services/court-api";
-import { bookingSlots, confirmBooking } from "@/services/booking-api";
+import { bookingSlots, confirmBooking, createBadmintonMultiPayment } from "@/services/booking-api";
 import { getNextWorkingDays } from "@/services/holidays-api";
 import { getCourtSlotsAvailability } from "@/services/court-slot-api";
+import { startPayHereCheckout } from "@/services/payhere";
 import Alert from "@/components/alert";
 import { createPortal } from "react-dom";
 
@@ -595,53 +596,126 @@ export default function BadmintonBookings() {
 
     setLoading(true);
 
+    const trimmedName = customerName.trim();
+    const trimmedPhone = customerPhone.trim();
+
+    const finalizeAfterPayment = async () => {
+      try {
+        await confirmBooking({
+          holdIds,
+          customerDetails: {
+            customerName: trimmedName,
+            phoneNumber: trimmedPhone,
+            paymentType: 2,
+          },
+        });
+
+        setPageAlert({
+          visible: true,
+          variant: "success",
+          title: "Booking confirmed",
+          description:
+            "The badminton booking was confirmed successfully.",
+        });
+
+        setSelectedSlotsByCourt({});
+        setIsBookingModalOpen(false);
+        setCustomerName("");
+        setCustomerPhone("");
+        setHoldIds([]);
+        setHoldExpiresAt(null);
+      } catch (error) {
+        const message =
+          (error as any)?.response?.data
+            ?.message ||
+          (error as any)?.message ||
+          "Unable to confirm the booking.";
+
+        setPageAlert({
+          visible: true,
+          variant: "error",
+          title: "Confirmation failed",
+          description: message,
+        });
+      } finally {
+        setLoading(false);
+
+        setCustomerName("");
+        setCustomerPhone("");
+        setSelectedSlotsByCourt({});
+
+        await refreshSelectedDateSlots();
+      }
+    };
+
     try {
-      await confirmBooking({
+      const paymentResponse = await createBadmintonMultiPayment({
         holdIds,
-        customerDetails: {
-          customerName:
-            customerName.trim(),
-          phoneNumber:
-            customerPhone.trim(),
-          paymentType: 1,
+        customerName: trimmedName,
+        phoneNumber: trimmedPhone,
+      });
+
+      const payment =
+        paymentResponse?.additionalData?.response ??
+        paymentResponse?.response ??
+        paymentResponse;
+
+      startPayHereCheckout(
+        {
+          orderId: payment.orderId,
+          merchantId: payment.merchantId,
+          currency: payment.currency,
+          amount: payment.amount,
+          hash: payment.hash,
+          items: "Badminton Court Booking",
+          firstName: trimmedName,
+          phone: trimmedPhone,
+          notifyPath: "badminton/bookings/notify",
         },
-      });
+        {
+          onCompleted: () => {
+            void finalizeAfterPayment();
+          },
+          onDismissed: () => {
+            setLoading(false);
+            setPageAlert({
+              visible: true,
+              variant: "warning",
+              title: "Payment cancelled",
+              description:
+                "Your selected slots are still held for a few more minutes. Complete payment to confirm your booking.",
+            });
+          },
+          onError: () => {
+            setLoading(false);
+            setPageAlert({
+              visible: true,
+              variant: "error",
+              title: "Payment failed",
+              description:
+                "Something went wrong while processing your payment. Please try again.",
+            });
+          },
+        },
+      );
 
-      setPageAlert({
-        visible: true,
-        variant: "success",
-        title: "Booking confirmed",
-        description:
-          "The badminton booking was confirmed successfully.",
-      });
-
-      setSelectedSlotsByCourt({});
-      setIsBookingModalOpen(false);
-      setCustomerName("");
-      setCustomerPhone("");
-      setHoldIds([]);
-      setHoldExpiresAt(null);
+      // Hand off to the PayHere popup — turn off our own overlay so it isn't
+      // hidden behind it while the customer completes payment.
+      setLoading(false);
     } catch (error) {
+      setLoading(false);
+
       const message =
-        (error as any)?.response?.data
-          ?.message ||
+        (error as any)?.response?.data?.message ||
         (error as any)?.message ||
-        "Unable to confirm the booking.";
+        "Unable to initiate payment.";
 
       setPageAlert({
         visible: true,
         variant: "error",
-        title: "Confirmation failed",
+        title: "Payment initiation failed",
         description: message,
       });
-    } finally {
-      setLoading(false);
-
-      setCustomerName("");
-      setCustomerPhone("");
-      setSelectedSlotsByCourt({});
-
-      await refreshSelectedDateSlots();
     }
   };
 

@@ -38,3 +38,18 @@ export const confirmBooking = async (customerData: any) => {
         throw error;
     }
 }
+
+export const createBadmintonMultiPayment = async (body: {
+    holdIds: string[];
+    customerName: string;
+    phoneNumber: string;
+}) => {
+    try {
+        const response = await axios.post(`${BOOKING_API_URL}create-multi`, body, {
+            headers: getAuthHeaders(),
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}

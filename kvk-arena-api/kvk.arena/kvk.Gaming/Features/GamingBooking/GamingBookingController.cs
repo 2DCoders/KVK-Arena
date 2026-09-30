@@ -48,6 +48,17 @@ public class GamingBookingController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("create-multi-payment")] // Initiates PayHere payment for an existing batch of holds (from multi-hold)
+    public async Task<IActionResult> CreateMultiGamingPayment([FromBody] MultiGamingBookingPaymentRequest request, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.CreateMultiGamingPaymentAsync(request, cancellationToken);
+
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
     [HttpPost("confirm/{holdId:guid}")]
     public async Task<IActionResult> ConfirmGamingBooking(Guid holdId, [FromQuery] string paymentIntentId, CancellationToken cancellationToken = default)
     {

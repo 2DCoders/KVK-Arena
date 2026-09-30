@@ -203,14 +203,27 @@ public class BookingService : IBookingService
             _db.Set<BookingHold>().Add(hold);
             await _db.SaveChangesAsync(ct);
 
-            // For card payments, the client is expected to handle payment externally
-            // and then confirm via ProcessPaymentSuccessAsync.
-            // For cash payments, the hold is created and can be confirmed manually or via another process.
+            // Generate a PayHere order id + hash for this hold so the client can launch checkout.
+            // The webhook (VerifyPaymentNotificationAsync) matches back to this hold via PaymentIntentId.
+            var orderId = $"BDM-PAY-{DateTime.Now:yyyyMMddHHmmss}-{Guid.NewGuid().ToString("N")[..6].ToUpper()}";
+            hold.PaymentIntentId = orderId;
+            await _db.SaveChangesAsync(ct);
 
             await transaction.CommitAsync(ct);
 
+            var hash = _hashService.GeneratePayHereHash(
+                _payHereOptions.MerchantId, _payHereOptions.MerchantSecret, orderId, request.Amount,
+                _payHereOptions.Currency);
+
+            var response = MapToResponse(hold);
+            response.MerchantId = _payHereOptions.MerchantId;
+            response.OrderId = orderId;
+            response.Currency = _payHereOptions.Currency;
+            response.Amount = request.Amount.ToString("0.00");
+            response.Hash = hash;
+
             return Result.Success("Single slot held successfully. Awaiting payment confirmation.")
-                .WithData("response", MapToResponse(hold));
+                .WithData("response", response);
         }
         catch (Exception ex)
         {
@@ -424,15 +437,56 @@ public class BookingService : IBookingService
         }
     }
 
+    public async Task<Result> CreateMultiPaymentAsync(MultiBookingPaymentRequest request, CancellationToken ct = default)
+    {
+        if (request.HoldIds == null || request.HoldIds.Count == 0)
+            return Result.Failure("At least one hold id is required.");
+
+        var holds = await _db.BookingHolds
+            .Where(h => request.HoldIds.Contains(h.Id))
+            .ToListAsync(ct);
+
+        if (holds.Count != request.HoldIds.Count)
+            return Result.Failure("One or more holds were not found.");
+
+        if (holds.Any(h => h.Status != BookingHoldStatus.Pending || h.ExpiresAt < DateTime.Now))
+            return Result.Failure("One or more holds have expired. Please select the slots again.");
+
+        var orderId = $"BDM-MPAY-{DateTime.Now:yyyyMMddHHmmss}-{Guid.NewGuid().ToString("N")[..6].ToUpper()}";
+        var totalAmount = holds.Sum(h => h.Amount);
+
+        foreach (var hold in holds)
+        {
+            hold.PaymentIntentId = orderId;
+            hold.CustomerName = request.CustomerName;
+            hold.PhoneNumber = request.PhoneNumber;
+        }
+
+        await _db.SaveChangesAsync(ct);
+
+        var hash = _hashService.GeneratePayHereHash(
+            _payHereOptions.MerchantId, _payHereOptions.MerchantSecret, orderId, totalAmount,
+            _payHereOptions.Currency);
+
+        return Result.Success("Payment initiated.").WithData("response", new BookingPaymentResponse
+        {
+            MerchantId = _payHereOptions.MerchantId,
+            OrderId = orderId,
+            Currency = _payHereOptions.Currency,
+            Amount = totalAmount.ToString("0.00"),
+            Hash = hash
+        });
+    }
+
     public async Task VerifyPaymentNotificationAsync(PaymentNotificationRequest request, CancellationToken ct = default)
     {
-        var record = await _db.CourtBookings
-            .Where(x => x.BookingNumber == request.OrderId && x.Status == BookingStatus.Pending)
-            .FirstOrDefaultAsync(ct);
+        var holds = await _db.BookingHolds
+            .Where(h => h.PaymentIntentId == request.OrderId && h.Status == BookingHoldStatus.Pending)
+            .ToListAsync(ct);
 
-        if (record is null)
+        if (holds.Count == 0)
         {
-            _logger.LogWarning("Pending payment with booking number {OrderId} was not found.", request.OrderId);
+            _logger.LogWarning("Pending booking hold(s) with order id {OrderId} were not found.", request.OrderId);
             return;
         }
 
@@ -459,42 +513,42 @@ public class BookingService : IBookingService
         if (request.StatusCode != 2)
             return;
 
-        if (record.BookingAmount != request.PayhereAmount)
+        var totalAmount = holds.Sum(h => h.Amount);
+        if (totalAmount != request.PayhereAmount)
             return;
 
-        record.Status = BookingStatus.Confirmed;
-        record.PaymentId = request.PaymentId;
-        _db.CourtBookings.Update(record);
-        await _db.SaveChangesAsync(ct);
+        var first = holds[0];
 
-        if (!string.IsNullOrWhiteSpace(record.PhoneNumber))
+        // Reuses the existing, tested multi-hold confirmation logic (idempotent per hold, sends SMS).
+        // Works uniformly whether this order id covers one hold or several.
+        await ProcessMultiPaymentSuccessAsync(new MultiPaymentRequest
         {
-            try
+            HoldIds = holds.Select(h => h.Id).ToList(),
+            CustomerDetails = new CustomerDetails
             {
-                var message = kvk.BuildingBlocks.Constants.MessageList.GetBookingPaymentConfirmedMessage(
-                    record.CustomerName, record.BookingNumber, record.BookingAmount);
-                await _smsService.SendSingleMessageAsync(record.PhoneNumber, message, ct);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to send badminton payment confirmation SMS for booking {BookingNumber}", record.BookingNumber);
-            }
-        }
+                CustomerName = first.CustomerName,
+                PhoneNumber = first.PhoneNumber,
+                PaymentType = PaymentTypes.Card
+            },
+            PaymentIntentId = request.PaymentId
+        }, ct);
     }
 
     public async Task<Result> DeletePendingPayment(BadmintonPendingPaymentDeleteRequest request, CancellationToken ct = default)
     {
-        var record = await _db.CourtBookings
-            .Where(x => x.BookingNumber == request.OrderId && x.Status == BookingStatus.Pending)
-            .FirstOrDefaultAsync(ct);
+        var holds = await _db.BookingHolds
+            .Where(h => h.PaymentIntentId == request.OrderId && h.Status == BookingHoldStatus.Pending)
+            .ToListAsync(ct);
 
-        if (record is null)
-            return Result.Failure($"Pending payment with booking number {request.OrderId} was not found.");
+        if (holds.Count == 0)
+            return Result.Failure($"Pending payment with order id {request.OrderId} was not found.");
 
-        _db.CourtBookings.Remove(record);
+        foreach (var hold in holds)
+            hold.Status = BookingHoldStatus.Expired;
+
         await _db.SaveChangesAsync(ct);
 
-        return Result.Success("Pending payment deleted successfully");
+        return Result.Success("Pending payment reversed successfully");
     }
 
     public async Task<Result> CleanupExpiredHoldsAsync(CancellationToken ct = default)

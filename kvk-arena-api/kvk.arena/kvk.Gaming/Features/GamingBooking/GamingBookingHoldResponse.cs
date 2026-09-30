@@ -14,4 +14,11 @@ public class GamingBookingHoldResponse
     public DateTime? ExpiresAt { get; set; }
     public string? PaymentIntentId { get; set; }
     public string Message { get; set; } = string.Empty;
+
+    // PayHere checkout fields, populated by CreateSingleGamingBookingWithPaymentAsync
+    public string? MerchantId { get; set; }
+    public string? OrderId { get; set; }
+    public string? Currency { get; set; }
+    public string? Amount { get; set; }
+    public string? Hash { get; set; }
 }
