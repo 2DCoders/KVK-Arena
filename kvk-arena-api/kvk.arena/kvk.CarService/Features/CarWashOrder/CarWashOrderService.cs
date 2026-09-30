@@ -1,12 +1,32 @@
 using kvk.BuildingBlocks.Common;
+using kvk.BuildingBlocks.Constants;
+using kvk.BuildingBlocks.Interfaces;
 using kvk.CarService.Domain;
 using kvk.CarService.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace kvk.CarService.Features.CarWashOrder;
 
-public class CarWashOrderService(CarServiceDbContext db) : ICarWashOrderService
+public class CarWashOrderService(CarServiceDbContext db, ISmsService smsService, ILogger<CarWashOrderService> logger) : ICarWashOrderService
 {
+    private async Task SendPaymentReceivedSmsAsync(string? phone, string? customerName, decimal amount,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(phone))
+            return;
+
+        try
+        {
+            var message = MessageList.GetCarWashPaymentReceivedMessage(customerName ?? "Customer", amount);
+            await smsService.SendSingleMessageAsync(phone, message, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to send car wash payment confirmation SMS");
+        }
+    }
+
     public async Task<Result> CreateCarWashOrderAsync(CarWashOrderCreateRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -74,6 +94,8 @@ public class CarWashOrderService(CarServiceDbContext db) : ICarWashOrderService
 
         await db.SaveChangesAsync(cancellationToken);
 
+        if (newOrder.IsPaid)
+            await SendPaymentReceivedSmsAsync(newOrder.CustomerPhone, newOrder.CustomerName, newOrder.DiscountedTotalAmount, cancellationToken);
 
         return Result.Success("Order wash order created.");
     }
@@ -276,14 +298,16 @@ public class CarWashOrderService(CarServiceDbContext db) : ICarWashOrderService
         
         order.CarWashOrderStatus = CarWashOrderStatus.Completed;
         order.IsPaid = true;
-        
-        //calculated spent time 
+
+        //calculated spent time
         order.TotalMinutesSpent = DateTime.Now.Subtract(order.OrderDate).Minutes;
-        
+
         await db.SaveChangesAsync(cancellationToken);
 
+        await SendPaymentReceivedSmsAsync(order.CustomerPhone, order.CustomerName, order.DiscountedTotalAmount, cancellationToken);
+
         return Result.Success("Car wash order completed successfully.");
-        
+
     }
     
 

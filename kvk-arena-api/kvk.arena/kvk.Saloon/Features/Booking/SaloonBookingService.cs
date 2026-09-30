@@ -1,7 +1,10 @@
 using kvk.BuildingBlocks.Common;
+using kvk.BuildingBlocks.Constants;
+using kvk.BuildingBlocks.Interfaces;
 using Kvk.Cafe;
 using kvk.Saloon.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 // For SaloonDbContext
 using DomainBooking = kvk.Saloon.Domain.SaloonBooking;
 using DomainBookingService = kvk.Saloon.Domain.SaloonBookingService;
@@ -11,12 +14,35 @@ namespace kvk.Saloon.Features.Booking;
 public class SaloonBookingService : ISaloonBookingService
 {
     private readonly SaloonDbContext _db;
-    private readonly kvk.BuildingBlocks.Interfaces.IHolidayService _holidayService;
+    private readonly IHolidayService _holidayService;
+    private readonly ISmsService _smsService;
+    private readonly ILogger<SaloonBookingService> _logger;
 
-    public SaloonBookingService(SaloonDbContext db, kvk.BuildingBlocks.Interfaces.IHolidayService holidayService)
+    public SaloonBookingService(SaloonDbContext db, IHolidayService holidayService, ISmsService smsService,
+        ILogger<SaloonBookingService> logger)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
         _holidayService = holidayService ?? throw new ArgumentNullException(nameof(holidayService));
+        _smsService = smsService ?? throw new ArgumentNullException(nameof(smsService));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    private async Task SendBookingConfirmationSmsAsync(DomainBooking booking, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(booking.PhoneNumber))
+            return;
+
+        try
+        {
+            var message = MessageList.GetSalonBookingConfirmedMessage(
+                booking.CustomerName ?? "Customer", booking.BookingDate, booking.StartTime);
+
+            await _smsService.SendSingleMessageAsync(booking.PhoneNumber, message, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send salon booking confirmation SMS for booking {BookingId}", booking.Id);
+        }
     }
 
     public async Task<List<SaloonBookingResponse>> GetBookingsListAsync(GetSaloonBookingsListRequest request, CancellationToken cancellationToken = default)
@@ -192,7 +218,9 @@ public class SaloonBookingService : ISaloonBookingService
             _db.Set<DomainBooking>().Add(booking);
             await _db.SaveChangesAsync(cancellationToken);
 
-            var resultMsg = totalBufferMinutes > 0 
+            await SendBookingConfirmationSmsAsync(booking, cancellationToken);
+
+            var resultMsg = totalBufferMinutes > 0
                 ? $"Booking created successfully. Note: An additional {totalBufferMinutes} minutes of buffer time may be required."
                 : "Booking created successfully.";
 

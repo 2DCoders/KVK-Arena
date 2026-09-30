@@ -1,5 +1,7 @@
 using kvk.BuildingBlocks;
 using kvk.BuildingBlocks.Common;
+using kvk.BuildingBlocks.Constants;
+using kvk.BuildingBlocks.Interfaces;
 using kvk.BuildingBlocks.Services;
 using kvk.Cafe.Domain;
 using Kvk.Cafe.Interfaces;
@@ -15,14 +17,16 @@ public class CafePaymentGatewayService : ICafePaymentGatewayService
     private readonly IHashService _hashService;
     private readonly CafeDbContext _db;
     private readonly ILogger<CafePaymentGatewayService> _logger;
+    private readonly ISmsService _smsService;
 
     public CafePaymentGatewayService(IOptions<PayHereOptions> payHereOptions, IHashService hashService,
-        CafeDbContext db, ILogger<CafePaymentGatewayService> logger)
+        CafeDbContext db, ILogger<CafePaymentGatewayService> logger, ISmsService smsService)
     {
         _payHereOptions = payHereOptions.Value;
         _hashService = hashService;
         _db = db;
         _logger = logger;
+        _smsService = smsService;
     }
 
 
@@ -144,6 +148,20 @@ public class CafePaymentGatewayService : ICafePaymentGatewayService
         record.IsPaid = true;
         _db.Orders.Update(record);
         await _db.SaveChangesAsync();
+
+        if (!string.IsNullOrWhiteSpace(record.CustomerPhone))
+        {
+            try
+            {
+                var message = MessageList.GetCafePaymentReceivedMessage(
+                    record.CustomerName ?? "Customer", record.DiscountedTotalAmount);
+                await _smsService.SendSingleMessageAsync(record.CustomerPhone, message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send cafe payment confirmation SMS for order {OrderNumber}", record.OrderNumber);
+            }
+        }
     }
 
 

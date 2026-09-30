@@ -466,6 +466,20 @@ public class BookingService : IBookingService
         record.PaymentId = request.PaymentId;
         _db.CourtBookings.Update(record);
         await _db.SaveChangesAsync(ct);
+
+        if (!string.IsNullOrWhiteSpace(record.PhoneNumber))
+        {
+            try
+            {
+                var message = kvk.BuildingBlocks.Constants.MessageList.GetBookingPaymentConfirmedMessage(
+                    record.CustomerName, record.BookingNumber, record.BookingAmount);
+                await _smsService.SendSingleMessageAsync(record.PhoneNumber, message, ct);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send badminton payment confirmation SMS for booking {BookingNumber}", record.BookingNumber);
+            }
+        }
     }
 
     public async Task<Result> DeletePendingPayment(BadmintonPendingPaymentDeleteRequest request, CancellationToken ct = default)

@@ -2,6 +2,8 @@ using System.Data;
 using kvk.Badminton.Features.Booking;
 using kvk.BuildingBlocks;
 using kvk.BuildingBlocks.Common;
+using kvk.BuildingBlocks.Constants;
+using kvk.BuildingBlocks.Interfaces;
 using kvk.Gaming.Domain;
 using kvk.Gaming.Enums;
 using kvk.Gaming.Interfaces;
@@ -17,18 +19,38 @@ public class GamingBookingService : IGamingBookingService
     private readonly IHashService _hashService;
     private readonly PayHereOptions _payHereOptions;
     private readonly ILogger<GamingBookingService> _logger;
+    private readonly ISmsService _smsService;
     private const int DefaultHoldMinutes = 7;
 
     public GamingBookingService(
-        GamingDbContext db, 
-        IHashService hashService, 
+        GamingDbContext db,
+        IHashService hashService,
         IOptions<PayHereOptions> payHereOptions,
-        ILogger<GamingBookingService> logger)
+        ILogger<GamingBookingService> logger,
+        ISmsService smsService)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
         _hashService = hashService ?? throw new ArgumentNullException(nameof(hashService));
         _payHereOptions = payHereOptions?.Value ?? throw new ArgumentNullException(nameof(payHereOptions));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _smsService = smsService ?? throw new ArgumentNullException(nameof(smsService));
+    }
+
+    private async Task SendBookingConfirmationSmsAsync(string? phone, string? customerName, DateOnly bookingDate,
+        TimeSpan startTime, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(phone))
+            return;
+
+        try
+        {
+            var message = MessageList.GetGamingBookingConfirmedMessage(customerName ?? "Customer", bookingDate, startTime);
+            await _smsService.SendSingleMessageAsync(phone, message, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send gaming booking confirmation SMS");
+        }
     }
 
     public async Task<Result> CreateGamingBookingAsync(CreateGamingBookingRequest request,
@@ -119,6 +141,9 @@ public class GamingBookingService : IGamingBookingService
             _db.GamingBookings.Add(booking);
             await _db.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
+
+            await SendBookingConfirmationSmsAsync(booking.CustomerPhone, booking.CustomerName, booking.BookingDate,
+                gamingSlot.StartTime.ToTimeSpan(), cancellationToken);
 
             var response = new GamingBookingResponse
             {
@@ -440,6 +465,9 @@ public class GamingBookingService : IGamingBookingService
             await _db.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
 
+            await SendBookingConfirmationSmsAsync(hold.CustomerPhone, hold.CustomerName, hold.BookingDate,
+                gamingSlot.StartTime.ToTimeSpan(), cancellationToken);
+
             var response = MapToResponse(hold);
             response.BookingId = booking.Id;
             return Result.Success("Gaming booking confirmed.").WithData("response", response);
@@ -466,6 +494,7 @@ public class GamingBookingService : IGamingBookingService
         try
         {
             var confirmedBookings = new List<GamingBookingHoldResponse>();
+            var smsMessages = new List<string>();
 
             foreach (var holdId in request.HoldIds)
             {
@@ -514,7 +543,9 @@ public class GamingBookingService : IGamingBookingService
                     return Result.Failure($"Gaming slot for hold ID {holdId} was booked by another confirmed transaction.");
                 }
 
-                var gamingSlot = await _db.GamingSlots.FirstOrDefaultAsync(gs => gs.Id == hold.GamingSlotId, cancellationToken);
+                var gamingSlot = await _db.GamingSlots
+                    .Include(gs => gs.GamingStation)
+                    .FirstOrDefaultAsync(gs => gs.Id == hold.GamingSlotId, cancellationToken);
                 if (gamingSlot == null)
                 {
                     await transaction.RollbackAsync(cancellationToken);
@@ -547,14 +578,30 @@ public class GamingBookingService : IGamingBookingService
                 hold.PaymentIntentId = request.PaymentIntentId ?? string.Empty;
 
                 _db.GamingBookings.Add(booking);
-                
+
                 var response = MapToResponse(hold);
                 response.BookingId = booking.Id;
                 confirmedBookings.Add(response);
+
+                smsMessages.Add($"Station: {gamingSlot.GamingStation?.Name}, Date: {hold.BookingDate:dd/MM/yyyy}, Time: {gamingSlot.StartTime:hh\\:mm} - {gamingSlot.EndTime:hh\\:mm}");
             }
 
             await _db.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
+
+            var phone = request.CustomerDetails.PhoneNumber;
+            if (!string.IsNullOrWhiteSpace(phone) && smsMessages.Count > 0)
+            {
+                try
+                {
+                    var fullMessage = "Your KVK Arena Gaming bookings are confirmed:\n" + string.Join("\n", smsMessages);
+                    await _smsService.SendSingleMessageAsync(phone, fullMessage, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to send multi gaming booking confirmation SMS");
+                }
+            }
 
             return Result.Success("Multiple gaming bookings confirmed.").WithData("response", confirmedBookings);
         }
@@ -613,6 +660,20 @@ public class GamingBookingService : IGamingBookingService
         record.PaymentIntentId = request.PaymentId; // Optional but good practice
         _db.GamingBookings.Update(record);
         await _db.SaveChangesAsync(cancellationToken);
+
+        if (!string.IsNullOrWhiteSpace(record.CustomerPhone))
+        {
+            try
+            {
+                var message = MessageList.GetBookingPaymentConfirmedMessage(
+                    record.CustomerName ?? "Customer", record.BookingNumber, record.Amount);
+                await _smsService.SendSingleMessageAsync(record.CustomerPhone, message, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send gaming payment confirmation SMS for booking {BookingNumber}", record.BookingNumber);
+            }
+        }
     }
 
     public async Task<Result> DeletePendingPayment(GamingPendingPaymentDeleteRequest request,

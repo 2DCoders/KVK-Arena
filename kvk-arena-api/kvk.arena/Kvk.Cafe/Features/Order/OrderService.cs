@@ -1,12 +1,32 @@
 using kvk.BuildingBlocks.Common;
+using kvk.BuildingBlocks.Constants;
+using kvk.BuildingBlocks.Interfaces;
 using kvk.Cafe.Domain;
 using Kvk.Cafe.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Kvk.Cafe.Features.Order;
 
-public class OrderService(CafeDbContext db) : IOrderService
+public class OrderService(CafeDbContext db, ISmsService smsService, ILogger<OrderService> logger) : IOrderService
 {
+    private async Task SendPaymentReceivedSmsAsync(string? phone, string? customerName, decimal amount,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(phone))
+            return;
+
+        try
+        {
+            var message = MessageList.GetCafePaymentReceivedMessage(customerName ?? "Customer", amount);
+            await smsService.SendSingleMessageAsync(phone, message, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to send cafe payment confirmation SMS");
+        }
+    }
+
     public async Task<Result> CreateOrderAsync(OrderCreateRequest request, CancellationToken cancellationToken = default)
     {
         var orderNumber = GenerateOrderNumber();
@@ -51,6 +71,9 @@ public class OrderService(CafeDbContext db) : IOrderService
 
         db.Orders.Add(newOrder);
         await db.SaveChangesAsync(cancellationToken);
+
+        if (newOrder.IsPaid)
+            await SendPaymentReceivedSmsAsync(newOrder.CustomerPhone, newOrder.CustomerName, newOrder.DiscountedTotalAmount, cancellationToken);
 
         return Result.Success("Order created successfully.");
     }
