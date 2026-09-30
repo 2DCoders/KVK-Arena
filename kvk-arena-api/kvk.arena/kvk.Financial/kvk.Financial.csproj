@@ -21,6 +21,7 @@
       <ProjectReference Include="..\kvk.CarService\kvk.CarService.csproj" />
       <ProjectReference Include="..\kvk.Gaming\kvk.Gaming.csproj" />
       <ProjectReference Include="..\kvk.Gym\kvk.Gym.csproj" />
+      <ProjectReference Include="..\kvk.Saloon\kvk.Saloon.csproj" />
     </ItemGroup>
 
 </Project>

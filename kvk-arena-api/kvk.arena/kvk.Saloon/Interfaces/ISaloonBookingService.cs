@@ -5,7 +5,7 @@ namespace kvk.Saloon.Interfaces;
 
 public interface ISaloonBookingService
 {
-    Task<IEnumerable<SaloonBookingResponse>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<List<SaloonBookingResponse>> GetBookingsListAsync(GetSaloonBookingsListRequest request, CancellationToken cancellationToken = default);
 
     Task<SaloonBookingResponse> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 

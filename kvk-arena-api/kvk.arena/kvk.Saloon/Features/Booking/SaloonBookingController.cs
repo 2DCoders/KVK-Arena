@@ -15,9 +15,9 @@ public class SaloonBookingController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll([FromQuery] GetSaloonBookingsListRequest request, CancellationToken cancellationToken)
     {
-        var bookings = await _service.GetAllAsync(cancellationToken);
+        var bookings = await _service.GetBookingsListAsync(request, cancellationToken);
         return Ok(bookings);
     }
 

@@ -7,6 +7,7 @@ public class SaloonBookingResponse
 {
     public Guid Id { get; set; }
     public Guid SaloonId { get; set; }
+    public string? SaloonName { get; set; }
     public string? CustomerName { get; set; }
     public string? PhoneNumber { get; set; }
     public string? MemberId { get; set; }
@@ -30,6 +31,7 @@ public class SaloonBookingServiceResponse
     public Guid Id { get; set; }
     public Guid SaloonBookingId { get; set; }
     public Guid SaloonServiceId { get; set; }
+    public string? ServiceName { get; set; }
     public Guid SaloonStaffId { get; set; }
     public int DurationMinutes { get; set; }
     public decimal Price { get; set; }

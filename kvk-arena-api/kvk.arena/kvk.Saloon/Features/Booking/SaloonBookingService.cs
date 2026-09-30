@@ -19,14 +19,44 @@ public class SaloonBookingService : ISaloonBookingService
         _holidayService = holidayService ?? throw new ArgumentNullException(nameof(holidayService));
     }
 
-    public async Task<IEnumerable<SaloonBookingResponse>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<List<SaloonBookingResponse>> GetBookingsListAsync(GetSaloonBookingsListRequest request, CancellationToken cancellationToken = default)
     {
-        return await _db.SaloonBookings
+        var query = _db.SaloonBookings
             .AsNoTracking()
+            .Include(b => b.Saloon)
             .Include(b => b.Services)
-            .OrderByDescending(b => b.BookingDate).ThenBy(b => b.StartTime)
-            .Select(b => MapToResponse(b))
+            .ThenInclude(s => s.Service)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+        {
+            query = query.Where(b =>
+                (b.CustomerName != null && b.CustomerName.Contains(request.SearchTerm)) ||
+                (b.PhoneNumber != null && b.PhoneNumber.Contains(request.SearchTerm)));
+        }
+
+        if (request.Status.HasValue)
+        {
+            query = query.Where(b => b.Status == request.Status.Value);
+        }
+
+        if (request.FromDate.HasValue)
+        {
+            query = query.Where(b => b.BookingDate >= request.FromDate.Value);
+        }
+
+        if (request.ToDate.HasValue)
+        {
+            query = query.Where(b => b.BookingDate <= request.ToDate.Value);
+        }
+
+        var bookings = await query
+            .OrderBy(b => b.BookingDate).ThenBy(b => b.StartTime)
+            .Skip((request.PageNumber - 1) * request.PageSize)
+            .Take(request.PageSize)
             .ToListAsync(cancellationToken);
+
+        return bookings.Select(MapToResponse).ToList();
     }
 
     public async Task<SaloonBookingResponse> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -38,7 +68,9 @@ public class SaloonBookingService : ISaloonBookingService
         {
             var booking = await _db.SaloonBookings
                 .AsNoTracking()
+                .Include(b => b.Saloon)
                 .Include(b => b.Services)
+                .ThenInclude(s => s.Service)
                 .SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
 
             if (booking == null)
@@ -590,6 +622,7 @@ public class SaloonBookingService : ISaloonBookingService
         {
             Id = booking.Id,
             SaloonId = booking.SaloonId,
+            SaloonName = booking.Saloon?.Name,
             CustomerName = booking.CustomerName,
             PhoneNumber = booking.PhoneNumber,
             MemberId = booking.MemberId,
@@ -606,6 +639,7 @@ public class SaloonBookingService : ISaloonBookingService
                 Id = s.Id,
                 SaloonBookingId = s.SaloonBookingId,
                 SaloonServiceId = s.SaloonServiceId,
+                ServiceName = s.Service?.Name,
                 SaloonStaffId = s.SaloonStaffId,
                 DurationMinutes = s.DurationMinutes,
                 Price = s.Price,
