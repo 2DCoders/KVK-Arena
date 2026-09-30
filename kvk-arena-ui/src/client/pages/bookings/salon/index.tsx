@@ -14,8 +14,10 @@ import { getNextWorkingDays } from "@/services/holidays-api";
 import { getSalonServiceItems } from "@/services/salon-service-api";
 import {
   checkDayAvailability,
-  createSalonBooking,
+  createSalonBookingWithPayment,
+  reverseSalonBookingPayment,
 } from "@/services/salon-booking-api";
+import { startPayHereCheckout } from "@/services/payhere";
 import Alert from "@/components/alert";
 
 /* =========================================================
@@ -383,17 +385,20 @@ export default function SalonBooking() {
         return;
       }
 
+      const trimmedName = customerName.trim();
+      const trimmedPhone = phoneNumber.trim();
+
       const payload = {
-        customerName: customerName.trim(),
-        phoneNumber: phoneNumber.trim(),
+        customerName: trimmedName,
+        phoneNumber: trimmedPhone,
         memberId: null,
         bookingDate: selectedDate,
         startTime: selectedTime,
-        status: 2, // Confirmed
+        status: 1, // Pending — confirmed only once PayHere verifies payment
         totalAmount: totalPrice,
         discountAmount: 0,
         notes: null,
-        paymentType: 1, // Cash — collected at the salon
+        paymentType: 2, // Credit/Debit card — paid via PayHere
         services: selectedServices.map((service) => ({
           saloonServiceId: service.id,
           price: service.price,
@@ -401,20 +406,60 @@ export default function SalonBooking() {
         })),
       };
 
-      await createSalonBooking(payload);
+      const paymentResponse = await createSalonBookingWithPayment(payload);
 
-      setIsBooked(true);
-      setSelectedServiceIds([]);
-      setSelectedTime("");
-      setCustomerName("");
-      setPhoneNumber("");
+      const payment =
+        paymentResponse?.additionalData?.response ??
+        paymentResponse?.response ??
+        paymentResponse;
 
-      setPageAlert({
-        visible: true,
-        variant: "success",
-        title: "Booking confirmed",
-        description: "Your salon appointment was booked successfully.",
-      });
+      startPayHereCheckout(
+        {
+          orderId: payment.orderId,
+          merchantId: payment.merchantId,
+          currency: payment.currency,
+          amount: payment.amount,
+          hash: payment.hash,
+          items: "Salon Appointment",
+          firstName: trimmedName,
+          phone: trimmedPhone,
+          notifyPath: "saloon/bookings/notify",
+        },
+        {
+          onCompleted: () => {
+            setIsBooked(true);
+            setSelectedServiceIds([]);
+            setSelectedTime("");
+            setCustomerName("");
+            setPhoneNumber("");
+
+            setPageAlert({
+              visible: true,
+              variant: "success",
+              title: "Booking confirmed",
+              description: "Your salon appointment was booked successfully.",
+            });
+          },
+          onDismissed: () => {
+            void reverseSalonBookingPayment(payment.orderId);
+            setPageAlert({
+              visible: true,
+              variant: "warning",
+              title: "Payment cancelled",
+              description: "Your appointment was not booked since payment was cancelled.",
+            });
+          },
+          onError: () => {
+            void reverseSalonBookingPayment(payment.orderId);
+            setPageAlert({
+              visible: true,
+              variant: "error",
+              title: "Payment failed",
+              description: "Something went wrong while processing your payment. Please try again.",
+            });
+          },
+        },
+      );
     } catch (error: any) {
       console.error("Unable to create booking:", error);
 

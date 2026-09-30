@@ -1,10 +1,13 @@
+using kvk.BuildingBlocks;
 using kvk.BuildingBlocks.Common;
 using kvk.BuildingBlocks.Constants;
 using kvk.BuildingBlocks.Interfaces;
+using kvk.BuildingBlocks.Services;
 using Kvk.Cafe;
 using kvk.Saloon.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 // For SaloonDbContext
 using DomainBooking = kvk.Saloon.Domain.SaloonBooking;
 using DomainBookingService = kvk.Saloon.Domain.SaloonBookingService;
@@ -17,14 +20,18 @@ public class SaloonBookingService : ISaloonBookingService
     private readonly IHolidayService _holidayService;
     private readonly ISmsService _smsService;
     private readonly ILogger<SaloonBookingService> _logger;
+    private readonly IHashService _hashService;
+    private readonly PayHereOptions _payHereOptions;
 
     public SaloonBookingService(SaloonDbContext db, IHolidayService holidayService, ISmsService smsService,
-        ILogger<SaloonBookingService> logger)
+        ILogger<SaloonBookingService> logger, IHashService hashService, IOptions<PayHereOptions> payHereOptions)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
         _holidayService = holidayService ?? throw new ArgumentNullException(nameof(holidayService));
         _smsService = smsService ?? throw new ArgumentNullException(nameof(smsService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _hashService = hashService ?? throw new ArgumentNullException(nameof(hashService));
+        _payHereOptions = payHereOptions?.Value ?? throw new ArgumentNullException(nameof(payHereOptions));
     }
 
     private async Task SendBookingConfirmationSmsAsync(DomainBooking booking, CancellationToken cancellationToken)
@@ -230,6 +237,191 @@ public class SaloonBookingService : ISaloonBookingService
         {
             return Result.Failure($"Failed to create booking: {ex.Message}");
         }
+    }
+
+    public async Task<Result> CreateWithPaymentAsync(SaloonBookingCreateRequest request, CancellationToken cancellationToken = default)
+    {
+        if (request == null)
+            return Result.Failure("Request cannot be null");
+
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        if (request.BookingDate < today)
+            return Result.Failure("Cannot book in the past");
+
+        var nextWorkingDays = await _holidayService.GetNextWorkingDaysAsync(DateTime.Today, 2, cancellationToken);
+        var validDates = new List<DateOnly> { today };
+        validDates.AddRange(nextWorkingDays.Select(d => DateOnly.FromDateTime(d)));
+
+        if (!validDates.Contains(request.BookingDate))
+            return Result.Failure("Can only book for current day and next two working days (excluding holidays).");
+
+        try
+        {
+            int totalDurationMinutes = 0;
+            var servicesToAdd = new List<DomainBookingService>();
+            var currentTime = request.StartTime;
+
+            foreach (var reqService in request.Services)
+            {
+                var saloonService = await _db.Set<kvk.Saloon.Domain.SaloonService>()
+                    .Include(s => s.StaffServices)
+                    .FirstOrDefaultAsync(s => s.Id == reqService.SaloonServiceId, cancellationToken);
+
+                if (saloonService == null)
+                    return Result.Failure($"Service {reqService.SaloonServiceId} not found");
+
+                totalDurationMinutes += saloonService.DurationMinutes;
+
+                var staffId = saloonService.StaffServices.FirstOrDefault()?.SaloonStaffId;
+                if (staffId == null || staffId == Guid.Empty)
+                {
+                    var anyStaff = await _db.Set<kvk.Saloon.Domain.SaloonStaff>().FirstOrDefaultAsync(cancellationToken);
+                    if (anyStaff == null)
+                        return Result.Failure("No staff available to assign to this service.");
+                    staffId = anyStaff.Id;
+                }
+
+                var serviceEndTime = currentTime.Add(TimeSpan.FromMinutes(saloonService.DurationMinutes));
+
+                servicesToAdd.Add(new DomainBookingService
+                {
+                    SaloonServiceId = reqService.SaloonServiceId,
+                    SaloonStaffId = staffId.Value,
+                    DurationMinutes = saloonService.DurationMinutes,
+                    Price = reqService.Price,
+                    DiscountAmount = reqService.DiscountAmount,
+                    StartTime = currentTime,
+                    EndTime = serviceEndTime
+                });
+
+                currentTime = serviceEndTime;
+            }
+
+            var requestedEndTime = request.StartTime.Add(TimeSpan.FromMinutes(totalDurationMinutes));
+
+            var allSaloons = await _db.Set<kvk.Saloon.Domain.Saloon>()
+                .Where(s => s.IsActive)
+                .Include(s => s.Bookings)
+                .ToListAsync(cancellationToken);
+
+            Guid? assignedSaloonId = null;
+
+            foreach (var saloon in allSaloons)
+            {
+                var overlappingBookings = saloon.Bookings.Where(b => b.BookingDate == request.BookingDate &&
+                    b.Status != kvk.Saloon.Domain.SaloonBookingStatus.Cancelled &&
+                    b.StartTime < requestedEndTime && b.EndTime > request.StartTime);
+
+                if (!overlappingBookings.Any())
+                {
+                    assignedSaloonId = saloon.Id;
+                    break;
+                }
+            }
+
+            if (!assignedSaloonId.HasValue)
+            {
+                return Result.Failure("For this start time to this time there is a booking. If convenient, please set the booking after this time.");
+            }
+
+            var booking = new DomainBooking
+            {
+                SaloonId = assignedSaloonId.Value,
+                CustomerName = request.CustomerName,
+                PhoneNumber = request.PhoneNumber,
+                MemberId = request.MemberId,
+                BookingDate = request.BookingDate,
+                StartTime = request.StartTime,
+                EndTime = requestedEndTime,
+                // Always Pending until PayHere confirms payment via the webhook.
+                Status = kvk.Saloon.Domain.SaloonBookingStatus.Pending,
+                TotalAmount = request.TotalAmount,
+                DiscountAmount = request.DiscountAmount,
+                Notes = request.Notes,
+                PaymentType = kvk.BuildingBlocks.Enums.PaymentType.CreditCard,
+                Services = servicesToAdd
+            };
+
+            _db.Set<DomainBooking>().Add(booking);
+            await _db.SaveChangesAsync(cancellationToken);
+
+            // The booking's own id is used as the PayHere order id — the webhook
+            // (VerifyPaymentNotificationAsync) matches back to it directly, no
+            // extra table/column needed.
+            var orderId = booking.Id.ToString();
+            var hash = _hashService.GeneratePayHereHash(
+                _payHereOptions.MerchantId, _payHereOptions.MerchantSecret, orderId, request.TotalAmount,
+                _payHereOptions.Currency);
+
+            return Result.Success("Payment initiated.").WithData("response", new SaloonBookingPaymentResponse
+            {
+                BookingId = booking.Id,
+                MerchantId = _payHereOptions.MerchantId,
+                OrderId = orderId,
+                Currency = _payHereOptions.Currency,
+                Amount = request.TotalAmount.ToString("0.00"),
+                Hash = hash
+            });
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure($"Failed to create booking: {ex.Message}");
+        }
+    }
+
+    public async Task VerifyPaymentNotificationAsync(PaymentNotificationRequest request, CancellationToken cancellationToken = default)
+    {
+        if (!Guid.TryParse(request.OrderId, out var bookingId))
+        {
+            _logger.LogWarning("Salon payment notification order id {OrderId} is not a valid booking id.", request.OrderId);
+            return;
+        }
+
+        var booking = await _db.SaloonBookings
+            .FirstOrDefaultAsync(b => b.Id == bookingId && b.Status == kvk.Saloon.Domain.SaloonBookingStatus.Pending,
+                cancellationToken);
+
+        if (booking is null)
+        {
+            _logger.LogWarning("Pending salon booking with id {OrderId} was not found.", request.OrderId);
+            return;
+        }
+
+        var expectedMd5Sig = _hashService.GenerateNotificationMd5Sig(
+            request.MerchantId, _payHereOptions.MerchantSecret, request.OrderId,
+            request.PayhereAmount, request.PayhereCurrency, request.StatusCode);
+
+        if (!string.Equals(expectedMd5Sig, request.Md5Sig, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        if (request.StatusCode != 2)
+            return;
+
+        if (booking.TotalAmount != request.PayhereAmount)
+            return;
+
+        booking.Status = kvk.Saloon.Domain.SaloonBookingStatus.Confirmed;
+        await _db.SaveChangesAsync(cancellationToken);
+
+        await SendBookingConfirmationSmsAsync(booking, cancellationToken);
+    }
+
+    public async Task<Result> DeletePendingPayment(SaloonPendingPaymentDeleteRequest request, CancellationToken cancellationToken = default)
+    {
+        if (!Guid.TryParse(request.OrderId, out var bookingId))
+            return Result.Failure("Invalid order id.");
+
+        var booking = await _db.SaloonBookings
+            .FirstOrDefaultAsync(b => b.Id == bookingId && b.Status == kvk.Saloon.Domain.SaloonBookingStatus.Pending,
+                cancellationToken);
+
+        if (booking is null)
+            return Result.Failure($"Pending payment with order id {request.OrderId} was not found.");
+
+        booking.Status = kvk.Saloon.Domain.SaloonBookingStatus.Cancelled;
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return Result.Success("Pending payment reversed successfully");
     }
 
     public async Task<Result> CheckAvailabilityAsync(SaloonBookingAvailabilityRequest request, CancellationToken cancellationToken = default)

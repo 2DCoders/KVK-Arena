@@ -39,6 +39,35 @@ public class SaloonBookingController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("~/api/saloon/bookings/create-with-payment")]
+    public async Task<IActionResult> CreateWithPayment([FromBody] SaloonBookingCreateRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _service.CreateWithPaymentAsync(request, cancellationToken);
+
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("~/api/saloon/bookings/notify")]
+    public async Task<IActionResult> PaymentNotification([FromForm] kvk.BuildingBlocks.Common.PaymentNotificationRequest request, CancellationToken cancellationToken)
+    {
+        await _service.VerifyPaymentNotificationAsync(request, cancellationToken);
+        return Ok();
+    }
+
+    [HttpPost("~/api/saloon/bookings/reverse")]
+    public async Task<IActionResult> ReversePendingPayment([FromBody] SaloonPendingPaymentDeleteRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _service.DeletePendingPayment(request, cancellationToken);
+
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
     [HttpGet("~/api/saloon/bookings/availability")]
     public async Task<IActionResult> CheckAvailability([FromQuery] SaloonBookingAvailabilityRequest request, CancellationToken cancellationToken)
     {

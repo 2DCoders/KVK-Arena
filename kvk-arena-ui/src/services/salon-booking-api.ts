@@ -30,3 +30,21 @@ export const createSalonBooking = async (payload: any) => {
     throw error;
   }
 };
+
+export const createSalonBookingWithPayment = async (payload: any) => {
+  try {
+    const response = await axios.post(`${BOOKINGS_API_URL}/create-with-payment`, payload);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const reverseSalonBookingPayment = async (orderId: string) => {
+  try {
+    const response = await axios.post(`${BOOKINGS_API_URL}/reverse`, { orderId });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

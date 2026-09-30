@@ -15,6 +15,12 @@ public interface ISaloonBookingService
 
     Task<Result> CreateAsync(SaloonBookingCreateRequest request, CancellationToken cancellationToken = default);
 
+    Task<Result> CreateWithPaymentAsync(SaloonBookingCreateRequest request, CancellationToken cancellationToken = default);
+
+    Task VerifyPaymentNotificationAsync(kvk.BuildingBlocks.Common.PaymentNotificationRequest request, CancellationToken cancellationToken = default);
+
+    Task<Result> DeletePendingPayment(SaloonPendingPaymentDeleteRequest request, CancellationToken cancellationToken = default);
+
     Task<Result> UpdateAsync(SaloonBookingUpdateRequest request, CancellationToken cancellationToken = default);
 
     Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
