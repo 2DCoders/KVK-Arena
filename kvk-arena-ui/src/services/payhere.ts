@@ -24,16 +24,46 @@ export const startPayHereCheckout = (
   details: PayHereCheckoutDetails,
   callbacks: PayHereCallbacks,
 ) => {
+  console.log("[PayHere] startPayHereCheckout called with:", details);
+
   if (!window.payhere) {
+    console.error("[PayHere] window.payhere is not defined — the SDK script has not loaded.");
     callbacks.onError("PayHere is not available. Please refresh and try again.");
     return;
   }
 
-  window.payhere.onCompleted = callbacks.onCompleted;
-  window.payhere.onDismissed = callbacks.onDismissed;
-  window.payhere.onError = callbacks.onError;
+  const missingFields = (
+    ["orderId", "merchantId", "currency", "amount", "hash"] as const
+  ).filter((key) => !details[key]);
 
-  window.payhere.startPayment({
+  if (missingFields.length > 0) {
+    console.error("[PayHere] Missing required checkout fields:", missingFields, details);
+    callbacks.onError(`Payment could not be started (missing: ${missingFields.join(", ")}).`);
+    return;
+  }
+
+  window.payhere.onCompleted = (orderId: string) => {
+    console.log("[PayHere] onCompleted:", orderId);
+    callbacks.onCompleted(orderId);
+  };
+
+  window.payhere.onDismissed = () => {
+    console.log("[PayHere] onDismissed");
+    callbacks.onDismissed();
+  };
+
+  window.payhere.onError = (error: any) => {
+    console.error("[PayHere] onError:", error);
+    callbacks.onError(error);
+  };
+
+  // PayHere requires both first_name and last_name to be non-empty. If only a
+  // single full name was supplied, split it so last_name is never blank.
+  const nameParts = details.firstName.trim().split(/\s+/).filter(Boolean);
+  const firstName = nameParts[0] || "Customer";
+  const lastName = details.lastName?.trim() || nameParts.slice(1).join(" ") || "Customer";
+
+  const paymentDetails = {
     sandbox: true,
 
     merchant_id: details.merchantId,
@@ -44,8 +74,8 @@ export const startPayHereCheckout = (
 
     items: details.items,
 
-    first_name: details.firstName,
-    last_name: details.lastName ?? "",
+    first_name: firstName,
+    last_name: lastName,
     email: details.email ?? "guest@kvkarena.lk",
     phone: details.phone,
 
@@ -56,5 +86,14 @@ export const startPayHereCheckout = (
     return_url: `${getEnv().BASE_URL}success`,
     cancel_url: `${getEnv().BASE_URL}cancel`,
     notify_url: `${getEnv().API_URL}${details.notifyPath}`,
-  });
+  };
+
+  console.log("[PayHere] Calling window.payhere.startPayment with:", paymentDetails);
+
+  try {
+    window.payhere.startPayment(paymentDetails);
+  } catch (error) {
+    console.error("[PayHere] startPayment threw synchronously:", error);
+    callbacks.onError(error);
+  }
 };

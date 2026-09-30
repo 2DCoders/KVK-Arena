@@ -655,10 +655,16 @@ export default function BadmintonBookings() {
         phoneNumber: trimmedPhone,
       });
 
+      console.log("[Badminton] payment creation response:", paymentResponse);
+
       const payment =
         paymentResponse?.additionalData?.response ??
         paymentResponse?.response ??
         paymentResponse;
+
+      // Close our own full-screen modal before handing off to PayHere — having
+      // two overlays open at once risks one burying the other (z-index conflict).
+      setIsBookingModalOpen(false);
 
       startPayHereCheckout(
         {
@@ -678,6 +684,7 @@ export default function BadmintonBookings() {
           },
           onDismissed: () => {
             setLoading(false);
+            setIsBookingModalOpen(true);
             setPageAlert({
               visible: true,
               variant: "warning",
@@ -688,6 +695,7 @@ export default function BadmintonBookings() {
           },
           onError: () => {
             setLoading(false);
+            setIsBookingModalOpen(true);
             setPageAlert({
               visible: true,
               variant: "error",
@@ -704,6 +712,7 @@ export default function BadmintonBookings() {
       setLoading(false);
     } catch (error) {
       setLoading(false);
+      setIsBookingModalOpen(true);
 
       const message =
         (error as any)?.response?.data?.message ||

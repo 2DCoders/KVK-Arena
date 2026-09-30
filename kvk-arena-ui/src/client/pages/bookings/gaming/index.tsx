@@ -73,8 +73,6 @@ type BookingDay = {
   isToday: boolean;
 };
 
-type PaymentType = 1 | 2;
-
 const CATEGORY_ICONS: Record<string, any> = {
   PC: Monitor,
   PS5: Gamepad2,
@@ -131,7 +129,6 @@ export default function BookingGaming() {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerPhoneError, setCustomerPhoneError] = useState("");
-  const [paymentType, setPaymentType] = useState<PaymentType>(1);
   const [holdIds, setHoldIds] = useState<string[]>([]);
   const [holdExpiresAt, setHoldExpiresAt] = useState<number | null>(null);
   const [remainingSeconds, setRemainingSeconds] = useState(HOLD_DURATION_SECONDS);
@@ -716,10 +713,16 @@ export default function BookingGaming() {
         phoneNumber: trimmedPhone,
       });
 
+      console.log("[Gaming] payment creation response:", paymentResponse);
+
       const payment =
         paymentResponse?.additionalData?.response ??
         paymentResponse?.response ??
         paymentResponse;
+
+      // Close our own full-screen modal before handing off to PayHere — having
+      // two overlays open at once risks one burying the other (z-index conflict).
+      setIsBookingModalOpen(false);
 
       startPayHereCheckout(
         {
@@ -739,6 +742,7 @@ export default function BookingGaming() {
           },
           onDismissed: () => {
             setIsConfirming(false);
+            setIsBookingModalOpen(true);
             setPageAlert({
               visible: true,
               variant: "warning",
@@ -749,6 +753,7 @@ export default function BookingGaming() {
           },
           onError: () => {
             setIsConfirming(false);
+            setIsBookingModalOpen(true);
             setPageAlert({
               visible: true,
               variant: "error",
@@ -765,6 +770,7 @@ export default function BookingGaming() {
       setIsConfirming(false);
     } catch (error) {
       setIsConfirming(false);
+      setIsBookingModalOpen(true);
 
       const message =
         (error as any)?.response?.data?.message ||
@@ -1241,37 +1247,6 @@ export default function BookingGaming() {
                         </span>
                       )}
                     </label>
-                  </div>
-                </div>
-
-                {/* Payment type */}
-                <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-5">
-                  <h4 className="text-sm font-bold text-gray-900 mb-4">Payment Type</h4>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setPaymentType(1)}
-                      className={`h-12 rounded-xl border font-semibold text-sm transition cursor-pointer ${
-                        paymentType === 1
-                          ? "bg-red-500 border-red-500 text-white"
-                          : "bg-white border-gray-200 text-gray-700"
-                      }`}
-                    >
-                      Cash
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setPaymentType(2)}
-                      className={`h-12 rounded-xl border font-semibold text-sm transition cursor-pointer ${
-                        paymentType === 2
-                          ? "bg-red-500 border-red-500 text-white"
-                          : "bg-white border-gray-200 text-gray-700"
-                      }`}
-                    >
-                      Card
-                    </button>
                   </div>
                 </div>
 
