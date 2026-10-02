@@ -677,6 +677,10 @@ public class MembershipService : IMembershipService
             if (plan.IsActive != kvk.Gym.Enums.ActiveStatus.Active)
                 return Result.Failure("Membership plan is inactive");
 
+            // Captured before any status change below, so a payment against a Blocked (expired)
+            // member re-activates them instead of leaving them stuck as Blocked.
+            var wasBlocked = member.MembershipStatus == kvk.Gym.Enums.MembershipStatus.Blocked;
+
             // Update membership plan on the member
             member.MembershipPlanId = plan.Id;
 
@@ -709,7 +713,9 @@ public class MembershipService : IMembershipService
                 latestPayment.Amount = plan.Price;
                 latestPayment.PaymentType = request.PaymentType;
 
-                var newStartDate = latestPayment.MemberShipEndDate.Value;
+                // The old period already lapsed, so the new one starts today rather than
+                // continuing from the stale end date (which could already be in the past).
+                var newStartDate = startDate;
 
                 latestPayment.MemberShipStartDate = newStartDate;
                 latestPayment.MemberShipRenewalDate = renewalDate;
@@ -743,6 +749,17 @@ public class MembershipService : IMembershipService
                 _db.MemberPayments.Add(payment);
             }
 
+            // Paying for a previously Blocked (expired) member re-activates them: Active if they
+            // already have fingerprints saved, otherwise Inactive (pending), matching the same
+            // rule CreateMemberAsync/UpdateFingerprintsAsync use for first-time activation.
+            if (wasBlocked)
+            {
+                var hasFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
+                                       !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2);
+                member.MembershipStatus = hasFingerprints
+                    ? kvk.Gym.Enums.MembershipStatus.Active
+                    : kvk.Gym.Enums.MembershipStatus.Inactive;
+            }
 
             await _db.SaveChangesAsync(cancellationToken);
 

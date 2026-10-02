@@ -32,6 +32,10 @@ public class PaymentService : IPaymentService
             if (member == null)
                 return Result.Failure("Member not found");
 
+            // Captured before any status change below, so a payment against a Blocked (expired)
+            // member re-activates them instead of leaving them stuck as Blocked.
+            var wasBlocked = member.MembershipStatus == MembershipStatus.Blocked;
+
             // var isCardPayment = request.PaymentType == PaymentType.CreditCard ||
             //                     request.PaymentType == PaymentType.DebitCard;
             //
@@ -117,7 +121,11 @@ public class PaymentService : IPaymentService
                     await _db.MembershipPlans.FirstOrDefaultAsync(mp => mp.Id == member.MembershipPlanId,
                         cancellationToken);
 
-                memberPayment.MemberShipStartDate = memberPayment.MemberShipEndDate ?? DateTime.UtcNow;
+                // If the old period already lapsed (member was Blocked), the new one starts today
+                // rather than continuing from the stale end date.
+                memberPayment.MemberShipStartDate = wasBlocked
+                    ? DateTime.UtcNow
+                    : memberPayment.MemberShipEndDate ?? DateTime.UtcNow;
                 memberPayment.MemberShipEndDate = memberPayment.MemberShipStartDate?.AddDays(membershipPlan?.DurationInDays ?? 30);
                 memberPayment.MemberShipRenewalDate = DateTime.UtcNow;
 
@@ -126,6 +134,18 @@ public class PaymentService : IPaymentService
                 memberPayment.TransactionReference = request.TransactionReference;
 
                 _db.MemberPayments.Update(memberPayment);
+
+                // Paying for a previously Blocked (expired) member re-activates them: Active if
+                // they already have fingerprints saved, otherwise Inactive (pending) — matching
+                // the same activation rule used at registration and fingerprint enrollment.
+                if (wasBlocked)
+                {
+                    var hasFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
+                                           !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2);
+                    member.MembershipStatus = hasFingerprints
+                        ? MembershipStatus.Active
+                        : MembershipStatus.Inactive;
+                }
 
                 // record the payment action in the immutable PaymentRecords table
                 var record = new PaymentRecord
