@@ -241,11 +241,23 @@ public class GamingBookingService : IGamingBookingService
                                                gs.GamingCategoryId == bookingDetail.GamingCategoryId,
                         cancellationToken);
 
-                if (gamingSlot == null || !gamingSlot.IsActive || !gamingSlot.GamingStation.IsActive)
+                if (gamingSlot == null)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    return Result.Failure("The selected time slot no longer exists. Please choose another time.");
+                }
+
+                if (!gamingSlot.GamingStation.IsActive)
                 {
                     await transaction.RollbackAsync(cancellationToken);
                     return Result.Failure(
-                        $"The selected gaming slot, station, or category for {bookingDetail.GamingSlotId} is unavailable or inactive.");
+                        $"'{gamingSlot.GamingStation.Name}' is currently unavailable. Please choose another station.");
+                }
+
+                if (!gamingSlot.IsActive)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    return Result.Failure("The selected time slot is no longer available. Please choose another time.");
                 }
 
                 bool isAvailable = await CheckAvailabilityInternalAsync(bookingDetail.GamingSlotId,
@@ -330,10 +342,23 @@ public class GamingBookingService : IGamingBookingService
                                            gs.GamingStationId == request.GamingStationId &&
                                            gs.GamingCategoryId == request.GamingCategoryId, cancellationToken);
 
-            if (gamingSlot == null || !gamingSlot.IsActive || !gamingSlot.GamingStation.IsActive)
+            if (gamingSlot == null)
             {
                 await transaction.RollbackAsync(cancellationToken);
-                return Result.Failure("The selected gaming slot, station, or category is unavailable or inactive.");
+                return Result.Failure("The selected time slot no longer exists. Please choose another time.");
+            }
+
+            if (!gamingSlot.GamingStation.IsActive)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return Result.Failure(
+                    $"'{gamingSlot.GamingStation.Name}' is currently unavailable. Please choose another station.");
+            }
+
+            if (!gamingSlot.IsActive)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return Result.Failure("The selected time slot is no longer available. Please choose another time.");
             }
 
             bool isAvailable =

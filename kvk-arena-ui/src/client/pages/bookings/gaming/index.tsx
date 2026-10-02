@@ -402,6 +402,8 @@ export default function BookingGaming() {
     }
 
     const availableStations = stations.filter((station) => {
+      if (!station.isActive) return false;
+
       const slot = (stationSlots[station.id] ?? []).find(
         (item) => item.startTime === slotTime.startTime
       );
@@ -415,12 +417,23 @@ export default function BookingGaming() {
   const total = useMemo(() => {
     if (!selectedCategory || selectedSlots.length === 0) return 0;
 
-    const selectedStationsPrice = stations
-      .filter((station) => selectedStations.includes(station.id))
-      .reduce((sum, station) => sum + (station.price || selectedCategory.price), 0);
+    // Price per booking comes from the slot itself (kept in sync with the
+    // cashier's slot configuration), not the station's own static price —
+    // that field is set once at station creation and never updated.
+    const baseAmount = selectedSlots.reduce((slotSum, slotIndex) => {
+      const slotTime = masterSlots[slotIndex];
+      if (!slotTime) return slotSum;
 
-    const baseAmount =
-      (selectedStationsPrice || selectedCategory.price) * selectedSlots.length;
+      const stationsSum = selectedStations.reduce((sum, stationId) => {
+        const slot = (stationSlots[stationId] ?? []).find(
+          (item) => item.startTime === slotTime.startTime
+        );
+        const price = slot?.price ?? selectedCategory.price;
+        return sum + price;
+      }, 0);
+
+      return slotSum + stationsSum;
+    }, 0);
 
     const additionalAmount =
       additionalPurchases.reduce((sum, purchase) => {
@@ -433,7 +446,8 @@ export default function BookingGaming() {
     selectedCategory,
     selectedSlots,
     selectedStations,
-    stations,
+    masterSlots,
+    stationSlots,
     additionalPurchases,
     purchaseQuantities,
   ]);
@@ -959,7 +973,7 @@ export default function BookingGaming() {
                 <h3 className="text-lg font-semibold mb-3">Select Station</h3>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {stations.map((station) => {
+                  {stations.filter((station) => station.isActive).map((station) => {
                     const allSelectedSlotsAvailable = selectedSlots.every((slotIndex) => {
                       const availability = getSlotAvailability(slotIndex);
 
