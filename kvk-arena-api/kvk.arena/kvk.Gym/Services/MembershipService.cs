@@ -317,10 +317,44 @@ public class MembershipService : IMembershipService
         }
     }
 
+    // Flips MembershipStatus to Blocked for any active/inactive member whose latest payment's
+    // membership end date has already passed. Runs lazily whenever the member/trainer lists are
+    // read, so expired memberships surface as Blocked without needing a separate scheduled job.
+    private async Task AutoBlockExpiredMembershipsAsync(CancellationToken cancellationToken)
+    {
+        var now = DateTime.UtcNow;
+
+        var expiredMembers = await _db.Memberships
+            .Where(m => !m.IsDeleted &&
+                        (m.MembershipStatus == kvk.Gym.Enums.MembershipStatus.Active ||
+                         m.MembershipStatus == kvk.Gym.Enums.MembershipStatus.Inactive))
+            .Select(m => new
+            {
+                Member = m,
+                LatestEndDate = m.MemberPayments
+                    .OrderByDescending(p => p.CreatedAt)
+                    .Select(p => p.MemberShipEndDate)
+                    .FirstOrDefault()
+            })
+            .Where(x => x.LatestEndDate != null && x.LatestEndDate < now)
+            .Select(x => x.Member)
+            .ToListAsync(cancellationToken);
+
+        if (expiredMembers.Count == 0)
+            return;
+
+        foreach (var member in expiredMembers)
+            member.MembershipStatus = kvk.Gym.Enums.MembershipStatus.Blocked;
+
+        await _db.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<List<MembershipResponse>> GetAllMembersAsync(bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
         try
         {
+            await AutoBlockExpiredMembershipsAsync(cancellationToken);
+
             var query = _db.Memberships.AsNoTracking().AsQueryable();
             if (!includeDeleted)
                 query = query.Where(m => !m.IsDeleted);
@@ -971,6 +1005,8 @@ public class MembershipService : IMembershipService
     {
         try
         {
+            await AutoBlockExpiredMembershipsAsync(cancellationToken);
+
             var query = _db.Trainers.AsNoTracking().AsQueryable();
             if (!includeDeleted)
                 query = query.Where(t => !t.IsDeleted);
