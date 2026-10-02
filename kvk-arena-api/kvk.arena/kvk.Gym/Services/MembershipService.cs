@@ -371,7 +371,7 @@ public class MembershipService : IMembershipService
             var member = await _db.Memberships
                 .AsNoTracking()
                 .Include(m => m.MembershipPlan)
-                .SingleOrDefaultAsync(m => m.Id == memberId && !m.IsDeleted, cancellationToken);
+                .SingleOrDefaultAsync(m => m.Id == memberId, cancellationToken);
 
             if (member == null)
                 throw new Exception("Member not found");
@@ -442,7 +442,9 @@ public class MembershipService : IMembershipService
                 ProfilePicture = trainerSpecializedResponse?.ProfilePicture,
                 Rating = trainerSpecializedResponse?.Rating ?? 0,
                 IsFreelance = trainerSpecializedResponse?.IsFreelance ?? false,
-                Role = trainerSpecializedResponse?.Role
+                Role = trainerSpecializedResponse?.Role,
+                IsDeleted = member.IsDeleted,
+                DeletedAt = member.DeletedAt
             };
 
             return response;
