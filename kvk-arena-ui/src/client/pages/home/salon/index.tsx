@@ -70,7 +70,7 @@ export default function SalonHome() {
             type="button"
             onClick={scrollToTop}
             aria-label="Scroll back to top"
-            className="flex cursor-pointer h-13 w-13 items-center justify-center rounded-full bg-[#cd853f] text-white shadow-[0_18px_45px_rgba(41,107,225,0.35)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_55px_rgba(41,107,225,0.42)]"
+            className="flex cursor-pointer h-13 w-13 items-center justify-center rounded-full bg-gradient-to-br from-[#7C3AED] to-[#5B21B6] text-white shadow-[0_18px_45px_rgba(91,33,182,0.35)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_55px_rgba(91,33,182,0.45)]"
           >
             <svg
               viewBox="0 0 24 24"
