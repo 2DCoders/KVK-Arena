@@ -887,6 +887,9 @@ public class MembershipService : IMembershipService
 
             member.IsDeleted = false;
             member.DeletedAt = DateTime.UtcNow;
+            // Reactivated members always land back in Pending, not whatever status they held
+            // before being deleted — the cashier/member must go through activation again.
+            member.MembershipStatus = kvk.Gym.Enums.MembershipStatus.Inactive;
 
             if (member.MemberType == kvk.Gym.Enums.MemberType.Trainer)
             {
