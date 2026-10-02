@@ -317,13 +317,15 @@ public class MembershipService : IMembershipService
         }
     }
 
-    public async Task<List<MembershipResponse>> GetAllMembersAsync(CancellationToken cancellationToken = default)
+    public async Task<List<MembershipResponse>> GetAllMembersAsync(bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
         try
         {
-            var memberships = await _db.Memberships
-                .AsNoTracking()
-                .Where(m => !m.IsDeleted)
+            var query = _db.Memberships.AsNoTracking().AsQueryable();
+            if (!includeDeleted)
+                query = query.Where(m => !m.IsDeleted);
+
+            var memberships = await query
                 .Include(m => m.MembershipPlan)
                 .Include(m => m.MemberPayments) // include payments so projection can access them
                 .ToListAsync(cancellationToken);
@@ -348,7 +350,8 @@ public class MembershipService : IMembershipService
                 MembershipPlanPrice = m.MembershipPlan?.Price,
                 MembershipPlanDurationInDays = m.MembershipPlan?.DurationInDays,
                 IdentityUserId = m.IdentityUserId,
-                IsDeleted = m.IsDeleted
+                IsDeleted = m.IsDeleted,
+                DeletedAt = m.DeletedAt
             }).ToList();
 
             return response;
@@ -852,7 +855,6 @@ public class MembershipService : IMembershipService
         }
     }
 
-
     public async Task<Result> PermanentlyDeleteMemberAsync(Guid memberId,
         CancellationToken cancellationToken = default)
     {
@@ -862,24 +864,29 @@ public class MembershipService : IMembershipService
         try
         {
             var member = await _db.Memberships
-                .SingleOrDefaultAsync(m => m.Id == memberId && !m.IsDeleted, cancellationToken);
+                .SingleOrDefaultAsync(m => m.Id == memberId, cancellationToken);
 
             if (member == null)
                 return Result.Failure("Member not found");
 
-            // Business rule: permanent delete only allowed when there is at least one pending payment
-            // AND there are no saved fingerprints on the member.
-            var hasPendingPayment = await _db.MemberPayments
-                .AnyAsync(p => p.MembershipId == memberId && p.PaymentStatus == kvk.Gym.Enums.PaymentStatus.Pending,
-                    cancellationToken);
+            if (!member.IsDeleted)
+            {
+                // Business rule only applies to members that have not been soft-deleted yet:
+                // permanent delete is allowed when there is at least one pending payment
+                // AND there are no saved fingerprints on the member. Members already
+                // soft-deleted (e.g. by an admin cleaning up the cashier's soft-delete list)
+                // bypass this rule.
+                var hasPendingPayment = await _db.MemberPayments
+                    .AnyAsync(p => p.MembershipId == memberId && p.PaymentStatus == kvk.Gym.Enums.PaymentStatus.Pending,
+                        cancellationToken);
 
-            var hasFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
-                                  !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2);
+                var hasFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
+                                      !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2);
 
-            if (!hasPendingPayment || hasFingerprints)
-                return Result.Failure(
-                    "Permanent delete is allowed only for members with pending payments and no saved fingerprints");
-
+                if (!hasPendingPayment || hasFingerprints)
+                    return Result.Failure(
+                        "Permanent delete is allowed only for members with pending payments and no saved fingerprints");
+            }
 
             // With cascade delete configured for MemberPayments and MemberAttendances, removing the membership
             // will delete related payments and attendances automatically.
@@ -888,10 +895,8 @@ public class MembershipService : IMembershipService
             if (member.MemberType == kvk.Gym.Enums.MemberType.Trainer)
             {
                 var trainer = await _db.Trainers.SingleOrDefaultAsync(t => t.Id == memberId, cancellationToken);
-                if (trainer == null)
-                    return Result.Failure("Trainer not found");
-
-                _db.Trainers.Remove(trainer);
+                if (trainer != null)
+                    _db.Trainers.Remove(trainer);
             }
 
             await _db.SaveChangesAsync(cancellationToken);
@@ -960,14 +965,15 @@ public class MembershipService : IMembershipService
     }
     
     
-    public async Task<List<TrainerResponse>> GetAllTrainersAsync(CancellationToken cancellationToken = default)
+    public async Task<List<TrainerResponse>> GetAllTrainersAsync(bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
         try
         {
-            var trainers = await _db.Trainers
-                .AsNoTracking()
-                .Where(t => !t.IsDeleted)
-                .ToListAsync(cancellationToken);
+            var query = _db.Trainers.AsNoTracking().AsQueryable();
+            if (!includeDeleted)
+                query = query.Where(t => !t.IsDeleted);
+
+            var trainers = await query.ToListAsync(cancellationToken);
 
             var response = trainers.Select(t => new TrainerResponse
             {
@@ -985,6 +991,8 @@ public class MembershipService : IMembershipService
                 ProfilePicture = t.ProfilePicture,
                 Role = t.Role,
                 IsFreelance = t.IsFreelance,
+                IsDeleted = t.IsDeleted,
+                DeletedAt = t.DeletedAt,
             }).ToList();
 
             return response;
