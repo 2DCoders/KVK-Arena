@@ -423,7 +423,11 @@ public class BookingService : IBookingService
             await _smsService.SendSingleMessageAsync(request.CustomerDetails.PhoneNumber, fullMessage, ct);
 
 
-            return Result.Success("Multiple bookings confirmed.").WithData("response", confirmedBookings);
+            var confirmMessage = confirmedBookings.Count == 1
+                ? "Booking confirmed."
+                : "Multiple bookings confirmed.";
+
+            return Result.Success(confirmMessage).WithData("response", confirmedBookings);
         }
         catch (DbUpdateException)
         {
@@ -555,8 +559,13 @@ public class BookingService : IBookingService
     {
         try
         {
+            // ExpiresAt is "timestamp without time zone"; DateTime.Now (Kind=Local) used as
+            // a query parameter against it can get silently shifted by the server's UTC
+            // offset. Normalize to Unspecified so it compares as the plain naive value.
+            var nowUnspecified = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified);
+
             var expiredHolds = await _db.Set<BookingHold>()
-                .Where(h => h.Status == BookingHoldStatus.Pending && h.ExpiresAt < DateTime.Now)
+                .Where(h => h.Status == BookingHoldStatus.Pending && h.ExpiresAt < nowUnspecified)
                 .ToListAsync(ct);
 
             foreach (var hold in expiredHolds)
@@ -655,7 +664,10 @@ public class BookingService : IBookingService
 
     private async Task<bool> CheckAvailabilityInternalAsync(Guid slotId, DateOnly date, CancellationToken ct)
     {
-        var now = DateTime.Now;
+        // ExpiresAt is "timestamp without time zone"; DateTime.Now (Kind=Local) used as
+        // a query parameter against it can get silently shifted by the server's UTC
+        // offset. Normalize to Unspecified so it compares as the plain naive value.
+        var now = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified);
 
         // Check Confirmed Bookings
         var isBooked = await _db.CourtBookings

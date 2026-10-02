@@ -387,8 +387,16 @@ public class GamingStationService : IGamingStationService
         , Guid? stationId
         , CancellationToken cancellationToken)
     {
+        // IMPORTANT: GamingSlot is a reusable (station, time-of-day) template with no
+        // date of its own — bookings/holds carry the actual calendar date and just
+        // point at a slot template. So "this slot has a booking" does NOT mean "this
+        // exact time is busy right now" — it just means that time-of-day has been used
+        // on SOME date, ever. Slots that still match the new schedule are updated in
+        // place (kept active); only genuinely orphaned slots (time no longer in the new
+        // schedule) are deleted, or deactivated if something still references them.
+
         List<Guid> targetStationIds;
-        var keptSlotKeys = new HashSet<(Guid StationId, TimeOnly StartTime)>();
+        var existingKeys = new HashSet<(Guid StationId, TimeOnly StartTime)>();
 
         if (entityState == EntityState.Added && stationId.HasValue)
         {
@@ -396,46 +404,72 @@ public class GamingStationService : IGamingStationService
         }
         else if (entityState == EntityState.Modified && !stationId.HasValue)
         {
-            // Slots still referenced by an existing booking/hold can't be hard-deleted
-            // (FK RESTRICT) — hard-delete only unreferenced slots, deactivate the rest.
-            var existingSlots = await _db.GamingSlots
-                .Where(x => x.GamingCategoryId == config.GamingCategoryId)
-                .ToListAsync(cancellationToken);
-
-            if (existingSlots.Count > 0)
-            {
-                var existingSlotIds = existingSlots.Select(s => s.Id).ToList();
-
-                var referencedSlotIds = await _db.GamingBookings
-                    .Where(b => existingSlotIds.Contains(b.GamingSlotId))
-                    .Select(b => b.GamingSlotId)
-                    .Union(_db.GamingBookingHolds
-                        .Where(h => existingSlotIds.Contains(h.GamingSlotId))
-                        .Select(h => h.GamingSlotId))
-                    .Distinct()
-                    .ToListAsync(cancellationToken);
-
-                var referencedSet = referencedSlotIds.ToHashSet();
-
-                var slotsToDelete = existingSlots.Where(s => !referencedSet.Contains(s.Id)).ToList();
-                var slotsToDeactivate = existingSlots.Where(s => referencedSet.Contains(s.Id)).ToList();
-
-                if (slotsToDelete.Count > 0)
-                    _db.GamingSlots.RemoveRange(slotsToDelete);
-
-                foreach (var slot in slotsToDeactivate)
-                {
-                    slot.IsActive = false;
-                    keptSlotKeys.Add((slot.GamingStationId, slot.StartTime));
-                }
-
-                await _db.SaveChangesAsync(cancellationToken);
-            }
-
             targetStationIds = await _db.GamingStations
                 .Where(gs => gs.GamingCategoryId == config.GamingCategoryId && gs.IsActive)
                 .Select(gs => gs.Id)
                 .ToListAsync(cancellationToken);
+
+            var timeSlotsForMatch = GenerateSlotTimeIntervals(
+                config.StartTime, config.EndTime, config.SlotDurationMinutes, config.SlotGapMinutes);
+
+            var targetStationIdSet = targetStationIds.ToHashSet();
+            var desiredTimesByStation = targetStationIds.ToDictionary(
+                id => id,
+                _ => timeSlotsForMatch.ToDictionary(t => t.StartTime, t => t.EndTime));
+
+            var existingSlots = await _db.GamingSlots
+                .Where(x => x.GamingCategoryId == config.GamingCategoryId)
+                .ToListAsync(cancellationToken);
+
+            var orphanedSlots = new List<GamingSlot>();
+
+            foreach (var slot in existingSlots)
+            {
+                existingKeys.Add((slot.GamingStationId, slot.StartTime));
+
+                var stillWanted = targetStationIdSet.Contains(slot.GamingStationId) &&
+                                   desiredTimesByStation[slot.GamingStationId].TryGetValue(slot.StartTime, out var newEndTime);
+
+                if (stillWanted)
+                {
+                    desiredTimesByStation[slot.GamingStationId].TryGetValue(slot.StartTime, out newEndTime);
+                    slot.EndTime = newEndTime;
+                    slot.Price = config.Price;
+                    slot.GamingSlotConfigurationId = config.GamingConfigurationId;
+                    slot.IsActive = true;
+                }
+                else
+                {
+                    orphanedSlots.Add(slot);
+                }
+            }
+
+            if (orphanedSlots.Count > 0)
+            {
+                var orphanedIds = orphanedSlots.Select(s => s.Id).ToList();
+
+                var referencedOrphanIds = await _db.GamingBookings
+                    .Where(b => orphanedIds.Contains(b.GamingSlotId))
+                    .Select(b => b.GamingSlotId)
+                    .Union(_db.GamingBookingHolds
+                        .Where(h => orphanedIds.Contains(h.GamingSlotId))
+                        .Select(h => h.GamingSlotId))
+                    .Distinct()
+                    .ToListAsync(cancellationToken);
+
+                var referencedSet = referencedOrphanIds.ToHashSet();
+
+                var toDelete = orphanedSlots.Where(s => !referencedSet.Contains(s.Id)).ToList();
+                var toDeactivate = orphanedSlots.Where(s => referencedSet.Contains(s.Id)).ToList();
+
+                if (toDelete.Count > 0)
+                    _db.GamingSlots.RemoveRange(toDelete);
+
+                foreach (var slot in toDeactivate)
+                    slot.IsActive = false;
+            }
+
+            await _db.SaveChangesAsync(cancellationToken);
         }
         else
         {
@@ -460,8 +494,7 @@ public class GamingStationService : IGamingStationService
         {
             foreach (var (startTime, endTime) in timeSlots)
             {
-                // A kept (booked) slot already occupies this exact station/start time.
-                if (keptSlotKeys.Contains((stId, startTime)))
+                if (existingKeys.Contains((stId, startTime)))
                     continue;
 
                 newSlots.Add(new GamingSlot
@@ -476,6 +509,8 @@ public class GamingStationService : IGamingStationService
                 });
             }
         }
+
+        if (newSlots.Count == 0) return;
 
         _db.ChangeTracker.AutoDetectChangesEnabled = false;
         try

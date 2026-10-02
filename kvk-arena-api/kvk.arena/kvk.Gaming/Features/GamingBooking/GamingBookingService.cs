@@ -646,7 +646,11 @@ public class GamingBookingService : IGamingBookingService
                 }
             }
 
-            return Result.Success("Multiple gaming bookings confirmed.").WithData("response", confirmedBookings);
+            var confirmMessage = confirmedBookings.Count == 1
+                ? "Gaming booking confirmed."
+                : "Multiple gaming bookings confirmed.";
+
+            return Result.Success(confirmMessage).WithData("response", confirmedBookings);
         }
         catch (DbUpdateException)
         {
@@ -1012,7 +1016,10 @@ public class GamingBookingService : IGamingBookingService
 
     private async Task<bool> CheckAvailabilityInternalAsync(Guid gamingSlotId, DateOnly date, CancellationToken ct)
     {
-        var now = DateTime.Now;
+        // ExpiresAt is "timestamp without time zone"; DateTime.Now (Kind=Local) used as
+        // a query parameter against it can get silently shifted by the server's UTC
+        // offset. Normalize to Unspecified so it compares as the plain naive value.
+        var now = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified);
 
         // Check Confirmed Bookings
         var isBooked = await _db.GamingBookings

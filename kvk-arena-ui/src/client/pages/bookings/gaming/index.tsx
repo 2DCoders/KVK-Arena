@@ -1031,7 +1031,7 @@ export default function BookingGaming() {
                   selectedSlots.length === 0 ? "opacity-40 pointer-events-none" : ""
                 }`}
               >
-                <h3 className="text-lg font-semibold">Additional Purchases</h3>
+                <h3 className="text-lg font-semibold">Consoles</h3>
 
                 {additionalPurchases.map((purchase) => {
                   const quantity = purchaseQuantities[purchase.id] ?? 0;
