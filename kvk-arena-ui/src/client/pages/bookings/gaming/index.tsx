@@ -128,6 +128,7 @@ export default function BookingGaming() {
   const [isCloseConfirmOpen, setIsCloseConfirmOpen] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [customerNameError, setCustomerNameError] = useState("");
   const [customerPhoneError, setCustomerPhoneError] = useState("");
   const [holdIds, setHoldIds] = useState<string[]>([]);
   const [holdExpiresAt, setHoldExpiresAt] = useState<number | null>(null);
@@ -596,7 +597,7 @@ export default function BookingGaming() {
     setIsCloseConfirmOpen(false);
   };
 
-  const confirmCloseBookingModal = () => {
+  const confirmCloseBookingModal = async () => {
     if (remainingSeconds <= 0) {
       window.location.reload();
       return;
@@ -606,9 +607,13 @@ export default function BookingGaming() {
     setIsBookingModalOpen(false);
     setCustomerName("");
     setCustomerPhone("");
+    setCustomerNameError("");
     setCustomerPhoneError("");
     setHoldIds([]);
     setHoldExpiresAt(null);
+    setSelectedSlots([]);
+    setSelectedStations([]);
+    setPurchaseQuantities({});
 
     setPageAlert({
       visible: true,
@@ -617,6 +622,8 @@ export default function BookingGaming() {
       description:
         "Your selected slots are still reserved for a few more minutes. If you don't complete the booking, they will automatically become available again once the 7-minute hold expires.",
     });
+
+    await refreshStationSlots();
   };
 
   /* -------------------------------------------------------------------------- */
@@ -625,6 +632,10 @@ export default function BookingGaming() {
 
   const handleConfirmBooking = async () => {
     if (!customerName.trim() || !customerPhone.trim()) {
+      if (!customerName.trim()) {
+        setCustomerNameError("Please enter the customer name.");
+      }
+
       if (!customerPhone.trim()) {
         setCustomerPhoneError(
           "Please enter a mobile number starting with 07 and containing exactly 10 digits."
@@ -657,6 +668,7 @@ export default function BookingGaming() {
       return;
     }
 
+    setCustomerNameError("");
     setCustomerPhoneError("");
 
     if (remainingSeconds <= 0 || holdIds.length === 0) {
@@ -1217,21 +1229,36 @@ export default function BookingGaming() {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <label className="block">
                       <span className="mb-2 block text-xs font-bold text-gray-700">
-                        Customer Name
+                        Customer Name <span className="text-red-500">*</span>
                       </span>
 
                       <input
                         type="text"
+                        required
+                        aria-invalid={Boolean(customerNameError)}
                         value={customerName}
-                        onChange={(event) => setCustomerName(event.target.value)}
+                        onChange={(event) => {
+                          setCustomerName(event.target.value);
+                          setCustomerNameError("");
+                        }}
                         placeholder="Enter customer name"
-                        className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm outline-none transition focus:border-red-500 focus:ring-4 focus:ring-red-100"
+                        className={`h-12 w-full rounded-xl border bg-white px-4 text-sm outline-none transition focus:ring-4 focus:ring-red-100 ${
+                          customerNameError
+                            ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                            : "border-gray-200 focus:border-red-500"
+                        }`}
                       />
+
+                      {customerNameError && (
+                        <span className="mt-1.5 block text-xs font-medium text-red-600" role="alert">
+                          {customerNameError}
+                        </span>
+                      )}
                     </label>
 
                     <label className="block">
                       <span className="mb-2 block text-xs font-bold text-gray-700">
-                        Customer Mobile No
+                        Customer Mobile No <span className="text-red-500">*</span>
                       </span>
 
                       <input
@@ -1365,7 +1392,7 @@ export default function BookingGaming() {
 
                 <button
                   type="button"
-                  onClick={confirmCloseBookingModal}
+                  onClick={() => void confirmCloseBookingModal()}
                   className="h-11 flex-1 cursor-pointer rounded-xl bg-amber-500 text-sm font-semibold text-white transition hover:bg-amber-600"
                 >
                   Close Anyway
