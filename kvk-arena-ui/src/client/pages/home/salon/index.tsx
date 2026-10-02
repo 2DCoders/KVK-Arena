@@ -49,7 +49,9 @@ export default function SalonHome() {
       <section id="booking">
         <SalonBooking />
       </section>
-      <SalonServices />
+      <section id="services">
+        <SalonServices />
+      </section>
       <SalonAdd2 />
       <CafeFooter />
 

@@ -313,7 +313,7 @@ export default function SalonHeader() {
             </button>
 
             <a
-              href="#about"
+              href="#services"
               className="
                 rounded-full
                 px-4 py-2
@@ -325,11 +325,11 @@ export default function SalonHeader() {
                 hover:text-white
               "
             >
-              About
+              Services
             </a>
 
             <a
-              href="#menu"
+              href="#booking"
               className="
                 rounded-full
                 px-4 py-2
@@ -341,7 +341,7 @@ export default function SalonHeader() {
                 hover:text-white
               "
             >
-              Menu
+              Booking
             </a>
           </nav>
 
@@ -547,7 +547,7 @@ export default function SalonHeader() {
             </button>
 
             <a
-              href="#about"
+              href="#services"
               onClick={closeMobileMenu}
               className="
                 min-w-0
@@ -562,11 +562,11 @@ export default function SalonHeader() {
                 hover:text-white
               "
             >
-              About
+              Services
             </a>
 
             <a
-              href="#menu"
+              href="#booking"
               onClick={closeMobileMenu}
               className="
                 min-w-0
@@ -581,7 +581,7 @@ export default function SalonHeader() {
                 hover:text-white
               "
             >
-              Menu
+              Booking
             </a>
 
             <a

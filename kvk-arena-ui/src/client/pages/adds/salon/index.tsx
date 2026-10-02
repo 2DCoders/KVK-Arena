@@ -10,7 +10,7 @@ export default function SalonAdd1() {
             <span className="h-px w-12 bg-[#10141c]/40" />
 
             <span className="text-[11px] font-medium uppercase tracking-[0.3em] text-[#10141c]/70">
-              Our Services
+              A Touch of Luxury
             </span>
 
             <span className="h-px w-12 bg-[#10141c]/40" />
