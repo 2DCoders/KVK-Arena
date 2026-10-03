@@ -9,5 +9,6 @@ public interface IOrderService
     Task<Result> UpdateOrderAsync(OrderUpdateRequest request, CancellationToken cancellationToken = default);
     Task<Result> DeleteOrderAsync(Guid orderId, CancellationToken cancellationToken = default);
     Task<List<OrderResponse>> GetOrdersAsync(CancellationToken cancellationToken = default);
+    Task<List<OrderResponse>> GetOrdersByDateRangeAsync(DateTime? from, DateTime? to, CancellationToken cancellationToken = default);
     Task<OrderResponse> GetOrderByIdAsync(Guid orderId, CancellationToken cancellationToken = default);
 }

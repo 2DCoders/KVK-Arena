@@ -1,5 +1,6 @@
 using kvk.BuildingBlocks.Interfaces;
 using kvk.Cafe.Features.Menu;
+using Kvk.Cafe.Features.Dashboard;
 using Kvk.Cafe.Features.Order;
 using Kvk.Cafe.Features.PaymentGateway;
 using Kvk.Cafe.Interfaces;
@@ -31,5 +32,6 @@ public class CafeModuleInitializer : IModuleInitializer
         services.AddScoped<IMenuService,MenuService>(); // Register the new service
         services.AddScoped<IOrderService, OrderService>(); // Register OrderService
         services.AddScoped<ICafePaymentGatewayService, CafePaymentGatewayService>(); // Register the new service
+        services.AddScoped<ICafeDashboardService, CafeDashboardService>();
     }
 }

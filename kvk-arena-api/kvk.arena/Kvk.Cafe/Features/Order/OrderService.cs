@@ -182,6 +182,55 @@ public class OrderService(CafeDbContext db, ISmsService smsService, ILogger<Orde
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<List<OrderResponse>> GetOrdersByDateRangeAsync(DateTime? from, DateTime? to,
+        CancellationToken cancellationToken = default)
+    {
+        // OrderDate is "timestamp without time zone"; Npgsql rejects mixing DateTime.Kind values
+        // in the same query, so both bounds are normalized to Unspecified regardless of what the
+        // caller passed in.
+        var fromDate = DateTime.SpecifyKind(from ?? DateTime.Now.AddDays(-30), DateTimeKind.Unspecified);
+        var toDate = DateTime.SpecifyKind(to ?? DateTime.Now, DateTimeKind.Unspecified);
+
+        return await db.Orders
+            .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Menu)
+            .Select(o => new OrderResponse
+            {
+                Id = o.Id,
+                OrderNumber = o.OrderNumber,
+                OrderDate = o.OrderDate,
+                CustomerName = o.CustomerName,
+                CustomerPhone = o.CustomerPhone,
+                TotalMinutesSpent = o.TotalMinutesSpent,
+                SubTotalAmount = o.SubTotalAmount,
+                Discount = o.Discount,
+                DiscountedTotalAmount = o.DiscountedTotalAmount,
+                IsPaid = o.IsPaid,
+                PaymentMethod = o.PaymentMethod,
+                OrderType = o.OrderType,
+                Remark = o.Remark,
+                Address = o.Address,
+                DeliveryInstructions = o.DeliveryInstructions,
+                DeliveryTime = o.DeliveryTime,
+                DeliveryPerson = o.DeliveryPerson,
+                DeliveryPersonPhone = o.DeliveryPersonPhone,
+                TableNumber = o.TableNumber,
+                OrderItems = o.OrderItems.Select(oi => new OrderItemResponse
+                {
+                    Id = oi.Id,
+                    MenuId = oi.MenuId,
+                    MenuName = oi.Menu != null ? oi.Menu.Name : string.Empty,
+                    Quantity = oi.Quantity,
+                    Price = oi.Price,
+                    Discount = oi.Discount,
+                    DiscountedPrice = oi.DiscountedPrice
+                }).ToList()
+            })
+            .Where(o => o.OrderDate.Date >= fromDate.Date && o.OrderDate.Date <= toDate.Date)
+            .OrderByDescending(o => o.OrderDate)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<OrderResponse> GetOrderByIdAsync(Guid orderId, CancellationToken cancellationToken = default)
     {
         var order = await db.Orders

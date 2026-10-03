@@ -52,6 +52,15 @@ public class OrderController(IOrderService orderService) : ControllerBase
         return Ok(orders);
     }
 
+    // GET /api/cafe/payments?from=2026-01-01&to=2026-01-31
+    [HttpGet("/api/cafe/payments")]
+    public async Task<IActionResult> GetByDateRange([FromQuery] DateTime? from, [FromQuery] DateTime? to,
+        CancellationToken cancellationToken = default)
+    {
+        var orders = await orderService.GetOrdersByDateRangeAsync(from, to, cancellationToken);
+        return Ok(orders);
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<OrderResponse>> GetById(Guid id,
         CancellationToken cancellationToken = default)
