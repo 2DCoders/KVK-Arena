@@ -69,6 +69,15 @@ public class CarWashOrderController(ICarWashOrderService orderService) : Control
         return Ok(orders);
     }
 
+    // GET /api/car-service/payments?from=2026-01-01&to=2026-01-31
+    [HttpGet("/api/car-service/payments")]
+    public async Task<IActionResult> GetByDateRange([FromQuery] DateTime? from, [FromQuery] DateTime? to,
+        CancellationToken cancellationToken = default)
+    {
+        var orders = await orderService.GetCarWashOrdersByDateRangeAsync(from, to, cancellationToken);
+        return Ok(orders);
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<CarWashOrderResponse>> GetById(Guid id,
         CancellationToken cancellationToken = default)

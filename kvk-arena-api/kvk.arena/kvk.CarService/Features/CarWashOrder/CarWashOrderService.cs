@@ -232,6 +232,56 @@ public class CarWashOrderService(CarServiceDbContext db, ISmsService smsService,
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<List<CarWashOrderResponse>> GetCarWashOrdersByDateRangeAsync(DateTime? from, DateTime? to,
+        CancellationToken cancellationToken = default)
+    {
+        // OrderDate is "timestamp without time zone"; Npgsql rejects mixing DateTime.Kind values
+        // in the same query, so both bounds are normalized to Unspecified regardless of what the
+        // caller passed in.
+        var fromDate = DateTime.SpecifyKind(from ?? DateTime.Now.AddDays(-30), DateTimeKind.Unspecified);
+        var toDate = DateTime.SpecifyKind(to ?? DateTime.Now, DateTimeKind.Unspecified);
+
+        return await db.CarWashOrders
+            .Select(order => new CarWashOrderResponse
+            {
+                CarWashOrderId = order.Id,
+                OrderNumber = order.OrderNumber,
+                OrderDate = order.OrderDate,
+                CustomerName = order.CustomerName,
+                CustomerPhone = order.CustomerPhone,
+                VehicleType = order.VehicleType,
+                VehicleNumber = order.VehicleNumber,
+                TotalMinutesSpent = order.TotalMinutesSpent,
+                SubTotalAmount = order.SubTotalAmount,
+                Discount = order.Discount,
+                DiscountedTotalAmount = order.DiscountedTotalAmount,
+                IsPaid = order.IsPaid,
+                PaymentMethod = order.PaymentMethod,
+                CarWashOrderStatus = order.CarWashOrderStatus,
+
+                Packages = order.Packages
+                    .Select(package => new CarWashOrderPackageResponse
+                    {
+                        CarWashPackageId = package.CarWashPackageId,
+                        PackageName = package.Package.Title,
+                        PackagePrice = package.Package.BasPrice
+                    })
+                    .ToList(),
+
+                Services = order.Services
+                    .Select(service => new CarWashOrderServiceResponse
+                    {
+                        CarWashServiceId = service.CarWashServiceId,
+                        ServiceName = service.Service.Title,
+                        ServicePrice = service.Service.Price
+                    })
+                    .ToList()
+            })
+            .Where(order => order.OrderDate.Date >= fromDate.Date && order.OrderDate.Date <= toDate.Date)
+            .OrderByDescending(order => order.OrderDate)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<CarWashOrderResponse> GetCarWashOrderByIdAsync(Guid orderId,
         CancellationToken cancellationToken = default)
     {

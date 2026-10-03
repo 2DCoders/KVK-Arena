@@ -13,7 +13,9 @@ public interface ICarWashOrderService
     Task<Result> DeleteCarWashOrderAsync(Guid orderId, CancellationToken cancellationToken = default);
     
     Task<List<CarWashOrderResponse>> GetCarWashOrdersAsync(DateTime dateTime,CancellationToken cancellationToken = default);
-    
+
+    Task<List<CarWashOrderResponse>> GetCarWashOrdersByDateRangeAsync(DateTime? from, DateTime? to, CancellationToken cancellationToken = default);
+
     Task<CarWashOrderResponse> GetCarWashOrderByIdAsync(Guid orderId, CancellationToken cancellationToken = default);
     
     Task<Result> CompleteTheOrderAsync(Guid orderId, CancellationToken cancellationToken = default);

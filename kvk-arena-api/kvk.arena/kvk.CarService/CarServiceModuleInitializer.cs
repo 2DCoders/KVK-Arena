@@ -1,6 +1,7 @@
 using kvk.BuildingBlocks.Interfaces;
 using kvk.CarService.Features.CarWashOrder;
 using kvk.CarService.Features.CarWashService;
+using kvk.CarService.Features.Dashboard;
 using kvk.CarService.Interfaces;
 using kvk.CarService.Services;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +32,7 @@ public class CarServiceModuleInitializer : IModuleInitializer
         services.AddScoped<ICarWashService, CarWashService>();
         services.AddScoped<IPackageService, PackageService>();
         services.AddScoped<ICarWashOrderService,CarWashOrderService>();
+        services.AddScoped<ICarWashDashboardService, CarWashDashboardService>();
         services.AddScoped<CarServiceDayEndService>(); // Register the new service
     }
 }
