@@ -109,6 +109,7 @@ public class MenuService(CafeDbContext db) : IMenuService
             {
                 Id = m.Id,
                 Name = m.Name,
+                Image = m.Image,
                 Category = m.Category,
                 Price = m.Price,
                 Description = m.Description,
@@ -117,7 +118,7 @@ public class MenuService(CafeDbContext db) : IMenuService
                 Ingredients = m.Ingredients,
                 PreparationTimeInMinutes = m.PreparationTimeInMinutes,
                 PortionSize = m.PortionSize
-                
+
             })
             .ToListAsync(cancellationToken);
     }
