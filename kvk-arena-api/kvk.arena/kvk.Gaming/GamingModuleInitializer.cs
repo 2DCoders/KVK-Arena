@@ -7,6 +7,7 @@ using kvk.Gaming.Features.GamingStationGameMapping;
 using kvk.Gaming.Features.GamingSlotConfiguration;
 using kvk.Gaming.Features.GamingSlotGeneration;
 using kvk.Gaming.Features.GamingBooking; // Added for GamingBookingService
+using kvk.Gaming.Features.Dashboard;
 using kvk.Gaming.Interfaces;
 using kvk.Gaming.Services; // Add this using statement
 using Microsoft.EntityFrameworkCore;
@@ -47,5 +48,6 @@ public class GamingModuleInitializer : IModuleInitializer
         services.AddScoped<IGamingBookingService, GamingBookingService>();
         services.AddScoped<IAdditionalPurchaseService, AdditionalPurchaseService>();
         services.AddScoped<GamingDayEndService>(); // Register the new service
+        services.AddScoped<IGamingDashboardService, GamingDashboardService>();
     }
 }
