@@ -33,6 +33,7 @@ public class GymModuleInitializer : IModuleInitializer
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IMembershipPlanService, MembershipPlanService>();
         services.AddScoped<IDayPassMemberService, DayPassMemberService>();
+        services.AddScoped<IGymDashboardService, GymDashboardService>();
         services.AddScoped<IGymPaymentGatewayService, GymPaymentGatewayService>();
         services.AddScoped<IHashService, HashService>();
         services.AddScoped<TrainerApprovalRequestService>();

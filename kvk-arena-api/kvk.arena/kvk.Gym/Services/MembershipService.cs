@@ -385,7 +385,8 @@ public class MembershipService : IMembershipService
                 MembershipPlanDurationInDays = m.MembershipPlan?.DurationInDays,
                 IdentityUserId = m.IdentityUserId,
                 IsDeleted = m.IsDeleted,
-                DeletedAt = m.DeletedAt
+                DeletedAt = m.DeletedAt,
+                LastModifiedAt = m.LastModifiedAt
             }).ToList();
 
             return response;

@@ -35,5 +35,6 @@ public class MembershipResponse : TrainerSpecializedResponse
     public DateTime? DeletedAt { get; set; }
 
     public DateTime? CreatedDate { get; set; }
+    public DateTime? LastModifiedAt { get; set; }
 
 }
