@@ -17,7 +17,7 @@ public sealed class PermissionAuthorizationFilter : IAsyncAuthorizationFilter
     {
         if (context.HttpContext.User?.Identity?.IsAuthenticated != true)
         {
-            context.Result = new ForbidResult();
+            context.Result = new ChallengeResult();
             return;
         }
         if (!TryGetUserId(context.HttpContext.User, out var userId))
