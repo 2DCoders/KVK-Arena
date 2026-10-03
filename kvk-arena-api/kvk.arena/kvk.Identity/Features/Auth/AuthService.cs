@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using kvk.BuildingBlocks.Auth;
 using kvk.BuildingBlocks.Common;
+using kvk.BuildingBlocks.CustomExceptions;
 using kvk.Identity.Domain;
 using kvk.Identity.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -148,10 +149,10 @@ public class AuthService
                 .SingleOrDefaultAsync(s => s.UserName == request.Username, cancellationToken);
 
             if (staff == null)
-                throw new Exception("Invalid username or password");
+                throw new InvalidOperationException("Invalid username or password");
 
             if (!PasswordEncryption.VerifyPassword(request.Password, staff.PasswordHash))
-                throw new Exception("Invalid username or password");
+                throw new InvalidOperationException("Invalid username or password");
 
             // Get user permissions
             var permissions = (await _permissionService.GetUserPermissions(staff.Id, cancellationToken)).ToArray();
@@ -164,6 +165,14 @@ public class AuthService
                 .Select(sm => sm.ModuleName)
                 .Distinct()
                 .ToArrayAsync(cancellationToken);
+            
+            //validate requested module is available for the staff member
+            request.Module.ThrowIfNull("Module is required");
+
+            if (!modules.Contains(request.Module) && request.Module != "Admin")
+            {
+                throw new AuthException("Module is not available for the staff member");
+            }
 
             // Generate JWT token
             var token = _jwtService.GenerateToken(staff.Id, permissions);
@@ -182,9 +191,9 @@ public class AuthService
 
             return response;
         }
-        catch (Exception ex)
+        catch (AuthException ex)
         {
-            throw new Exception($"Failed to login: {ex.Message}");
+            throw new AuthException($"Failed to login: {ex.Message}");
         }
     }
 
