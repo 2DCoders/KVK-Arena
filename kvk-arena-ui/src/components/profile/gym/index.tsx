@@ -2,7 +2,7 @@ import Alert from "@/components/alert";
 import { getEnv } from "@/env";
 import { changePassword, getMember, updateMember } from "@/services/auth-api";
 import { getMembershipPlans } from "@/services/memberships-api";
-import { createPayment } from "@/services/pay-api";
+import { createPayment, reversePayment } from "@/services/pay-api";
 import {
   createRequest,
   getRequestById,
@@ -23,7 +23,7 @@ import {
   Plus,
   Camera,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface UserProfileModalProps {
   open: boolean;
@@ -64,6 +64,7 @@ export default function UserProfileModal({
     oldPassword: "",
   });
   const [loading, setLoading] = useState(false);
+  const [paymentInProgress, setPaymentInProgress] = useState(false);
   const [showEditTrainerModal, setShowEditTrainerModal] = useState(false);
   const [isExistRequest, setIsExistRequest] = useState(false);
   const [pendingRequestData, setPendingRequestData] = useState<any>(null);
@@ -102,6 +103,8 @@ export default function UserProfileModal({
   // Ensure memberToken is always a string, default to empty string if null/undefined
   const memberToken = localStorage.getItem("memberToken") || "";
   const memberType = localStorage.getItem("memberType") || "N/A";
+
+  const reverseInProgressRef = useRef(false);
 
   const formatDate = (date?: string | null) => {
     if (!date) return "-";
@@ -262,26 +265,84 @@ export default function UserProfileModal({
     }
   };
 
+  const handleReverse = async () => {
+    if (reverseInProgressRef.current) {
+      return;
+    }
+
+    const pendingPayment = localStorage.getItem("pendingMembershipPayment");
+
+    if (!pendingPayment) {
+      return;
+    }
+
+    reverseInProgressRef.current = true;
+
+    try {
+      const paymentData = JSON.parse(pendingPayment);
+
+      const body = {
+        memberId: paymentData.memberId,
+        membershipPlanId: localStorage.getItem("actualMembershipPlanId") || "N/A",
+        orderId: paymentData.orderId,
+      };
+
+      console.log("Reversing payment:", body);
+
+      await reversePayment(body);
+
+      localStorage.removeItem("pendingMembershipPayment");
+
+      console.log("Payment reversed successfully");
+    } catch (error) {
+      console.error("Error reversing payment:", error);
+    } finally {
+      reverseInProgressRef.current = false;
+    }
+  };
+
   useEffect(() => {
     const interval = setInterval(() => {
       if (window.payhere) {
         clearInterval(interval);
 
-        window.payhere.onCompleted = (orderId: string) => {
-          console.log("Payment success:", orderId);
+        window.payhere.onCompleted = async () => {
+          localStorage.removeItem("pendingMembershipPayment");
+          setPaymentInProgress(false);
+          window.location.reload();
         };
 
-        window.payhere.onDismissed = () => {
-          console.log("Payment cancelled");
+        window.payhere.onDismissed = async () => {
+          await handleReverse();
+          setPaymentInProgress(false);
         };
 
-        window.payhere.onError = (error: any) => {
-          console.log("Payment error:", error);
+        window.payhere.onError = async () => {
+          await handleReverse();
+          setPaymentInProgress(false);
         };
       }
     }, 300);
 
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const checkPendingPayment = async () => {
+      const pendingPayment = localStorage.getItem("pendingMembershipPayment");
+
+      if (!pendingPayment) {
+        return;
+      }
+
+      console.log("Pending payment found after page refresh");
+
+      await handleReverse();
+
+      setPaymentInProgress(false);
+    };
+
+    checkPendingPayment();
   }, []);
 
   useEffect(() => {
@@ -329,6 +390,9 @@ export default function UserProfileModal({
       .filter(Boolean) || [];
 
   const handleInitPayment = async () => {
+    if (paymentInProgress || selectedPlan === null) return;
+
+    setPaymentInProgress(true);
     try {
       const body = {
         amount: plans.find((p) => p.id === selectedPlan)?.price ?? 0,
@@ -342,6 +406,15 @@ export default function UserProfileModal({
       if (!window.payhere) {
         throw new Error("PayHere not loaded");
       }
+
+      localStorage.setItem(
+        "pendingMembershipPayment",
+        JSON.stringify({
+          memberId,
+          membershipPlanId: selectedPlan,
+          orderId: payment.orderId,
+        }),
+      );
 
       const paymentDetails = {
         sandbox: true,
@@ -371,6 +444,8 @@ export default function UserProfileModal({
       window.payhere.startPayment(paymentDetails);
       setShowUpgradeModal(false);
     } catch (error) {
+      setPaymentInProgress(false);
+      localStorage.removeItem("pendingMembershipPayment");
       setPageAlert({
         visible: true,
         variant: "error",
@@ -385,6 +460,12 @@ export default function UserProfileModal({
     try {
       const memberData = await getMember(memberId, memberToken);
       setMemberData(memberData);
+      console.log(memberData.membershipPlanId);
+
+      localStorage.setItem(
+        "actualMembershipPlanId",
+        memberData?.membershipPlanId || "N/A",
+      ); // Store memberType in localStorage
       if (
         memberData?.additionalData?.response?.memberPayment
           ?.memberShipEndDate === null
@@ -551,7 +632,9 @@ export default function UserProfileModal({
                       <h4
                         className={`font-semibold ${selectedPlan !== null ? "text-white" : "text-slate-900"}`}
                       >
-                        Pay Now
+                        {paymentInProgress
+                          ? "Payment in progress..."
+                          : "Pay Now"}
                       </h4>
                     </div>
                   </button>
@@ -887,15 +970,13 @@ export default function UserProfileModal({
                       />
 
                       {/* Gender */}
-                      <select
+                      <input
                         name="gender"
-                        value={form.gender}
+                        value={form.gender === 1 ? "Male" : "Female"}
                         disabled={!isEditing}
                         className="w-full p-3 rounded-xl border bg-slate-50 disabled:bg-slate-100"
-                      >
-                        <option value={1}>Male</option>
-                        <option value={2}>Female</option>
-                      </select>
+                        placeholder="Gender"
+                      />
 
                       {/* Update Button */}
                       {isEditing && (

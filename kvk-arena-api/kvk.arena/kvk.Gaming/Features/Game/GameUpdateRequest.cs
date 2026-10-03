@@ -1,13 +1,11 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace kvk.Gaming.Features.Game;
 
 public class GameUpdateRequest
 {
     public Guid Id { get; set; }
-
-    [Required(ErrorMessage = "Gaming Category ID is required.")]
-    public Guid GamingCategoryId { get; set; }
 
     [Required(ErrorMessage = "Name is required.")]
     [StringLength(100, ErrorMessage = "Name cannot exceed 100 characters.")]
@@ -17,4 +15,6 @@ public class GameUpdateRequest
     public string? Description { get; set; }
 
     public bool IsActive { get; set; }
+    
+    public IFormFile? Image { get; set; }
 }

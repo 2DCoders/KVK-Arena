@@ -15,6 +15,10 @@ public interface IGamingBookingService
     // New methods for multi-booking and payment integration
     Task<Result> CreateMultiGamingHoldAsync(MultiGamingBookingRequest request, CancellationToken cancellationToken = default);
     Task<Result> CreateSingleGamingBookingWithPaymentAsync(SingleGamingBookingWithPaymentRequest request, CancellationToken cancellationToken = default);
+    Task<Result> CreateMultiGamingPaymentAsync(MultiGamingBookingPaymentRequest request, CancellationToken cancellationToken = default);
     Task<Result> ProcessPaymentSuccessAsync(Guid holdId, string paymentIntentId, CancellationToken cancellationToken = default);
+    Task<Result> ProcessMultiPaymentSuccessAsync(MultiGamingPaymentRequest request, CancellationToken cancellationToken = default);
     Task VerifyPaymentNotificationAsync(PaymentNotificationRequest request, CancellationToken cancellationToken = default);
+    Task<Result> DeletePendingPayment(GamingPendingPaymentDeleteRequest request, CancellationToken cancellationToken = default);
+    Task<Result> FixStalePendingBookingsAsync(CancellationToken cancellationToken = default);
 }

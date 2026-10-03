@@ -50,6 +50,11 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
             };
 
             _db.GamingSlotConfigurations.Add(config);
+
+            // Keep the category's own displayed price (shown on the guest site's
+            // service-selection card) in sync with the slot configuration's price.
+            gamingCategory.Price = request.Price;
+
             await _db.SaveChangesAsync(cancellationToken);
 
             await RegenerateSlotsInternalAsync(config, cancellationToken);
@@ -81,9 +86,17 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
             config.GamingCategoryId = request.GamingCategoryId;
             config.Price = request.Price; // Corrected to use request.Price
 
-            await _db.SaveChangesAsync(cancellationToken);
+            // Keep the category's own displayed price (shown on the guest site's
+            // service-selection card) in sync with the slot configuration's price.
+            var gamingCategory = await _db.GamingCategories
+                .FirstOrDefaultAsync(c => c.Id == config.GamingCategoryId, cancellationToken);
+            if (gamingCategory != null)
+                gamingCategory.Price = request.Price;
 
             await RegenerateSlotsInternalAsync(config, cancellationToken);
+
+            _db.GamingSlotConfigurations.Update(config);
+            await _db.SaveChangesAsync(cancellationToken);
 
             return Result.Success("Configuration updated and slots regenerated");
         }
@@ -102,12 +115,46 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
 
             if (config == null) return Result.Failure("Configuration not found");
 
-            // When config is deleted, we should clear the generated slots associated with it
+            // When config is deleted, we should clear the generated slots associated with it —
+            // but slots still referenced by a booking/hold can't be hard-deleted (FK RESTRICT),
+            // so deactivate those instead.
             var existingSlots = await _db.GamingSlots
                 .Where(x => x.GamingCategoryId == config.GamingCategoryId)
                 .ToListAsync(cancellationToken);
 
-            _db.GamingSlots.RemoveRange(existingSlots);
+            if (existingSlots.Count > 0)
+            {
+                var existingSlotIds = existingSlots.Select(s => s.Id).ToList();
+
+                var referencedSlotIds = await _db.GamingBookings
+                    .Where(b => existingSlotIds.Contains(b.GamingSlotId))
+                    .Select(b => b.GamingSlotId)
+                    .Union(_db.GamingBookingHolds
+                        .Where(h => existingSlotIds.Contains(h.GamingSlotId))
+                        .Select(h => h.GamingSlotId))
+                    .Distinct()
+                    .ToListAsync(cancellationToken);
+
+                var referencedSet = referencedSlotIds.ToHashSet();
+
+                var slotsToDelete = existingSlots.Where(s => !referencedSet.Contains(s.Id)).ToList();
+                var slotsToDeactivate = existingSlots.Where(s => referencedSet.Contains(s.Id)).ToList();
+
+                if (slotsToDelete.Count > 0)
+                    _db.GamingSlots.RemoveRange(slotsToDelete);
+
+                foreach (var slot in slotsToDeactivate)
+                    slot.IsActive = false;
+
+                if (slotsToDeactivate.Count > 0)
+                {
+                    // Some slots are still referenced — keep the configuration row too,
+                    // since deleting it could cascade-conflict with those same slots.
+                    await _db.SaveChangesAsync(cancellationToken);
+                    return Result.Success(
+                        "Unreferenced slots deleted. Some slots are still linked to existing bookings and were deactivated instead; the configuration was kept.");
+                }
+            }
 
             _db.GamingSlotConfigurations.Remove(config);
             await _db.SaveChangesAsync(cancellationToken);
@@ -133,18 +180,26 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
         var bookedSlotsIds = await _db.GamingBookings
             .AsNoTracking()
             .Where(b => b.GamingStationId == stationId &&
-                        b.BookingDate == date && b.GamingCategoryId == categoryId)
+                        b.BookingDate == date && b.GamingCategoryId == categoryId &&
+                        b.Status != GamingBookingStatus.Cancelled)
             .Select(x => x.GamingSlotId)
             .ToListAsync(cancellationToken);
 
         //and check with CourtBookingHold also
+        // ExpiresAt is a "timestamp without time zone" column; DateTime.Now has
+        // DateTimeKind.Local, and binding a Local-kind value as a query parameter
+        // against it can get silently shifted by the server's UTC offset, making
+        // holds look "not yet expired" for hours after they actually expired.
+        // Normalize to Unspecified so it's compared as the plain naive value it is.
+        var nowUnspecified = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified);
+
         var bookingHoldNotExpired = await _db.GamingBookingHolds
             .AsNoTracking()
             .Where(b => b.GamingStationId == stationId &&
                         b.GamingCategoryId == categoryId &&
                         b.BookingDate == date &&
                         b.Status == GamingBookingHoldStatus.Pending &&
-                        b.ExpiresAt > DateTime.Now)
+                        b.ExpiresAt > nowUnspecified)
             .Select(x => x.GamingSlotId)
             .ToListAsync(cancellationToken);
 
@@ -202,52 +257,161 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
     private async Task RegenerateSlotsInternalAsync(Domain.GamingSlotConfiguration config,
         CancellationToken cancellationToken)
     {
-        // 1. Get all active gaming stations for the category
-        var gamingStations = await _db.GamingStations
+        // IMPORTANT: GamingSlot is a reusable (station, time-of-day) template with no
+        // date of its own — GamingBooking/GamingBookingHold carry the actual calendar
+        // date and just point at a slot template. So "this slot has a booking" does NOT
+        // mean "this exact time is busy right now" — it just means that time-of-day has
+        // been used on SOME date, ever. Treating that as a reason to deactivate the slot
+        // (as an earlier version of this method did) ends up disabling almost every slot
+        // the moment any config is re-saved. Instead: slots that still match the new
+        // schedule are updated in place (so existing bookings/holds keep pointing at a
+        // valid, still-active slot); only genuinely orphaned slots (whose time no longer
+        // appears in the new schedule) are deleted, or deactivated if something still
+        // references them.
+
+        // 1. Get all active gaming station IDs for the category
+        var stationIds = await _db.GamingStations
             .Where(gs => gs.GamingCategoryId == config.GamingCategoryId && gs.IsActive)
+            .Select(gs => gs.Id)
             .ToListAsync(cancellationToken);
 
-        // 2. Delete old slots for all stations in this category
-        var oldSlots = await _db.GamingSlots
+        if (stationIds.Count == 0) return;
+
+        var timeSlots = GenerateSlotTimeIntervals(
+            config.StartTime,
+            config.EndTime,
+            config.SlotDurationMinutes,
+            config.SlotGapMinutes);
+
+        var stationIdSet = stationIds.ToHashSet();
+        var desiredTimesByStation = stationIds.ToDictionary(
+            id => id,
+            _ => timeSlots.ToDictionary(t => t.StartTime, t => t.EndTime));
+
+        var existingSlots = await _db.GamingSlots
             .Where(x => x.GamingCategoryId == config.GamingCategoryId)
             .ToListAsync(cancellationToken);
 
-        _db.GamingSlots.RemoveRange(oldSlots);
+        var existingKeys = new HashSet<(Guid StationId, TimeOnly StartTime)>();
+        var orphanedSlots = new List<GamingSlot>();
 
-        // 3. Generate new slots for each gaming station
+        foreach (var slot in existingSlots)
+        {
+            existingKeys.Add((slot.GamingStationId, slot.StartTime));
+
+            var stillWanted = stationIdSet.Contains(slot.GamingStationId) &&
+                               desiredTimesByStation[slot.GamingStationId].TryGetValue(slot.StartTime, out var newEndTime);
+
+            if (stillWanted)
+            {
+                // Update in place — keeps existing bookings/holds pointing at a valid,
+                // active slot instead of deactivating it out from under them.
+                desiredTimesByStation[slot.GamingStationId].TryGetValue(slot.StartTime, out newEndTime);
+                slot.EndTime = newEndTime;
+                slot.Price = config.Price;
+                slot.GamingSlotConfigurationId = config.Id;
+                slot.IsActive = true;
+            }
+            else
+            {
+                orphanedSlots.Add(slot);
+            }
+        }
+
+        if (orphanedSlots.Count > 0)
+        {
+            var orphanedIds = orphanedSlots.Select(s => s.Id).ToList();
+
+            var referencedOrphanIds = await _db.GamingBookings
+                .Where(b => orphanedIds.Contains(b.GamingSlotId))
+                .Select(b => b.GamingSlotId)
+                .Union(_db.GamingBookingHolds
+                    .Where(h => orphanedIds.Contains(h.GamingSlotId))
+                    .Select(h => h.GamingSlotId))
+                .Distinct()
+                .ToListAsync(cancellationToken);
+
+            var referencedSet = referencedOrphanIds.ToHashSet();
+
+            var toDelete = orphanedSlots.Where(s => !referencedSet.Contains(s.Id)).ToList();
+            var toDeactivate = orphanedSlots.Where(s => referencedSet.Contains(s.Id)).ToList();
+
+            if (toDelete.Count > 0)
+                _db.GamingSlots.RemoveRange(toDelete);
+
+            foreach (var slot in toDeactivate)
+                slot.IsActive = false; // kept only because a historical booking/hold references it
+        }
+
+        await _db.SaveChangesAsync(cancellationToken);
+
+        // Insert brand-new slots for (station, startTime) combinations that don't
+        // already exist (new stations, or new time intervals from a changed schedule).
         var newSlots = new List<GamingSlot>();
 
-        foreach (var station in gamingStations)
+        foreach (var stationId in stationIds)
         {
-            var currentTime = config.StartTime;
-
-            // Simple safety check to prevent infinite loops if end time is before start time or duration is 0
-            while (currentTime.AddMinutes(config.SlotDurationMinutes) <= config.EndTime)
+            foreach (var (startTime, endTime) in timeSlots)
             {
-                var slotEndTime = currentTime.AddMinutes(config.SlotDurationMinutes);
+                if (existingKeys.Contains((stationId, startTime)))
+                    continue;
 
                 newSlots.Add(new GamingSlot
                 {
                     GamingCategoryId = config.GamingCategoryId,
-                    GamingSlotConfigurationId = config.Id, // Assign the configuration ID to satisfy the foreign key
-                    GamingStationId = station.Id, // Assign the station ID
-                    StartTime = currentTime,
-                    EndTime = slotEndTime,
+                    GamingSlotConfigurationId = config.Id,
+                    GamingStationId = stationId,
+                    StartTime = startTime,
+                    EndTime = endTime,
                     IsActive = true,
                     Price = config.Price
                 });
-
-                currentTime = slotEndTime.AddMinutes(config.SlotGapMinutes);
-
-                // Prevent infinite loop if crossing midnight (though TimeOnly handles 24h)
-                if (currentTime < slotEndTime) break;
             }
         }
 
-        if (newSlots.Any())
+        if (newSlots.Count == 0) return;
+
+        // Optimize bulk insert by turning off change tracking temporarily
+        _db.ChangeTracker.AutoDetectChangesEnabled = false;
+        try
         {
             _db.GamingSlots.AddRange(newSlots);
             await _db.SaveChangesAsync(cancellationToken);
         }
+        finally
+        {
+            _db.ChangeTracker.AutoDetectChangesEnabled = true;
+        }
+    }
+
+    private static List<(TimeOnly StartTime, TimeOnly EndTime)> GenerateSlotTimeIntervals(
+        TimeOnly startTime,
+        TimeOnly endTime,
+        int durationMinutes,
+        int gapMinutes)
+    {
+        var slots = new List<(TimeOnly StartTime, TimeOnly EndTime)>();
+        if (durationMinutes <= 0) return slots;
+
+        var baseDate = DateTime.Today;
+        var startDateTime = baseDate.Add(startTime.ToTimeSpan());
+        var endDateTime = baseDate.Add(endTime.ToTimeSpan());
+
+        if (endDateTime <= startDateTime)
+        {
+            endDateTime = endDateTime.AddDays(1);
+        }
+
+        var current = startDateTime;
+
+        while (current.AddMinutes(durationMinutes) <= endDateTime)
+        {
+            var slotEnd = current.AddMinutes(durationMinutes);
+            slots.Add((TimeOnly.FromDateTime(current), TimeOnly.FromDateTime(slotEnd)));
+
+            current = slotEnd.AddMinutes(gapMinutes);
+        }
+
+        return slots;
     }
 }

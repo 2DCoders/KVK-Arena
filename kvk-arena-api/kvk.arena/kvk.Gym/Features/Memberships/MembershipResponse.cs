@@ -32,7 +32,9 @@ public class MembershipResponse : TrainerSpecializedResponse
     
     public string? AssignedTrainer { get; set; }
     public bool IsDeleted { get; set; }
-    
+    public DateTime? DeletedAt { get; set; }
+
     public DateTime? CreatedDate { get; set; }
+    public DateTime? LastModifiedAt { get; set; }
 
 }

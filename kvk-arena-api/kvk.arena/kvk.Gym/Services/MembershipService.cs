@@ -6,6 +6,7 @@ using kvk.Gym.Interfaces;
 using System.Security.Cryptography;
 using kvk.BuildingBlocks.Auth;
 using kvk.BuildingBlocks.Constants;
+using kvk.BuildingBlocks.Enums;
 using kvk.BuildingBlocks.Interfaces;
 using kvk.Gym.Enums;
 
@@ -109,7 +110,7 @@ public class MembershipService : IMembershipService
                 {
                     MembershipId = member.Id,
                     Amount = plan.Price,
-                    PaymentType = kvk.Gym.Enums.PaymentType.Cash,
+                    PaymentType = PaymentType.Cash,
                     PaymentStatus = kvk.Gym.Enums.PaymentStatus.Pending
                 };
 
@@ -316,13 +317,49 @@ public class MembershipService : IMembershipService
         }
     }
 
-    public async Task<List<MembershipResponse>> GetAllMembersAsync(CancellationToken cancellationToken = default)
+    // Flips MembershipStatus to Blocked for any active/inactive member whose latest payment's
+    // membership end date has already passed. Runs lazily whenever the member/trainer lists are
+    // read, so expired memberships surface as Blocked without needing a separate scheduled job.
+    private async Task AutoBlockExpiredMembershipsAsync(CancellationToken cancellationToken)
+    {
+        var now = DateTime.UtcNow;
+
+        var expiredMembers = await _db.Memberships
+            .Where(m => !m.IsDeleted &&
+                        (m.MembershipStatus == kvk.Gym.Enums.MembershipStatus.Active ||
+                         m.MembershipStatus == kvk.Gym.Enums.MembershipStatus.Inactive))
+            .Select(m => new
+            {
+                Member = m,
+                LatestEndDate = m.MemberPayments
+                    .OrderByDescending(p => p.CreatedAt)
+                    .Select(p => p.MemberShipEndDate)
+                    .FirstOrDefault()
+            })
+            .Where(x => x.LatestEndDate != null && x.LatestEndDate < now)
+            .Select(x => x.Member)
+            .ToListAsync(cancellationToken);
+
+        if (expiredMembers.Count == 0)
+            return;
+
+        foreach (var member in expiredMembers)
+            member.MembershipStatus = kvk.Gym.Enums.MembershipStatus.Blocked;
+
+        await _db.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<List<MembershipResponse>> GetAllMembersAsync(bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
         try
         {
-            var memberships = await _db.Memberships
-                .AsNoTracking()
-                .Where(m => !m.IsDeleted)
+            await AutoBlockExpiredMembershipsAsync(cancellationToken);
+
+            var query = _db.Memberships.AsNoTracking().AsQueryable();
+            if (!includeDeleted)
+                query = query.Where(m => !m.IsDeleted);
+
+            var memberships = await query
                 .Include(m => m.MembershipPlan)
                 .Include(m => m.MemberPayments) // include payments so projection can access them
                 .ToListAsync(cancellationToken);
@@ -347,7 +384,9 @@ public class MembershipService : IMembershipService
                 MembershipPlanPrice = m.MembershipPlan?.Price,
                 MembershipPlanDurationInDays = m.MembershipPlan?.DurationInDays,
                 IdentityUserId = m.IdentityUserId,
-                IsDeleted = m.IsDeleted
+                IsDeleted = m.IsDeleted,
+                DeletedAt = m.DeletedAt,
+                LastModifiedAt = m.LastModifiedAt
             }).ToList();
 
             return response;
@@ -367,7 +406,7 @@ public class MembershipService : IMembershipService
             var member = await _db.Memberships
                 .AsNoTracking()
                 .Include(m => m.MembershipPlan)
-                .SingleOrDefaultAsync(m => m.Id == memberId && !m.IsDeleted, cancellationToken);
+                .SingleOrDefaultAsync(m => m.Id == memberId, cancellationToken);
 
             if (member == null)
                 throw new Exception("Member not found");
@@ -438,7 +477,9 @@ public class MembershipService : IMembershipService
                 ProfilePicture = trainerSpecializedResponse?.ProfilePicture,
                 Rating = trainerSpecializedResponse?.Rating ?? 0,
                 IsFreelance = trainerSpecializedResponse?.IsFreelance ?? false,
-                Role = trainerSpecializedResponse?.Role
+                Role = trainerSpecializedResponse?.Role,
+                IsDeleted = member.IsDeleted,
+                DeletedAt = member.DeletedAt
             };
 
             return response;
@@ -541,6 +582,8 @@ public class MembershipService : IMembershipService
                     .AnyAsync(m => m.Email == request.Email && m.Id != memberId, cancellationToken);
                 if (existingMember)
                     return Result.Failure("Email is already registered");
+                
+                member.Email = request.Email;
             }
 
             if (!string.IsNullOrWhiteSpace(request.FirstName))
@@ -635,6 +678,10 @@ public class MembershipService : IMembershipService
             if (plan.IsActive != kvk.Gym.Enums.ActiveStatus.Active)
                 return Result.Failure("Membership plan is inactive");
 
+            // Captured before any status change below, so a payment against a Blocked (expired)
+            // member re-activates them instead of leaving them stuck as Blocked.
+            var wasBlocked = member.MembershipStatus == kvk.Gym.Enums.MembershipStatus.Blocked;
+
             // Update membership plan on the member
             member.MembershipPlanId = plan.Id;
 
@@ -667,14 +714,53 @@ public class MembershipService : IMembershipService
                 latestPayment.Amount = plan.Price;
                 latestPayment.PaymentType = request.PaymentType;
 
-                var newStartDate = latestPayment.MemberShipEndDate.Value;
+                // The old period already lapsed, so the new one starts today rather than
+                // continuing from the stale end date (which could already be in the past).
+                var newStartDate = startDate;
+
+                latestPayment.MemberShipStartDate = newStartDate;
+                latestPayment.MemberShipRenewalDate = renewalDate;
+                latestPayment.MemberShipEndDate = newStartDate.AddDays(plan.DurationInDays);
+                latestPayment.PaymentStatus = kvk.Gym.Enums.PaymentStatus.Paid;
+            } else if (latestPayment != null && latestPayment.MemberShipEndDate == null)
+            {
+                latestPayment.Amount = plan.Price;
+                latestPayment.PaymentType = request.PaymentType;
+
+                var newStartDate = DateTime.UtcNow;
 
                 latestPayment.MemberShipStartDate = newStartDate;
                 latestPayment.MemberShipRenewalDate = renewalDate;
                 latestPayment.MemberShipEndDate = newStartDate.AddDays(plan.DurationInDays);
                 latestPayment.PaymentStatus = kvk.Gym.Enums.PaymentStatus.Paid;
             }
+            else
+            {
+                // create a new payment record for the upgraded plan
+                payment = new MemberPayment
+                {
+                    MembershipId = member.Id,
+                    Amount = plan.Price,
+                    PaymentType = request.PaymentType,
+                    MemberShipStartDate = startDate,
+                    MemberShipRenewalDate = renewalDate,
+                    MemberShipEndDate = endDate,
+                    PaymentStatus = kvk.Gym.Enums.PaymentStatus.Paid
+                };
+                _db.MemberPayments.Add(payment);
+            }
 
+            // Paying for a previously Blocked (expired) member re-activates them: Active if they
+            // already have fingerprints saved, otherwise Inactive (pending), matching the same
+            // rule CreateMemberAsync/UpdateFingerprintsAsync use for first-time activation.
+            if (wasBlocked)
+            {
+                var hasFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
+                                       !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2);
+                member.MembershipStatus = hasFingerprints
+                    ? kvk.Gym.Enums.MembershipStatus.Active
+                    : kvk.Gym.Enums.MembershipStatus.Inactive;
+            }
 
             await _db.SaveChangesAsync(cancellationToken);
 
@@ -802,6 +888,9 @@ public class MembershipService : IMembershipService
 
             member.IsDeleted = false;
             member.DeletedAt = DateTime.UtcNow;
+            // Reactivated members always land back in Pending, not whatever status they held
+            // before being deleted — the cashier/member must go through activation again.
+            member.MembershipStatus = kvk.Gym.Enums.MembershipStatus.Inactive;
 
             if (member.MemberType == kvk.Gym.Enums.MemberType.Trainer)
             {
@@ -823,7 +912,6 @@ public class MembershipService : IMembershipService
         }
     }
 
-
     public async Task<Result> PermanentlyDeleteMemberAsync(Guid memberId,
         CancellationToken cancellationToken = default)
     {
@@ -833,24 +921,29 @@ public class MembershipService : IMembershipService
         try
         {
             var member = await _db.Memberships
-                .SingleOrDefaultAsync(m => m.Id == memberId && !m.IsDeleted, cancellationToken);
+                .SingleOrDefaultAsync(m => m.Id == memberId, cancellationToken);
 
             if (member == null)
                 return Result.Failure("Member not found");
 
-            // Business rule: permanent delete only allowed when there is at least one pending payment
-            // AND there are no saved fingerprints on the member.
-            var hasPendingPayment = await _db.MemberPayments
-                .AnyAsync(p => p.MembershipId == memberId && p.PaymentStatus == kvk.Gym.Enums.PaymentStatus.Pending,
-                    cancellationToken);
+            if (!member.IsDeleted)
+            {
+                // Business rule only applies to members that have not been soft-deleted yet:
+                // permanent delete is allowed when there is at least one pending payment
+                // AND there are no saved fingerprints on the member. Members already
+                // soft-deleted (e.g. by an admin cleaning up the cashier's soft-delete list)
+                // bypass this rule.
+                var hasPendingPayment = await _db.MemberPayments
+                    .AnyAsync(p => p.MembershipId == memberId && p.PaymentStatus == kvk.Gym.Enums.PaymentStatus.Pending,
+                        cancellationToken);
 
-            var hasFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
-                                  !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2);
+                var hasFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
+                                      !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2);
 
-            if (!hasPendingPayment || hasFingerprints)
-                return Result.Failure(
-                    "Permanent delete is allowed only for members with pending payments and no saved fingerprints");
-
+                if (!hasPendingPayment || hasFingerprints)
+                    return Result.Failure(
+                        "Permanent delete is allowed only for members with pending payments and no saved fingerprints");
+            }
 
             // With cascade delete configured for MemberPayments and MemberAttendances, removing the membership
             // will delete related payments and attendances automatically.
@@ -859,10 +952,8 @@ public class MembershipService : IMembershipService
             if (member.MemberType == kvk.Gym.Enums.MemberType.Trainer)
             {
                 var trainer = await _db.Trainers.SingleOrDefaultAsync(t => t.Id == memberId, cancellationToken);
-                if (trainer == null)
-                    return Result.Failure("Trainer not found");
-
-                _db.Trainers.Remove(trainer);
+                if (trainer != null)
+                    _db.Trainers.Remove(trainer);
             }
 
             await _db.SaveChangesAsync(cancellationToken);
@@ -931,14 +1022,17 @@ public class MembershipService : IMembershipService
     }
     
     
-    public async Task<List<TrainerResponse>> GetAllTrainersAsync(CancellationToken cancellationToken = default)
+    public async Task<List<TrainerResponse>> GetAllTrainersAsync(bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
         try
         {
-            var trainers = await _db.Trainers
-                .AsNoTracking()
-                .Where(t => !t.IsDeleted)
-                .ToListAsync(cancellationToken);
+            await AutoBlockExpiredMembershipsAsync(cancellationToken);
+
+            var query = _db.Trainers.AsNoTracking().AsQueryable();
+            if (!includeDeleted)
+                query = query.Where(t => !t.IsDeleted);
+
+            var trainers = await query.ToListAsync(cancellationToken);
 
             var response = trainers.Select(t => new TrainerResponse
             {
@@ -956,6 +1050,8 @@ public class MembershipService : IMembershipService
                 ProfilePicture = t.ProfilePicture,
                 Role = t.Role,
                 IsFreelance = t.IsFreelance,
+                IsDeleted = t.IsDeleted,
+                DeletedAt = t.DeletedAt,
             }).ToList();
 
             return response;

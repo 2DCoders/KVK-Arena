@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using kvk.BuildingBlocks.Common;
+using kvk.BuildingBlocks.Enums;
 using kvk.Gym.Enums;
 
 namespace kvk.Gym.Domain;

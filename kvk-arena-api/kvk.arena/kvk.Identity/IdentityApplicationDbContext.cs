@@ -41,6 +41,7 @@ public class IdentityApplicationDbContext : AppDbContextBase
     public DbSet<OfferRate> OfferRates => Set<OfferRate>();
     
     
+    
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

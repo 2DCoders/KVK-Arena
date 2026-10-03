@@ -23,7 +23,7 @@
 
 ## Executive Summary
 
-**KVK Arena** is a modular monolith platform using **Option A: Single Database, Shared Schema** architecture. Multiple business tenants (Gym, CarWash, Badminton, Gaming, Retail) coexist in one database with automatic `TenantId` filtering at the database context level.
+**KVK Arena** is a modular monolith platform using **Option A: Single Database, Shared Schema** architecture. Multiple business tenants (Gym, CarWash, Badminton, Gaming, Salon) coexist in one database with automatic `TenantId` filtering at the database context level.
 
 ### Key Architectural Decisions
 
@@ -84,7 +84,7 @@
 │  ├─ CarWashServices, CarWashBookings, ...                  │
 │  ├─ BadmintonCourts, BadmintonBookings, ...                │
 │  ├─ GamingStations, GamingBookings, ...                    │
-│  └─ RetailProducts, RetailOrders, ...                      │
+│  └─ SalonProducts, SalonOrders, ...                      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -603,7 +603,7 @@ kvk.arena/
     ├── kvk.Gaming/
     │   └── (Similar structure)
     │
-    └── kvk.Retail/
+    └── kvk.Salon/
         └── (Similar structure)
 ```
 
@@ -661,7 +661,7 @@ kvk.arena/
 ### Phase 4: Badminton & Gaming Modules (Weeks 13-18)
 - [ ] Repeat pattern
 
-### Phase 5: Retail Module (Weeks 19-22)
+### Phase 5: Salon Module (Weeks 19-22)
 - [ ] Repeat pattern
 
 ### Phase 6: Cross-Cutting Infrastructure (Weeks 23-26)

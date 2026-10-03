@@ -9,7 +9,7 @@ public static class ModuleConstants
     public const string CarWash = "CarWash";
     public const string BadmintonCourt = "BadmintonCourt";
     public const string GamingCenter = "GamingCenter";
-    public const string Retail = "Retail";
+    public const string Salon = "Salon";
     public const string Cafe = "Cafe";
 
     /// <summary>
@@ -17,7 +17,7 @@ public static class ModuleConstants
     /// </summary>
     public static ReadOnlySpan<string> GetAllModuleNames()
     {
-        return new[] { Gym, CarWash, BadmintonCourt, GamingCenter, Retail, Cafe };
+        return new[] { Gym, CarWash, BadmintonCourt, GamingCenter, Salon, Cafe };
     }
 }
 

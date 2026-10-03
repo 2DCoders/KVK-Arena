@@ -17,6 +17,9 @@ using Serilog;
 using System.Text.Json.Serialization;
 using Newtonsoft.Json.Serialization;
 using kvk.BuildingBlocks.Common;
+using Kvk.Cafe;
+using kvk.CarService;
+using kvk.Saloon;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -63,9 +66,31 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo 
     { 
-        Title = "KVK Arena API", 
+        Title = "KVK Arena API - All", 
         Version = "v1",
-        Description = "A multi-tenant Hotel ERD API built with .NET 10 and PostgreSQL"
+        Description = "All endpoints for KVK Arena API"
+    });
+    c.SwaggerDoc("Identity", new OpenApiInfo { Title = "Identity API", Version = "v1" });
+    c.SwaggerDoc("Gym", new OpenApiInfo { Title = "Gym API", Version = "v1" });
+    c.SwaggerDoc("Gaming", new OpenApiInfo { Title = "Gaming API", Version = "v1" });
+    c.SwaggerDoc("Financial", new OpenApiInfo { Title = "Financial API", Version = "v1" });
+    c.SwaggerDoc("CarService", new OpenApiInfo { Title = "CarService API", Version = "v1" });
+    c.SwaggerDoc("Cafe", new OpenApiInfo { Title = "Cafe API", Version = "v1" });
+    c.SwaggerDoc("Badminton", new OpenApiInfo { Title = "Badminton API", Version = "v1" });
+    c.SwaggerDoc("Saloon", new OpenApiInfo { Title = "Saloon API", Version = "v1" });
+
+    c.DocInclusionPredicate((docName, apiDesc) =>
+    {
+        if (docName == "v1")
+            return true;
+
+        if (apiDesc.ActionDescriptor is Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor controllerActionDescriptor)
+        {
+            var ns = controllerActionDescriptor.ControllerTypeInfo.Namespace ?? string.Empty;
+            return ns.StartsWith($"kvk.{docName}");
+        }
+
+        return false;
     });
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -77,21 +102,6 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "bearer",
         BearerFormat = "JWT"
     });
-
-    // c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    // {
-    //     {
-    //         new OpenApiSecurityScheme
-    //         {
-    //             Reference = new OpenApiReference
-    //             {
-    //                 Type = ReferenceType.SecurityScheme,
-    //                 Id = "Bearer"
-    //             }
-    //         },
-    //         Array.Empty<string>()
-    //     }
-    // });
 });
 
 
@@ -150,6 +160,12 @@ gamingInitializer.RegisterModule(builder.Services, builder.Configuration);
 var carServiceInitializer  = new CarServiceModuleInitializer();
 carServiceInitializer.RegisterModule(builder.Services, builder.Configuration);
 
+var cafeInitializer  = new CafeModuleInitializer();
+cafeInitializer.RegisterModule(builder.Services, builder.Configuration);
+
+var saloonInitializer  = new SaloonModuleInitializer();
+saloonInitializer.RegisterModule(builder.Services, builder.Configuration);
+
 
 
 
@@ -163,6 +179,14 @@ var app = builder.Build();
 //     dbContext.Database.Migrate();
 // }
 
+
+// CORS must run before any middleware that can short-circuit the pipeline
+// (tenant/auth checks below), otherwise a 401/403/500 response they write
+// directly will be missing CORS headers and the browser reports it as a
+// CORS failure instead of the real status code.
+app.UseHttpsRedirection();
+app.UseRouting();
+app.UseCors();
 
 // Error handling middleware (should be first to catch all errors)
 
@@ -185,7 +209,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "KVK Arena API v1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "KVK Arena API v1 (All)");
+        c.SwaggerEndpoint("/swagger/Identity/swagger.json", "Identity API");
+        c.SwaggerEndpoint("/swagger/Gym/swagger.json", "Gym API");
+        c.SwaggerEndpoint("/swagger/Gaming/swagger.json", "Gaming API");
+        c.SwaggerEndpoint("/swagger/Financial/swagger.json", "Financial API");
+        c.SwaggerEndpoint("/swagger/CarService/swagger.json", "CarService API");
+        c.SwaggerEndpoint("/swagger/Cafe/swagger.json", "Cafe API");
+        c.SwaggerEndpoint("/swagger/Badminton/swagger.json", "Badminton API");
+        c.SwaggerEndpoint("/swagger/Saloon/swagger.json", "Saloon API");
         c.RoutePrefix = "swagger";
     });
 }
@@ -193,13 +225,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
-app.UseAuthorization();
 app.UseAuthentication();
-
+app.UseAuthorization();
 
 app.UseHangfireDashboard("/hangfire");
 
-app.UseCors();
 app.MapControllers();
 
 // Log startup information
@@ -212,7 +242,16 @@ using (var scope = app.Services.CreateScope())
     var backgroundProcessorInitializers = scopedServices.GetServices<IBackgroundProcessorInitializer>();
     foreach (var initializer in backgroundProcessorInitializers)
     {
-        await initializer.InitializeAsync(scopedServices, logger);
+        try
+        {
+            await initializer.InitializeAsync(scopedServices, logger);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex,
+                "Background processor initializer {Initializer} failed to initialize; the API will continue starting without it.",
+                initializer.GetType().Name);
+        }
     }
 }
 

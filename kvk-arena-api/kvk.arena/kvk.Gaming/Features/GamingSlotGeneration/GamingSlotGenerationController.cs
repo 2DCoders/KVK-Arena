@@ -16,7 +16,7 @@ public class GamingSlotGenerationController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> GenerateSlotsForGamingCategoryeAsync([FromBody] GamingCategorySlotConfigurationRequest request, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GenerateSlotsForGamingCategoryAsync([FromBody] GamingCategorySlotConfigurationRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.GenerateSlotsForGamingCategoryeAsync(request, cancellationToken);
 

@@ -76,6 +76,17 @@ public class BookingController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("create-multi")] // Initiates PayHere payment for an existing batch of holds (from multi-hold)
+    public async Task<IActionResult> CreateMultiPayment([FromBody] MultiBookingPaymentRequest request, CancellationToken ct)
+    {
+        var result = await _service.CreateMultiPaymentAsync(request, ct);
+
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
     [HttpPost("notify")]
     public async Task<IActionResult> PaymentNotification([FromForm] PaymentNotificationRequest request, CancellationToken ct)
     {
@@ -87,6 +98,31 @@ public class BookingController : ControllerBase
     public async Task<IActionResult> Cleanup(CancellationToken ct)
     {
         var result = await _service.CleanupExpiredHoldsAsync(ct);
+        return Ok(result);
+    }
+
+    [HttpPost("internal/fix-stale-pending")]
+    public async Task<IActionResult> FixStalePendingBookings(CancellationToken ct)
+    {
+        var result = await _service.FixStalePendingBookingsAsync(ct);
+        return Ok(result);
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<List<BookingListResponse>>> GetBookingsList([FromQuery] GetBookingsListRequest request, CancellationToken ct = default)
+    {
+        var result = await _service.GetBookingsListAsync(request, ct);
+        return Ok(result);
+    }
+
+    [HttpPost("reverse")]
+    public async Task<IActionResult> ReversePendingPayment([FromBody] BadmintonPendingPaymentDeleteRequest request, CancellationToken ct)
+    {
+        var result = await _service.DeletePendingPayment(request, ct);
+
+        if (!result.Succeeded)
+            return BadRequest(result);
+
         return Ok(result);
     }
 }

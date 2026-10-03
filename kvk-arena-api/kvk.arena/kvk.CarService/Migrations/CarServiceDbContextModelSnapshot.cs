@@ -81,6 +81,174 @@ namespace kvk.CarService.Migrations
                     b.ToTable("Services", "carService");
                 });
 
+            modelBuilder.Entity("kvk.CarService.Domain.CarServiceDayEnd", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("ActualCashCount")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("CashFromPrevDay")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTime>("CurrentDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<decimal>("Discrepancy")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("ExpectedCashTotal")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("HoldForNextDay")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTime>("NextWorkingDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Remark")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CarServiceDayEnds", "carService");
+                });
+
+            modelBuilder.Entity("kvk.CarService.Domain.CarWashOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("CarWashOrderStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CustomerName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("CustomerPhone")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<decimal>("Discount")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("DiscountedTotalAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastModifiedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("OrderNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("SubTotalAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("TotalMinutesSpent")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("VehicleNumber")
+                        .HasMaxLength(15)
+                        .HasColumnType("character varying(15)");
+
+                    b.Property<int>("VehicleType")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_CarWashOrder_TenantId");
+
+                    b.HasIndex("TenantId", "CreatedAt")
+                        .HasDatabaseName("IX_CarWashOrder_TenantId_CreatedAt");
+
+                    b.ToTable("CarWashOrders", "carService");
+                });
+
+            modelBuilder.Entity("kvk.CarService.Domain.CarWashOrderPackage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CarWashOrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CarWashPackageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CarWashOrderId");
+
+                    b.HasIndex("CarWashPackageId");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_CarWashOrderPackage_TenantId");
+
+                    b.ToTable("CarWashOrderPackages", "carService");
+                });
+
+            modelBuilder.Entity("kvk.CarService.Domain.CarWashOrderService", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CarWashOrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CarWashServiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CarWashOrderId");
+
+                    b.HasIndex("CarWashServiceId");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_CarWashOrderService_TenantId");
+
+                    b.ToTable("CarWashOrderServices", "carService");
+                });
+
             modelBuilder.Entity("kvk.CarService.Domain.Package", b =>
                 {
                     b.Property<Guid>("Id")
@@ -161,6 +329,44 @@ namespace kvk.CarService.Migrations
                     b.ToTable("PackageServices", "carService");
                 });
 
+            modelBuilder.Entity("kvk.CarService.Domain.CarWashOrderPackage", b =>
+                {
+                    b.HasOne("kvk.CarService.Domain.CarWashOrder", "CarWashOrder")
+                        .WithMany("Packages")
+                        .HasForeignKey("CarWashOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("kvk.CarService.Domain.Package", "Package")
+                        .WithMany()
+                        .HasForeignKey("CarWashPackageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CarWashOrder");
+
+                    b.Navigation("Package");
+                });
+
+            modelBuilder.Entity("kvk.CarService.Domain.CarWashOrderService", b =>
+                {
+                    b.HasOne("kvk.CarService.Domain.CarWashOrder", "CarWashOrder")
+                        .WithMany("Services")
+                        .HasForeignKey("CarWashOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("kvk.CarService.Domain.CarService", "Service")
+                        .WithMany()
+                        .HasForeignKey("CarWashServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CarWashOrder");
+
+                    b.Navigation("Service");
+                });
+
             modelBuilder.Entity("kvk.CarService.Domain.PackageService", b =>
                 {
                     b.HasOne("kvk.CarService.Domain.Package", "Package")
@@ -178,6 +384,13 @@ namespace kvk.CarService.Migrations
                     b.Navigation("Package");
 
                     b.Navigation("Service");
+                });
+
+            modelBuilder.Entity("kvk.CarService.Domain.CarWashOrder", b =>
+                {
+                    b.Navigation("Packages");
+
+                    b.Navigation("Services");
                 });
 
             modelBuilder.Entity("kvk.CarService.Domain.Package", b =>

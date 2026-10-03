@@ -28,8 +28,7 @@ public class BadmintonModuleInitializer : IModuleInitializer
         services.AddScoped<ICourtSlotConfigurationService, CourtSlotConfigurationService>();
         services.AddScoped<BadmintonDayEndService>(); // Register the new service
         services.AddScoped<IBookingService, BookingService>();
-
-        
+        services.AddScoped<kvk.Badminton.Features.CourtBookingTemporary.CourtBookingTemporaryService>();
             
             
             

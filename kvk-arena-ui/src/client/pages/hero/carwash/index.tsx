@@ -13,6 +13,8 @@ import {
   useState,
 } from "react";
 
+import MOBILE_IMG from "../../../../assets/carwash-mobile.png";
+
 const FRAME_COUNT = 260;
 
 const getFramePath = (frame: number) => {
@@ -84,9 +86,8 @@ export default function CarwashHero() {
       });
   };
 
-  /*
-   * Draw a frame onto the canvas using
-   * object-fit: cover behaviour.
+  /**
+   * Draw desktop frame sequence onto the canvas.
    */
   const drawFrame = useCallback(
     (frameIndex: number) => {
@@ -108,6 +109,13 @@ export default function CarwashHero() {
 
       const containerWidth = canvas.clientWidth;
       const containerHeight = canvas.clientHeight;
+
+      if (
+        containerWidth === 0 ||
+        containerHeight === 0
+      ) {
+        return;
+      }
 
       const pixelRatio = Math.min(
         window.devicePixelRatio || 1,
@@ -179,10 +187,20 @@ export default function CarwashHero() {
     [],
   );
 
-  /*
-   * Preload all image sequence frames.
+  /**
+   * Preload desktop image-sequence frames.
+   * Frames are loaded only on screens 640px and wider.
    */
   useEffect(() => {
+    const desktopQuery = window.matchMedia(
+      "(min-width: 640px)",
+    );
+
+    if (!desktopQuery.matches) {
+      setIsReady(true);
+      return;
+    }
+
     if (frameSources.length === 0) {
       console.error(
         "No car wash frames found. Check the folder and filename format.",
@@ -207,12 +225,11 @@ export default function CarwashHero() {
           loadedCount += 1;
           setLoadedFrames(loadedCount);
 
-          /*
-           * Display the first frame as soon
-           * as it becomes available.
-           */
           if (index === 0) {
-            drawFrame(0);
+            requestAnimationFrame(() => {
+              drawFrame(0);
+            });
+
             setIsReady(true);
           }
 
@@ -241,11 +258,21 @@ export default function CarwashHero() {
     };
   }, [drawFrame, frameSources]);
 
-  /*
-   * Convert section scrolling into frame progress.
+  /**
+   * Convert desktop section scrolling into
+   * image-sequence frame progress.
    */
   useEffect(() => {
+    const desktopQuery = window.matchMedia(
+      "(min-width: 640px)",
+    );
+
     const updateScrollProgress = () => {
+      if (!desktopQuery.matches) {
+        setScrollProgress(0);
+        return;
+      }
+
       const section = sectionRef.current;
 
       if (!section) return;
@@ -285,6 +312,8 @@ export default function CarwashHero() {
     };
 
     const handleScroll = () => {
+      if (!desktopQuery.matches) return;
+
       if (
         animationFrameRef.current !== null
       ) {
@@ -300,7 +329,10 @@ export default function CarwashHero() {
 
     const handleResize = () => {
       lastRenderedFrameRef.current = -1;
-      updateScrollProgress();
+
+      requestAnimationFrame(() => {
+        updateScrollProgress();
+      });
     };
 
     updateScrollProgress();
@@ -318,6 +350,11 @@ export default function CarwashHero() {
       handleResize,
     );
 
+    desktopQuery.addEventListener(
+      "change",
+      handleResize,
+    );
+
     return () => {
       window.removeEventListener(
         "scroll",
@@ -326,6 +363,11 @@ export default function CarwashHero() {
 
       window.removeEventListener(
         "resize",
+        handleResize,
+      );
+
+      desktopQuery.removeEventListener(
+        "change",
         handleResize,
       );
 
@@ -339,8 +381,8 @@ export default function CarwashHero() {
     };
   }, [drawFrame, frameSources.length]);
 
-  /*
-   * Content animation ranges.
+  /**
+   * Existing desktop animation ranges.
    */
   const introExit = easeInOut(
     getRangeProgress(
@@ -409,21 +451,152 @@ export default function CarwashHero() {
         )
       : 0;
 
-  const currentStep =
-    scrollProgress < 0.25
-      ? 0
-      : scrollProgress < 0.5
-        ? 1
-        : scrollProgress < 0.75
-          ? 2
-          : 3;
-
   return (
     <section
       ref={sectionRef}
-      className="relative h-[420vh] bg-[#02040a] sm:h-[460vh] lg:h-[500vh]"
+      className="relative bg-[#02040a] sm:h-[460vh] lg:h-[500vh]"
     >
-      <div className="sticky top-0 h-[100svh] overflow-hidden bg-[#02040a]">
+      {/* =====================================================
+          MOBILE HERO
+          Visible only below 640px
+      ====================================================== */}
+      <div className="relative min-h-[100svh] overflow-hidden bg-[#02040a] sm:hidden">
+        {/* Mobile background */}
+        <div className="absolute inset-0">
+          <img
+            src={MOBILE_IMG}
+            alt="KVK Arena premium car wash"
+            className="h-full w-full scale-[1.02] object-cover object-center"
+          />
+        </div>
+
+        {/* Header readability overlay */}
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.82)_0%,rgba(0,0,0,0.25)_22%,transparent_40%)]" />
+
+        {/* Left and right vignette */}
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(2,4,10,0.35)_0%,transparent_30%,transparent_70%,rgba(2,4,10,0.35)_100%)]" />
+
+        {/* Bottom content overlay */}
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_28%,rgba(2,4,10,0.04)_42%,rgba(2,4,10,0.55)_61%,rgba(2,4,10,0.94)_78%,#02040a_100%)]" />
+
+        {/* Blue atmosphere */}
+        <div className="pointer-events-none absolute -left-28 top-[20%] h-72 w-72 rounded-full bg-blue-600/10 blur-[90px]" />
+
+        <div className="pointer-events-none absolute -right-24 top-[40%] h-72 w-72 rounded-full bg-[#1473ff]/10 blur-[95px]" />
+
+        {/* Decorative vertical lines */}
+        <div className="pointer-events-none absolute left-5 top-[16%] h-[31%] w-px bg-gradient-to-b from-transparent via-blue-300/35 to-transparent shadow-[0_0_12px_rgba(59,130,246,0.35)]" />
+
+        <div className="pointer-events-none absolute right-5 top-[19%] h-[24%] w-px bg-gradient-to-b from-transparent via-blue-300/20 to-transparent" />
+
+        {/* Decorative horizontal light */}
+        <div className="pointer-events-none absolute left-1/2 top-[54%] h-px w-[82%] -translate-x-1/2 bg-gradient-to-r from-transparent via-blue-300/15 to-transparent" />
+
+        {/* Mobile content */}
+        <div className="relative z-20 flex min-h-[100svh] items-end px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-32">
+          <div className="w-full">
+            {/* Heading */}
+            <h1 className="max-w-[350px] text-[2.8rem] font-black uppercase leading-[0.88] tracking-[-0.055em] text-white min-[390px]:text-[3.1rem]">
+              Elevate
+              <span className="block">
+                Every
+              </span>
+
+              <span className="relative mt-1 block w-fit bg-gradient-to-r from-[#9de5ff] via-[#1473ff] to-[#70b7ff] bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(20,115,255,0.42)]">
+                Drive.
+
+                <span className="absolute -bottom-2 left-1 h-[2px] w-20 bg-gradient-to-r from-[#8fdcff] via-[#1473ff] to-transparent shadow-[0_0_14px_rgba(20,115,255,0.85)]" />
+              </span>
+            </h1>
+
+            {/* Description */}
+            <p className="mt-7 max-w-[350px] text-[13px] leading-6 text-white/65">
+              Precision washing, professional
+              detailing and lasting protection for
+              a cleaner, brighter and
+              better-protected vehicle.
+            </p>
+
+            {/* Features */}
+            {/* <div className="mt-5 flex flex-wrap gap-2">
+              {[
+                "Premium products",
+                "Professional care",
+                "Flawless finish",
+              ].map((item) => (
+                <div
+                  key={item}
+                  className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.055] px-3 py-2 shadow-[0_8px_24px_rgba(0,0,0,0.14)] backdrop-blur-md"
+                >
+                  <span className="grid h-4 w-4 shrink-0 place-items-center rounded-full border border-blue-300/20 bg-blue-500/20 text-blue-100">
+                    <Check
+                      size={9}
+                      strokeWidth={3}
+                    />
+                  </span>
+
+                  <span className="text-[8px] font-semibold uppercase tracking-[0.08em] text-white/65 min-[390px]:text-[9px]">
+                    {item}
+                  </span>
+                </div>
+              ))}
+            </div> */}
+
+            {/* Buttons */}
+            <div className="mt-7 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={scrollToPackages}
+                className="group inline-flex h-12 cursor-pointer items-center justify-center gap-2 rounded-full border border-blue-300/20 bg-gradient-to-r from-[#0757d4] to-[#1688ff] px-4 text-[11px] font-bold uppercase tracking-[0.08em] text-white shadow-[0_14px_35px_rgba(20,115,255,0.32)] transition active:scale-[0.98]"
+              >
+                Packages
+
+                <ArrowRight
+                  size={15}
+                  className="transition-transform duration-300 group-hover:translate-x-1"
+                />
+              </button>
+
+              <button
+                type="button"
+                onClick={scrollToPricing}
+                className="inline-flex h-12 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-white/[0.065] px-4 text-[11px] font-bold text-white shadow-[0_12px_30px_rgba(0,0,0,0.16)] backdrop-blur-xl transition active:scale-[0.98]"
+              >
+                View Pricing
+              </button>
+            </div>
+
+            {/* Bottom information */}
+            {/* <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-4">
+              <div>
+                <p className="text-[8px] font-bold uppercase tracking-[0.24em] text-white/35">
+                  Professional care
+                </p>
+
+                <p className="mt-1 text-[10px] font-semibold text-white/65">
+                  Wash • Detail • Protect
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-white/35">
+                  Explore
+                </span>
+
+                <span className="relative block h-8 w-[18px] rounded-full border border-white/20 bg-white/[0.03]">
+                  <span className="absolute left-1/2 top-1.5 h-1.5 w-1.5 -translate-x-1/2 animate-bounce rounded-full bg-[#70b7ff] shadow-[0_0_10px_rgba(112,183,255,0.9)]" />
+                </span>
+              </div>
+            </div> */}
+          </div>
+        </div>
+      </div>
+
+      {/* =====================================================
+          TABLET AND DESKTOP HERO
+          Existing design begins from 640px
+      ====================================================== */}
+      <div className="sticky top-0 hidden h-[100svh] overflow-hidden bg-[#02040a] sm:block">
         {/* Image sequence */}
         <div
           className="absolute inset-0 will-change-transform"
@@ -466,8 +639,8 @@ export default function CarwashHero() {
           }}
         />
 
-        {/* Mobile vertical overlay */}
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(2,4,10,0.46)_0%,transparent_30%,rgba(2,4,10,0.18)_58%,#02040a_100%)] lg:bg-[linear-gradient(180deg,rgba(0,0,0,0.35)_0%,transparent_28%,transparent_68%,rgba(2,4,10,0.78)_100%)]" />
+        {/* Desktop vertical overlay */}
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.35)_0%,transparent_28%,transparent_68%,rgba(2,4,10,0.78)_100%)]" />
 
         {/* Blue atmosphere */}
         <div className="pointer-events-none absolute -left-48 top-[18%] h-[520px] w-[560px] rounded-full bg-blue-600/10 blur-[140px]" />
@@ -477,7 +650,7 @@ export default function CarwashHero() {
         <div className="pointer-events-none absolute bottom-[-180px] left-1/2 h-[400px] w-[80%] -translate-x-1/2 rounded-full bg-blue-600/10 blur-[120px]" />
 
         {/* Decorative lines */}
-        <div className="pointer-events-none absolute left-[5%] top-[18%] hidden h-[56%] w-px bg-gradient-to-b from-transparent via-blue-400/25 to-transparent shadow-[0_0_16px_rgba(59,130,246,0.4)] sm:block" />
+        <div className="pointer-events-none absolute left-[5%] top-[18%] h-[56%] w-px bg-gradient-to-b from-transparent via-blue-400/25 to-transparent shadow-[0_0_16px_rgba(59,130,246,0.4)]" />
 
         <div className="pointer-events-none absolute -left-[8%] top-[34%] h-px w-[46%] -rotate-[9deg] bg-gradient-to-r from-transparent via-blue-300/25 to-transparent" />
 
@@ -531,7 +704,6 @@ export default function CarwashHero() {
         >
           <div className="mx-auto w-full max-w-7xl px-5 pb-24 pt-28 sm:px-8 sm:pb-20 lg:px-12 lg:pb-12">
             <div className="max-w-[660px]">
-
               <h1 className="max-w-[650px] text-[3rem] font-bold leading-[0.92] tracking-[-0.055em] text-white sm:text-7xl lg:text-8xl">
                 ELEVATE EVERY
 
@@ -729,85 +901,6 @@ export default function CarwashHero() {
             </div>
           </div>
         </div>
-
-        {/* Bottom progress navigation */}
-        {/* <div className="absolute bottom-5 left-1/2 z-30 w-[calc(100%-2.5rem)] max-w-3xl -translate-x-1/2 sm:bottom-7">
-          <div className="rounded-2xl border border-blue-300/15 bg-[#020711]/65 px-4 py-4 shadow-[0_18px_60px_rgba(0,76,255,0.12)] backdrop-blur-xl sm:px-6">
-            <div className="flex items-center">
-              {[
-                {
-                  label: "Arrival",
-                  icon: Gauge,
-                },
-                {
-                  label: "Wash",
-                  icon: Droplets,
-                },
-                {
-                  label: "Protect",
-                  icon: ShieldCheck,
-                },
-                {
-                  label: "Shine",
-                  icon: Sparkles,
-                },
-              ].map((step, index) => {
-                const Icon = step.icon;
-
-                return (
-                  <div
-                    key={step.label}
-                    className="flex flex-1 items-center"
-                  >
-                    <div className="flex min-w-0 flex-col items-center">
-                      <div
-                        className={`grid h-8 w-8 place-items-center rounded-full border transition-all duration-500 sm:h-10 sm:w-10 ${
-                          index <= currentStep
-                            ? "border-blue-300/40 bg-[#1473ff] text-white shadow-[0_0_20px_rgba(20,115,255,0.4)]"
-                            : "border-white/10 bg-white/5 text-white/35"
-                        }`}
-                      >
-                        <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      </div>
-
-                      <span
-                        className={`mt-2 truncate text-[8px] font-bold uppercase tracking-[0.12em] transition-colors sm:text-[10px] ${
-                          index <= currentStep
-                            ? "text-white"
-                            : "text-white/30"
-                        }`}
-                      >
-                        {step.label}
-                      </span>
-                    </div>
-
-                    {index < 3 && (
-                      <div className="mx-2 mb-5 h-px flex-1 overflow-hidden bg-white/10 sm:mx-4">
-                        <div
-                          className="h-full bg-gradient-to-r from-[#1473ff] to-[#70b7ff] transition-[width] duration-500"
-                          style={{
-                            width:
-                              index <
-                              currentStep
-                                ? "100%"
-                                : index ===
-                                    currentStep
-                                  ? `${clamp(
-                                      scrollProgress *
-                                        4 -
-                                        currentStep,
-                                    ) * 100}%`
-                                  : "0%",
-                          }}
-                        />
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div> */}
       </div>
     </section>
   );

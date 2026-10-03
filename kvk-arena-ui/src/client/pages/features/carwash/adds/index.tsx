@@ -1,5 +1,4 @@
 import {
-  ArrowRight,
   BadgeCheck,
   Clock3,
   Droplets,
@@ -10,11 +9,6 @@ import {
 import machineImg from "@/assets/auto_wash.png";
 
 export default function CarwashAdd2() {
-  const scrollToContact = () => {
-    document
-      .getElementById("contact")
-      ?.scrollIntoView({ behavior: "smooth" });
-  };
 
   return (
     <section className="relative overflow-hidden bg-[#020408] py-20 sm:py-24 lg:py-32">

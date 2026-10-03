@@ -24,5 +24,9 @@ public class TrainerResponse
 
     public DateTime ApprovalDate { get; set; }
 
-    public string ApprovedBy { get; set; } = string.Empty;   
+    public string ApprovedBy { get; set; } = string.Empty;
+
+    public bool IsDeleted { get; set; }
+
+    public DateTime? DeletedAt { get; set; }
 }

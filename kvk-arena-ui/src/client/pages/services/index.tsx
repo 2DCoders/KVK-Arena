@@ -7,10 +7,10 @@ import carwash from "@/assets/carwash.jpg";
 import badminton from "@/assets/badminton.jpg";
 import gaming from "@/assets/billiard.jpg";
 import cafe from "@/assets/coffee.jpg";
-import clothing from "@/assets/clothing.jpg";
+import salon from "@/assets/salon.png";
 import AOS from "aos";
 import { useNavigate } from "react-router-dom";
-import ConstructionModal from "@/components/404";
+// import ConstructionModal from "@/components/404";
 
 const services = [
   {
@@ -60,12 +60,12 @@ const services = [
   },
   {
     id: 6,
-    title: "Clothing Store",
-    tag: "Retail",
-    category: "clothing",
-    desc: "Browse our collection of high-quality apparel and accessories.",
-    img: clothing,
-    navigateTo: "/clothing",
+    title: "Salon",
+    tag: "Beauty",
+    category: "salon",
+    desc: "Indulge in a range of beauty and wellness services to enhance your look and feel.",
+    img: salon,
+    navigateTo: "/salon",
   }
 ];
 
@@ -76,14 +76,14 @@ const tabs = [
   { key: "badminton", label: "Badminton" },
   { key: "gaming", label: "Gaming" },
   { key: "cafe", label: "Cafe" },
-  { key: "clothing", label: "Clothing" },
+  { key: "salon", label: "Salon" },
 ];
 
 export default function Services() {
   const [activeTab, setActiveTab] = useState("all");
   const scrollerRef = useRef<HTMLDivElement | null>(null);
-  const [open404, setOpen404] = useState(false);
-  const [pageName, setPageName] = useState("Services Section");
+  // const [open404, setOpen404] = useState(false);
+  // const [pageName, setPageName] = useState("Services Section");
 
   const navigate = useNavigate();
 
@@ -109,18 +109,13 @@ export default function Services() {
     AOS.refresh();
   }, [visibleServices]);
 
-  const handleOpen404 = (serviceName: string) => {
-    setPageName(serviceName);
-    setOpen404(true);
-  };
-
   return (
     <section className="relative overflow-hidden bg-white/5 py-10 lg:py-16">
-      <ConstructionModal
+      {/* <ConstructionModal
         open={open404}
         onClose={() => setOpen404(false)}
         pageName={pageName}
-      />
+      /> */}
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <h2
@@ -225,7 +220,6 @@ export default function Services() {
                         <button
                           onClick={() => {
                             navigate(service.navigateTo)
-                            // handleOpen404(service.title);
                           }}
                           type="button"
                           className="inline-flex cursor-pointer h-11 w-11 items-center justify-center rounded-full bg-white text-[#296BE1] shadow-[0_10px_25px_rgba(255,255,255,0.18)] transition hover:scale-105"

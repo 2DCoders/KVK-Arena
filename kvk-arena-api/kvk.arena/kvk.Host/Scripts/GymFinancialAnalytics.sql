@@ -4,16 +4,16 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS gym."MemberFinancialAnalyticsDaily"
 AS
 WITH AllPayments AS (
     SELECT
-        mp."CreatedAt" AS "PaymentDate",
-        mp."Amount",
-        mp."PaymentType",
-        mp."PaymentStatus"
-    FROM gym."MemberPayments" mp
+        pr."CreatedAt" AS "PaymentDate",
+        pr."Amount",
+        pr."PaymentType",
+        pr."PaymentStatus"
+    FROM gym."PaymentRecords" pr
     
     UNION ALL
     
     SELECT
-        dpm."Date" AS "PaymentDate",
+        dpm."CreatedAt" AS "PaymentDate",
         dpm."Amount",
         dpm."PaymentType",
         dpm."PaymentStatus"
@@ -76,22 +76,22 @@ SELECT
         AND ap."PaymentStatus" IN (2, 4)
     ), 0) AS "PayPalRevenue",
 
-    -- The following metrics are specific to MemberPayments and cannot be directly applied to DayPassMembers
-    -- For now, I will keep them as they are, assuming they should only count for MemberPayments.
+    -- The following metrics are specific to PaymentRecords and cannot be directly applied to DayPassMembers
+    -- For now, I will keep them as they are, assuming they should only count for PaymentRecords.
     -- If DayPassMembers also have similar concepts of memberships, this part would need further clarification.
-    COUNT(mp_filtered."MemberShipStartDate") AS "NewMemberships",
+    COUNT(pr_filtered."MemberShipStartDate") AS "NewMemberships",
 
-    COUNT(mp_filtered."MemberShipRenewalDate") AS "RenewedMemberships",
+    COUNT(pr_filtered."MemberShipRenewalDate") AS "RenewedMemberships",
 
     COUNT(*) FILTER (
-        WHERE mp_filtered."MemberShipEndDate" IS NOT NULL
-        AND mp_filtered."MemberShipEndDate" < (NOW() AT TIME ZONE 'Asia/Colombo')
+        WHERE pr_filtered."MemberShipEndDate" IS NOT NULL
+        AND pr_filtered."MemberShipEndDate" < (NOW() AT TIME ZONE 'Asia/Colombo')
     ) AS "ExpiredMemberships",
 
     (NOW() AT TIME ZONE 'Asia/Colombo') AS "LastRefreshAt"
 
 FROM AllPayments ap
-LEFT JOIN gym."MemberPayments" mp_filtered ON ap."PaymentDate" = mp_filtered."CreatedAt" AND ap."Amount" = mp_filtered."Amount" AND ap."PaymentType" = mp_filtered."PaymentType" AND ap."PaymentStatus" = mp_filtered."PaymentStatus" -- This join is to re-introduce MemberPayments specific columns for membership analytics
+LEFT JOIN gym."PaymentRecords" pr_filtered ON ap."PaymentDate" = pr_filtered."CreatedAt" AND ap."Amount" = pr_filtered."Amount" AND ap."PaymentType" = pr_filtered."PaymentType" AND ap."PaymentStatus" = pr_filtered."PaymentStatus" -- This join is to re-introduce PaymentRecords specific columns for membership analytics
 GROUP BY
     ap."PaymentDate",
     EXTRACT(YEAR FROM ap."PaymentDate"),

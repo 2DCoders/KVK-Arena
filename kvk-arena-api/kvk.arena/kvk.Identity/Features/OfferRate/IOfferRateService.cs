@@ -16,4 +16,8 @@ public interface IOfferRateService
     
     Task<OfferRateResponse> GetOfferRateByIdAsync(Guid id, CancellationToken cancellationToken = default);
     
+    Task<Result> AssignOfferRateToUserAsync(Guid offerRateId,List<Guid>? memberList, CancellationToken cancellationToken = default);
+    
+    Task<List<MemberEligibleResponse>> GetEligibleMembersAsync(Guid? offerRateId,Guid? memberId, CancellationToken cancellationToken = default);
+    
 }

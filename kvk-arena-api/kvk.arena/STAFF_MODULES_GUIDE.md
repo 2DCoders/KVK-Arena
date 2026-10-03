@@ -5,7 +5,7 @@ This guide explains how to use the staff module seeding system in KVK Arena and 
 ## Overview
 
 The staff module system allows administrators to:
-- Assign one or more modules (Gym, CarWash, BadmintonCourt, GamingCenter, Retail) to staff members
+- Assign one or more modules (Gym, CarWash, BadmintonCourt, GamingCenter, Salon) to staff members
 - Retrieve which modules a staff member can access
 - Revoke module access when needed
 - Query available modules in the system
@@ -21,7 +21,7 @@ ModuleConstants.Gym              // "Gym"
 ModuleConstants.CarWash          // "CarWash"
 ModuleConstants.BadmintonCourt   // "BadmintonCourt"
 ModuleConstants.GamingCenter     // "GamingCenter"
-ModuleConstants.Retail           // "Retail"
+ModuleConstants.Salon           // "Salon"
 ```
 
 These constants are defined in `kvk.BuildingBlocks/Common/ModuleConstants.cs` for easy reference across all modules.
@@ -67,7 +67,7 @@ GET /api/identity-m/staff/{staffId}/modules/available
 **Response:**
 ```json
 {
-  "availableModules": ["Gym", "CarWash", "BadmintonCourt", "GamingCenter", "Retail"]
+  "availableModules": ["Gym", "CarWash", "BadmintonCourt", "GamingCenter", "Salon"]
 }
 ```
 
@@ -81,7 +81,7 @@ GET /api/identity-m/staff/{staffId}/modules
 ```json
 {
   "staffId": "550e8400-e29b-41d4-a716-446655440000",
-  "assignedModules": ["Gym", "Retail"],
+  "assignedModules": ["Gym", "Salon"],
   "lastModified": "2026-05-19T18:30:00Z"
 }
 ```
@@ -100,7 +100,7 @@ POST /api/identity-m/staff/{staffId}/modules/assign
 ```json
 {
   "staffId": "550e8400-e29b-41d4-a716-446655440000",
-  "moduleNames": ["Gym", "CarWash", "Retail"]
+  "moduleNames": ["Gym", "CarWash", "Salon"]
 }
 ```
 
@@ -108,7 +108,7 @@ POST /api/identity-m/staff/{staffId}/modules/assign
 ```json
 {
   "staffId": "550e8400-e29b-41d4-a716-446655440000",
-  "assignedModules": ["Gym", "CarWash", "Retail"],
+  "assignedModules": ["Gym", "CarWash", "Salon"],
   "lastModified": "2026-05-19T18:30:00Z"
 }
 ```
@@ -133,7 +133,7 @@ DELETE /api/identity-m/staff/550e8400-e29b-41d4-a716-446655440000/modules/Gym
 ```json
 {
   "staffId": "550e8400-e29b-41d4-a716-446655440000",
-  "assignedModules": ["CarWash", "Retail"],
+  "assignedModules": ["CarWash", "Salon"],
   "lastModified": "2026-05-19T18:30:05Z"
 }
 ```
@@ -159,8 +159,8 @@ POST /api/identity-m/auth/staff/login
 {
   "userId": "550e8400-e29b-41d4-a716-446655440000",
   "token": "eyJhbGc...",
-  "permissions": ["KVK:Gym:Category:View", "KVK:Retail:Product:Edit"],
-  "modules": ["Gym", "Retail"],
+  "permissions": ["KVK:Gym:Category:View", "KVK:Salon:Product:Edit"],
+  "modules": ["Gym", "Salon"],
   "email": "admin@kvkarena.com",
   "userName": "admin",
   "firstName": "Admin",
@@ -227,7 +227,7 @@ curl -X POST https://localhost:5001/api/identity-m/staff/550e8400-e29b-41d4-a716
   -H "Content-Type: application/json" \
   -d '{
     "staffId": "550e8400-e29b-41d4-a716-446655440000",
-    "moduleNames": ["Gym", "CarWash", "Retail"]
+    "moduleNames": ["Gym", "CarWash", "Salon"]
   }'
 ```
 
@@ -270,11 +270,11 @@ async function getAvailableModules(staffId: string) {
 
 // Usage
 const staffId = '550e8400-e29b-41d4-a716-446655440000';
-await assignModules(staffId, ['Gym', 'Retail']);
+await assignModules(staffId, ['Gym', 'Salon']);
 const assigned = await fetch(
   `https://localhost:5001/api/identity-m/staff/${staffId}/modules`
 ).then(r => r.json());
-console.log(assigned.assignedModules); // ["Gym", "Retail"]
+console.log(assigned.assignedModules); // ["Gym", "Salon"]
 ```
 
 ## Database Schema

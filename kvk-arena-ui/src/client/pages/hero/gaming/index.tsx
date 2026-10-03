@@ -1,7 +1,6 @@
 import {
   ArrowRight,
   Check,
-  Gamepad2,
   LoaderCircle,
   Shield,
   Swords,
@@ -14,6 +13,7 @@ import {
   useRef,
   useState,
 } from "react";
+import MOBILE_BG from "@/assets/gaming-mobile.png";
 
 /*
  * Change this to match the exact number of
@@ -433,21 +433,77 @@ export default function GamingHero() {
         )
       : 0;
 
-  const currentStep =
-    scrollProgress < 0.25
-      ? 0
-      : scrollProgress < 0.5
-        ? 1
-        : scrollProgress < 0.75
-          ? 2
-          : 3;
-
   return (
     <section
       ref={sectionRef}
-      className="relative h-[420vh] bg-black sm:h-[460vh] lg:h-[500vh]"
+      className="relative bg-black sm:h-[460vh] lg:h-[500vh]"
     >
-      <div className="sticky top-0 h-[100svh] overflow-hidden bg-black">
+      {/* ================= MOBILE ================= */}
+      <div className="relative min-h-[100svh] overflow-hidden bg-black sm:hidden">
+        <img
+          src={MOBILE_BG}
+          alt="KVK Arena gaming experience"
+          className="absolute inset-0 h-full w-full scale-[1.02] object-cover object-center"
+        />
+
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.7)_0%,rgba(0,0,0,0.12)_34%,rgba(0,0,0,0.25)_54%,rgba(0,0,0,0.96)_88%,#000_100%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.82)_0%,rgba(0,0,0,0.2)_62%,rgba(0,0,0,0.08)_100%)]" />
+        <div className="pointer-events-none absolute -right-28 top-[18%] h-72 w-72 rounded-full bg-red-600/15 blur-[90px]" />
+
+        <div className="relative z-10 flex min-h-[100svh] items-end px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-28">
+          <div className="w-full">
+            <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.28em] text-red-300">
+              KVK Arena Gaming
+            </p>
+
+            <h1 className="max-w-[350px] text-[2.85rem] font-black uppercase leading-[0.88] tracking-[-0.055em] text-white min-[390px]:text-[3.15rem]">
+              LEGENDS ARE
+              <span className="block bg-gradient-to-r from-red-300 via-red-500 to-red-700 bg-clip-text text-transparent">
+                MADE HERE !
+              </span>
+            </h1>
+
+            <p className="mt-6 max-w-[340px] text-[13px] leading-6 text-gray-300">
+              Premium gaming PCs, PlayStation 5, pool tables and private movie rooms.
+            </p>
+
+            <div className="mt-7 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={scrollToBooking}
+                className="group inline-flex h-12 cursor-pointer items-center justify-center gap-2 rounded-full bg-gradient-to-r from-red-800 via-red-600 to-red-500 px-4 text-[11px] font-extrabold text-white shadow-[0_14px_35px_rgba(220,38,38,0.32)] transition active:scale-[0.98]"
+              >
+                Book a Slot
+                <ArrowRight size={15} className="transition-transform duration-300 group-hover:translate-x-1" />
+              </button>
+
+              <button
+                type="button"
+                onClick={scrollToGames}
+                className="inline-flex h-12 cursor-pointer items-center justify-center gap-2 rounded-full border border-white/20 bg-black/25 px-3 text-[11px] font-bold text-white backdrop-blur-md transition active:scale-[0.98]"
+              >
+                <Swords className="h-4 w-4 text-red-300" />
+                Explore Games
+              </button>
+            </div>
+
+            <div className="mt-6 flex items-center gap-5 border-t border-white/15 pt-4">
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-red-300" />
+                <span className="text-[10px] font-semibold text-white/70">High-end gaming</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Trophy className="h-4 w-4 text-red-300" />
+                <span className="text-[10px] font-semibold text-white/70">Competitive matches</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ================= DESKTOP ================= */}
+      <div className="sticky top-0 hidden h-[100svh] min-h-[620px] overflow-hidden bg-black sm:block">
         {/* Image sequence */}
         <div
           className="absolute inset-0 will-change-transform"

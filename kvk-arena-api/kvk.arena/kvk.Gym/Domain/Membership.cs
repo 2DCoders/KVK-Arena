@@ -21,6 +21,8 @@ public class Membership : User
     public Guid? MembershipPlanId { get; set; }
     public MembershipPlan? MembershipPlan { get; set; }
     
+    public Guid? MembershipPlanPendingId { get; set; }
+    
     public required string MembershipNumber { get; set; }
     // Display-only formatted string. Use MembershipNumberFormatter in BuildingBlocks to create a compatible value.
     

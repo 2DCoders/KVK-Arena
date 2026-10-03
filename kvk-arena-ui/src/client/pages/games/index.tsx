@@ -72,7 +72,7 @@ export default function Games() {
   const swiperRef = useRef<SwiperType | null>(null);
 
   return (
-    <section className="relative overflow-hidden bg-[#050812] py-5">
+    <section className="relative overflow-hidden bg-[#050812] py-4 sm:py-5">
       {/* Background Glow */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_50%,rgba(220,38,38,0.15),transparent_60%)]" />
 
@@ -93,7 +93,7 @@ export default function Games() {
         >
           {games.map((game) => (
             <SwiperSlide key={game.id}>
-              <div className="relative min-h-[750px] overflow-hidden rounded-[40px]">
+              <div className="relative min-h-[620px] overflow-hidden rounded-[24px] sm:min-h-[700px] sm:rounded-[40px] lg:min-h-[750px]">
                 {/* Game Background */}
                 <img
                   src={game.background}
@@ -108,74 +108,74 @@ export default function Games() {
                 <div className="absolute inset-0 bg-gradient-to-r from-[#050812] via-[#050812]/75 to-transparent" />
 
                 {/* Content */}
-                <div className="relative z-10 container mx-auto px-8 lg:px-16 min-h-[750px] flex items-center justify-between">
+                <div className="relative z-10 container mx-auto flex min-h-[620px] flex-col items-center justify-center gap-6 px-5 py-8 sm:min-h-[700px] sm:px-8 lg:min-h-[750px] lg:flex-row lg:items-center lg:justify-between lg:gap-0 lg:px-16 lg:py-0">
                   {/* Left Content */}
-                  <div className="max-w-xl">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-5 py-2">
+                  <div className="max-w-xl text-center lg:text-left">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-4 py-1.5 sm:px-5 sm:py-2">
                       <span className="h-2 w-2 rounded-full bg-red-500" />
-                      <span className="text-sm font-medium text-red-400">
+                      <span className="text-xs font-medium text-red-400 sm:text-sm">
                         {game.genre}
                       </span>
                     </div>
 
-                    <h2 className="mt-8 text-5xl lg:text-7xl font-black text-white uppercase">
+                    <h2 className="mt-5 text-2xl font-black text-white uppercase sm:mt-8 sm:text-5xl lg:text-7xl">
                       {game.title}
                     </h2>
 
-                    <p className="mt-6 text-lg text-gray-300">
+                    <p className="mt-4 text-sm text-gray-300 line-clamp-3 sm:mt-6 sm:text-lg sm:line-clamp-none">
                       {game.description}
                     </p>
 
                     {/* Game Info */}
-                    <div className="mt-8 flex flex-wrap gap-3">
-                      <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-gray-300">
+                    <div className="mt-5 flex flex-wrap justify-center gap-2 sm:mt-8 sm:gap-3 lg:justify-start">
+                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-gray-300 sm:px-4 sm:py-2 sm:text-sm">
                         Action
                       </span>
 
-                      <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-gray-300">
+                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-gray-300 sm:px-4 sm:py-2 sm:text-sm">
                         Multiplayer
                       </span>
 
-                      <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-gray-300">
+                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-gray-300 sm:px-4 sm:py-2 sm:text-sm">
                         4K Support
                       </span>
                     </div>
 
                     {/* Stats */}
-                    <div className="mt-8 flex gap-10">
+                    <div className="mt-5 flex justify-center gap-6 sm:mt-8 sm:gap-10 lg:justify-start">
                       <div>
-                        <p className="text-3xl font-bold text-white">4.9</p>
-                        <p className="text-sm text-gray-400">Rating</p>
+                        <p className="text-xl font-bold text-white sm:text-3xl">4.9</p>
+                        <p className="text-xs text-gray-400 sm:text-sm">Rating</p>
                       </div>
 
                       <div>
-                        <p className="text-3xl font-bold text-white">50+</p>
-                        <p className="text-sm text-gray-400">Hours</p>
+                        <p className="text-xl font-bold text-white sm:text-3xl">50+</p>
+                        <p className="text-xs text-gray-400 sm:text-sm">Hours</p>
                       </div>
 
                       <div>
-                        <p className="text-3xl font-bold text-white">PS5</p>
-                        <p className="text-sm text-gray-400">Platform</p>
+                        <p className="text-xl font-bold text-white sm:text-3xl">PS5</p>
+                        <p className="text-xs text-gray-400 sm:text-sm">Platform</p>
                       </div>
                     </div>
 
                     {/* Buttons */}
-                    <div className="mt-10 flex gap-4">
-                      
-                      <a href="#bookings">
-                        <button className="rounded-xl cursor-pointer bg-red-600 px-8 py-4 font-semibold text-white transition hover:bg-red-500">
+                    <div className="mt-6 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:justify-center lg:justify-start">
+
+                      <a href="#bookings" className="w-full sm:w-auto">
+                        <button className="w-full rounded-xl cursor-pointer bg-red-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-red-500 sm:w-auto sm:px-8 sm:py-4 sm:text-base">
                           Book Now
                         </button>
                       </a>
 
-                      <button className="rounded-xl cursor-pointer border border-white/10 bg-white/5 px-8 py-4 font-semibold text-white backdrop-blur-md transition hover:border-white/30">
+                      <button className="w-full rounded-xl cursor-pointer border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold text-white backdrop-blur-md transition hover:border-white/30 sm:w-auto sm:px-8 sm:py-4 sm:text-base">
                         View More
                       </button>
                     </div>
                   </div>
 
                   {/* Character */}
-                  <div className="relative">
+                  <div className="relative hidden sm:block">
                     <div
                       className="absolute inset-0 scale-110 rounded-full"
                       style={{
@@ -189,9 +189,11 @@ export default function Games() {
                       alt={game.title}
                       className="
                         relative z-10
-                        h-[700px]
+                        h-[360px]
                         object-contain
                         drop-shadow-[0_20px_60px_rgba(255,255,255,0.15)]
+                        sm:h-[460px]
+                        lg:h-[700px]
                     "
                     />
                   </div>

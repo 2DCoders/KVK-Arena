@@ -12,10 +12,7 @@ public class GamingSlot : AuditableEntity
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
     public decimal Price { get; set; }
-
-    public bool IsBooked { get; set; } = false;
-    public Guid? BookingId { get; set; } // Nullable, links to a booking if booked
-
+    
     public bool IsActive { get; set; } = true; // Can be disabled without deleting
     
     public Guid GamingCategoryId { get; set; }

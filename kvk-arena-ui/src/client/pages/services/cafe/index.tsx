@@ -252,7 +252,7 @@ export default function CafeServices() {
   return (
     <section
       id="about"
-      className="relative overflow-hidden bg-[#fffdf9] py-20 sm:py-24 lg:py-28"
+      className="relative overflow-hidden bg-[#fffdf9] py-20 sm:py-24 lg:py-28 scroll-mt-16 sm:scroll-mt-20"
     >
       {/* Background decoration */}
       <div className="pointer-events-none absolute -left-28 top-10 h-80 w-80 rounded-full bg-[#efd8c3]/35 blur-[110px]" />
