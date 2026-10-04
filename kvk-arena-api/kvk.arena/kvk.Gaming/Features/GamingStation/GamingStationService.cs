@@ -302,19 +302,21 @@ public class GamingStationService : IGamingStationService
         if (gamingStation == null)
             return Result.Failure($"Gaming station with ID '{id}' not found.");
 
-        // Prevent deletion of a Gaming Station if active future bookings exist.
-        // TODO: Implement actual checks for active future bookings.
-        var hasActiveBookings =
-            await _db.GamingBookings.AnyAsync(b => b.GamingStationId == id && b.Status == GamingBookingStatus.Confirmed,
-                cancellationToken);
-        if (hasActiveBookings)
-            return Result.Failure("Cannot delete gaming station as it has active future bookings.");
+        // The FK from GamingBookings/GamingBookingHolds to GamingStations is RESTRICT, so ANY
+        // booking or hold ever made against this station (regardless of status) blocks the hard
+        // delete below with a Postgres FK-violation. Check for that up front so the cashier gets
+        // a clear, specific message instead of a generic/wrapped EF exception.
+        var hasBookingHistory =
+            await _db.GamingBookings.AnyAsync(b => b.GamingStationId == id, cancellationToken);
+        if (hasBookingHistory)
+            return Result.Failure(
+                "Cannot delete this station because it has existing booking history. Deactivate it instead to hide it from new bookings.");
 
-        // Prevent deletion of a Gaming Station if active slot configurations exist.
-        // TODO: Implement actual checks for active slot configurations.
-        // var hasActiveSlotConfigurations = await _db.SlotConfigurations.AnyAsync(sc => sc.GamingStationId == id && sc.IsActive, cancellationToken);
-        // if (hasActiveSlotConfigurations)
-        //     return Result.Failure("Cannot delete gaming station as it has active slot configurations.");
+        var hasBookingHolds =
+            await _db.GamingBookingHolds.AnyAsync(h => h.GamingStationId == id, cancellationToken);
+        if (hasBookingHolds)
+            return Result.Failure(
+                "Cannot delete this station because it has pending booking holds. Deactivate it instead to hide it from new bookings.");
 
         try
         {
@@ -325,7 +327,7 @@ public class GamingStationService : IGamingStationService
         }
         catch (Exception ex)
         {
-            return Result.Failure($"Failed to delete gaming station: {ex.Message}");
+            return Result.Failure($"Failed to delete gaming station: {ex.InnerException?.Message ?? ex.Message}");
         }
     }
 
