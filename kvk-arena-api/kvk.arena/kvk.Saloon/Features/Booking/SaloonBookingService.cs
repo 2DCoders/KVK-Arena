@@ -524,7 +524,12 @@ public class SaloonBookingService : ISaloonBookingService
         if (request.SaloonServiceIds == null || !request.SaloonServiceIds.Any())
             return Result.Failure("At least one service must be selected.");
 
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        // The host's system clock isn't guaranteed to be Sri Lanka local time (e.g. a
+        // server running in UTC), so comparing against DateTime.Now/Today directly can
+        // make slots that have already passed for the actual customer still show up as
+        // bookable. Resolve "now" explicitly in the business time zone instead.
+        var nowInSriLanka = GetNowInSriLanka();
+        var today = DateOnly.FromDateTime(nowInSriLanka);
         if (request.Date < today)
             return Result.Failure("Cannot check availability for a past date.");
 
@@ -595,7 +600,7 @@ public class SaloonBookingService : ISaloonBookingService
 
         if (request.Date == today)
         {
-            var now = DateTime.Now.TimeOfDay;
+            var now = nowInSriLanka.TimeOfDay;
             var roundedNowMinutes = Math.Ceiling(now.TotalMinutes / stepMinutes) * stepMinutes;
             var roundedNow = TimeSpan.FromMinutes(roundedNowMinutes);
 
@@ -663,6 +668,14 @@ public class SaloonBookingService : ISaloonBookingService
     private static string FormatTime(TimeSpan time)
     {
         return DateTime.Today.Add(time).ToString("h:mm tt");
+    }
+
+    private static readonly TimeZoneInfo SriLankaTimeZone =
+        TimeZoneInfo.FindSystemTimeZoneById("Asia/Colombo");
+
+    private static DateTime GetNowInSriLanka()
+    {
+        return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, SriLankaTimeZone);
     }
 
     private static kvk.Badminton.Features.CourtBookingTemporary.DaysOfWeek MapDayOfWeek(DayOfWeek dayOfWeek)
