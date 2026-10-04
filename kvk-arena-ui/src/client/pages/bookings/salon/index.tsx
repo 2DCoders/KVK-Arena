@@ -938,51 +938,49 @@ export default function SalonBooking() {
 
               <div className="mt-6 rounded-2xl border border-white/10 bg-black/10 p-5">
 
-                <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-start justify-between gap-3">
 
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="text-[10px] uppercase tracking-[0.2em] text-white/35">
                       Selected Services
                     </p>
 
-                    <p className="mt-1 text-sm font-medium text-white">
+                    <p className="mt-1 truncate text-sm font-medium text-white">
                       {selectedServices.length > 0
                         ? selectedServices.map((s) => s.name).join(", ")
                         : "No services selected"}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-6">
-                    {selectedDate && selectedTime && (
-                      <div className="text-right">
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-white/35">
-                          Appointment
-                        </p>
+                  {totalPrice > 0 && (
+                    <div className="shrink-0 text-right">
+                      <p className="text-[10px] uppercase tracking-[0.2em] text-white/35">
+                        Total
+                      </p>
 
-                        <p className="mt-1 text-sm font-medium text-purple-200">
-                          {selectedDate} · {formatTimeLabel(selectedTime)}
-                        </p>
-                      </div>
-                    )}
-
-                    {totalPrice > 0 && (
-                      <div className="text-right">
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-white/35">
-                          Total
-                        </p>
-
-                        <p className="mt-1 text-sm font-medium text-purple-200">
-                          {new Intl.NumberFormat("en-LK", {
-                            style: "currency",
-                            currency: "LKR",
-                            minimumFractionDigits: 0,
-                          }).format(totalPrice)}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                      <p className="mt-1 text-sm font-medium text-purple-200">
+                        {new Intl.NumberFormat("en-LK", {
+                          style: "currency",
+                          currency: "LKR",
+                          minimumFractionDigits: 0,
+                        }).format(totalPrice)}
+                      </p>
+                    </div>
+                  )}
 
                 </div>
+
+                {selectedDate && selectedTime && (
+                  <div className="mt-3 border-t border-white/10 pt-3">
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-white/35">
+                      Appointment
+                    </p>
+
+                    <p className="mt-1 text-sm font-medium text-purple-200">
+                      {selectedDate} · {formatTimeLabel(selectedTime)}
+                    </p>
+                  </div>
+                )}
 
               </div>
 
