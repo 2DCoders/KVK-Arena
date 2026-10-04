@@ -9,6 +9,9 @@ import {
   AlertCircle,
   User,
   Phone,
+  Search,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { getNextWorkingDays } from "@/services/holidays-api";
 import { getSalonServiceItems } from "@/services/salon-service-api";
@@ -45,6 +48,7 @@ type AvailableWindow = {
 };
 
 const TIME_SLOT_STEP_MINUTES = 30;
+const SERVICES_PREVIEW_LIMIT = 8;
 
 // Accepts local Sri Lankan mobile/landline numbers: 0 followed by 9 digits,
 // e.g. 0771234567 (10 digits total).
@@ -165,6 +169,8 @@ export default function SalonBooking() {
 
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [isLoadingServices, setIsLoadingServices] = useState(true);
+  const [serviceSearch, setServiceSearch] = useState("");
+  const [showAllServices, setShowAllServices] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
@@ -252,6 +258,22 @@ export default function SalonBooking() {
     () => services.filter((service) => selectedServiceIds.includes(service.id)),
     [services, selectedServiceIds],
   );
+
+  const filteredServices = useMemo(() => {
+    const query = serviceSearch.trim().toLowerCase();
+    if (!query) return services;
+    return services.filter((service) =>
+      service.name.toLowerCase().includes(query),
+    );
+  }, [services, serviceSearch]);
+
+  const visibleServices = useMemo(() => {
+    if (showAllServices || serviceSearch.trim()) return filteredServices;
+    return filteredServices.slice(0, SERVICES_PREVIEW_LIMIT);
+  }, [filteredServices, showAllServices, serviceSearch]);
+
+  const hasMoreServices =
+    !serviceSearch.trim() && filteredServices.length > SERVICES_PREVIEW_LIMIT;
 
   const totalPrice = selectedServices.reduce(
     (sum, service) => sum + service.price,
@@ -635,38 +657,86 @@ export default function SalonBooking() {
                     No services available right now.
                   </p>
                 ) : (
-                  <div className="flex flex-wrap gap-2">
-                    {services.map((item) => {
-                      const active = selectedServiceIds.includes(item.id);
+                  <>
+                    {services.length > SERVICES_PREVIEW_LIMIT && (
+                      <div className="group relative mb-3">
+                        <Search
+                          size={14}
+                          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30"
+                        />
 
-                      return (
-                        <button
-                          key={item.id}
-                          type="button"
-                          onClick={() => toggleService(item.id)}
-                          className={`
-                            cursor-pointer
-                            rounded-full
-                            border
-                            px-4
-                            py-2.5
-                            text-xs
-                            font-medium
-                            transition-all
-                            duration-300
+                        <input
+                          type="text"
+                          value={serviceSearch}
+                          onChange={(e) => setServiceSearch(e.target.value)}
+                          placeholder="Search services..."
+                          className="h-10 w-full rounded-xl border border-white/10 bg-white/[0.04] pl-9 pr-3 text-xs text-white outline-none transition placeholder:text-white/25 focus:border-purple-300/40 focus:ring-4 focus:ring-purple-500/10"
+                        />
+                      </div>
+                    )}
 
-                            ${
-                              active
-                                ? "border-purple-300/40 bg-purple-300 text-[#160d20]"
-                                : "border-white/10 bg-white/[0.04] text-white/55 hover:border-purple-300/30 hover:bg-white/[0.08] hover:text-white"
-                            }
-                          `}
-                        >
-                          {item.name}
-                        </button>
-                      );
-                    })}
-                  </div>
+                    {filteredServices.length === 0 ? (
+                      <p className="text-xs text-white/40">
+                        No services match &quot;{serviceSearch}&quot;.
+                      </p>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+                        {visibleServices.map((item) => {
+                          const active = selectedServiceIds.includes(item.id);
+
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => toggleService(item.id)}
+                              className={`
+                                w-full
+                                cursor-pointer
+                                truncate
+                                rounded-full
+                                border
+                                px-4
+                                py-2.5
+                                text-xs
+                                font-medium
+                                transition-all
+                                duration-300
+                                sm:w-auto
+
+                                ${
+                                  active
+                                    ? "border-purple-300/40 bg-purple-300 text-[#160d20]"
+                                    : "border-white/10 bg-white/[0.04] text-white/55 hover:border-purple-300/30 hover:bg-white/[0.08] hover:text-white"
+                                }
+                              `}
+                            >
+                              {item.name}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {hasMoreServices && (
+                      <button
+                        type="button"
+                        onClick={() => setShowAllServices((prev) => !prev)}
+                        className="mt-3 flex cursor-pointer items-center gap-1.5 text-xs font-medium text-purple-200/80 transition hover:text-purple-100"
+                      >
+                        {showAllServices ? (
+                          <>
+                            View less
+                            <ChevronUp size={14} />
+                          </>
+                        ) : (
+                          <>
+                            View more ({filteredServices.length - SERVICES_PREVIEW_LIMIT} more)
+                            <ChevronDown size={14} />
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
 
@@ -744,7 +814,7 @@ export default function SalonBooking() {
                         : availabilityMessage || "No available times"}
                     </div>
                   ) : (
-                    <div className="flex flex-wrap gap-2">
+                    <div className="grid max-h-56 grid-cols-3 gap-2 overflow-y-auto pr-1 sm:max-h-64 sm:grid-cols-4">
                       {availableSlots.map((slot) => {
                         const active = selectedTime === slot;
 
@@ -753,7 +823,7 @@ export default function SalonBooking() {
                             key={slot}
                             type="button"
                             onClick={() => setSelectedTime(slot)}
-                            className={`cursor-pointer rounded-full border px-3.5 py-2 text-xs font-medium transition-all duration-300 ${
+                            className={`cursor-pointer rounded-full border px-2 py-2 text-[11px] font-medium transition-all duration-300 sm:text-xs ${
                               active
                                 ? "border-purple-300/40 bg-purple-300 text-[#160d20]"
                                 : "border-white/10 bg-white/[0.04] text-white/55 hover:border-purple-300/30 hover:bg-white/[0.08] hover:text-white"
