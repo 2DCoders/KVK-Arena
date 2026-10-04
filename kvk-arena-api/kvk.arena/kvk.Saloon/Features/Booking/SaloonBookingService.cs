@@ -22,9 +22,11 @@ public class SaloonBookingService : ISaloonBookingService
     private readonly ILogger<SaloonBookingService> _logger;
     private readonly IHashService _hashService;
     private readonly PayHereOptions _payHereOptions;
+    private readonly ISaloonBusinessHoursService _businessHoursService;
 
     public SaloonBookingService(SaloonDbContext db, IHolidayService holidayService, ISmsService smsService,
-        ILogger<SaloonBookingService> logger, IHashService hashService, IOptions<PayHereOptions> payHereOptions)
+        ILogger<SaloonBookingService> logger, IHashService hashService, IOptions<PayHereOptions> payHereOptions,
+        ISaloonBusinessHoursService businessHoursService)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
         _holidayService = holidayService ?? throw new ArgumentNullException(nameof(holidayService));
@@ -32,6 +34,7 @@ public class SaloonBookingService : ISaloonBookingService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _hashService = hashService ?? throw new ArgumentNullException(nameof(hashService));
         _payHereOptions = payHereOptions?.Value ?? throw new ArgumentNullException(nameof(payHereOptions));
+        _businessHoursService = businessHoursService ?? throw new ArgumentNullException(nameof(businessHoursService));
     }
 
     private async Task SendBookingConfirmationSmsAsync(DomainBooking booking, CancellationToken cancellationToken)
@@ -513,12 +516,6 @@ public class SaloonBookingService : ISaloonBookingService
         return Result.Success().WithData("Response", response);
     }
 
-    // Fallback business hours used only when a seat has no SaloonSlotConfiguration
-    // row for the requested day (no admin UI exists yet to manage that table).
-    private static readonly TimeSpan DefaultOpenTime = TimeSpan.FromHours(9);
-    private static readonly TimeSpan DefaultCloseTime = TimeSpan.FromHours(19);
-    private const int DefaultSlotIntervalMinutes = 15;
-
     public async Task<Result> CheckDayAvailabilityAsync(SaloonDayAvailabilityRequest request, CancellationToken cancellationToken = default)
     {
         if (request.SaloonServiceIds == null || !request.SaloonServiceIds.Any())
@@ -549,6 +546,10 @@ public class SaloonBookingService : ISaloonBookingService
 
         var dayOfWeek = MapDayOfWeek(request.Date.DayOfWeek);
 
+        // Business-wide opening/closing time, configurable from System Settings;
+        // used as the fallback whenever a seat has no per-day SaloonSlotConfiguration.
+        var businessHours = await _businessHoursService.GetAsync(cancellationToken);
+
         var allSaloons = await _db.Set<kvk.Saloon.Domain.Saloon>()
             .Where(s => s.IsActive)
             .Include(s => s.Bookings)
@@ -567,8 +568,8 @@ public class SaloonBookingService : ISaloonBookingService
                 .OrderBy(c => c.StartTime)
                 .FirstOrDefault();
 
-            var open = config?.StartTime ?? DefaultOpenTime;
-            var close = config?.EndTime ?? DefaultCloseTime;
+            var open = config?.StartTime ?? businessHours.OpenTime;
+            var close = config?.EndTime ?? businessHours.CloseTime;
 
             if (close > open)
                 seatWindows.Add((saloon, open, close));
@@ -594,7 +595,7 @@ public class SaloonBookingService : ISaloonBookingService
             .Select(c => c.SlotIntervalMinutes)
             .ToList();
 
-        var stepMinutes = configuredIntervals.Count > 0 ? configuredIntervals.Min() : DefaultSlotIntervalMinutes;
+        var stepMinutes = configuredIntervals.Count > 0 ? configuredIntervals.Min() : businessHours.SlotIntervalMinutes;
 
         var earliestStart = globalOpen;
 

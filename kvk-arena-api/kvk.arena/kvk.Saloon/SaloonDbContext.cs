@@ -24,6 +24,7 @@ public class SaloonDbContext(
     public DbSet<SaloonBooking> SaloonBookings => Set<SaloonBooking>();
     public DbSet<SaloonBookingService> SaloonBookingServices => Set<SaloonBookingService>();
     public DbSet<SaloonDayEnd> SaloonDayEnds => Set<SaloonDayEnd>();
+    public DbSet<SaloonBusinessHours> SaloonBusinessHours => Set<SaloonBusinessHours>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -1,6 +1,7 @@
 using kvk.BuildingBlocks.Interfaces;
 using Kvk.Cafe;
 using kvk.Saloon.Features.Booking;
+using kvk.Saloon.Features.BusinessHours;
 using kvk.Saloon.Features.Dashboard;
 using kvk.Saloon.Features.Saloon;
 using kvk.Saloon.Features.ServiceItem;
@@ -38,6 +39,7 @@ public class SaloonModuleInitializer : IModuleInitializer
         services.AddScoped<ISaloonBookingService, SaloonBookingService>();
         services.AddScoped<SaloonDayEndService>(); // Register the new service
         services.AddScoped<ISaloonDashboardService, SaloonDashboardService>();
+        services.AddScoped<ISaloonBusinessHoursService, SaloonBusinessHoursService>();
 
     }
 }
