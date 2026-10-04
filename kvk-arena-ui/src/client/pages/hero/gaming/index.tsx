@@ -435,6 +435,7 @@ export default function GamingHero() {
 
   return (
     <section
+      id="gaming-hero"
       ref={sectionRef}
       className="relative bg-black sm:h-[460vh] lg:h-[500vh]"
     >

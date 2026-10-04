@@ -163,6 +163,8 @@ public class GamingStationService : IGamingStationService
 
         try
         {
+            var wasInactive = !existingStation.IsActive;
+
             existingStation.GamingCategoryId = request.GamingCategoryId;
             existingStation.StationCode = request.StationCode;
             existingStation.Name = request.Name;
@@ -170,6 +172,15 @@ public class GamingStationService : IGamingStationService
 
             _db.GamingStations.Update(existingStation);
             await _db.SaveChangesAsync(cancellationToken);
+
+            // A station reactivated here was excluded from every slot-configuration
+            // regeneration while inactive, so it can come back "active" with no
+            // bookable slots at all until the category's schedule is re-saved.
+            if (wasInactive && existingStation.IsActive)
+            {
+                await EnsureSlotsForActivatedStationAsync(existingStation.GamingCategoryId, existingStation.Id,
+                    cancellationToken);
+            }
 
             var response = new GamingStationResponse
             {
@@ -349,6 +360,10 @@ public class GamingStationService : IGamingStationService
             _db.GamingStations.Update(gamingStation);
             await _db.SaveChangesAsync(cancellationToken);
 
+            // See UpdateAsync: a reactivated station has no bookable slots until this runs.
+            await EnsureSlotsForActivatedStationAsync(gamingStation.GamingCategoryId, gamingStation.Id,
+                cancellationToken);
+
             return Result.Success("Gaming station activated successfully.");
         }
         catch (Exception ex)
@@ -384,6 +399,30 @@ public class GamingStationService : IGamingStationService
     }
 
 
+    private async Task EnsureSlotsForActivatedStationAsync(Guid categoryId, Guid stationId,
+        CancellationToken cancellationToken)
+    {
+        var activeConfig = await _db.GamingSlotConfigurations
+            .Where(sc => sc.GamingCategoryId == categoryId && sc.IsActive == 1)
+            .Select(sc => new GamingSlotConfigurationRequest
+            {
+                GamingConfigurationId = sc.Id,
+                GamingCategoryId = sc.GamingCategoryId,
+                StartTime = sc.StartTime,
+                EndTime = sc.EndTime,
+                SlotDurationMinutes = sc.SlotDurationMinutes,
+                SlotGapMinutes = sc.SlotGapMinutes,
+                Price = sc.Price,
+                IsActive = sc.IsActive
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (activeConfig != null)
+        {
+            await RegenerateSlotsInternalAsync(activeConfig, EntityState.Added, stationId, cancellationToken);
+        }
+    }
+
     private async Task RegenerateSlotsInternalAsync(GamingSlotConfigurationRequest config
         , EntityState entityState
         , Guid? stationId
@@ -403,6 +442,66 @@ public class GamingStationService : IGamingStationService
         if (entityState == EntityState.Added && stationId.HasValue)
         {
             targetStationIds = new List<Guid> { stationId.Value };
+
+            // A brand-new station has no rows here, but a reactivated one can —
+            // skipping this reconciliation (as this branch originally did) meant any
+            // leftover slot at the same (station, startTime) made the insert below
+            // violate the unique index instead of being updated in place.
+            var timeSlotsForNewStation = GenerateSlotTimeIntervals(
+                config.StartTime, config.EndTime, config.SlotDurationMinutes, config.SlotGapMinutes);
+
+            var desiredTimesForStation = timeSlotsForNewStation.ToDictionary(t => t.StartTime, t => t.EndTime);
+
+            var existingStationSlots = await _db.GamingSlots
+                .Where(x => x.GamingStationId == stationId.Value)
+                .ToListAsync(cancellationToken);
+
+            var orphanedStationSlots = new List<GamingSlot>();
+
+            foreach (var slot in existingStationSlots)
+            {
+                existingKeys.Add((slot.GamingStationId, slot.StartTime));
+
+                if (slot.GamingCategoryId == config.GamingCategoryId &&
+                    desiredTimesForStation.TryGetValue(slot.StartTime, out var newEndTime))
+                {
+                    slot.EndTime = newEndTime;
+                    slot.Price = config.Price;
+                    slot.GamingSlotConfigurationId = config.GamingConfigurationId;
+                    slot.IsActive = true;
+                }
+                else
+                {
+                    orphanedStationSlots.Add(slot);
+                }
+            }
+
+            if (orphanedStationSlots.Count > 0)
+            {
+                var orphanedIds = orphanedStationSlots.Select(s => s.Id).ToList();
+
+                var referencedOrphanIds = await _db.GamingBookings
+                    .Where(b => orphanedIds.Contains(b.GamingSlotId))
+                    .Select(b => b.GamingSlotId)
+                    .Union(_db.GamingBookingHolds
+                        .Where(h => orphanedIds.Contains(h.GamingSlotId))
+                        .Select(h => h.GamingSlotId))
+                    .Distinct()
+                    .ToListAsync(cancellationToken);
+
+                var referencedSet = referencedOrphanIds.ToHashSet();
+
+                var toDelete = orphanedStationSlots.Where(s => !referencedSet.Contains(s.Id)).ToList();
+                var toDeactivate = orphanedStationSlots.Where(s => referencedSet.Contains(s.Id)).ToList();
+
+                if (toDelete.Count > 0)
+                    _db.GamingSlots.RemoveRange(toDelete);
+
+                foreach (var slot in toDeactivate)
+                    slot.IsActive = false;
+            }
+
+            await _db.SaveChangesAsync(cancellationToken);
         }
         else if (entityState == EntityState.Modified && !stationId.HasValue)
         {
