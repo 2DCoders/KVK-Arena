@@ -363,7 +363,36 @@ export default function BookingGaming() {
     }
   };
 
-  const duration = selectedSlots.length;
+  const toMinutes = (time: string) => {
+    const [h, m] = time.split(":").map(Number);
+    return h * 60 + (m || 0);
+  };
+
+  const durationMinutes = useMemo(() => {
+    if (selectedSlots.length === 0) return 0;
+
+    const sorted = [...selectedSlots].sort((a, b) => a - b);
+
+    const firstSlot = masterSlots[sorted[0]];
+    const lastSlot = masterSlots[sorted[sorted.length - 1]];
+
+    if (!firstSlot || !lastSlot) return 0;
+
+    return toMinutes(lastSlot.endTime) - toMinutes(firstSlot.startTime);
+  }, [selectedSlots, masterSlots]);
+
+  const durationLabel = useMemo(() => {
+    if (durationMinutes <= 0) return "-";
+
+    const hours = Math.floor(durationMinutes / 60);
+    const mins = durationMinutes % 60;
+
+    const parts: string[] = [];
+    if (hours > 0) parts.push(`${hours} Hour${hours === 1 ? "" : "s"}`);
+    if (mins > 0) parts.push(`${mins} Min`);
+
+    return parts.join(" ");
+  }, [durationMinutes]);
 
   const selectedTimeRange = useMemo(() => {
     if (selectedSlots.length === 0) return "-";
@@ -1123,7 +1152,7 @@ export default function BookingGaming() {
                 <div>
                   <p className="text-xs text-gray-500">Duration</p>
                   <p className="font-semibold">
-                    {duration > 0 ? `${duration} Hour(s)` : "-"}
+                    {durationLabel}
                   </p>
                 </div>
 

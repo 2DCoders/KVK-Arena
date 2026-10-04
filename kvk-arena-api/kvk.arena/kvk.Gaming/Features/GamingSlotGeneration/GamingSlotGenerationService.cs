@@ -171,9 +171,13 @@ public class GamingSlotGenerationService : IGamingSlotGenerationService
         DateOnly date,
         CancellationToken cancellationToken = default)
     {
+        // Only active slot templates are bookable. Re-saving a slot configuration with a
+        // different schedule deactivates (rather than deletes) any old slot still referenced
+        // by a historical booking, so without this filter stale time slots from a previous
+        // configuration kept showing up alongside the new ones on the guest site.
         var allAvailableSlots = await _db.GamingSlots
             .AsNoTracking()
-            .Where(x => x.GamingCategoryId == categoryId && x.GamingStationId == stationId)
+            .Where(x => x.GamingCategoryId == categoryId && x.GamingStationId == stationId && x.IsActive)
             .OrderBy(x => x.StartTime)
             .ToListAsync(cancellationToken);
 
