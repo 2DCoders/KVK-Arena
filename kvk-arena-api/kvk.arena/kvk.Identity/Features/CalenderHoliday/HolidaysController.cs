@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.BuildingBlocks.Common;
 using kvk.BuildingBlocks.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Identity.Features.CalenderHoliday;
 
+[Authorize]
 [ApiController]
 [Route("api/identity/holidays")]
 public class HolidaysController : ControllerBase
@@ -23,6 +25,7 @@ public class HolidaysController : ControllerBase
         return Ok(list);
     }
 
+    [AllowAnonymous]
     [HttpGet("next-working-days")]
     public async Task<IActionResult> GetNextSevenWorkingDays([FromQuery] DateTime startDate, [FromQuery] int count = 7,
         CancellationToken cancellationToken = default)

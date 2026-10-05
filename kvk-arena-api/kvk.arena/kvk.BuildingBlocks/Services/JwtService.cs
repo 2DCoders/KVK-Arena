@@ -20,6 +20,22 @@ public class JwtService : IJwtService
     // Hardcoded tenant id for this KV K instance (Phase 1 temporary requirement)
     private static readonly Guid HardcodedTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
 
+    /// <summary>Validate tokens using the same issuer, audience, and key as token generation.</summary>
+    public static TokenValidationParameters CreateTokenValidationParameters() => new()
+    {
+        ValidateIssuer = true,
+        ValidIssuer = "kvk",
+        ValidateAudience = true,
+        ValidAudience = "kvk",
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(SigningKey),
+        ValidateLifetime = true,
+        RequireExpirationTime = true,
+        RequireSignedTokens = true,
+        ValidAlgorithms = new[] { SecurityAlgorithms.HmacSha256 },
+        ClockSkew = TimeSpan.FromMinutes(1)
+    };
+
     public string GenerateToken(Guid userId, IEnumerable<string> permissions)
     {
         var claims = new List<Claim>

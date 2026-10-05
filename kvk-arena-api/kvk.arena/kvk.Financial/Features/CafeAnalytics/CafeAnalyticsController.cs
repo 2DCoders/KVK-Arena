@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.BuildingBlocks.Common;
 using kvk.Financial.Features.CafeAnalytics;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Financial.Features.CarserviceAnalytics;
+[Authorize]
 [ApiController]
 [Route("api/financial/cafe-analytics")]
 public class CafeAnalyticsController : ControllerBase

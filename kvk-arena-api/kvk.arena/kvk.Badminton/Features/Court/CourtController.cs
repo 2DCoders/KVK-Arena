@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.Badminton.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Badminton.Features.Court;
 
+[Authorize]
 [ApiController]
 [Route("api/badminton/courts")]
 public class CourtController : ControllerBase
@@ -14,6 +16,7 @@ public class CourtController : ControllerBase
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {

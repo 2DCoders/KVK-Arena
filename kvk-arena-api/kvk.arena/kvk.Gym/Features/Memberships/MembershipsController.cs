@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using kvk.Gym.Interfaces;
 
 namespace kvk.Gym.Features.Memberships;
 
+[Authorize]
 [ApiController]
 [Route("api/gym/members")]
 public class MembershipsController : ControllerBase
@@ -14,6 +16,7 @@ public class MembershipsController : ControllerBase
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }
 
+    [AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateMembershipRequest request,
         CancellationToken cancellationToken = default)
@@ -26,6 +29,7 @@ public class MembershipsController : ControllerBase
     }
 
 
+    [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] MemberLoginRequest request,
         CancellationToken cancellationToken = default)
@@ -138,6 +142,7 @@ public class MembershipsController : ControllerBase
     }
     
     
+    [AllowAnonymous]
     [HttpGet("trainers")]
     public async Task<IActionResult> GetAllTrainers([FromQuery] bool includeDeleted = false, CancellationToken cancellationToken = default)
     {

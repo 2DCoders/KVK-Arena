@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using kvk.BuildingBlocks.Common;
 using kvk.Gym.Services;
 
 namespace kvk.Gym.Features.MembershipPlans;
 
+[Authorize]
 [ApiController]
 [Route("api/gym/membership-plans")]
 public class MembershipPlansController : ControllerBase
@@ -25,6 +27,7 @@ public class MembershipPlansController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = ((dynamic)result.AdditionalData["response"]).Id }, result);
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> Get(CancellationToken cancellationToken = default)
     {

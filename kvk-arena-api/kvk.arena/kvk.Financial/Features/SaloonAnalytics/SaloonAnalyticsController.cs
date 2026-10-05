@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.BuildingBlocks.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Financial.Features.SaloonAnalytics;
 
+[Authorize]
 [ApiController]
 [Route("api/financial/saloon-analytics")]
 public class SaloonAnalyticsController : ControllerBase

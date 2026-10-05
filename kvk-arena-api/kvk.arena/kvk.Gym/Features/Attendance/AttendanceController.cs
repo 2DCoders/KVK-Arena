@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using kvk.BuildingBlocks.Common;
 using kvk.Gym.Services;
@@ -5,6 +6,7 @@ using kvk.Gym.Features.Attendance;
 
 namespace kvk.Gym.Features.Attendance;
 
+[Authorize]
 [ApiController]
 [Route("api/gym/attendance")]
 public class AttendanceController : ControllerBase

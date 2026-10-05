@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.Badminton.Services;
 using Microsoft.AspNetCore.Mvc;
 using kvk.BuildingBlocks.Interfaces;
 
 namespace kvk.Badminton.Features.DayEnd;
 
+[Authorize]
 [ApiController]
 [Route("api/badminton/dayend")]
 public class DayEndController : ControllerBase

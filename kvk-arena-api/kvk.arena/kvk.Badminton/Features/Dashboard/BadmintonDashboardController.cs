@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using kvk.Badminton.Interfaces;
 
 namespace kvk.Badminton.Features.Dashboard;
 
+[Authorize]
 [ApiController]
 [Route("api/badminton/dashboard")]
 public class BadmintonDashboardController : ControllerBase

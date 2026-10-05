@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using kvk.CarService.Interfaces;
 
 namespace kvk.CarService.Features.Dashboard;
 
+[Authorize]
 [ApiController]
 [Route("api/car-service/dashboard")]
 public class CarWashDashboardController : ControllerBase

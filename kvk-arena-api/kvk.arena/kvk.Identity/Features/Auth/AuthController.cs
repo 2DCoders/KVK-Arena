@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using kvk.BuildingBlocks.Common;
 
 namespace kvk.Identity.Features.Auth;
 
+[Authorize]
 [ApiController]
 [Route("api/identity-m/auth")]
 public class AuthController : ControllerBase
@@ -36,6 +38,7 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Authenticate staff member and return token + permissions.
     /// </summary>
+    [AllowAnonymous]
     [HttpPost("staff/login")]
     public async Task<IActionResult> Login([FromBody] AuthLoginRequest request,
         CancellationToken cancellationToken = default)

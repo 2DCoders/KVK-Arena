@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.BuildingBlocks.Common;
 using kvk.Gaming.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Gaming.Features.GamingSlotGeneration;
 
+[Authorize]
 [ApiController]
 [Route("api/gaming-m/gaming-slot-generation")]
 public class GamingSlotGenerationController : ControllerBase
@@ -47,6 +49,7 @@ public class GamingSlotGenerationController : ControllerBase
 
         return Ok(result);
     }
+    [AllowAnonymous]
     [HttpGet("availability-by-station-category")]
     public async Task<IActionResult> GetByStationCategoryIdAndDate([FromQuery]Guid stationId,[FromQuery]Guid categoryId,[FromQuery] DateOnly date, CancellationToken cancellationToken)
     {
@@ -55,6 +58,7 @@ public class GamingSlotGenerationController : ControllerBase
     }
     
     //configuration by category
+    [AllowAnonymous]
     [HttpGet("configuration-by-category")]
     public async Task<IActionResult> GetConfigurationByCategory([FromQuery]Guid categoryId, CancellationToken cancellationToken)
     {

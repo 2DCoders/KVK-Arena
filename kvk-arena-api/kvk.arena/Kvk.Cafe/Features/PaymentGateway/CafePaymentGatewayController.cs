@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.BuildingBlocks.Common;
 using Kvk.Cafe.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kvk.Cafe.Features.PaymentGateway;
 
+[Authorize]
 [ApiController]
 [Route("api/payments/cafe")]
 public class CafePaymentGatewayController : ControllerBase
@@ -29,6 +31,7 @@ public class CafePaymentGatewayController : ControllerBase
         return Ok(response);
     }
 
+    [AllowAnonymous]
     [HttpPost("notify")]
     public async Task<IActionResult> PaymentNotification([FromForm] PaymentNotificationRequest request)
     {

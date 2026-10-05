@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.BuildingBlocks.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Identity.Features.OfferRate;
 
+[Authorize]
 [ApiController]
 [Route("api/identity/offer-rate")]
 public class OfferRateController(IOfferRateService offerRateService, ICouponValidationService couponValidationService)

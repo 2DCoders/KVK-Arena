@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.Saloon.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Saloon.Features.ServiceItem;
 
+[Authorize]
 [ApiController]
 [Route("api/saloon/service-items")]
 public class SaloonServiceItemController : ControllerBase
@@ -14,6 +16,7 @@ public class SaloonServiceItemController : ControllerBase
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {

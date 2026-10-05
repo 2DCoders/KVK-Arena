@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.Saloon.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Saloon.Features.BusinessHours;
 
+[Authorize]
 [ApiController]
 [Route("api/saloon/business-hours")]
 public class SaloonBusinessHoursController : ControllerBase

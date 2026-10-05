@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.BuildingBlocks.Common;
 using kvk.Gym.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Gym.Features.PaymentGateway;
 
+[AllowAnonymous]
 [ApiController]
 [Route("api/payments")]
 public class PaymentGatewayController : ControllerBase

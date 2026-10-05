@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.BuildingBlocks.Common;
 using kvk.Gaming.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Gaming.Features.GamingBooking;
 
+[Authorize]
 [ApiController]
 [Route("api/gaming-m/gaming-bookings")]
 public class GamingBookingController : ControllerBase
@@ -26,6 +28,7 @@ public class GamingBookingController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpPost("multi-hold")]
     public async Task<IActionResult> CreateMultiGamingHold([FromBody] MultiGamingBookingRequest request, CancellationToken cancellationToken = default)
     {
@@ -48,6 +51,7 @@ public class GamingBookingController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpPost("create-multi-payment")] // Initiates PayHere payment for an existing batch of holds (from multi-hold)
     public async Task<IActionResult> CreateMultiGamingPayment([FromBody] MultiGamingBookingPaymentRequest request, CancellationToken cancellationToken = default)
     {
@@ -73,6 +77,7 @@ public class GamingBookingController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpPost("confirm-multi")]
     public async Task<IActionResult> ConfirmMulti([FromBody] MultiGamingPaymentRequest request, CancellationToken cancellationToken = default)
     {
@@ -87,6 +92,7 @@ public class GamingBookingController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpPost("notify")]
     public async Task<IActionResult> GamingPaymentNotification([FromForm] PaymentNotificationRequest request, CancellationToken cancellationToken = default)
     {

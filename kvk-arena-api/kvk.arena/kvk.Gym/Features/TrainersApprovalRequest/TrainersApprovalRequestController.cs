@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.Gym.Domain;
 using kvk.Gym.Features.Trainers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Gym.Features.TrainersApprovalRequest;
 
+[Authorize]
 [ApiController]
 [Route("api/gym/trainers")]
 public class TrainersApprovalRequestController : ControllerBase

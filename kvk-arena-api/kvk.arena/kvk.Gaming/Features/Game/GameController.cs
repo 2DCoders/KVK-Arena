@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.BuildingBlocks.Common;
 using kvk.Gaming.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Gaming.Features.Game;
 
+[Authorize]
 [ApiController]
 [Route("api/gaming-m/games")]
 public class GameController : ControllerBase
@@ -48,6 +50,7 @@ public class GameController : ControllerBase
         return Ok(response);
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<List<GameResponse>>> GetPagedList([FromQuery] GameListRequest request, CancellationToken cancellationToken = default)
     {

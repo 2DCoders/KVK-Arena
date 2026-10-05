@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Identity.Features.StaffModule;
 
+[Authorize]
 [ApiController]
 [Route("api/identity-m/staff/{staffId}/modules")]
 public class StaffModuleController : ControllerBase

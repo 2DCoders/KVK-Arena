@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.CarService.Interfaces;
 using kvk.BuildingBlocks.Common;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +7,7 @@ namespace kvk.CarService.Features.CarWashService;
 
 //this is made to create all services for now created this for wash services by hardcoding the service category on service
 //Adedax 39(for future reference)
+[Authorize]
 [ApiController]
 [Route("api/car-service/wash-service")]
 public class CarWashServiceController : ControllerBase
@@ -50,6 +52,7 @@ public class CarWashServiceController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<List<CarWashServiceResponse>>> Get([FromQuery] Guid serviceId = default, CancellationToken cancellationToken = default)
     {
