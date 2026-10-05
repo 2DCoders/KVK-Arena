@@ -165,6 +165,8 @@ public class AuthService
                 .Distinct()
                 .ToArrayAsync(cancellationToken);
 
+            if (request.ModuleName != null && !modules.Contains(request.ModuleName, StringComparer.Ordinal))
+                throw new UnauthorizedAccessException("You are not assigned to this module. Contact your administrator.");
             // Generate JWT token
             var token = _jwtService.GenerateToken(staff.Id, permissions);
 
@@ -181,6 +183,10 @@ public class AuthService
             };
 
             return response;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

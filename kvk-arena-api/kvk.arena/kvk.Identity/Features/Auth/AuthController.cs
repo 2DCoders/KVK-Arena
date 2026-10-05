@@ -40,8 +40,15 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Login([FromBody] AuthLoginRequest request,
         CancellationToken cancellationToken = default)
     {
-        var result = await _authService.LoginAsync(request, cancellationToken);
-        return Ok(result);
+        try
+        {
+            var result = await _authService.LoginAsync(request, cancellationToken);
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(403, new { error = ex.Message, message = ex.Message });
+        }
     }
 
     /// <summary>

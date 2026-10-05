@@ -62,7 +62,7 @@ public class StaffModuleController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
-        catch (InvalidOperationException ex)
+        catch (KeyNotFoundException ex)
         {
             return NotFound(new { error = ex.Message });
         }
