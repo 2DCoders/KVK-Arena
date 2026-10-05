@@ -165,7 +165,13 @@ public class AuthService
                 .Distinct()
                 .ToArrayAsync(cancellationToken);
 
-            if (request.ModuleName != null && !modules.Contains(request.ModuleName, StringComparer.Ordinal))
+            if (request.ModuleName == "Admin")
+            {
+                var requiredModules = ModuleConstants.GetAllModuleNames().ToArray();
+                if (!requiredModules.All(module => modules.Contains(module, StringComparer.Ordinal)))
+                    throw new UnauthorizedAccessException("KVK Admin requires access to all modules. Contact your administrator.");
+            }
+            else if (request.ModuleName != null && !modules.Contains(request.ModuleName, StringComparer.Ordinal))
                 throw new UnauthorizedAccessException("You are not assigned to this module. Contact your administrator.");
             // Generate JWT token
             var token = _jwtService.GenerateToken(staff.Id, permissions);
