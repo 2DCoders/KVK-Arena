@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.CarService.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.CarService.Features.PackageService;
 
+[Authorize]
 [ApiController]
 [Route("api/car-service/package")]
 public class PackageController(IPackageService packageService) : ControllerBase
@@ -40,6 +42,7 @@ public class PackageController(IPackageService packageService) : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<List<PackageResponse>>> Get([FromQuery] Guid packageId = default, CancellationToken cancellationToken = default)
     {

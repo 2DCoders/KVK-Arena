@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.Saloon.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Saloon.Features.Booking;
 
+[Authorize]
 [ApiController]
 [Route("api/saloon/saloons/bookings")]
 public class SaloonBookingController : ControllerBase
@@ -28,6 +30,7 @@ public class SaloonBookingController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpPost("~/api/saloon/bookings")]
     public async Task<IActionResult> Create([FromBody] SaloonBookingCreateRequest request, CancellationToken cancellationToken)
     {
@@ -39,6 +42,7 @@ public class SaloonBookingController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpPost("~/api/saloon/bookings/create-with-payment")]
     public async Task<IActionResult> CreateWithPayment([FromBody] SaloonBookingCreateRequest request, CancellationToken cancellationToken)
     {
@@ -50,6 +54,7 @@ public class SaloonBookingController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpPost("~/api/saloon/bookings/notify")]
     public async Task<IActionResult> PaymentNotification([FromForm] kvk.BuildingBlocks.Common.PaymentNotificationRequest request, CancellationToken cancellationToken)
     {
@@ -57,6 +62,7 @@ public class SaloonBookingController : ControllerBase
         return Ok();
     }
 
+    [AllowAnonymous]
     [HttpPost("~/api/saloon/bookings/reverse")]
     public async Task<IActionResult> ReversePendingPayment([FromBody] SaloonPendingPaymentDeleteRequest request, CancellationToken cancellationToken)
     {
@@ -68,6 +74,7 @@ public class SaloonBookingController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpGet("~/api/saloon/bookings/availability")]
     public async Task<IActionResult> CheckAvailability([FromQuery] SaloonBookingAvailabilityRequest request, CancellationToken cancellationToken)
     {
@@ -79,6 +86,7 @@ public class SaloonBookingController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpGet("~/api/saloon/bookings/day-availability")]
     public async Task<IActionResult> CheckDayAvailability([FromQuery] SaloonDayAvailabilityRequest request, CancellationToken cancellationToken)
     {

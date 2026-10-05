@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using kvk.Gym.Interfaces;
 
 namespace kvk.Gym.Features.Dashboard;
 
+[Authorize]
 [ApiController]
 [Route("api/gym/dashboard")]
 public class GymDashboardController : ControllerBase

@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.BuildingBlocks.Common;
 using kvk.Gaming.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Gaming.Features.AdditionalPurchase;
 
+[Authorize]
 [ApiController]
 [Route("api/gaming-m/additional-purchases")]
 public class AdditionalPurchaseController : ControllerBase
@@ -55,6 +57,7 @@ public class AdditionalPurchaseController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpGet("by-category/{categoryId:guid}")]
     public async Task<ActionResult<List<AdditionalPurchaseResponse>>> GetByCategory(Guid categoryId, CancellationToken cancellationToken = default)
     {

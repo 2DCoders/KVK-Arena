@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.Badminton.Interfaces;
 using kvk.BuildingBlocks.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Badminton.Features.Booking;
 
+[Authorize]
 [ApiController]
 [Route("api/badminton/bookings")]
 public class BookingController : ControllerBase
@@ -40,6 +42,7 @@ public class BookingController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpPost("multi-hold")]
     public async Task<IActionResult> CreateMultiHold([FromBody] MultiBookingRequest request, CancellationToken ct)
     {
@@ -51,6 +54,7 @@ public class BookingController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpPost("confirm-multi")]
     public async Task<IActionResult> ConfirmMulti([FromBody] MultiPaymentRequest request, CancellationToken ct)
     {
@@ -76,6 +80,7 @@ public class BookingController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpPost("create-multi")] // Initiates PayHere payment for an existing batch of holds (from multi-hold)
     public async Task<IActionResult> CreateMultiPayment([FromBody] MultiBookingPaymentRequest request, CancellationToken ct)
     {
@@ -87,6 +92,7 @@ public class BookingController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpPost("notify")]
     public async Task<IActionResult> PaymentNotification([FromForm] PaymentNotificationRequest request, CancellationToken ct)
     {

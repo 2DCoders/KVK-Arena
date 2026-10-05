@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.BuildingBlocks.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Financial.Features.GymAnalytics;
 
+[Authorize]
 [ApiController]
 [Route("api/financial/gym-analytics")]
 public class GymAnalyticsController : ControllerBase

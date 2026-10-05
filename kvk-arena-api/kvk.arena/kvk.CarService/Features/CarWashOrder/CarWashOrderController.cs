@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Humanizer;
 using kvk.CarService.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.CarService.Features.CarWashOrder;
 
+[Authorize]
 [ApiController]
 [Route("api/car-service/wash-order")]
 public class CarWashOrderController(ICarWashOrderService orderService) : ControllerBase

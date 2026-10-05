@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.Saloon.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Saloon.Features.Saloon;
 
+[Authorize]
 [ApiController]
 [Route("api/saloon/saloons")]
 public class SaloonController : ControllerBase

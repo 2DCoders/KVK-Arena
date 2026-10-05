@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.Badminton.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Badminton.Features.CourtSlotConfiguration;
 
+[Authorize]
 [ApiController]
 [Route("api/badminton/court-slot-configurations")]
 public class CourtSlotConfigurationController : ControllerBase
@@ -28,6 +30,7 @@ public class CourtSlotConfigurationController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpGet("availability-by-court")]
     public async Task<IActionResult> GetByCourtIdAndDate([FromQuery] Guid courtId, [FromQuery] DateOnly date,
         CancellationToken cancellationToken)

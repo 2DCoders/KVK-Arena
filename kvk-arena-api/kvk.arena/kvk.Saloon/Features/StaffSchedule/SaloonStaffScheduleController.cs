@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.Saloon.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Saloon.Features.StaffSchedule;
 
+[Authorize]
 [ApiController]
 [Route("api/saloon/staff/{staffId:guid}/schedules")]
 public class SaloonStaffScheduleController : ControllerBase

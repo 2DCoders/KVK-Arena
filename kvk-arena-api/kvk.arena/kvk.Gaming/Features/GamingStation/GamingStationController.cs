@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.BuildingBlocks.Common;
 using kvk.Gaming.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Gaming.Features.GamingStation;
 
+[Authorize]
 [ApiController]
 [Route("api/gaming-m/gaming-stations")]
 //pc - 01,pc - 02,ps5
@@ -56,6 +58,7 @@ public class GamingStationController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpGet("by-category/{categoryId:guid}")]
     public async Task<ActionResult<List<GamingStationResponse>>> GetStationsByCategory(Guid categoryId, CancellationToken cancellationToken = default)
     {

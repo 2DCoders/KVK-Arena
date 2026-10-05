@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using kvk.BuildingBlocks.Common;
 using kvk.Gym.Services;
@@ -5,6 +6,7 @@ using kvk.Gym.Features.Payments;
 
 namespace kvk.Gym.Features.Payments;
 
+[Authorize]
 [ApiController]
 [Route("api/gym/members/{memberId:guid}/payments")]
 public class PaymentsController : ControllerBase

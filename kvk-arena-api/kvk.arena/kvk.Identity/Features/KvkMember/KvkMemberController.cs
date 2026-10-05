@@ -1,13 +1,16 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Identity.Features.KvkMember;
 
+[Authorize]
 [ApiController]
 [Route("api/identity/members")]
 public class KvkMemberController(IKvkMemberService kvkMemberService) : ControllerBase
 {
     private readonly IKvkMemberService _kvkMemberService = kvkMemberService;
 
+    [AllowAnonymous]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromForm] KvkMemberRegisterRequest request,
         CancellationToken cancellationToken)

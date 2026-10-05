@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using Kvk.Cafe.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kvk.Cafe.Features.Order;
 
+[Authorize]
 [ApiController]
 [Route("api/cafe/order")]
 public class OrderController(IOrderService orderService) : ControllerBase

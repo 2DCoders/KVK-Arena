@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using kvk.BuildingBlocks.Interfaces;
 using kvk.Gym.Services;
 
 namespace kvk.Gym.Features.DayEnd;
 
+[Authorize]
 [ApiController]
 [Route("api/gym/dayend")]
 public class DayEndController : ControllerBase

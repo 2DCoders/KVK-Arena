@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Kvk.Cafe.Enums;
 using Kvk.Cafe.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Cafe.Features.Menu;
 
+[Authorize]
 [ApiController]
 [Route("api/cafe/menu")]
 public class MenuController(IMenuService menuService) : ControllerBase
@@ -61,6 +63,7 @@ public class MenuController(IMenuService menuService) : ControllerBase
         return Ok(menu);
     }
 
+    [AllowAnonymous]
     [HttpGet("category/{category}")]
     public async Task<ActionResult<List<MenuResponse>>> GetByCategory(MenuCategory category,
         CancellationToken cancellationToken = default)

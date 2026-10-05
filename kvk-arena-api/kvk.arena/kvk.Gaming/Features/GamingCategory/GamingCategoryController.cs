@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.BuildingBlocks.Common;
 using kvk.Gaming.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Gaming.Features.GamingCategory;
 
+[Authorize]
 [ApiController]
 [Route("api/gaming-m/gaming-categories")]
 public class GamingCategoryController : ControllerBase
@@ -37,6 +39,7 @@ public class GamingCategoryController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<GamingCategoryResponse>> GetById(Guid id, CancellationToken cancellationToken = default)
     {
@@ -48,6 +51,7 @@ public class GamingCategoryController : ControllerBase
         return Ok(response);
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<List<GamingCategoryResponse>>> GetPagedList([FromQuery] GamingCategoryPagedRequest request, CancellationToken cancellationToken = default)
     {

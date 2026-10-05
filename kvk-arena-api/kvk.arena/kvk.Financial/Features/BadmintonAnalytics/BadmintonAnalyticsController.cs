@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.BuildingBlocks.Common;
 using kvk.Financial.Features.BadmintonAnayltics;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Financial.Features.BadmintonAnalytics;
+[Authorize]
 [ApiController]
 [Route("api/financial/badminton-analytics")]
 public class BadmintonAnalyticsController : ControllerBase

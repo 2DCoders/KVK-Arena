@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Identity.Features.CustomerFeedBack;
 
+[Authorize]
 [ApiController]
 [Route("api/identity/customer-feedback")]
 public class CustomerFeedBackController : ControllerBase
@@ -13,6 +15,7 @@ public class CustomerFeedBackController : ControllerBase
         _customerFeedBackService = customerFeedBackService;
     }
 
+    [AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CustomerFeedBackCreateRequest request,
         CancellationToken cancellationToken)

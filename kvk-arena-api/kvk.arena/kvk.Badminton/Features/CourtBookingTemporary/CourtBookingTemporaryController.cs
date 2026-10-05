@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Badminton.Features.CourtBookingTemporary;
 
+[Authorize]
 [ApiController]
 [Route("api/temporary-bookings")]
 public class CourtBookingTemporaryController : ControllerBase

@@ -49,7 +49,9 @@ export default function GymHero() {
   const [loadedFrames, setLoadedFrames] = useState(0);
   const [isReady, setIsReady] = useState(false);
   const [isOpenSignup, setIsOpenSignup] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() =>
+    window.matchMedia("(min-width: 1024px)").matches,
+  );
 
   const frameSources = useMemo(
     () =>
@@ -170,47 +172,55 @@ export default function GymHero() {
     }
 
     let cancelled = false;
-    let loadedCount = 0;
+    let completedCount = 0;
 
-    const images = frameSources.map((source, index) => {
-      const image = new Image();
+    setIsReady(false);
+    setLoadedFrames(0);
+    lastRenderedFrameRef.current = -1;
 
-      image.decoding = "async";
-      image.src = source;
-
-      image.onload = () => {
-        if (cancelled) return;
-
-        loadedCount += 1;
-        setLoadedFrames(loadedCount);
-
-        if (index === 0) {
-          drawFrame(0);
-          setIsReady(true);
-        }
-
-        if (loadedCount === frameSources.length) {
-          setIsReady(true);
-        }
-      };
-
-      image.onerror = () => {
-        console.error(`Unable to load gym frame: ${source}`);
-      };
-
-      return image;
-    });
-
+    const images = frameSources.map(() => new Image());
     imagesRef.current = images;
+
+    const updateLoading = () => {
+      if (cancelled) return;
+
+      completedCount += 1;
+      setLoadedFrames(completedCount);
+
+      if (completedCount === frameSources.length) {
+        const firstAvailableFrame = images.findIndex(
+          image => image.complete && image.naturalWidth > 0,
+        );
+        if (firstAvailableFrame !== -1) drawFrame(firstAvailableFrame);
+        setIsReady(true);
+      }
+    };
+
+    images.forEach((image, index) => {
+      image.decoding = "async";
+      image.onload = updateLoading;
+      image.onerror = () => {
+        if (cancelled) return;
+        console.error(
+          `Unable to load gym frame: ${frameSources[index]}`,
+        );
+        updateLoading();
+      };
+      image.src = frameSources[index];
+    });
 
     return () => {
       cancelled = true;
+      images.forEach(image => {
+        image.onload = null;
+        image.onerror = null;
+      });
       imagesRef.current = [];
     };
   }, [drawFrame, frameSources, isDesktop]);
 
   useEffect(() => {
-    if (!isDesktop) return;
+    if (!isDesktop || !isReady) return;
 
     const updateScrollProgress = () => {
       const section = sectionRef.current;
@@ -267,9 +277,10 @@ export default function GymHero() {
 
       if (animationFrameRef.current !== null) {
         window.cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
       }
     };
-  }, [drawFrame, frameSources.length, isDesktop]);
+  }, [drawFrame, frameSources.length, isDesktop, isReady]);
 
   /*
    * Different content blocks enter and leave at different scroll points.

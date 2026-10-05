@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using kvk.BuildingBlocks.Auth;
 using System.Diagnostics;
 using Hangfire;
 using Hangfire.PostgreSql;
@@ -105,6 +107,8 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options => options.TokenValidationParameters = JwtService.CreateTokenValidationParameters());
 builder.Services.AddAuthorization();
 // Add logging
 // builder.Services.AddLogging(config =>

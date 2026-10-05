@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using kvk.Gaming.Interfaces;
 
 namespace kvk.Gaming.Features.Dashboard;
 
+[Authorize]
 [ApiController]
 [Route("api/gaming-m/dashboard")]
 public class GamingDashboardController : ControllerBase

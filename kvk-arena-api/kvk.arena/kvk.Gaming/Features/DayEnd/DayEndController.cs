@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using kvk.BuildingBlocks.Interfaces;
 using kvk.Gaming.Services;
 
 namespace kvk.Gaming.Features.DayEnd;
 
+[Authorize]
 [ApiController]
 [Route("api/gaming/dayend")]
 public class DayEndController : ControllerBase

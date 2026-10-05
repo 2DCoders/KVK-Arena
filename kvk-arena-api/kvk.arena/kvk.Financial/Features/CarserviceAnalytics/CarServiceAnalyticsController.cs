@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using kvk.BuildingBlocks.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Financial.Features.CarserviceAnalytics;
+[Authorize]
 [ApiController]
 [Route("api/financial/car-service-analytics")]
 public class CarServiceAnalyticsController : ControllerBase

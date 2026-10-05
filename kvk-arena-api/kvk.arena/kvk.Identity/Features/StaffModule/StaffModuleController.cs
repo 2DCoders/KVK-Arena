@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Identity.Features.StaffModule;
 
+[Authorize]
 [ApiController]
 [Route("api/identity-m/staff/{staffId}/modules")]
 public class StaffModuleController : ControllerBase
@@ -62,7 +64,7 @@ public class StaffModuleController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
-        catch (InvalidOperationException ex)
+        catch (KeyNotFoundException ex)
         {
             return NotFound(new { error = ex.Message });
         }
