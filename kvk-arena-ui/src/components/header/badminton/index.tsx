@@ -1,162 +1,481 @@
 import logo from "@/assets/badminton_logo.png";
-import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
 import SignupModal from "@/components/signup/gym";
+import { Menu, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function BadmintonHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [showHeader, setShowHeader] = useState(true);
   const [isOpenSignup, setIsOpenSignup] = useState(false);
+
+  const lastScrollY = useRef(0);
+  const ticking = useRef(false);
+
   const navigate = useNavigate();
 
-  const closeMobileMenu = () => setMobileMenuOpen(false);
-  const toggleMobileMenu = () => setMobileMenuOpen((current) => !current);
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
 
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen((current) => !current);
+  };
+
+  const handleNavigateHome = () => {
+    closeMobileMenu();
+    navigate("/");
+  };
+
+  /*
+   * Header scroll behaviour
+   *
+   * The badminton hero uses a 500vh scroll section.
+   * The header remains visible while that animation is active.
+   *
+   * After the hero:
+   * - scrolling down hides the header
+   * - scrolling up shows the header
+   */
   useEffect(() => {
-    const onScroll = () => setIsScrolled(window.scrollY > 600);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    lastScrollY.current = Math.max(window.scrollY, 0);
+
+    const updateHeader = () => {
+      const currentScrollY = Math.max(window.scrollY, 0);
+      const scrollDifference = currentScrollY - lastScrollY.current;
+
+      /*
+       * Use 4.95 because the hero section is approximately 500vh.
+       * Change this value if your hero height is different.
+       */
+      const activationPoint = window.innerHeight * 4.95;
+      const isDesktop = window.innerWidth >= 1024;
+
+      setIsScrolled(currentScrollY > activationPoint);
+
+      /*
+       * Keep the header visible on mobile and tablet.
+       */
+      if (!isDesktop) {
+        setShowHeader(true);
+        lastScrollY.current = currentScrollY;
+        ticking.current = false;
+        return;
+      }
+
+      /*
+       * Keep the header visible while the mobile menu is open.
+       */
+      if (mobileMenuOpen) {
+        setShowHeader(true);
+        lastScrollY.current = currentScrollY;
+        ticking.current = false;
+        return;
+      }
+
+      /*
+       * Keep the header visible while the scroll hero is playing.
+       */
+      if (currentScrollY <= activationPoint) {
+        setShowHeader(true);
+        lastScrollY.current = currentScrollY;
+        ticking.current = false;
+        return;
+      }
+
+      /*
+       * Hide/show only after the scroll hero.
+       */
+      if (scrollDifference > 6) {
+        setShowHeader(false);
+      } else if (scrollDifference < -6) {
+        setShowHeader(true);
+      }
+
+      lastScrollY.current = currentScrollY;
+      ticking.current = false;
+    };
+
+    const handleScroll = () => {
+      if (ticking.current) return;
+
+      ticking.current = true;
+      window.requestAnimationFrame(updateHeader);
+    };
+
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setShowHeader(true);
+      }
+
+      updateHeader();
+    };
+
+    updateHeader();
+
+    window.addEventListener("scroll", handleScroll, {
+      passive: true,
+    });
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [mobileMenuOpen]);
+
+  /*
+   * Lock page scrolling only while the mobile sidebar is open.
+   *
+   * This prevents the hero from scrolling behind the mobile menu,
+   * but does not affect the hero during normal page scrolling.
+   */
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousBodyPaddingRight = document.body.style.paddingRight;
+
+    const scrollbarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
+
+    document.body.style.overflow = "hidden";
+
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    setShowHeader(true);
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.body.style.paddingRight = previousBodyPaddingRight;
+    };
+  }, [mobileMenuOpen]);
+
+  /*
+   * Close the mobile menu when the Escape key is pressed.
+   */
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeMobileMenu();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [mobileMenuOpen]);
 
   return (
-    <header className="fixed left-0 top-0 z-50 w-full rounded-full bg-transparent py-2 lg:py-4">
-      <div
-        className={
-          isScrolled
-            ? "relative mx-auto flex h-16 max-w-295 items-center justify-between overflow-hidden rounded-full border border-black/30 bg-black/60 px-4 py-1.5 shadow-lg backdrop-blur-md lg:h-20 lg:px-8 lg:py-2"
-            : "relative mx-auto flex h-16 max-w-295 items-center justify-between overflow-hidden rounded-full border border-white/30 bg-[linear-gradient(135deg,rgba(0,0,0,0),rgba(92,45,20,0.75),rgba(180,95,40,0.55))] px-4 py-1.5 shadow-[0_18px_50px_rgba(2,6,23,0.45)] backdrop-blur-2xl lg:h-20 lg:px-8 lg:py-2"
-        }
+    <>
+      <header
+        className={`
+          fixed left-0 top-0 z-50 w-full
+          translate-y-0 bg-transparent py-2
+          opacity-100
+          transition-all duration-300 ease-out
+          lg:py-4
+          ${
+            showHeader
+              ? "lg:translate-y-0 lg:opacity-100"
+              : "lg:pointer-events-none lg:-translate-y-[120%] lg:opacity-0"
+          }
+        `}
       >
-        {/* glow */}
         <div
           className={
             isScrolled
-              ? "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,0,0,0.22),transparent_28%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.03),transparent_30%)]"
-              : "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,0,0,0),transparent_38%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_30%)]"
+              ? `
+                  relative mx-auto flex h-16
+                  w-[calc(100%-1rem)]
+                  max-w-[1180px]
+                  items-center justify-between
+                  overflow-hidden rounded-full
+                  border border-[#B45F28]/35
+                  bg-black/75
+                  px-4 py-1.5
+                  shadow-lg backdrop-blur-md
+                  transition-all duration-500
+                  sm:w-[calc(100%-2rem)]
+                  lg:h-20 lg:px-8 lg:py-2
+                `
+              : `
+                  relative mx-auto flex h-16
+                  w-[calc(100%-1rem)]
+                  max-w-[1180px]
+                  items-center justify-between
+                  overflow-hidden rounded-full
+                  border border-white/25
+                  bg-[linear-gradient(135deg,rgba(0,0,0,0.78),rgba(92,45,20,0.78),rgba(180,95,40,0.58))]
+                  px-4 py-1.5
+                  shadow-[0_18px_50px_rgba(2,6,23,0.45)]
+                  backdrop-blur-2xl
+                  transition-all duration-500
+                  sm:w-[calc(100%-2rem)]
+                  lg:h-20 lg:px-8 lg:py-2
+                `
           }
-        />
+        >
+          {/* Background glow */}
+          <div
+            className={
+              isScrolled
+                ? `
+                    pointer-events-none absolute inset-0
+                    bg-[radial-gradient(circle_at_top_left,rgba(180,95,40,0.20),transparent_32%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.04),transparent_35%)]
+                  `
+                : `
+                    pointer-events-none absolute inset-0
+                    bg-[radial-gradient(circle_at_top_left,rgba(225,125,50,0.26),transparent_35%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.10),transparent_30%)]
+                  `
+            }
+          />
 
-        {/* LEFT NAV */}
-        <nav className="relative z-10 hidden items-center gap-8 lg:flex">
-          <a
-            href="#"
-            onClick={() => navigate("/")}
-            className="rounded-full px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"
-          >
-            Main Arena
-          </a>
-
-          <a
-            href="#courts"
-            className="rounded-full px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"
-          >
-            Courts
-          </a>
-
-          <a
-            href="#services"
-            className="rounded-full px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"
-          >
-            Services
-          </a>
-        </nav>
-
-        {/* LOGO */}
-        <div className="absolute left-1/2 z-10 -translate-x-1/2 flex items-center gap-2 max-w-[180px] sm:max-w-none">
-          <a href="#">
-            <img
-              src={logo}
-              alt="Badminton"
-              className="h-8 w-auto lg:h-12 cursor-pointer object-contain"
-            />
-          </a>
-
-          <a href="#">
-            <span className="text-white cursor-pointer font-black text-xs sm:text-sm lg:text-xl tracking-wide truncate">
-              BADMINTON
-            </span>
-          </a>
-        </div>
-
-        {/* JOIN BUTTON */}
-        <div className="relative z-10 hidden lg:block">
-          <a href="#bookings" className="text-slate-900">
-            <button className="rounded-full cursor-pointer border border-white/30 bg-white px-7 py-2.5 text-sm font-extrabold text-slate-900 transition hover:-translate-y-0.5 hover:shadow-lg">
-              Book Now
+          {/* Desktop navigation */}
+          <nav className="relative z-10 hidden items-center gap-8 lg:flex">
+            <button
+              type="button"
+              onClick={handleNavigateHome}
+              className="
+                cursor-pointer rounded-full
+                px-4 py-2 text-sm
+                font-medium text-slate-200
+                transition
+                hover:bg-[#B45F28]/20
+                hover:text-white
+              "
+            >
+              Main Arena
             </button>
-          </a>
-        </div>
 
-        {/* MOBILE MENU BUTTON */}
-        <button
-          onClick={toggleMobileMenu}
-          className="relative z-10 ml-auto rounded-xl p-2 text-white lg:hidden"
-        >
-          <Menu size={18} />
-        </button>
-      </div>
+            <a
+              href="#courts"
+              className="
+                rounded-full px-4 py-2
+                text-sm font-medium
+                text-slate-200 transition
+                hover:bg-[#B45F28]/20
+                hover:text-white
+              "
+            >
+              Courts
+            </a>
 
-      <SignupModal open={isOpenSignup} onClose={() => setIsOpenSignup(false)} />
+            <a
+              href="#services"
+              className="
+                rounded-full px-4 py-2
+                text-sm font-medium
+                text-slate-200 transition
+                hover:bg-[#B45F28]/20
+                hover:text-white
+              "
+            >
+              Services
+            </a>
+          </nav>
 
-      {/* ================= MOBILE SIDEBAR (DARK PREMIUM) ================= */}
-      <div
-        onClick={closeMobileMenu}
-        className={`fixed inset-0 z-50 transition-all duration-300 ${
-          mobileMenuOpen
-            ? "visible bg-black/50 opacity-100"
-            : "invisible opacity-0"
-        }`}
-      >
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className={`absolute right-0 top-0 h-full w-72 border-l border-white/10
-                        bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950
-                        p-6 shadow-[0_30px_80px_rgba(0,0,0,0.6)] backdrop-blur-xl
-                        transition-transform duration-300 ${
-                          mobileMenuOpen ? "translate-x-0" : "translate-x-full"
-                        }`}
-        >
-          {/* glow border */}
-          <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10" />
-
-          {/* TOP */}
-          <div className="mb-8 flex items-center justify-between">
-            <div className=" z-10 flex items-center gap-2 max-w-[180px] sm:max-w-none">
+          {/* Centred logo */}
+          <div
+            className="
+              absolute left-1/2 z-10
+              flex max-w-[180px]
+              -translate-x-1/2
+              items-center gap-2
+              sm:max-w-none
+            "
+          >
+            <a href="#" aria-label="Badminton home">
               <img
                 src={logo}
-                alt="Gym"
-                className="h-10 cursor-pointer object-contain brightness-0 invert opacity-90"
+                alt="Badminton logo"
+                className="
+                  h-8 w-auto cursor-pointer
+                  object-contain
+                  lg:h-12
+                "
               />
+            </a>
 
-              <span className="text-white font-black text-xs sm:text-sm lg:text-xl tracking-wide truncate">
+            <a href="#">
+              <span
+                className="
+                  cursor-pointer truncate
+                  text-xs font-black
+                  tracking-wide text-white
+                  sm:text-sm lg:text-xl
+                "
+              >
                 BADMINTON
               </span>
-            </div>
+            </a>
+          </div>
+
+          {/* Desktop booking button */}
+          <div className="relative z-10 hidden lg:block">
+            <a
+              href="#bookings"
+              className="
+                inline-flex cursor-pointer
+                items-center justify-center
+                rounded-full
+                border border-white/30
+                bg-white px-7 py-2.5
+                text-sm font-extrabold
+                text-slate-900
+                transition
+                hover:-translate-y-0.5
+                hover:bg-[#FFF7F0]
+                hover:shadow-lg
+              "
+            >
+              Book Now
+            </a>
+          </div>
+
+          {/* Mobile menu button */}
+          <button
+            type="button"
+            onClick={toggleMobileMenu}
+            aria-label={
+              mobileMenuOpen
+                ? "Close navigation menu"
+                : "Open navigation menu"
+            }
+            aria-expanded={mobileMenuOpen}
+            className="
+              relative z-10 ml-auto
+              rounded-xl p-2
+              text-white transition
+              hover:bg-white/10
+              lg:hidden
+            "
+          >
+            {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
+        </div>
+      </header>
+
+      <SignupModal
+        open={isOpenSignup}
+        onClose={() => setIsOpenSignup(false)}
+      />
+
+      {/* Mobile menu overlay */}
+      <div
+        onClick={closeMobileMenu}
+        aria-hidden={!mobileMenuOpen}
+        className={`
+          fixed inset-0 z-[9999]
+          overflow-hidden
+          transition-all duration-300
+          lg:hidden
+          ${
+            mobileMenuOpen
+              ? "visible bg-black/60 opacity-100 backdrop-blur-sm"
+              : "pointer-events-none invisible opacity-0"
+          }
+        `}
+      >
+        <aside
+          onClick={(event) => event.stopPropagation()}
+          className={`
+            absolute right-0 top-0
+            h-full
+            w-[min(18rem,100vw)]
+            max-w-full
+            overflow-x-hidden
+            overflow-y-auto
+            border-l border-[#B45F28]/30
+            bg-[linear-gradient(180deg,#080503_0%,#160C07_45%,#241209_75%,#32180C_100%)]
+            p-6
+            shadow-[0_30px_80px_rgba(0,0,0,0.75)]
+            transition-transform duration-300 ease-out
+            ${
+              mobileMenuOpen
+                ? "translate-x-0"
+                : "translate-x-full"
+            }
+          `}
+        >
+          {/* Border and glow */}
+          <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10" />
+
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(180,95,40,0.22),transparent_34%)]" />
+
+          {/* Mobile sidebar top */}
+          <div className="relative z-10 mb-8 flex min-w-0 items-center justify-between gap-3">
+            <a
+              href="#"
+              onClick={closeMobileMenu}
+              className="flex min-w-0 items-center gap-2"
+            >
+              <img
+                src={logo}
+                alt="Badminton logo"
+                className="
+                  h-10 shrink-0
+                  cursor-pointer object-contain
+                  opacity-95
+                "
+              />
+
+              <span className="min-w-0 truncate text-xs font-black tracking-wide text-white sm:text-sm">
+                BADMINTON
+              </span>
+            </a>
 
             <button
+              type="button"
               onClick={closeMobileMenu}
-              className="rounded-lg p-2 text-slate-300 transition hover:bg-white/10 hover:text-white"
+              aria-label="Close navigation menu"
+              className="
+                shrink-0 rounded-lg p-2
+                text-slate-300 transition
+                hover:bg-white/10
+                hover:text-white
+              "
             >
               <X size={22} />
             </button>
           </div>
 
-          {/* LINKS */}
-          <nav className="flex flex-col gap-5">
-            <a
-              href="#"
-              onClick={closeMobileMenu}
-              className="rounded-xl px-3 py-2 text-[15px] font-medium text-slate-300 transition hover:bg-white/10 hover:text-white hover:pl-4"
+          {/* Mobile navigation */}
+          <nav className="relative z-10 flex min-w-0 flex-col gap-3 overflow-x-hidden">
+            <button
+              type="button"
+              onClick={handleNavigateHome}
+              className="
+                min-w-0 rounded-xl
+                px-3 py-2.5 text-left
+                text-[15px] font-medium
+                text-slate-300 transition-all
+                hover:bg-white/10
+                hover:pl-4 hover:text-white
+              "
             >
               Main Arena
-            </a>
+            </button>
 
             <a
               href="#courts"
               onClick={closeMobileMenu}
-              className="rounded-xl px-3 py-2 text-[15px] font-medium text-slate-300 transition hover:bg-white/10 hover:text-white hover:pl-4"
+              className="
+                min-w-0 break-words
+                rounded-xl px-3 py-2.5
+                text-[15px] font-medium
+                text-slate-300 transition-all
+                hover:bg-white/10
+                hover:pl-4 hover:text-white
+              "
             >
               Courts
             </a>
@@ -164,25 +483,38 @@ export default function BadmintonHeader() {
             <a
               href="#services"
               onClick={closeMobileMenu}
-              className="rounded-xl px-3 py-2 text-[15px] font-medium text-slate-300 transition hover:bg-white/10 hover:text-white hover:pl-4"
+              className="
+                min-w-0 break-words
+                rounded-xl px-3 py-2.5
+                text-[15px] font-medium
+                text-slate-300 transition-all
+                hover:bg-white/10
+                hover:pl-4 hover:text-white
+              "
             >
               Services
             </a>
 
-            {/* JOIN BUTTON */}
-            <a href="#bookings">
-              <button
-              onClick={() => {
-                  closeMobileMenu();
-                }}
-                className="mt-6 cursor-pointer rounded-xl bg-[#296BE1] px-5 py-3 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#2158bc] hover:shadow-[0_16px_36px_rgba(41,107,225,0.35)]"
-              >
-                Book Now
-              </button>
+            <a
+              href="#bookings"
+              onClick={closeMobileMenu}
+              className="
+                mt-6 flex w-fit
+                cursor-pointer items-center
+                justify-center rounded-xl
+                bg-[#B45F28] px-5 py-3
+                text-sm font-extrabold
+                text-white transition
+                hover:-translate-y-0.5
+                hover:bg-[#D17435]
+                hover:shadow-[0_16px_36px_rgba(180,95,40,0.35)]
+              "
+            >
+              Book Now
             </a>
           </nav>
-        </div>
+        </aside>
       </div>
-    </header>
+    </>
   );
 }

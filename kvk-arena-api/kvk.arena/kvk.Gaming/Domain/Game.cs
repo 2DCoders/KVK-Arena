@@ -10,4 +10,6 @@ public class Game : AuditableEntity
     public string? Description { get; set; }
 
     public bool IsActive { get; set; }
+    
+    public byte[]? Image { get; set; }
 }

@@ -10,4 +10,6 @@ public class GameResponse
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime LastModifiedAt { get; set; }
+    
+    public byte[]? Image { get; set; }
 }

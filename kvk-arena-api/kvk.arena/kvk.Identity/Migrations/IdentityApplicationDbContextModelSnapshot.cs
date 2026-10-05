@@ -288,18 +288,35 @@ namespace kvk.Identity.Persistence.Migrations.IdentityRbacInitial
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("CouponCode")
+                        .HasColumnType("text");
+
                     b.Property<bool>("IsEligible")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsRedeemed")
                         .HasColumnType("boolean");
 
                     b.Property<Guid>("MemberId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("OfferId")
+                    b.Property<Guid>("OfferRateId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("RedeemedDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
                     b.HasIndex("MemberId");
+
+                    b.HasIndex("OfferRateId");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_MemberEligibleOffer_TenantId");
 
                     b.ToTable("MemberEligibleOffers", "identity");
                 });
@@ -357,7 +374,7 @@ namespace kvk.Identity.Persistence.Migrations.IdentityRbacInitial
                     b.Property<decimal?>("RateGym")
                         .HasColumnType("numeric");
 
-                    b.Property<decimal?>("RateRetail")
+                    b.Property<decimal?>("RateSalon")
                         .HasColumnType("numeric");
 
                     b.Property<Guid>("TenantId")
@@ -644,7 +661,15 @@ namespace kvk.Identity.Persistence.Migrations.IdentityRbacInitial
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("kvk.Identity.Domain.OfferRate", "OfferRate")
+                        .WithMany("EligibleOffers")
+                        .HasForeignKey("OfferRateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Member");
+
+                    b.Navigation("OfferRate");
                 });
 
             modelBuilder.Entity("kvk.Identity.Domain.RolePermission", b =>
@@ -698,6 +723,11 @@ namespace kvk.Identity.Persistence.Migrations.IdentityRbacInitial
                 });
 
             modelBuilder.Entity("kvk.Identity.Domain.KvkMember", b =>
+                {
+                    b.Navigation("EligibleOffers");
+                });
+
+            modelBuilder.Entity("kvk.Identity.Domain.OfferRate", b =>
                 {
                     b.Navigation("EligibleOffers");
                 });

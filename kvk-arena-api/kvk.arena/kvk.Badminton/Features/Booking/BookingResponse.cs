@@ -10,4 +10,11 @@ public class BookingResponse
     public string Status { get; set; } = string.Empty;
     public DateTime? ExpiresAt { get; set; }
     public string Message { get; set; } = string.Empty;
+
+    // PayHere checkout fields, populated by CreateSingleBookingWithPaymentAsync
+    public string? MerchantId { get; set; }
+    public string? OrderId { get; set; }
+    public string? Currency { get; set; }
+    public string? Amount { get; set; }
+    public string? Hash { get; set; }
 }

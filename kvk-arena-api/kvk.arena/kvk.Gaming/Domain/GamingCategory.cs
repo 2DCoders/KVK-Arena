@@ -15,5 +15,5 @@ public class GamingCategory : AuditableEntity
     
     public decimal Price { get; set; }
 
-    
+    public virtual ICollection<AdditionalPurchase> AdditionalPurchases { get; set; } = new List<AdditionalPurchase>();
 }

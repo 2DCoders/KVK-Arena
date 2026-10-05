@@ -306,6 +306,9 @@ namespace kvk.Gym.Migrations
                     b.Property<Guid?>("MembershipPlanId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("MembershipPlanPendingId")
+                        .HasColumnType("uuid");
+
                     b.Property<int>("MembershipStatus")
                         .HasColumnType("integer");
 
@@ -454,7 +457,7 @@ namespace kvk.Gym.Migrations
                     b.Property<DateTime?>("MemberShipStartDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("MembershipId")
+                    b.Property<Guid?>("MembershipId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("MembershipNumber")
@@ -792,8 +795,7 @@ namespace kvk.Gym.Migrations
                     b.HasOne("kvk.Gym.Domain.Membership", "Membership")
                         .WithMany()
                         .HasForeignKey("MembershipId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Membership");
                 });

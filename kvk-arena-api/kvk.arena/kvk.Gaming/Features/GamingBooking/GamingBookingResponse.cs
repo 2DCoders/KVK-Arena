@@ -23,4 +23,15 @@ public class GamingBookingResponse
     public DateTime LastModifiedAt { get; set; }
     
     public PaymentTypes PaymentType { get; set; }
+
+    public List<GamingBookingAdditionalPurchaseResponse> AdditionalPurchases { get; set; } = new();
+}
+
+public class GamingBookingAdditionalPurchaseResponse
+{
+    public Guid Id { get; set; }
+    public Guid AdditionalPurchaseId { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public int Quantity { get; set; }
+    public decimal UnitPrice { get; set; }
 }

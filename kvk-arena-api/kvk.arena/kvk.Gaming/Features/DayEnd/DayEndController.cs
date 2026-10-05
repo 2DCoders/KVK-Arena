@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using kvk.BuildingBlocks.Interfaces;
+using kvk.Gaming.Services;
 
 namespace kvk.Gaming.Features.DayEnd;
 
@@ -7,11 +8,11 @@ namespace kvk.Gaming.Features.DayEnd;
 [Route("api/gaming/dayend")]
 public class DayEndController : ControllerBase
 {
-    private readonly IDayEndService _service;
+    private readonly GamingDayEndService _service;
 
-    public DayEndController(IDayEndService service)
+    public DayEndController(GamingDayEndService service)
     {
-        _service = service ?? throw new ArgumentNullException(nameof(service));
+        _service = service;
     }
 
     [HttpPost]

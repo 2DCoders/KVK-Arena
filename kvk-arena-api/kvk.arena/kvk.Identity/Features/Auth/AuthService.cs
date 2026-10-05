@@ -79,7 +79,55 @@ public class AuthService
             return Result.Failure($"Failed to register staff: {ex.Message}");
         }
     }
+    
+    //edit staff member
+    public async Task<Result> EditStaffAsync(EditStaffRequest? request, CancellationToken cancellationToken = default)
+    {
+        if (request == null)
+            return Result.Failure("Request cannot be null");
 
+        if (request.Id == Guid.Empty)
+            return Result.Failure("Staff ID is required");
+
+        try
+        {
+            var staff = await _db.Set<Staff>()
+                .SingleOrDefaultAsync(s => s.Id == request.Id, cancellationToken);
+
+            if (staff == null)
+                return Result.Failure("Staff member not found");
+
+            // Update fields
+            staff.FirstName = request.FirstName ?? staff.FirstName;
+            staff.LastName = request.LastName ?? staff.LastName;
+            staff.UserName = request.UserName ?? staff.UserName;
+            staff.Email = request.Email ?? staff.Email;
+            staff.Status = request.Status ?? staff.Status;
+
+            _db.Set<Staff>().Update(staff);
+            await _db.SaveChangesAsync(cancellationToken);
+
+            var response = new AuthResponse
+            {
+                UserId = staff.Id,
+                Email = staff.Email,
+                UserName = staff.UserName,
+                FirstName = staff.FirstName,
+                LastName = staff.LastName,
+            };
+
+            return Result.Success($"Staff member '{staff.Email}' updated successfully")
+                .WithData("response", response);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure($"Failed to edit staff: {ex.Message}");
+        }
+    }
+    
+    
+    
+    
     /// <summary>
     /// Authenticate a staff member and return token + permissions.
     /// </summary>
@@ -241,5 +289,21 @@ public class AuthService
         staffs.ThrowIfNull("Staff not found.");
 
         return staffs;
+    }
+
+    public async Task<Result> DeleteStaffByIdAsync(Guid id, CancellationToken cancellationToken)
+    {
+        
+        var staff = await _db.Staffs
+            .Include(x => x.StaffModules)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        
+        staff.ThrowIfNull("Staff not found.");
+
+        _db.Staffs.Remove(staff);
+        await _db.SaveChangesAsync(cancellationToken);
+        
+        return Result.Success($"Staff member '{staff.Email}' deleted successfully");
+
     }
 }

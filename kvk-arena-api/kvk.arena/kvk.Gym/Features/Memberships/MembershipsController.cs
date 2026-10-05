@@ -81,10 +81,10 @@ public class MembershipsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get(CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Get([FromQuery] bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
         // For simplicity, this example does not implement pagination or filtering
-        var result = await _service.GetAllMembersAsync(cancellationToken);
+        var result = await _service.GetAllMembersAsync(includeDeleted, cancellationToken);
         return Ok(result);
     }
 
@@ -139,9 +139,9 @@ public class MembershipsController : ControllerBase
     
     
     [HttpGet("trainers")]
-    public async Task<IActionResult> GetAllTrainers(CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetAllTrainers([FromQuery] bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        var result = await _service.GetAllTrainersAsync(cancellationToken);
+        var result = await _service.GetAllTrainersAsync(includeDeleted, cancellationToken);
         return Ok(result);
     }
 }

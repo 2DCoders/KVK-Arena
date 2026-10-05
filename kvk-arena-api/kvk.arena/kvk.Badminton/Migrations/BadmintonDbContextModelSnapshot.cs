@@ -244,6 +244,121 @@ namespace kvk.Badminton.Migrations
                     b.ToTable("CourtBookings", "badminton");
                 });
 
+            modelBuilder.Entity("kvk.Badminton.Domain.CourtBookingTemporary", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("CouponCode")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("CourtId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("FinalAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<bool>("IsHalfPayment")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsMigrated")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastModifiedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MemberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("MigratedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("NumberOfSlots")
+                        .HasColumnType("integer");
+
+                    b.Property<byte[]>("PaymentProof")
+                        .HasColumnType("bytea");
+
+                    b.Property<int>("PaymentType")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_CourtBookingTemporary_TenantId");
+
+                    b.HasIndex("TenantId", "CreatedAt")
+                        .HasDatabaseName("IX_CourtBookingTemporary_TenantId_CreatedAt");
+
+                    b.ToTable("CourtBookingTemporaries", "badminton");
+                });
+
+            modelBuilder.Entity("kvk.Badminton.Domain.CourtBookingTemporarySchedule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CourtBookingTemporaryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DayOfWeek")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("LastModifiedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SlotId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourtBookingTemporaryId");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_CourtBookingTemporarySchedule_TenantId");
+
+                    b.HasIndex("TenantId", "CreatedAt")
+                        .HasDatabaseName("IX_CourtBookingTemporarySchedule_TenantId_CreatedAt");
+
+                    b.ToTable("CourtBookingTemporarySchedules", "badminton");
+                });
+
             modelBuilder.Entity("kvk.Badminton.Domain.CourtSlot", b =>
                 {
                     b.Property<Guid>("Id")
@@ -383,6 +498,17 @@ namespace kvk.Badminton.Migrations
                     b.Navigation("CourtSlot");
                 });
 
+            modelBuilder.Entity("kvk.Badminton.Domain.CourtBookingTemporarySchedule", b =>
+                {
+                    b.HasOne("kvk.Badminton.Domain.CourtBookingTemporary", "CourtBookingTemporary")
+                        .WithMany("Schedules")
+                        .HasForeignKey("CourtBookingTemporaryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CourtBookingTemporary");
+                });
+
             modelBuilder.Entity("kvk.Badminton.Domain.CourtSlot", b =>
                 {
                     b.HasOne("kvk.Badminton.Domain.Court", "Court")
@@ -410,6 +536,11 @@ namespace kvk.Badminton.Migrations
                     b.Navigation("Bookings");
 
                     b.Navigation("SlotConfigurations");
+                });
+
+            modelBuilder.Entity("kvk.Badminton.Domain.CourtBookingTemporary", b =>
+                {
+                    b.Navigation("Schedules");
                 });
 #pragma warning restore 612, 618
         }

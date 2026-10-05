@@ -17,7 +17,8 @@ public class GamingStationService : IGamingStationService
         _db = db ?? throw new ArgumentNullException(nameof(db));
     }
 
-    public async Task<Result> CreateAsync(GamingStationCreateRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> CreateAsync(GamingStationCreateRequest request,
+        CancellationToken cancellationToken = default)
     {
         if (request == null)
             return Result.Failure("Request cannot be null.");
@@ -31,20 +32,24 @@ public class GamingStationService : IGamingStationService
         if (string.IsNullOrWhiteSpace(request.Name))
             return Result.Failure("Name is required.");
 
-        var gamingCategory = await _db.GamingCategories.FindAsync(new object[] { request.GamingCategoryId }, cancellationToken);
+        var gamingCategory =
+            await _db.GamingCategories.FindAsync(new object[] { request.GamingCategoryId }, cancellationToken);
         if (gamingCategory == null)
             return Result.Failure($"Gaming category with ID '{request.GamingCategoryId}' not found.");
 
         if (!gamingCategory.IsActive)
-            return Result.Failure($"Gaming category '{gamingCategory.Name}' is inactive. Cannot create gaming station.");
+            return Result.Failure(
+                $"Gaming category '{gamingCategory.Name}' is inactive. Cannot create gaming station.");
 
         // Station Code must be unique across the system.
         if (await _db.GamingStations.AnyAsync(gs => gs.StationCode == request.StationCode, cancellationToken))
             return Result.Failure($"Gaming station with code '{request.StationCode}' already exists.");
 
         // Station Name must be unique within the same Gaming Category.
-        if (await _db.GamingStations.AnyAsync(gs => gs.GamingCategoryId == request.GamingCategoryId && gs.Name == request.Name, cancellationToken))
-            return Result.Failure($"Gaming station with name '{request.Name}' already exists in category '{gamingCategory.Name}'.");
+        if (await _db.GamingStations.AnyAsync(
+                gs => gs.GamingCategoryId == request.GamingCategoryId && gs.Name == request.Name, cancellationToken))
+            return Result.Failure(
+                $"Gaming station with name '{request.Name}' already exists in category '{gamingCategory.Name}'.");
 
         try
         {
@@ -59,6 +64,31 @@ public class GamingStationService : IGamingStationService
             _db.GamingStations.Add(gamingStation);
             await _db.SaveChangesAsync(cancellationToken);
 
+
+            //after creating category eventually needs to check is there any available GamingSlotConfiguration for this category
+            //if yes need to create GamingSlots for this station based on the existing GamingSlotConfiguration
+            var existingSlotConfigurations = await _db.GamingSlotConfigurations
+                .Where(sc => sc.GamingCategoryId == request.GamingCategoryId && sc.IsActive == 1)
+                .Select(sc => new GamingSlotConfigurationRequest
+                {
+                    GamingConfigurationId = sc.Id,
+                    GamingCategoryId = sc.GamingCategoryId,
+                    StartTime = sc.StartTime,
+                    EndTime = sc.EndTime,
+                    SlotDurationMinutes = sc.SlotDurationMinutes,
+                    SlotGapMinutes = sc.SlotGapMinutes,
+                    Price = sc.Price,
+                    IsActive = sc.IsActive
+                })
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (existingSlotConfigurations != null)
+            {
+                await RegenerateSlotsInternalAsync(existingSlotConfigurations, EntityState.Added, gamingStation.Id,
+                    cancellationToken);
+            }
+
+
             var response = new GamingStationResponse
             {
                 Id = gamingStation.Id,
@@ -72,6 +102,7 @@ public class GamingStationService : IGamingStationService
                 LastModifiedAt = gamingStation.LastModifiedAt
             };
 
+
             return Result.Success("Gaming station created successfully.")
                 .WithData("response", response);
         }
@@ -81,7 +112,8 @@ public class GamingStationService : IGamingStationService
         }
     }
 
-    public async Task<Result> UpdateAsync(GamingStationUpdateRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> UpdateAsync(GamingStationUpdateRequest request,
+        CancellationToken cancellationToken = default)
     {
         if (request == null)
             return Result.Failure("Request cannot be null.");
@@ -102,29 +134,37 @@ public class GamingStationService : IGamingStationService
         if (existingStation == null)
             return Result.Failure($"Gaming station with ID '{request.Id}' not found.");
 
-        var gamingCategory = await _db.GamingCategories.FindAsync(new object[] { request.GamingCategoryId }, cancellationToken);
+        var gamingCategory =
+            await _db.GamingCategories.FindAsync(new object[] { request.GamingCategoryId }, cancellationToken);
         if (gamingCategory == null)
             return Result.Failure($"Gaming category with ID '{request.GamingCategoryId}' not found.");
 
         if (!gamingCategory.IsActive)
-            return Result.Failure($"Gaming category '{gamingCategory.Name}' is inactive. Cannot update gaming station.");
+            return Result.Failure(
+                $"Gaming category '{gamingCategory.Name}' is inactive. Cannot update gaming station.");
 
         // Station Code must be unique across the system.
-        if (await _db.GamingStations.AnyAsync(gs => gs.Id != request.Id && gs.StationCode == request.StationCode, cancellationToken))
+        if (await _db.GamingStations.AnyAsync(gs => gs.Id != request.Id && gs.StationCode == request.StationCode,
+                cancellationToken))
             return Result.Failure($"Gaming station with code '{request.StationCode}' already exists.");
 
         // Station Name must be unique within the same Gaming Category.
-        if (await _db.GamingStations.AnyAsync(gs => gs.Id != request.Id && gs.GamingCategoryId == request.GamingCategoryId && gs.Name == request.Name, cancellationToken))
-            return Result.Failure($"Gaming station with name '{request.Name}' already exists in category '{gamingCategory.Name}'.");
+        if (await _db.GamingStations.AnyAsync(
+                gs => gs.Id != request.Id && gs.GamingCategoryId == request.GamingCategoryId && gs.Name == request.Name,
+                cancellationToken))
+            return Result.Failure(
+                $"Gaming station with name '{request.Name}' already exists in category '{gamingCategory.Name}'.");
 
         // Category changes should not be allowed when the station has existing game mappings.
         if (existingStation.GamingCategoryId != request.GamingCategoryId)
         {
             return Result.Failure("Category change is not allowed for stations with existing game mappings.");
         }
-        
+
         try
         {
+            var wasInactive = !existingStation.IsActive;
+
             existingStation.GamingCategoryId = request.GamingCategoryId;
             existingStation.StationCode = request.StationCode;
             existingStation.Name = request.Name;
@@ -132,6 +172,15 @@ public class GamingStationService : IGamingStationService
 
             _db.GamingStations.Update(existingStation);
             await _db.SaveChangesAsync(cancellationToken);
+
+            // A station reactivated here was excluded from every slot-configuration
+            // regeneration while inactive, so it can come back "active" with no
+            // bookable slots at all until the category's schedule is re-saved.
+            if (wasInactive && existingStation.IsActive)
+            {
+                await EnsureSlotsForActivatedStationAsync(existingStation.GamingCategoryId, existingStation.Id,
+                    cancellationToken);
+            }
 
             var response = new GamingStationResponse
             {
@@ -182,7 +231,8 @@ public class GamingStationService : IGamingStationService
         };
     }
 
-    public async Task<List<GamingStationResponse>> GetListAsync(GamingStationListRequest request, CancellationToken cancellationToken = default)
+    public async Task<List<GamingStationResponse>> GetListAsync(GamingStationListRequest request,
+        CancellationToken cancellationToken = default)
     {
         var query = _db.GamingStations
             .Include(gs => gs.GamingCategory)
@@ -190,7 +240,8 @@ public class GamingStationService : IGamingStationService
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
-            query = query.Where(gs => gs.Name.Contains(request.SearchTerm) || gs.StationCode.Contains(request.SearchTerm));
+            query = query.Where(gs =>
+                gs.Name.Contains(request.SearchTerm) || gs.StationCode.Contains(request.SearchTerm));
         }
 
         if (request.GamingCategoryId.HasValue && request.GamingCategoryId != Guid.Empty)
@@ -226,7 +277,8 @@ public class GamingStationService : IGamingStationService
         }).ToList();
     }
 
-    public async Task<List<GamingStationResponse>> GetStationsByCategoryAsync(Guid categoryId, CancellationToken cancellationToken = default)
+    public async Task<List<GamingStationResponse>> GetStationsByCategoryAsync(Guid categoryId,
+        CancellationToken cancellationToken = default)
     {
         if (categoryId == Guid.Empty)
             return new List<GamingStationResponse>();
@@ -261,29 +313,32 @@ public class GamingStationService : IGamingStationService
         if (gamingStation == null)
             return Result.Failure($"Gaming station with ID '{id}' not found.");
 
-        // Prevent deletion of a Gaming Station if active future bookings exist.
-        // TODO: Implement actual checks for active future bookings.
-        var hasActiveBookings = await _db.GamingBookings.AnyAsync(b => b.GamingStationId == id && b.Status == GamingBookingStatus.Confirmed, cancellationToken);
-        if (hasActiveBookings)
-            return Result.Failure("Cannot delete gaming station as it has active future bookings.");
+        // The FK from GamingBookings/GamingBookingHolds to GamingStations is RESTRICT, so ANY
+        // booking or hold ever made against this station (regardless of status) blocks the hard
+        // delete below with a Postgres FK-violation. Check for that up front so the cashier gets
+        // a clear, specific message instead of a generic/wrapped EF exception.
+        var hasBookingHistory =
+            await _db.GamingBookings.AnyAsync(b => b.GamingStationId == id, cancellationToken);
+        if (hasBookingHistory)
+            return Result.Failure(
+                "Cannot delete this station because it has existing booking history. Deactivate it instead to hide it from new bookings.");
 
-        // Prevent deletion of a Gaming Station if active slot configurations exist.
-        // TODO: Implement actual checks for active slot configurations.
-        // var hasActiveSlotConfigurations = await _db.SlotConfigurations.AnyAsync(sc => sc.GamingStationId == id && sc.IsActive, cancellationToken);
-        // if (hasActiveSlotConfigurations)
-        //     return Result.Failure("Cannot delete gaming station as it has active slot configurations.");
+        var hasBookingHolds =
+            await _db.GamingBookingHolds.AnyAsync(h => h.GamingStationId == id, cancellationToken);
+        if (hasBookingHolds)
+            return Result.Failure(
+                "Cannot delete this station because it has pending booking holds. Deactivate it instead to hide it from new bookings.");
 
         try
         {
-            gamingStation.IsDeleted = false; // Soft delete by setting IsActive to false
-            _db.GamingStations.Update(gamingStation);
+            _db.GamingStations.Remove(gamingStation);
             await _db.SaveChangesAsync(cancellationToken);
 
-            return Result.Success("Gaming station soft deleted successfully.");
+            return Result.Success("Gaming station deleted successfully.");
         }
         catch (Exception ex)
         {
-            return Result.Failure($"Failed to soft delete gaming station: {ex.Message}");
+            return Result.Failure($"Failed to delete gaming station: {ex.InnerException?.Message ?? ex.Message}");
         }
     }
 
@@ -304,6 +359,10 @@ public class GamingStationService : IGamingStationService
             gamingStation.IsActive = true;
             _db.GamingStations.Update(gamingStation);
             await _db.SaveChangesAsync(cancellationToken);
+
+            // See UpdateAsync: a reactivated station has no bookable slots until this runs.
+            await EnsureSlotsForActivatedStationAsync(gamingStation.GamingCategoryId, gamingStation.Id,
+                cancellationToken);
 
             return Result.Success("Gaming station activated successfully.");
         }
@@ -337,5 +396,299 @@ public class GamingStationService : IGamingStationService
         {
             return Result.Failure($"Failed to deactivate gaming station: {ex.Message}");
         }
+    }
+
+
+    private async Task EnsureSlotsForActivatedStationAsync(Guid categoryId, Guid stationId,
+        CancellationToken cancellationToken)
+    {
+        var activeConfig = await _db.GamingSlotConfigurations
+            .Where(sc => sc.GamingCategoryId == categoryId && sc.IsActive == 1)
+            .Select(sc => new GamingSlotConfigurationRequest
+            {
+                GamingConfigurationId = sc.Id,
+                GamingCategoryId = sc.GamingCategoryId,
+                StartTime = sc.StartTime,
+                EndTime = sc.EndTime,
+                SlotDurationMinutes = sc.SlotDurationMinutes,
+                SlotGapMinutes = sc.SlotGapMinutes,
+                Price = sc.Price,
+                IsActive = sc.IsActive
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (activeConfig != null)
+        {
+            await RegenerateSlotsInternalAsync(activeConfig, EntityState.Added, stationId, cancellationToken);
+        }
+    }
+
+    private async Task RegenerateSlotsInternalAsync(GamingSlotConfigurationRequest config
+        , EntityState entityState
+        , Guid? stationId
+        , CancellationToken cancellationToken)
+    {
+        // IMPORTANT: GamingSlot is a reusable (station, time-of-day) template with no
+        // date of its own — bookings/holds carry the actual calendar date and just
+        // point at a slot template. So "this slot has a booking" does NOT mean "this
+        // exact time is busy right now" — it just means that time-of-day has been used
+        // on SOME date, ever. Slots that still match the new schedule are updated in
+        // place (kept active); only genuinely orphaned slots (time no longer in the new
+        // schedule) are deleted, or deactivated if something still references them.
+
+        List<Guid> targetStationIds;
+        var existingKeys = new HashSet<(Guid StationId, TimeOnly StartTime)>();
+
+        if (entityState == EntityState.Added && stationId.HasValue)
+        {
+            targetStationIds = new List<Guid> { stationId.Value };
+
+            // A brand-new station has no rows here, but a reactivated one can —
+            // skipping this reconciliation (as this branch originally did) meant any
+            // leftover slot at the same (station, startTime) made the insert below
+            // violate the unique index instead of being updated in place.
+            var timeSlotsForNewStation = GenerateSlotTimeIntervals(
+                config.StartTime, config.EndTime, config.SlotDurationMinutes, config.SlotGapMinutes);
+
+            var desiredTimesForStation = timeSlotsForNewStation.ToDictionary(t => t.StartTime, t => t.EndTime);
+
+            var existingStationSlots = await _db.GamingSlots
+                .Where(x => x.GamingStationId == stationId.Value)
+                .ToListAsync(cancellationToken);
+
+            var orphanedStationSlots = new List<GamingSlot>();
+
+            foreach (var slot in existingStationSlots)
+            {
+                existingKeys.Add((slot.GamingStationId, slot.StartTime));
+
+                if (slot.GamingCategoryId == config.GamingCategoryId &&
+                    desiredTimesForStation.TryGetValue(slot.StartTime, out var newEndTime))
+                {
+                    slot.EndTime = newEndTime;
+                    slot.Price = config.Price;
+                    slot.GamingSlotConfigurationId = config.GamingConfigurationId;
+                    slot.IsActive = true;
+                }
+                else
+                {
+                    orphanedStationSlots.Add(slot);
+                }
+            }
+
+            if (orphanedStationSlots.Count > 0)
+            {
+                var orphanedIds = orphanedStationSlots.Select(s => s.Id).ToList();
+
+                var referencedOrphanIds = await _db.GamingBookings
+                    .Where(b => orphanedIds.Contains(b.GamingSlotId))
+                    .Select(b => b.GamingSlotId)
+                    .Union(_db.GamingBookingHolds
+                        .Where(h => orphanedIds.Contains(h.GamingSlotId))
+                        .Select(h => h.GamingSlotId))
+                    .Distinct()
+                    .ToListAsync(cancellationToken);
+
+                var referencedSet = referencedOrphanIds.ToHashSet();
+
+                var toDelete = orphanedStationSlots.Where(s => !referencedSet.Contains(s.Id)).ToList();
+                var toDeactivate = orphanedStationSlots.Where(s => referencedSet.Contains(s.Id)).ToList();
+
+                if (toDelete.Count > 0)
+                    _db.GamingSlots.RemoveRange(toDelete);
+
+                foreach (var slot in toDeactivate)
+                    slot.IsActive = false;
+            }
+
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+        else if (entityState == EntityState.Modified && !stationId.HasValue)
+        {
+            targetStationIds = await _db.GamingStations
+                .Where(gs => gs.GamingCategoryId == config.GamingCategoryId && gs.IsActive)
+                .Select(gs => gs.Id)
+                .ToListAsync(cancellationToken);
+
+            var timeSlotsForMatch = GenerateSlotTimeIntervals(
+                config.StartTime, config.EndTime, config.SlotDurationMinutes, config.SlotGapMinutes);
+
+            var targetStationIdSet = targetStationIds.ToHashSet();
+            var desiredTimesByStation = targetStationIds.ToDictionary(
+                id => id,
+                _ => timeSlotsForMatch.ToDictionary(t => t.StartTime, t => t.EndTime));
+
+            var existingSlots = await _db.GamingSlots
+                .Where(x => x.GamingCategoryId == config.GamingCategoryId)
+                .ToListAsync(cancellationToken);
+
+            var orphanedSlots = new List<GamingSlot>();
+
+            foreach (var slot in existingSlots)
+            {
+                existingKeys.Add((slot.GamingStationId, slot.StartTime));
+
+                var stillWanted = targetStationIdSet.Contains(slot.GamingStationId) &&
+                                   desiredTimesByStation[slot.GamingStationId].TryGetValue(slot.StartTime, out var newEndTime);
+
+                if (stillWanted)
+                {
+                    desiredTimesByStation[slot.GamingStationId].TryGetValue(slot.StartTime, out newEndTime);
+                    slot.EndTime = newEndTime;
+                    slot.Price = config.Price;
+                    slot.GamingSlotConfigurationId = config.GamingConfigurationId;
+                    slot.IsActive = true;
+                }
+                else
+                {
+                    orphanedSlots.Add(slot);
+                }
+            }
+
+            if (orphanedSlots.Count > 0)
+            {
+                var orphanedIds = orphanedSlots.Select(s => s.Id).ToList();
+
+                var referencedOrphanIds = await _db.GamingBookings
+                    .Where(b => orphanedIds.Contains(b.GamingSlotId))
+                    .Select(b => b.GamingSlotId)
+                    .Union(_db.GamingBookingHolds
+                        .Where(h => orphanedIds.Contains(h.GamingSlotId))
+                        .Select(h => h.GamingSlotId))
+                    .Distinct()
+                    .ToListAsync(cancellationToken);
+
+                var referencedSet = referencedOrphanIds.ToHashSet();
+
+                var toDelete = orphanedSlots.Where(s => !referencedSet.Contains(s.Id)).ToList();
+                var toDeactivate = orphanedSlots.Where(s => referencedSet.Contains(s.Id)).ToList();
+
+                if (toDelete.Count > 0)
+                    _db.GamingSlots.RemoveRange(toDelete);
+
+                foreach (var slot in toDeactivate)
+                    slot.IsActive = false;
+            }
+
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+        else
+        {
+            return;
+        }
+
+        if (targetStationIds.Count == 0)
+            return;
+
+        var timeSlots = GenerateSlotTimeIntervals(
+            config.StartTime,
+            config.EndTime,
+            config.SlotDurationMinutes,
+            config.SlotGapMinutes);
+
+        if (timeSlots.Count == 0)
+            return;
+
+        var newSlots = new List<GamingSlot>(targetStationIds.Count * timeSlots.Count);
+
+        foreach (var stId in targetStationIds)
+        {
+            foreach (var (startTime, endTime) in timeSlots)
+            {
+                if (existingKeys.Contains((stId, startTime)))
+                    continue;
+
+                newSlots.Add(new GamingSlot
+                {
+                    GamingCategoryId = config.GamingCategoryId,
+                    GamingSlotConfigurationId = config.GamingConfigurationId,
+                    GamingStationId = stId,
+                    StartTime = startTime,
+                    EndTime = endTime,
+                    Price = config.Price,
+                    IsActive = true
+                });
+            }
+        }
+
+        if (newSlots.Count == 0) return;
+
+        _db.ChangeTracker.AutoDetectChangesEnabled = false;
+        try
+        {
+            _db.GamingSlots.AddRange(newSlots);
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+        finally
+        {
+            _db.ChangeTracker.AutoDetectChangesEnabled = true;
+        }
+    }
+
+    private static List<(TimeOnly StartTime, TimeOnly EndTime)> GenerateSlotTimeIntervals(
+        TimeOnly startTime,
+        TimeOnly endTime,
+        int durationMinutes,
+        int gapMinutes)
+    {
+        var slots = new List<(TimeOnly StartTime, TimeOnly EndTime)>();
+        if (durationMinutes <= 0) return slots;
+
+        var baseDate = DateTime.Today;
+        var startDateTime = baseDate.Add(startTime.ToTimeSpan());
+        var endDateTime = baseDate.Add(endTime.ToTimeSpan());
+
+        if (endDateTime <= startDateTime)
+        {
+            endDateTime = endDateTime.AddDays(1);
+        }
+
+        var current = startDateTime;
+
+        while (current.AddMinutes(durationMinutes) <= endDateTime)
+        {
+            var slotEnd = current.AddMinutes(durationMinutes);
+            slots.Add((TimeOnly.FromDateTime(current), TimeOnly.FromDateTime(slotEnd)));
+
+            current = slotEnd.AddMinutes(gapMinutes);
+        }
+
+        return slots;
+    }
+
+
+    public class GamingSlotConfigurationRequest
+    {
+        public Guid GamingConfigurationId { get; set; }
+
+        public Guid GamingCategoryId { get; set; }
+
+        public TimeOnly StartTime { get; set; }
+
+        public TimeOnly EndTime { get; set; }
+
+        public int SlotDurationMinutes { get; set; }
+
+        public int SlotGapMinutes { get; set; }
+
+        public decimal Price { get; set; }
+
+        public decimal? IsActive { get; set; }
+    }
+
+    public class GamingSlotRequest
+    {
+        public Guid GamingStationId { get; set; }
+
+        public Guid GamingSlotConfigurationId { get; set; }
+        public TimeOnly StartTime { get; set; }
+        public TimeOnly EndTime { get; set; }
+        public decimal Price { get; set; }
+
+        public bool IsBooked { get; set; } = false;
+        
+        public bool IsActive { get; set; } = true; // Can be disabled without deleting
+
+        public Guid GamingCategoryId { get; set; }
     }
 }

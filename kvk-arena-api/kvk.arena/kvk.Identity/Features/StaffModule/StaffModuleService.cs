@@ -36,7 +36,7 @@ public class StaffModuleService
             ModuleConstants.CarWash,
             ModuleConstants.BadmintonCourt,
             ModuleConstants.GamingCenter,
-            ModuleConstants.Retail,
+            ModuleConstants.Salon,
             ModuleConstants.Cafe
         };
         return modules;

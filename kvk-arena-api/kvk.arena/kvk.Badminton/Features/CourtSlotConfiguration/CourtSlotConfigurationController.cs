@@ -21,15 +21,24 @@ public class CourtSlotConfigurationController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("court-slots-by-id/{courtId:guid}")]
+    public async Task<IActionResult> GetAllSlotsByCourtId(Guid courtId, CancellationToken cancellationToken)
+    {
+        var result = await _service.GetSlotsByCourtIdAsync(courtId, cancellationToken);
+        return Ok(result);
+    }
+
     [HttpGet("availability-by-court")]
-    public async Task<IActionResult> GetByCourtIdAndDate([FromQuery]Guid courtId,[FromQuery] DateOnly date, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetByCourtIdAndDate([FromQuery] Guid courtId, [FromQuery] DateOnly date,
+        CancellationToken cancellationToken)
     {
         var result = await _service.GetByCourtIdAndDateAsync(courtId, date, cancellationToken);
         return Ok(result);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CourtSlotConfigurationCreateRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create([FromBody] CourtSlotConfigurationCreateRequest request,
+        CancellationToken cancellationToken)
     {
         var result = await _service.CreateAsync(request, cancellationToken);
         if (!result.Succeeded) return BadRequest(result);
@@ -37,10 +46,11 @@ public class CourtSlotConfigurationController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] CourtSlotConfigurationUpdateRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Update(Guid id, [FromBody] CourtSlotConfigurationUpdateRequest request,
+        CancellationToken cancellationToken)
     {
         if (id != request.Id) return BadRequest("ID mismatch");
-        
+
         var result = await _service.UpdateAsync(request, cancellationToken);
         if (!result.Succeeded) return BadRequest(result);
         return Ok(result);

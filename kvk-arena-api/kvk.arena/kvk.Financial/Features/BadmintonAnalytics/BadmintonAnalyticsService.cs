@@ -19,7 +19,7 @@ public class BadmintonAnalyticsService
     {
         var bookings = await _context.CourtBookings.ToListAsync(cancellationToken);
 
-        var filteredBookings = bookings.Where(b => b.BookingDate.ToDateTime(TimeOnly.MinValue) >= startDate && b.BookingDate.ToDateTime(TimeOnly.MinValue) <= endDate).ToList();
+        var filteredBookings = bookings.Where(b => b.CreatedAt >= startDate && b.CreatedAt <= endDate).ToList();
 
         var response = new BadmintonAnalyticsResponse
         {

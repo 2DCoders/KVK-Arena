@@ -12,7 +12,7 @@ A comprehensive, unified platform for managing multiple business operations with
   - [Car Wash Management Module](#-car-wash-management-module)
   - [Badminton Court Management Module](#-badminton-court-management-module)
   - [Gaming Centre Management Module](#-gaming-centre-management-module)
-  - [Retail Management Module](#-retail-management-module)
+  - [Salon Management Module](#-retail-management-module)
 - [System Architecture](#system-architecture)
 - [Technology Stack](#technology-stack)
 - [Project Structure](#project-structure)
@@ -559,7 +559,7 @@ API endpoints are organized by module:
 - `/api/carwash` - Car Wash Management Module endpoints
 - `/api/badminton` - Badminton Court Management Module endpoints
 - `/api/gaming` - Gaming Centre Management Module endpoints
-- `/api/retail` - Retail Management Module endpoints
+- `/api/retail` - Salon Management Module endpoints
 - `/api/auth` - Authentication and authorization endpoints
 - `/api/billing` - Billing and payment endpoints
 - `/api/notifications` - SMS and email notification endpoints
@@ -595,7 +595,7 @@ Automated SMS notifications for:
 - Payment confirmations
 - Booking confirmations (Badminton, Gaming)
 - Promotional messages
-- Order status updates (Retail)
+- Order status updates (Salon)
 
 **Supported Providers**: Twilio, AWS SNS, Vonage
 
@@ -742,7 +742,7 @@ For support, bug reports, or inquiries, please contact:
 - ✅ Car Wash Management Module
 - ✅ Badminton Court Management Module
 - ✅ Gaming Centre Management Module
-- ✅ Retail Management Module
+- ✅ Salon Management Module
 - ✅ Integrated Payment Gateway
 - ✅ SMS Notification Service
 - ✅ Email Service Integration

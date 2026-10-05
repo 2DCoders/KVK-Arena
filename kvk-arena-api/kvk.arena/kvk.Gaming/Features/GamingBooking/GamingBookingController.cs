@@ -48,10 +48,35 @@ public class GamingBookingController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("create-multi-payment")] // Initiates PayHere payment for an existing batch of holds (from multi-hold)
+    public async Task<IActionResult> CreateMultiGamingPayment([FromBody] MultiGamingBookingPaymentRequest request, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.CreateMultiGamingPaymentAsync(request, cancellationToken);
+
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
     [HttpPost("confirm/{holdId:guid}")]
     public async Task<IActionResult> ConfirmGamingBooking(Guid holdId, [FromQuery] string paymentIntentId, CancellationToken cancellationToken = default)
     {
         var result = await _service.ProcessPaymentSuccessAsync(holdId, paymentIntentId, cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            if (result.Message.Contains("not found")) return NotFound(result);
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    [HttpPost("confirm-multi")]
+    public async Task<IActionResult> ConfirmMulti([FromBody] MultiGamingPaymentRequest request, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.ProcessMultiPaymentSuccessAsync(request, cancellationToken);
 
         if (!result.Succeeded)
         {
@@ -109,6 +134,24 @@ public class GamingBookingController : ControllerBase
     public async Task<ActionResult<List<GamingBookingResponse>>> GetBookingsByCustomer([FromQuery] GetBookingsByCustomerRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.GetBookingsByCustomerAsync(request, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpPost("internal/fix-stale-pending")]
+    public async Task<IActionResult> FixStalePendingBookings(CancellationToken cancellationToken = default)
+    {
+        var result = await _service.FixStalePendingBookingsAsync(cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpPost("reverse")]
+    public async Task<IActionResult> ReversePendingPayment([FromBody] GamingPendingPaymentDeleteRequest request, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.DeletePendingPayment(request, cancellationToken);
+
+        if (!result.Succeeded)
+            return BadRequest(result);
+
         return Ok(result);
     }
 }

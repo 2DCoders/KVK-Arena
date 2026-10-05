@@ -2,7 +2,7 @@ using kvk.Identity.Domain;
 
 namespace kvk.Identity.Features.OfferRate;
 
-public abstract class OfferRateCreateRequest
+public  class OfferRateCreateRequest
 {
     public string? OfferName { get; set; } = string.Empty;
 
@@ -18,7 +18,7 @@ public abstract class OfferRateCreateRequest
 
     public decimal? RateCafe { get; set; } = int.MinValue;
 
-    public decimal? RateRetail { get; set; } = int.MinValue;
+    public decimal? RateSalon { get; set; } = int.MinValue;
 
     public decimal? Price { get; set; } = int.MinValue;
 

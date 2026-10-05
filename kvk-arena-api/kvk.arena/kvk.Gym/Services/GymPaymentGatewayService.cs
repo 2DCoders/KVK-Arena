@@ -1,5 +1,6 @@
 using kvk.BuildingBlocks;
 using kvk.BuildingBlocks.Common;
+using kvk.BuildingBlocks.Enums;
 using kvk.BuildingBlocks.Services;
 using kvk.Gym.Domain;
 using kvk.Gym.Enums;
@@ -19,7 +20,7 @@ public class GymPaymentGatewayService : IGymPaymentGatewayService
     private readonly ILogger<GymPaymentGatewayService> _logger;
     private readonly PayHereOptions _payHereOptions;
 
-    public GymPaymentGatewayService(GymDbContext db, IHashService hashService, IOptions<PayHereOptions> payHereOptions, 
+    public GymPaymentGatewayService(GymDbContext db, IHashService hashService, IOptions<PayHereOptions> payHereOptions,
         ILogger<GymPaymentGatewayService> logger)
     {
         _db = db;
@@ -39,9 +40,10 @@ public class GymPaymentGatewayService : IGymPaymentGatewayService
 
         if (existingMember != null)
         {
+            existingMember.MembershipPlanPendingId =  existingMember.MembershipPlanId;
             existingMember.MembershipPlanId = request.MembershipPlanId;
         }
-        
+
         _db.Memberships.Update(existingMember);
 
         var paymentRecord = new PaymentRecord
@@ -83,6 +85,41 @@ public class GymPaymentGatewayService : IGymPaymentGatewayService
         };
     }
 
+    public async Task<Result> DeletePendingPayment(PendingPaymentDeleteRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var existingMember = await _db.Memberships
+            .Where(m => m.Id == request.MemberId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (existingMember != null && existingMember.MembershipPlanPendingId != null)
+        {
+            existingMember?.MembershipPlanId = existingMember.MembershipPlanPendingId;   
+        }
+        
+        
+        //remove payment record
+        var paymentRecord =
+            await _db.PaymentRecords.FirstOrDefaultAsync(p => p.TransactionReference == request.OrderId && p.PaymentStatus == PaymentStatus.Pending,
+                cancellationToken);
+        if (paymentRecord != null)
+        {
+            _db.PaymentRecords.Remove(paymentRecord);
+        }
+
+        var memberPayment =
+            await _db.MemberPayments.FirstOrDefaultAsync(p => p.TransactionReference == request.OrderId && p.PaymentStatus == PaymentStatus.Pending,
+                cancellationToken);
+        if (memberPayment != null)
+        {
+            _db.MemberPayments.Remove(memberPayment);
+        }
+
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return Result.Success("Pending payment deleted successfully");
+    }
+
     public async Task VerifyPayment(PaymentNotificationRequest request)
     {
         _logger.LogInformation("Received payment notification for OrderId: {OrderId}, StatusCode: {StatusCode}",
@@ -99,7 +136,7 @@ public class GymPaymentGatewayService : IGymPaymentGatewayService
 
         var paymentRecord =
             await _db.PaymentRecords.FirstOrDefaultAsync(p => p.TransactionReference == request.OrderId);
-        
+
         if (memberPayment == null && paymentRecord == null)
         {
             // Log or handle the case where the order is not found

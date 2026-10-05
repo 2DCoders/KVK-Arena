@@ -1,11 +1,12 @@
 using kvk.BuildingBlocks.Common;
+using kvk.BuildingBlocks.Enums;
 
 namespace kvk.Gym.Domain;
 
 public class PaymentRecord : AuditableEntity
 {
     // FK to Membership
-    public Guid MembershipId { get; set; }
+    public Guid? MembershipId { get; set; }
     public Membership? Membership { get; set; }
 
     // Optional link to the MemberPayment entity (if keeping a current/active payment row)
@@ -13,7 +14,7 @@ public class PaymentRecord : AuditableEntity
 
     public decimal Amount { get; set; }
 
-    public Enums.PaymentType PaymentType { get; set; }
+    public PaymentType PaymentType { get; set; }
 
     public Enums.PaymentStatus PaymentStatus { get; set; }
 

@@ -19,7 +19,7 @@ public class GamingAnalyticsService
     {
         var bookings = await _context.GamingBookings.ToListAsync(cancellationToken);
 
-        var filteredBookings = bookings.Where(b => b.BookingDate.ToDateTime(TimeOnly.MinValue) >= startDate && b.BookingDate.ToDateTime(TimeOnly.MinValue) <= endDate).ToList();
+        var filteredBookings = bookings.Where(b => b.CreatedAt >= startDate && b.CreatedAt <= endDate).ToList();
 
         var response = new GamingAnalyticsResponse
         {
