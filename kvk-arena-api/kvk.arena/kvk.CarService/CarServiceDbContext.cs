@@ -32,6 +32,9 @@ public class CarServiceDbContext(
 
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<Domain.CarService>()
+            .Property(s => s.IsActive).HasDefaultValue(true);
+
 
         modelBuilder.Entity<CarWashOrder>(entity =>
         {

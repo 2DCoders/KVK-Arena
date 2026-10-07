@@ -25,6 +25,7 @@ public class CarWashService(CarServiceDbContext dbContext) : ICarWashService
             Title = carService.Title,
             Description = carService.Description,
             Price = carService.Price,
+            IsActive = carService.IsActive ?? true,
             Features = carService.Features,
             Image = imageBytes,
             ServiceCategory = ServiceCategory.CarWash
@@ -50,6 +51,8 @@ public class CarWashService(CarServiceDbContext dbContext) : ICarWashService
         existingService.Description = carService.Description;
         existingService.Price = carService.Price;
         existingService.Features = carService.Features;
+        if (carService.IsActive.HasValue)
+            existingService.IsActive = carService.IsActive.Value;
 
         if (carService.Image is not null && carService.Image.Length > 0)
         {
@@ -74,6 +77,10 @@ public class CarWashService(CarServiceDbContext dbContext) : ICarWashService
             return Result.Failure("Car wash service not found");
         }
 
+        if (await dbContext.PackageServices.AnyAsync(ps => ps.ServiceId == serviceId, cancellationToken)
+            || await dbContext.CarWashOrderServices.AnyAsync(os => os.CarWashServiceId == serviceId, cancellationToken))
+            return Result.Failure("This service is used by a package or order. Deactivate it instead of deleting it.");
+
         dbContext.Services.Remove(existingService);
         await dbContext.SaveChangesAsync(cancellationToken);
 
@@ -97,6 +104,7 @@ public class CarWashService(CarServiceDbContext dbContext) : ICarWashService
             Title = s.Title,
             Description = s.Description,
             Price = s.Price,
+            IsActive = s.IsActive,
             Features = s.Features,
             Image = s.Image,
             DurationInMinutes = s.DurationInMinutes,
@@ -121,6 +129,7 @@ public class CarWashService(CarServiceDbContext dbContext) : ICarWashService
             Title = service.Title,
             Description = service.Description,
             Price = service.Price,
+            IsActive = service.IsActive,
             Features = service.Features,
             Image = service.Image,
             DurationInMinutes = service.DurationInMinutes,

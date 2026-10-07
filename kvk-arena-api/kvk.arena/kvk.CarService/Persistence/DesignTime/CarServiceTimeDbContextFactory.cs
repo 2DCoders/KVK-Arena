@@ -20,16 +20,16 @@ public class CarServiceTimeDbContextFactory : IDesignTimeDbContextFactory<CarSer
             var candidate = Path.Combine(current.FullName, "kvk.Host", "appsettings.json");
             if (File.Exists(candidate))
             {
-                // Read JSON and extract ConnectionStrings.GymConnection or ConnectionStrings.DefaultConnection
+                // Use the same connection string as the car service runtime module.
                 try
                 {
                     var json = File.ReadAllText(candidate);
                     using var doc = JsonDocument.Parse(json);
                     if (doc.RootElement.TryGetProperty("ConnectionStrings", out var cs))
                     {
-                        if (cs.TryGetProperty("GymConnection", out var gymEl) &&
-                            gymEl.ValueKind == JsonValueKind.String)
-                            connectionString = gymEl.GetString();
+                        if (cs.TryGetProperty("CarServiceConnection", out var carServiceEl) &&
+                            carServiceEl.ValueKind == JsonValueKind.String)
+                            connectionString = carServiceEl.GetString();
                         else if (cs.TryGetProperty("DefaultConnection", out var defEl) &&
                                  defEl.ValueKind == JsonValueKind.String)
                             connectionString = defEl.GetString();
@@ -49,7 +49,7 @@ public class CarServiceTimeDbContextFactory : IDesignTimeDbContextFactory<CarSer
         // Fall back to environment variables if not found in appsettings
         if (string.IsNullOrWhiteSpace(connectionString))
         {
-            connectionString = Environment.GetEnvironmentVariable("KVK_GYM_CONNECTION")
+            connectionString = Environment.GetEnvironmentVariable("KVK_CAR_SERVICE_CONNECTION")
                                ?? Environment.GetEnvironmentVariable("DefaultConnection");
         }
 

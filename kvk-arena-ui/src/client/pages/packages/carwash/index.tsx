@@ -20,6 +20,7 @@ import { getCarPackages } from "@/services/car-service-api";
 ========================================================= */
 
 interface CarServiceApiResponse {
+  isActive?: boolean;
   id: string;
   title: string;
   durationInMinutes: number;

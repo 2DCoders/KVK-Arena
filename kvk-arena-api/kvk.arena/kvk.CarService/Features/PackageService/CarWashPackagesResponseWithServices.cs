@@ -30,6 +30,8 @@ public class CarWashPackagesResponseWithServices
 
 public class ServiceResponseWithoutImage
 {
+    public bool IsActive { get; set; }
+
     public Guid Id { get; set; }
 
     public required string Title { get; set; }

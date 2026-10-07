@@ -123,6 +123,9 @@ public class PackageService(CarServiceDbContext dbContext) : IPackageService
             return Result.Failure("Package not found");
         }
 
+        if (await dbContext.CarWashOrderPackages.AnyAsync(op => op.CarWashPackageId == packageId, cancellationToken))
+            return Result.Failure("This package is used by an order. Deactivate it instead of deleting it.");
+
         dbContext.PackageServices.RemoveRange(existingPackage.PackageServices);
         dbContext.Packages.Remove(existingPackage);
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -160,6 +163,7 @@ public class PackageService(CarServiceDbContext dbContext) : IPackageService
                 Title = ps.Service.Title,
                 Description = ps.Service.Description,
                 Price = ps.Service.Price,
+                IsActive = ps.Service.IsActive,
                 Features = ps.Service.Features,
                 Image = ps.Service.Image,
                 DurationInMinutes = ps.Service.DurationInMinutes,
@@ -198,6 +202,7 @@ public class PackageService(CarServiceDbContext dbContext) : IPackageService
                 Title = ps.Service.Title,
                 Description = ps.Service.Description,
                 Price = ps.Service.Price,
+                IsActive = ps.Service.IsActive,
                 Features = ps.Service.Features,
                 Image = ps.Service.Image,
                 DurationInMinutes = ps.Service.DurationInMinutes,
@@ -212,7 +217,7 @@ public class PackageService(CarServiceDbContext dbContext) : IPackageService
     {
         var allServices = await dbContext.Services
             .AsNoTracking()
-            .Where(s => s.ServiceCategory == ServiceCategory.CarWash)
+            .Where(s => s.ServiceCategory == ServiceCategory.CarWash && s.IsActive)
             .Select(s => new ServiceResponseWithoutImage
             {
                 Id = s.Id,
@@ -220,6 +225,7 @@ public class PackageService(CarServiceDbContext dbContext) : IPackageService
                 Description = s.Description,
                 DurationInMinutes = s.DurationInMinutes,
                 Price = s.Price,
+                IsActive = s.IsActive,
                 Features = s.Features,
                 ServiceCategory = s.ServiceCategory
             })
@@ -231,7 +237,7 @@ public class PackageService(CarServiceDbContext dbContext) : IPackageService
             .AsNoTracking()
             .Include(p => p.PackageServices)
             .ThenInclude(ps => ps.Service)
-            .Where(p => p.PackageServices.Any(ps => ps.Service.ServiceCategory == ServiceCategory.CarWash))
+            .Where(p => p.IsActive && p.PackageServices.Any(ps => ps.Service.ServiceCategory == ServiceCategory.CarWash))
             .Select(p => new CarWashPackagesResponseWithServices
             {
                 Id = p.Id,
@@ -250,6 +256,7 @@ public class PackageService(CarServiceDbContext dbContext) : IPackageService
                         Description = ps.Service.Description,
                         DurationInMinutes = ps.Service.DurationInMinutes,
                         Price = ps.Service.Price,
+                        IsActive = ps.Service.IsActive,
                         Features = ps.Service.Features,
                         ServiceCategory = ps.Service.ServiceCategory
                     }).ToList()
