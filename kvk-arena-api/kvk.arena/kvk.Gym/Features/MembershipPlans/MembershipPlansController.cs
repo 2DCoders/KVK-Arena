@@ -29,9 +29,9 @@ public class MembershipPlansController : ControllerBase
 
     [AllowAnonymous]
     [HttpGet]
-    public async Task<IActionResult> Get(CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Get(CancellationToken cancellationToken = default, [FromQuery] bool activeOnly = false)
     {
-        var result = await _service.GetAllAsync(cancellationToken);
+        var result = await _service.GetAllAsync(cancellationToken, activeOnly);
         return Ok(result);
     }
 

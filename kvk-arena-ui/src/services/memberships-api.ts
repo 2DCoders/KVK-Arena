@@ -5,7 +5,7 @@ const API_BASE_URL = getEnv().API_URL + "gym/membership-plans";
 
 export const getMembershipPlans = async () => {
     try{
-        const response = await axios.get(API_BASE_URL);
+        const response = await axios.get(API_BASE_URL, { params: { activeOnly: true } });
         return response.data;
     } catch (error) {
         throw error;

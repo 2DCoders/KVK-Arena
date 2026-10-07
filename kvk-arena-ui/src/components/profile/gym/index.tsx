@@ -119,7 +119,7 @@ export default function UserProfileModal({
   const fetchMembershipPlans = async () => {
     try {
       const res = await getMembershipPlans();
-      setPlans(res.additionalData.response);
+      setPlans(res.additionalData.response.filter((plan: any) => Number(plan.isActive) === 1));
     } catch (error) {
       console.error("Error fetching membership plans:", error);
     }

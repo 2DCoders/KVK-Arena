@@ -1,5 +1,6 @@
 using kvk.BuildingBlocks.Common;
 using kvk.Gym.Domain;
+using kvk.Gym.Enums;
 using kvk.Gym.Features.MembershipPlans;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,11 +29,18 @@ public class MembershipPlanService : IMembershipPlanService
         if (request.DurationInDays <= 0)
             return Result.Failure("Duration in days must be greater than zero");
 
+        if (IsDayPass(request.Title) && request.IsActive != ActiveStatus.Active)
+            return Result.Failure("Day Pass must be active");
+
         try
         {
+            if (IsDayPass(request.Title) && await _db.MembershipPlans
+                    .AnyAsync(p => p.Title.Trim().ToLower() == "day pass", cancellationToken))
+                return Result.Failure("Day Pass already exists");
+
             var plan = new MembershipPlan
             {
-                Title = request.Title,
+                Title = IsDayPass(request.Title) ? "Day Pass" : request.Title.Trim(),
                 Description = request.Description,
                 Price = request.Price,
                 DurationInDays = request.DurationInDays,
@@ -79,6 +87,12 @@ public class MembershipPlanService : IMembershipPlanService
             if (plan == null)
                 return Result.Failure("Membership plan not found");
 
+            if (IsDayPass(plan.Title))
+                return Result.Failure("Day Pass cannot be edited or deactivated");
+
+            if (IsDayPass(request.Title))
+                return Result.Failure("An existing plan cannot be renamed to Day Pass");
+
             plan.Title = request.Title;
             plan.Description = request.Description;
             plan.Price = request.Price;
@@ -111,6 +125,9 @@ public class MembershipPlanService : IMembershipPlanService
 
             if (plan == null)
                 return Result.Failure("Membership plan not found");
+
+            if (IsDayPass(plan.Title))
+                return Result.Failure("Day Pass cannot be deleted");
 
             _db.MembershipPlans.Remove(plan);
             await _db.SaveChangesAsync(cancellationToken);
@@ -147,12 +164,13 @@ public class MembershipPlanService : IMembershipPlanService
         }
     }
 
-    public async Task<Result> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<Result> GetAllAsync(CancellationToken cancellationToken = default, bool activeOnly = false)
     {
         try
         {
             var plans = await _db.MembershipPlans
                 .AsNoTracking()
+                .Where(p => !activeOnly || p.IsActive == ActiveStatus.Active)
                 .OrderBy(p => p.Title)
                 .ToListAsync(cancellationToken);
 
@@ -165,6 +183,9 @@ public class MembershipPlanService : IMembershipPlanService
             return Result.Failure($"Failed to fetch membership plans: {ex.Message}");
         }
     }
+
+    private static bool IsDayPass(string title) =>
+        string.Equals(title.Trim(), "Day Pass", StringComparison.OrdinalIgnoreCase);
 
     private static MembershipPlanResponse MapToResponse(MembershipPlan plan)
     {
