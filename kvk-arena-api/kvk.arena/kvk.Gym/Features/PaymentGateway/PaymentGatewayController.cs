@@ -20,15 +20,28 @@ public class PaymentGatewayController : ControllerBase
     [HttpPost("create")]
     public async Task<IActionResult> CreatePayment([FromBody] PaymentGatewayRequest request)
     {
-        var response = await _paymentGatewayService.ProcessPayment(request);
-        return Ok(response);
+        try
+        {
+            return Ok(await _paymentGatewayService.ProcessPayment(request));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(Result.Failure(ex.Message));
+        }
+    }
+
+    [HttpGet("status/{orderId}")]
+    public async Task<IActionResult> PaymentStatus(string orderId, [FromQuery] Guid memberId, CancellationToken cancellationToken)
+    {
+        var response = await _paymentGatewayService.GetPaymentStatus(orderId, memberId, cancellationToken);
+        return response == null ? NotFound(Result.Failure("Payment order not found")) : Ok(response);
     }
     
     [HttpPost("reverse")]
     public async Task<IActionResult> DeletePendingPayment([FromBody]PendingPaymentDeleteRequest request)
     {
         var response = await _paymentGatewayService.DeletePendingPayment(request);
-        return Ok(response);
+        return response.Succeeded ? Ok(response) : BadRequest(response);
     }
 
     [HttpPost("notify")]

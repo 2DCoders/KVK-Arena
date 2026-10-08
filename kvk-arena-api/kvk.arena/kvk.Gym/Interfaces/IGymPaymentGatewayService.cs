@@ -6,6 +6,7 @@ namespace kvk.Gym.Interfaces;
 public interface IGymPaymentGatewayService 
 {
     Task<PaymentGatewayResponse> ProcessPayment(PaymentGatewayRequest request);
+    Task<PaymentGatewayStatusResponse?> GetPaymentStatus(string orderId, Guid memberId, CancellationToken cancellationToken = default);
     Task<Result> DeletePendingPayment(PendingPaymentDeleteRequest request, CancellationToken cancellationToken = default);
     Task VerifyPayment(PaymentNotificationRequest request);
 }

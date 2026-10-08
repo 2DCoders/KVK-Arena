@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Globalization;
 using System.Text;
 
 namespace kvk.BuildingBlocks.Services;
@@ -22,7 +23,7 @@ public class HashService : IHashService
     public string GeneratePayHereHash(string merchantId, string merchantSecret, string orderId, decimal amount, string currency)
     {
         var hashedSecret = ComputeMd5(merchantSecret);
-        var amountFormatted = amount.ToString("0.00");
+        var amountFormatted = amount.ToString("0.00", CultureInfo.InvariantCulture);
 
         return ComputeMd5(
             merchantId +
@@ -53,7 +54,7 @@ public class HashService : IHashService
         return ComputeMd5(
             merchantId +
             orderId +
-            amount.ToString("0.00") +
+            amount.ToString("0.00", CultureInfo.InvariantCulture) +
             currency +
             statusCode +
             hashedSecret);

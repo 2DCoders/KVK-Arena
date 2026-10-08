@@ -7,4 +7,5 @@ public class PaymentGatewayResponse
     public string Currency { get; set; } = null!;
     public string Amount { get; set; } = null!;
     public string Hash { get; set; } = null!;
+    public bool Sandbox { get; set; }
 }

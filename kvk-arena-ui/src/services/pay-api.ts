@@ -20,3 +20,11 @@ export const reversePayment = async (body: any) => {
         throw error;
     }
 }
+
+export const getPaymentStatus = async (orderId: string, memberId: string) => {
+    const response = await axios.get(`${API_BASE_URL}/status/${encodeURIComponent(orderId)}`, {
+        params: { memberId },
+        timeout: 10000,
+    });
+    return response.data;
+};
