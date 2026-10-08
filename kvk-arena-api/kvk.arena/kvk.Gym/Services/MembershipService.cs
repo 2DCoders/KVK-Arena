@@ -1024,6 +1024,14 @@ public class MembershipService : IMembershipService
             if (trainer.IsDeleted)
                 return Result.Failure("Cannot assign a deleted trainer");
 
+            var trainerMembership = await _db.Memberships.AsNoTracking()
+                .SingleOrDefaultAsync(m => m.Id == trainerId, cancellationToken);
+            if (trainerMembership?.IsDeleted == true)
+                return Result.Failure("Cannot assign a deleted trainer");
+            var trainerStatus = trainerMembership?.MembershipStatus.ToString() ?? trainer.Status;
+            if (!string.Equals(trainerStatus, nameof(MembershipStatus.Active), StringComparison.OrdinalIgnoreCase))
+                return Result.Failure($"Cannot assign a {trainerStatus.ToLowerInvariant()} trainer. Select an active trainer.");
+
             member.TrainerId = trainerId;
             await _db.SaveChangesAsync(cancellationToken);
 
@@ -1048,9 +1056,17 @@ public class MembershipService : IMembershipService
 
             var trainers = await query.ToListAsync(cancellationToken);
 
+            var trainerIds = trainers.Select(t => t.Id).ToList();
+            var trainerMemberships = await _db.Memberships.AsNoTracking()
+                .Where(m => trainerIds.Contains(m.Id))
+                .Select(m => new { m.Id, m.MembershipStatus, m.IsDeleted })
+                .ToDictionaryAsync(m => m.Id, cancellationToken);
+
             var response = trainers.Select(t => new TrainerResponse
             {
                 Id = t.Id,
+                MembershipStatus = trainerMemberships.TryGetValue(t.Id, out var membership)
+                    ? membership.MembershipStatus.ToString() : t.Status,
                 FirstName = t.FirstName,
                 LastName = t.LastName,
                 UserName = t.UserName,
@@ -1064,7 +1080,7 @@ public class MembershipService : IMembershipService
                 ProfilePicture = t.ProfilePicture,
                 Role = t.Role,
                 IsFreelance = t.IsFreelance,
-                IsDeleted = t.IsDeleted,
+                IsDeleted = t.IsDeleted || (trainerMemberships.TryGetValue(t.Id, out var trainerMembership) && trainerMembership.IsDeleted),
                 DeletedAt = t.DeletedAt,
             }).ToList();
 

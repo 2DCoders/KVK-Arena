@@ -22,6 +22,10 @@ internal static class TrainerAssignmentChecks
             var second = Trainer("Second", suffix);
             db.AddRange(member, first, second);
             await db.SaveChangesAsync();
+            var firstMembership = TrainerMembership(first);
+            var secondMembership = TrainerMembership(second);
+            db.AddRange(firstMembership, secondMembership);
+            await db.SaveChangesAsync();
             var service = new MembershipService(db, null!, null!, null!);
 
             Assert((await service.AssignTrainerAsync(member.Id, first.Id)).Succeeded, "Assign a trainer using the existing service");
@@ -43,6 +47,22 @@ internal static class TrainerAssignmentChecks
             Assert(!(await service.AssignTrainerAsync(member.Id, Guid.NewGuid())).Succeeded, "Missing trainers cannot be assigned");
             Assert(!(await service.AssignTrainerAsync(Guid.NewGuid(), second.Id)).Succeeded, "Missing members cannot be assigned");
             Assert(!(await service.AssignTrainerAsync(member.Id, Guid.Empty)).Succeeded, "Empty trainer selection is rejected");
+
+            secondMembership = (await db.Memberships.FindAsync(second.Id))!;
+            foreach (var status in new[] { MembershipStatus.Inactive, MembershipStatus.Blocked, MembershipStatus.Suspended })
+            {
+                secondMembership.MembershipStatus = status;
+                await db.SaveChangesAsync();
+                var options = await service.GetAllTrainersAsync();
+                Assert(options.Single(t => t.Id == second.Id).MembershipStatus == status.ToString(),
+                    $"{status} trainers remain visible with their membership status");
+                var rejected = await service.AssignTrainerAsync(member.Id, second.Id);
+                Assert(!rejected.Succeeded && rejected.Message.Contains(status.ToString(), StringComparison.OrdinalIgnoreCase),
+                    $"{status} trainer assignment is rejected with a clear reason");
+            }
+            secondMembership.MembershipStatus = MembershipStatus.Active;
+            await db.SaveChangesAsync();
+            Assert((await service.AssignTrainerAsync(member.Id, second.Id)).Succeeded, "Reactivated trainers can be assigned again");
 
             second = (await db.Trainers.FindAsync(second.Id))!;
             second.IsDeleted = true;
@@ -67,6 +87,14 @@ internal static class TrainerAssignmentChecks
         FirstName = name, LastName = "Trainer", UserName = name + suffix, Email = name + suffix + "@example.test",
         PasswordHash = "unused", Status = "Active",
         DateOfBirth = DateTime.SpecifyKind(new DateTime(1990, 1, 1), DateTimeKind.Utc)
+    };
+
+    private static Membership TrainerMembership(Trainer trainer) => new()
+    {
+        Id = trainer.Id, FirstName = trainer.FirstName, LastName = trainer.LastName,
+        UserName = trainer.UserName, Email = trainer.Email, PasswordHash = "unused", Status = "Active",
+        DateOfBirth = trainer.DateOfBirth, MembershipNumber = "GYM-TRA-" + trainer.Id.ToString("N"),
+        MemberType = MemberType.Trainer, MembershipStatus = MembershipStatus.Active
     };
 
     private static void Assert(bool condition, string message)

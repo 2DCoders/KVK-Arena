@@ -4,6 +4,7 @@ namespace kvk.Gym.Features.Memberships;
 
 public class TrainerResponse
 {
+    public string MembershipStatus { get; set; } = string.Empty;
     public Guid Id { get; set; }
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
