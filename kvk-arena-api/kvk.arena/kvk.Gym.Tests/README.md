@@ -14,6 +14,15 @@ Covers signed notification validation, UTC dates, Admin member/payment queries,
 renewal periods, duplicate callbacks, cancellation ownership, late success,
 failed checkout, expired membership activation, inactive plans and price validation.
 
+Trainer assignment checks use the same rolled-back fixture approach:
+
+```powershell
+dotnet run --project kvk.Gym.Tests -- --trainer-assignment
+```
+
+Covers assigning/reassigning one trainer per client, list/detail responses,
+trainer roster changes, and rejection of missing/deleted records or non-clients.
+
 ## Deployment
 
 Deploy the API and Arena UI together: the UI now reads

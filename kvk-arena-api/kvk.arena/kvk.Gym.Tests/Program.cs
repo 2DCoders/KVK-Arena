@@ -13,6 +13,11 @@ using Microsoft.Extensions.Options;
 
 // No gateway requests or SMS are sent. All fixtures are rolled back.
 await using var db = new GymDesignTimeDbContextFactory().CreateDbContext([]);
+if (args.Contains("--trainer-assignment"))
+{
+    await TrainerAssignmentChecks.Run(db);
+    return;
+}
 await using var transaction = await db.Database.BeginTransactionAsync();
 var hash = new HashService();
 var options = new PayHereOptions { MerchantId = "test-merchant", MerchantSecret = "test-secret", Sandbox = false };

@@ -31,6 +31,7 @@ public class MembershipResponse : TrainerSpecializedResponse
     public int RewardPoints { get; set; }
     
     public string? AssignedTrainer { get; set; }
+    public Guid? TrainerId { get; set; }
     public bool IsDeleted { get; set; }
     public DateTime? DeletedAt { get; set; }
 

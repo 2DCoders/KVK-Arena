@@ -365,6 +365,7 @@ public class MembershipService : IMembershipService
             var memberships = await query
                 .Include(m => m.MembershipPlan)
                 .Include(m => m.MemberPayments) // include payments so projection can access them
+                .Include(m => m.Trainer)
                 .ToListAsync(cancellationToken);
 
             var response = memberships.Select(m => new MembershipResponse
@@ -387,6 +388,8 @@ public class MembershipService : IMembershipService
                 MembershipPlanPrice = m.MembershipPlan?.Price,
                 MembershipPlanDurationInDays = m.MembershipPlan?.DurationInDays,
                 IdentityUserId = m.IdentityUserId,
+                TrainerId = m.TrainerId,
+                AssignedTrainer = m.Trainer != null ? $"{m.Trainer.FirstName} {m.Trainer.LastName}" : null,
                 IsDeleted = m.IsDeleted,
                 DeletedAt = m.DeletedAt,
                 LastModifiedAt = m.LastModifiedAt
@@ -471,6 +474,7 @@ public class MembershipService : IMembershipService
                 MembershipPlanDurationInDays = member.MembershipPlan?.DurationInDays,
                 RewardPoints = member.Points,
                 AssignedTrainer = trainer != null ? $"{trainer.FirstName} {trainer.LastName}" : null,
+                TrainerId = member.TrainerId,
                 IdentityUserId = member.IdentityUserId,
                 CreatedDate = member.CreatedAt,
                 IsSavedFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
@@ -1005,13 +1009,20 @@ public class MembershipService : IMembershipService
 
         try
         {
-            var member = await _db.Memberships.FindAsync(memberId);
+            var member = await _db.Memberships.SingleOrDefaultAsync(m => m.Id == memberId, cancellationToken);
             if (member == null)
                 return Result.Failure("Member not found");
 
-            var trainer = await _db.Set<Trainer>().FindAsync(trainerId);
+            if (member.IsDeleted)
+                return Result.Failure("Cannot assign a trainer to a deleted member");
+            if (member.MemberType != MemberType.Client)
+                return Result.Failure("Trainers can only be assigned to client memberships");
+
+            var trainer = await _db.Trainers.SingleOrDefaultAsync(t => t.Id == trainerId, cancellationToken);
             if (trainer == null)
                 return Result.Failure("Trainer not found");
+            if (trainer.IsDeleted)
+                return Result.Failure("Cannot assign a deleted trainer");
 
             member.TrainerId = trainerId;
             await _db.SaveChangesAsync(cancellationToken);
