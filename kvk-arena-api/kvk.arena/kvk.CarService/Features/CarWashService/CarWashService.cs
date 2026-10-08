@@ -1,4 +1,5 @@
 using kvk.BuildingBlocks.Common;
+using kvk.CarService.Domain;
 using kvk.CarService.Enums;
 using kvk.CarService.Features.PackageService;
 using kvk.CarService.Interfaces;
@@ -76,6 +77,18 @@ public class CarWashService(CarServiceDbContext dbContext) : ICarWashService
         {
             return Result.Failure("Car wash service not found");
         }
+
+        var now = DateTime.Now;
+        if (await dbContext.CarWashOrderServices.AnyAsync(os => os.CarWashServiceId == serviceId
+                && os.CarWashOrder.OrderDate > now
+                && os.CarWashOrder.CarWashOrderStatus != CarWashOrderStatus.Cancelled
+                && os.CarWashOrder.CarWashOrderStatus != CarWashOrderStatus.Completed, cancellationToken)
+            || await dbContext.CarWashOrderPackages.AnyAsync(op =>
+                op.Package.PackageServices.Any(ps => ps.ServiceId == serviceId)
+                && op.CarWashOrder.OrderDate > now
+                && op.CarWashOrder.CarWashOrderStatus != CarWashOrderStatus.Cancelled
+                && op.CarWashOrder.CarWashOrderStatus != CarWashOrderStatus.Completed, cancellationToken))
+            return Result.Failure("Cannot delete this service because it is included in a future carwash booking, either directly or through a package. Resolve the booking before deleting the service.");
 
         if (await dbContext.PackageServices.AnyAsync(ps => ps.ServiceId == serviceId, cancellationToken)
             || await dbContext.CarWashOrderServices.AnyAsync(os => os.CarWashServiceId == serviceId, cancellationToken))

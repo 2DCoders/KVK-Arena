@@ -123,6 +123,13 @@ public class PackageService(CarServiceDbContext dbContext) : IPackageService
             return Result.Failure("Package not found");
         }
 
+        var now = DateTime.Now;
+        if (await dbContext.CarWashOrderPackages.AnyAsync(op => op.CarWashPackageId == packageId
+                && op.CarWashOrder.OrderDate > now
+                && op.CarWashOrder.CarWashOrderStatus != CarWashOrderStatus.Cancelled
+                && op.CarWashOrder.CarWashOrderStatus != CarWashOrderStatus.Completed, cancellationToken))
+            return Result.Failure("Cannot delete this package because it is included in a future carwash booking. Resolve the booking before deleting the package.");
+
         if (await dbContext.CarWashOrderPackages.AnyAsync(op => op.CarWashPackageId == packageId, cancellationToken))
             return Result.Failure("This package is used by an order. Deactivate it instead of deleting it.");
 

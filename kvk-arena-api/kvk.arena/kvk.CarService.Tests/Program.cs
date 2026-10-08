@@ -69,6 +69,40 @@ try
     Assert(!(await services.DeleteCarWashServiceAsync(service.Id)).Succeeded,
         "Services referenced by packages cannot be deleted");
 
+    var booking = new kvk.CarService.Domain.CarWashOrder
+    {
+        Id = Guid.NewGuid(), OrderNumber = title, OrderDate = DateTime.Now.AddDays(2),
+        CarWashOrderStatus = kvk.CarService.Domain.CarWashOrderStatus.Pending,
+        Services = [new kvk.CarService.Domain.CarWashOrderService { CarWashServiceId = service.Id }]
+    };
+    db.CarWashOrders.Add(booking);
+    await db.SaveChangesAsync();
+    var blockedService = await services.DeleteCarWashServiceAsync(service.Id);
+    Assert(!blockedService.Succeeded && blockedService.Message.Contains("future carwash booking"),
+        "Future direct bookings block service deletion with the reason");
+    db.CarWashOrderServices.RemoveRange(booking.Services);
+    booking.Packages.Add(new kvk.CarService.Domain.CarWashOrderPackage { CarWashPackageId = packageId });
+    await db.SaveChangesAsync();
+    var blockedPackage = await packages.DeletePackageAsync(packageId);
+    blockedService = await services.DeleteCarWashServiceAsync(service.Id);
+    Assert(!blockedPackage.Succeeded && blockedPackage.Message.Contains("future carwash booking"),
+        "Future package bookings block package deletion with the reason");
+    Assert(!blockedService.Succeeded && blockedService.Message.Contains("future carwash booking"),
+        "Services inside future booked packages cannot be deleted");
+    booking.CarWashOrderStatus = kvk.CarService.Domain.CarWashOrderStatus.Cancelled;
+    await db.SaveChangesAsync();
+    blockedPackage = await packages.DeletePackageAsync(packageId);
+    Assert(!blockedPackage.Succeeded && !blockedPackage.Message.Contains("future carwash booking"),
+        "Cancelled bookings retain history protection without reporting a future booking");
+    booking.CarWashOrderStatus = kvk.CarService.Domain.CarWashOrderStatus.Pending;
+    booking.OrderDate = DateTime.Now.AddDays(-1);
+    await db.SaveChangesAsync();
+    blockedPackage = await packages.DeletePackageAsync(packageId);
+    Assert(!blockedPackage.Succeeded && !blockedPackage.Message.Contains("future carwash booking"),
+        "Past orders retain history protection without reporting a future booking");
+    db.CarWashOrders.Remove(booking);
+    await db.SaveChangesAsync();
+
     Check(await services.UpdateCarWashServiceAsync(new CarWashUpdateRequest
     {
         Id = service.Id, Title = title, Price = 150, IsActive = true
