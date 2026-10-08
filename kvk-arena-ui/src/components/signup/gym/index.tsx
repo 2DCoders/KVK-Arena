@@ -819,7 +819,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                 {/* ACTIONS */}
                 <div className="mt-6 flex gap-3">
                   <button
-                    disabled={!selectedPlan || loading}
+                    disabled={!selectedPlan || loading || paymentInProgress}
                     onClick={async () => {
                       if (!selectedPlan) return;
 
@@ -839,7 +839,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                         : "bg-slate-200 text-slate-400 cursor-not-allowed"
                     }`}
                   >
-                    {loading ? "Processing..." : "Pay & Continue"}
+                    {paymentInProgress ? "Payment in progress..." : loading ? "Processing..." : "Pay & Continue"}
                   </button>
                 </div>
               </>

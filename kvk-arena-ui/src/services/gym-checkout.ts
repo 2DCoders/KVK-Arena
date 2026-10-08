@@ -33,7 +33,8 @@ export async function resumeGymPayment(callbacks: Callbacks) {
   const stored = localStorage.getItem(storageKey);
   if (!stored) return;
   // Refreshing must never reverse a payment that may be awaiting notification.
-  await confirmPayment(JSON.parse(stored), callbacks);
+  try { await confirmPayment(JSON.parse(stored), callbacks); }
+  catch (error) { callbacks.onError(error); }
 }
 
 export async function startGymPayment(

@@ -11,6 +11,7 @@ using kvk.Gym.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Npgsql;
 
 namespace kvk.Gym.Services;
 
@@ -87,11 +88,34 @@ public class GymPaymentGatewayService(GymDbContext db, IHashService hashService,
             logger.LogWarning("Rejected invalid gym payment notification for {OrderId}", request.OrderId);
             return;
         }
+        for (var attempt = 0; ; attempt++)
+        {
+            try
+            {
+                await ApplyVerifiedNotification(request);
+                return;
+            }
+            catch (Exception ex) when (attempt < 2 && db.Database.CurrentTransaction == null
+                && ex.GetBaseException() is PostgresException { SqlState: "40001" or "40P01" })
+            {
+                db.ChangeTracker.Clear();
+                logger.LogWarning("Retrying concurrent gym payment notification for {OrderId}", request.OrderId);
+            }
+        }
+    }
+
+    private async Task ApplyVerifiedNotification(PaymentNotificationRequest request)
+    {
         // Concurrent/repeated callbacks must not extend membership twice.
         await using var transaction = db.Database.CurrentTransaction == null
             ? await db.Database.BeginTransactionAsync(IsolationLevel.Serializable) : null;
         var record = await db.PaymentRecords.SingleOrDefaultAsync(p => p.TransactionReference == request.OrderId);
-        if (record == null || record.Amount != request.PayhereAmount || record.PaymentStatus == PaymentStatus.Paid) return;
+        if (record == null || record.Amount != request.PayhereAmount)
+        {
+            logger.LogWarning("Gym payment notification has no matching order/amount for {OrderId}", request.OrderId);
+            return;
+        }
+        if (record.PaymentStatus == PaymentStatus.Paid) return;
         if (request.StatusCode is -1 or -2 or -3)
         {
             record.PaymentStatus = PaymentStatus.Cancelled;

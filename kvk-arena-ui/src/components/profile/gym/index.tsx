@@ -303,9 +303,10 @@ export default function UserProfileModal({
   };
 
   useEffect(() => {
+    if (!open || memberId === "N/A") return;
     fetchMembershipPlans();
     handleGetRequestById();
-  }, [memberId, memberToken]); // Add memberId and memberToken as dependencies
+  }, [open, memberId, memberToken]);
 
   const handleChangePassword = async () => {
     try {
@@ -411,8 +412,9 @@ export default function UserProfileModal({
   };
 
   useEffect(() => {
+    if (!open || memberId === "N/A") return;
     handleGetMember();
-  }, [memberId, memberToken]); // Add memberId and memberToken as dependencies
+  }, [open, memberId, memberToken]);
 
   useEffect(() => {
     if (memberData) {
