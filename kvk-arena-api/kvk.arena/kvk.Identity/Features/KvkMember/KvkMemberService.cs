@@ -149,17 +149,19 @@ public class KvkMemberService(IdentityApplicationDbContext db, ISmsService smsSe
         member.IsPaid = true;
 
         //assign member offer rate to the specifc member
-        var offers = await _db.OfferRates.Where
-            (x => x.OfferType == OfferType.MembershipOffer).ToListAsync(cancellationToken);
+        var offerIds = await _db.OfferRates
+            .Where(x => x.OfferType == OfferType.MembershipOffer)
+            .Select(x => x.Id)
+            .ToListAsync(cancellationToken);
 
         //assign MemberEligileOFfer
-        foreach (var offer in offers)
+        foreach (var offerId in offerIds)
         {
             var memberEligibleOffer = new MemberEligibleOffer
             {
                 Id = Guid.NewGuid(),
                 MemberId = member.Id,
-                OfferRateId = offer.Id,
+                OfferRateId = offerId,
                 IsEligible = true,
             };
             _db.MemberEligibleOffers.Add(memberEligibleOffer);

@@ -9,6 +9,6 @@ public interface IMembershipPlanService
     Task<Result> UpdateAsync(Guid id, MembershipPlanUpdateRequest request, CancellationToken cancellationToken = default);
     Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Result> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<Result> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<Result> GetAllAsync(CancellationToken cancellationToken = default, bool activeOnly = false);
 }
 

@@ -9,4 +9,5 @@ public class PayHereOptions
     public string Currency { get; set; } = "LKR";
     public string ChargeUrl { get; set; } = string.Empty;
     public int TimeoutSeconds { get; set; } = 30;
+    public bool Sandbox { get; set; } = true;
 }

@@ -38,6 +38,9 @@ public class DayPassMemberService : IDayPassMemberService
             if (plan == null)
                 return Result.Failure("Membership plan not found");
 
+            if (plan.IsActive != kvk.Gym.Enums.ActiveStatus.Active)
+                return Result.Failure("Membership plan is inactive");
+
             if (!string.Equals(plan.Title?.Trim(), "Day Pass", StringComparison.OrdinalIgnoreCase))
                 return Result.Failure("Membership plan must be 'Day Pass'");
 

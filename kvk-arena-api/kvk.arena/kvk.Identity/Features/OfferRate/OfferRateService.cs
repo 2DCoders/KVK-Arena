@@ -174,6 +174,12 @@ public class OfferRateService : IOfferRateService
     {
         var offerRate = await _db.OfferRates
             .Where(x => x.Id == offerRateId)
+            .Select(x => new Domain.OfferRate
+            {
+                Id = x.Id,
+                IsActive = x.IsActive,
+                OfferType = x.OfferType
+            })
             .FirstOrDefaultAsync(cancellationToken);
 
         offerRate.ThrowIfNull("Offer Rate Not Found");

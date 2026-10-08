@@ -16,6 +16,8 @@ public class CarWashServiceResponse
     public string? Description { get; set; }
 
     public decimal Price { get; set; } = 0;
+
+    public bool IsActive { get; set; }
     
     public byte[]  Image { get; set; } = [];
     

@@ -60,6 +60,9 @@ public class CarWashOrderService(CarServiceDbContext db, ISmsService smsService,
                 if (package is null)
                     return Result.Failure($"Car wash package '{packageId}' was not found.");
 
+                if (!package.IsActive)
+                    return Result.Failure("Car wash package is inactive.");
+
                 newOrder.Packages.Add(new Domain.CarWashOrderPackage
                 {
                     Id = Guid.NewGuid(),
@@ -79,6 +82,9 @@ public class CarWashOrderService(CarServiceDbContext db, ISmsService smsService,
 
                 if (service is null)
                     return Result.Failure($"Car wash service '{serviceId}' was not found.");
+
+                if (!service.IsActive)
+                    return Result.Failure("Car wash service is inactive.");
 
                 newOrder.Services.Add(new Domain.CarWashOrderService
                 {

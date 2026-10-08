@@ -67,6 +67,9 @@ public class MembershipService : IMembershipService
 
                 if (plan == null)
                     return Result.Failure("Membership plan not found");
+
+                if (plan.IsActive != kvk.Gym.Enums.ActiveStatus.Active)
+                    return Result.Failure("Membership plan is inactive");
             }
 
             var memberToken = await GetNextMembershipTokenAsync(request.MemberType.ToString(), DateTime.UtcNow.Year,
