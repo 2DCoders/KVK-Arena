@@ -35,6 +35,10 @@ export default function UserProfileModal({
 }: UserProfileModalProps) {
 
   const [memberData, setMemberData] = useState<any>(null);
+  const assignedTrainerName =
+    typeof memberData?.assignedTrainer === "string"
+      ? memberData.assignedTrainer.trim()
+      : "";
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState({
     firstName: "",
@@ -1022,7 +1026,7 @@ export default function UserProfileModal({
 
                   {/* TRAINER */}
 
-                  {memberData?.assignedTrainer !== null ? (
+                  {assignedTrainerName ? (
                     <div className="bg-white rounded-3xl p-6 shadow-xl border">
                       <h3 className="text-xl font-bold mb-5">
                         Personal Trainer
@@ -1035,7 +1039,7 @@ export default function UserProfileModal({
 
                         <div>
                           <h4 className="font-semibold">
-                            {memberData?.trainerName || ""}
+                            {assignedTrainerName}
                           </h4>
                           <p className="text-sm text-slate-500">Trainer</p>
                         </div>
