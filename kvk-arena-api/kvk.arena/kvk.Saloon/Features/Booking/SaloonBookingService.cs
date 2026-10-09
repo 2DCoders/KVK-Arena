@@ -184,6 +184,9 @@ public class SaloonBookingService : ISaloonBookingService
                 currentTime = serviceEndTime;
             }
 
+            var businessHours = await _businessHoursService.GetAsync(cancellationToken);
+            var gapMinutes = businessHours.SlotIntervalMinutes;
+
             var requestedEndTime = request.StartTime.Add(TimeSpan.FromMinutes(totalDurationMinutes));
 
             var allSaloons = await _db.Set<kvk.Saloon.Domain.Saloon>()
@@ -197,7 +200,8 @@ public class SaloonBookingService : ISaloonBookingService
             {
                 var overlappingBookings = saloon.Bookings.Where(b => b.BookingDate == request.BookingDate &&
                     b.Status != kvk.Saloon.Domain.SaloonBookingStatus.Cancelled &&
-                    b.StartTime < requestedEndTime && b.EndTime > request.StartTime);
+                    BookingTimeRules.OverlapsWithGap(b.StartTime, b.EndTime,
+                        request.StartTime, requestedEndTime, gapMinutes));
 
                 if (!overlappingBookings.Any())
                 {
@@ -305,6 +309,9 @@ public class SaloonBookingService : ISaloonBookingService
                 currentTime = serviceEndTime;
             }
 
+            var businessHours = await _businessHoursService.GetAsync(cancellationToken);
+            var gapMinutes = businessHours.SlotIntervalMinutes;
+
             var requestedEndTime = request.StartTime.Add(TimeSpan.FromMinutes(totalDurationMinutes));
 
             var allSaloons = await _db.Set<kvk.Saloon.Domain.Saloon>()
@@ -318,7 +325,8 @@ public class SaloonBookingService : ISaloonBookingService
             {
                 var overlappingBookings = saloon.Bookings.Where(b => b.BookingDate == request.BookingDate &&
                     b.Status != kvk.Saloon.Domain.SaloonBookingStatus.Cancelled &&
-                    b.StartTime < requestedEndTime && b.EndTime > request.StartTime);
+                    BookingTimeRules.OverlapsWithGap(b.StartTime, b.EndTime,
+                        request.StartTime, requestedEndTime, gapMinutes));
 
                 if (!overlappingBookings.Any())
                 {
@@ -452,6 +460,9 @@ public class SaloonBookingService : ISaloonBookingService
              return Result.Failure("Invalid services or 0 duration.");
         }
         
+        var businessHours = await _businessHoursService.GetAsync(cancellationToken);
+        var gapMinutes = businessHours.SlotIntervalMinutes;
+
         var requestedEndTime = request.Time.Add(TimeSpan.FromMinutes(totalDurationMinutes));
         
         var allSaloons = await _db.Set<kvk.Saloon.Domain.Saloon>()
@@ -465,7 +476,8 @@ public class SaloonBookingService : ISaloonBookingService
         {
             var overlappingBookings = saloon.Bookings.Where(b => b.BookingDate == request.Date &&
                 b.Status != kvk.Saloon.Domain.SaloonBookingStatus.Cancelled &&
-                b.StartTime < requestedEndTime && b.EndTime > request.Time);
+                BookingTimeRules.OverlapsWithGap(b.StartTime, b.EndTime,
+                    request.Time, requestedEndTime, gapMinutes));
 
             if (!overlappingBookings.Any())
             {
@@ -506,7 +518,8 @@ public class SaloonBookingService : ISaloonBookingService
             {
                 var overlappingBookings = saloon.Bookings.Where(b => b.BookingDate == request.Date &&
                     b.Status != kvk.Saloon.Domain.SaloonBookingStatus.Cancelled &&
-                    b.StartTime < ctEnd && b.EndTime > ct);
+                    BookingTimeRules.OverlapsWithGap(b.StartTime, b.EndTime,
+                        ct, ctEnd, gapMinutes));
                 
                 if (!overlappingBookings.Any())
                 {
@@ -628,7 +641,8 @@ public class SaloonBookingService : ISaloonBookingService
                 !w.Saloon.Bookings.Any(b =>
                     b.BookingDate == request.Date &&
                     b.Status != kvk.Saloon.Domain.SaloonBookingStatus.Cancelled &&
-                    b.StartTime < candidateEnd && b.EndTime > candidate));
+                    BookingTimeRules.OverlapsWithGap(b.StartTime, b.EndTime,
+                        candidate, candidateEnd, businessHours.SlotIntervalMinutes)));
 
             if (seatFree)
                 availableStarts.Add(candidate);
@@ -771,6 +785,9 @@ public class SaloonBookingService : ISaloonBookingService
                 currentTime = serviceEndTime;
             }
 
+            var businessHours = await _businessHoursService.GetAsync(cancellationToken);
+            var gapMinutes = businessHours.SlotIntervalMinutes;
+
             var requestedEndTime = request.StartTime.Add(TimeSpan.FromMinutes(totalDurationMinutes));
 
             var allSaloons = await _db.Set<kvk.Saloon.Domain.Saloon>()
@@ -784,7 +801,8 @@ public class SaloonBookingService : ISaloonBookingService
             {
                 var overlappingBookings = saloon.Bookings.Where(b => b.BookingDate == request.BookingDate && b.Id != booking.Id &&
                     b.Status != kvk.Saloon.Domain.SaloonBookingStatus.Cancelled &&
-                    b.StartTime < requestedEndTime && b.EndTime > request.StartTime);
+                    BookingTimeRules.OverlapsWithGap(b.StartTime, b.EndTime,
+                        request.StartTime, requestedEndTime, gapMinutes));
                 
                 if (!overlappingBookings.Any())
                 {
