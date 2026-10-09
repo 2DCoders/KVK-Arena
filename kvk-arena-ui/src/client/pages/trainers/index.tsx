@@ -1,3 +1,4 @@
+import GymDataState from "@/components/gym-data-state";
 import { useRef, useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Eye, Star } from "lucide-react";
 import { getTrainers } from "@/services/trainers-api";
@@ -20,6 +21,8 @@ interface Trainer {
 
 export default function Trainers() {
 
+  const [isDataLoading, setIsDataLoading] = useState(true);
+  const [dataError, setDataError] = useState(false);
   const [trainers, setTrainers] = useState<Trainer[]>([]);
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,12 +40,17 @@ export default function Trainers() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const handleGetTrainers = async () => {
+    setIsDataLoading(true);
+    setDataError(false);
     try {
       const res = await getTrainers();
       setTrainers(res);
     } catch (error) {
       console.error("Error fetching trainers:", error);
       setTrainers([]);
+      setDataError(true);
+    } finally {
+      setIsDataLoading(false);
     }
   };
 
@@ -84,6 +92,7 @@ export default function Trainers() {
               </h2>
               <button
                 data-aos="fade-up"
+                disabled={isDataLoading || dataError || trainers.length === 0}
                 onClick={() => setIsTrainerLibraryOpen(true)}
                 className="
                     py-3
@@ -91,6 +100,7 @@ export default function Trainers() {
                     text-[#296BE1]
                     font-medium
                     cursor-pointer
+                    disabled:cursor-not-allowed disabled:opacity-50
                     transition-all
                     duration-300
                     hover:underline
@@ -137,190 +147,196 @@ export default function Trainers() {
           </div>
         </div>
 
-        {/* Slider */}
-        <div
-          ref={scrollRef}
-          data-aos="fade-up"
-          className="
-            flex
-            gap-4
-            sm:gap-6
-            overflow-x-auto
-            scrollbar-hide
-            scroll-smooth
-            pb-10
-            pt-6
-            snap-x
-            snap-mandatory
-            px-1
-          "
-        >
-          {topTrainers.map((trainer) => (
+        {isDataLoading || dataError || trainers.length === 0 ? (
+          <GymDataState loading={isDataLoading} error={dataError} label="trainers" onRetry={() => void handleGetTrainers()} cards="trainers" />
+        ) : (
+          <>
+            {/* Slider */}
             <div
-              key={trainer.id}
-              onClick={() => openTrainerModal(trainer)}
-              className="group flex-shrink-0 w-[260px] sm:w-[280px] cursor-pointer"
-            >
-              <div
-                className="
-                 relative
-                  bg-white/70
-                  backdrop-blur-xl
-                  rounded-3xl
-                  overflow-hidden
-                  border border-white
-                  shadow-lg
-                  hover:shadow-[0_20px_60px_rgba(41,107,225,0.18)]
-                  hover:-translate-y-3
-                  transition-all
-                  duration-500
-                  "
-              >
-                {/* Image */}
-                <div className="relative aspect-square overflow-hidden">
-                  {trainer.profilePicture ? (
-                    <img
-                      src={`data:image/jpeg;base64,${trainer.profilePicture}`}
-                      alt={`${trainer.firstName} ${trainer.lastName}`}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#296BE1] to-blue-500">
-                      <span className="text-5xl font-bold text-white">
-                        {trainer.firstName?.charAt(0).toUpperCase()}
-                        {trainer.lastName?.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-
-                  {/* View More */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <button
-                      type="button"
-                      className="
-                        inline-flex
-                        items-center
-                        gap-2
-                        rounded-full
-                        border border-white
-                        px-6 py-3
-                        text-sm font-medium
-                        text-white
-                        cursor-pointer
-
-                        opacity-0
-                        translate-y-6
-                        pointer-events-none
-
-                        transition-all duration-500
-
-                        group-hover:opacity-100
-                        group-hover:translate-y-0
-                        group-hover:pointer-events-auto
-
-                        hover:bg-white
-                        hover:text-black
-                        "
-                    >
-                      View More
-                      <Eye size={18} />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-bold text-lg text-slate-900 truncate">
-                      {trainer.firstName} {trainer.lastName}
-                    </h3>
-
-                    <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-full">
-                      <Star
-                        size={14}
-                        className="text-amber-500 fill-amber-500"
-                      />
-                      <span className="text-xs font-bold">
-                        {trainer.rating ?? 0}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-[#296BE1]">
-                      {trainer.role}
-                    </span>
-
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${trainer.isFreelance
-                        ? "bg-emerald-50 text-emerald-600"
-                        : "bg-orange-50 text-orange-600"
-                        }`}
-                    >
-                      {trainer.isFreelance ? "Freelance" : "Gym Trainer"}
-                    </span>
-                  </div>
-
-                  <p className="text-sm text-slate-500 truncate mb-5">
-                    {trainer.email}
-                  </p>
-                  <p className="text-sm text-slate-500 truncate mb-5">
-                    {trainer.phoneNumber}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-          {/* View All Card */}
-          <div className="group flex-shrink-0 w-[260px] sm:w-[280px] cursor-pointer">
-            <div
+              ref={scrollRef}
+              data-aos="fade-up"
               className="
-                h-full min-h-[480px]
-                rounded-3xl
-                border-2 border-dashed border-[#296BE1]/30
-                bg-gradient-to-br from-[#296BE1]/5 to-[#296BE1]/10
-                flex flex-col items-center justify-center
-                text-center
-                p-8
-                transition-all duration-500
-                hover:-translate-y-3
-                hover:border-[#296BE1]
-                hover:shadow-[0_20px_60px_rgba(41,107,225,0.18)]
-                "
+                flex
+                gap-4
+                sm:gap-6
+                overflow-x-auto
+                scrollbar-hide
+                scroll-smooth
+                pb-10
+                pt-6
+                snap-x
+                snap-mandatory
+                px-1
+              "
             >
-              <div className="w-20 h-20 rounded-full bg-[#296BE1] flex items-center justify-center mb-6">
-                <Eye size={32} className="text-white" />
+              {topTrainers.map((trainer) => (
+                <div
+                  key={trainer.id}
+                  onClick={() => openTrainerModal(trainer)}
+                  className="group flex-shrink-0 w-[260px] sm:w-[280px] cursor-pointer"
+                >
+                  <div
+                    className="
+                     relative
+                      bg-white/70
+                      backdrop-blur-xl
+                      rounded-3xl
+                      overflow-hidden
+                      border border-white
+                      shadow-lg
+                      hover:shadow-[0_20px_60px_rgba(41,107,225,0.18)]
+                      hover:-translate-y-3
+                      transition-all
+                      duration-500
+                      "
+                  >
+                    {/* Image */}
+                    <div className="relative aspect-square overflow-hidden">
+                      {trainer.profilePicture ? (
+                        <img
+                          src={`data:image/jpeg;base64,${trainer.profilePicture}`}
+                          alt={`${trainer.firstName} ${trainer.lastName}`}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#296BE1] to-blue-500">
+                          <span className="text-5xl font-bold text-white">
+                            {trainer.firstName?.charAt(0).toUpperCase()}
+                            {trainer.lastName?.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+
+                      {/* View More */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <button
+                          type="button"
+                          className="
+                            inline-flex
+                            items-center
+                            gap-2
+                            rounded-full
+                            border border-white
+                            px-6 py-3
+                            text-sm font-medium
+                            text-white
+                            cursor-pointer
+
+                            opacity-0
+                            translate-y-6
+                            pointer-events-none
+
+                            transition-all duration-500
+
+                            group-hover:opacity-100
+                            group-hover:translate-y-0
+                            group-hover:pointer-events-auto
+
+                            hover:bg-white
+                            hover:text-black
+                            "
+                        >
+                          View More
+                          <Eye size={18} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-5">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-bold text-lg text-slate-900 truncate">
+                          {trainer.firstName} {trainer.lastName}
+                        </h3>
+
+                        <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-full">
+                          <Star
+                            size={14}
+                            className="text-amber-500 fill-amber-500"
+                          />
+                          <span className="text-xs font-bold">
+                            {trainer.rating ?? 0}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-[#296BE1]">
+                          {trainer.role}
+                        </span>
+
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${trainer.isFreelance
+                            ? "bg-emerald-50 text-emerald-600"
+                            : "bg-orange-50 text-orange-600"
+                            }`}
+                        >
+                          {trainer.isFreelance ? "Freelance" : "Gym Trainer"}
+                        </span>
+                      </div>
+
+                      <p className="text-sm text-slate-500 truncate mb-5">
+                        {trainer.email}
+                      </p>
+                      <p className="text-sm text-slate-500 truncate mb-5">
+                        {trainer.phoneNumber}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {/* View All Card */}
+              <div className="group flex-shrink-0 w-[260px] sm:w-[280px] cursor-pointer">
+                <div
+                  className="
+                    h-full min-h-[480px]
+                    rounded-3xl
+                    border-2 border-dashed border-[#296BE1]/30
+                    bg-gradient-to-br from-[#296BE1]/5 to-[#296BE1]/10
+                    flex flex-col items-center justify-center
+                    text-center
+                    p-8
+                    transition-all duration-500
+                    hover:-translate-y-3
+                    hover:border-[#296BE1]
+                    hover:shadow-[0_20px_60px_rgba(41,107,225,0.18)]
+                    "
+                >
+                  <div className="w-20 h-20 rounded-full bg-[#296BE1] flex items-center justify-center mb-6">
+                    <Eye size={32} className="text-white" />
+                  </div>
+
+                  <h3 className="text-2xl font-bold text-slate-900 mb-3">
+                    View All Trainers
+                  </h3>
+
+                  <p className="text-slate-500 text-sm mb-6">
+                    Explore our complete network of professional trainers and
+                    fitness experts.
+                  </p>
+
+                  <button
+                    className="
+                        px-6 py-3
+                        rounded-full
+                        bg-[#296BE1]
+                        text-white
+                        font-medium
+                        cursor-pointer
+                        hover:bg-[#1f5dcc]
+                        transition-all
+                    "
+                    onClick={() => setIsTrainerLibraryOpen(true)}
+                  >
+                    View More
+                  </button>
+                </div>
               </div>
-
-              <h3 className="text-2xl font-bold text-slate-900 mb-3">
-                View All Trainers
-              </h3>
-
-              <p className="text-slate-500 text-sm mb-6">
-                Explore our complete network of professional trainers and
-                fitness experts.
-              </p>
-
-              <button
-                className="
-                    px-6 py-3
-                    rounded-full
-                    bg-[#296BE1]
-                    text-white
-                    font-medium
-                    cursor-pointer
-                    hover:bg-[#1f5dcc]
-                    transition-all
-                "
-                onClick={() => setIsTrainerLibraryOpen(true)}
-              >
-                View More
-              </button>
             </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
 
       <TrainerLibraryModal

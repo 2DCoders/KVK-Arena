@@ -1,3 +1,4 @@
+import GymDataState from "@/components/gym-data-state";
 import Alert from "@/components/alert";
 import { changePassword, getMember, updateMember } from "@/services/auth-api";
 import { getMembershipPlans } from "@/services/memberships-api";
@@ -54,6 +55,8 @@ export default function UserProfileModal({
     description?: string;
   }>({ visible: false });
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [isDataLoading, setIsDataLoading] = useState(true);
+  const [dataError, setDataError] = useState(false);
   const [plans, setPlans] = useState<any[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [isPlanEnd, setIsPlanEnd] = useState(false);
@@ -118,11 +121,16 @@ export default function UserProfileModal({
   };
 
   const fetchMembershipPlans = async () => {
+    setIsDataLoading(true);
+    setDataError(false);
     try {
       const res = await getMembershipPlans();
       setPlans(res.additionalData.response.filter((plan: any) => Number(plan.isActive) === 1));
     } catch (error) {
       console.error("Error fetching membership plans:", error);
+      setDataError(true);
+    } finally {
+      setIsDataLoading(false);
     }
   };
 
@@ -541,6 +549,9 @@ export default function UserProfileModal({
                 </div>
               </div>
 
+              {(isDataLoading || dataError || plans.length === 0) && (
+                <GymDataState loading={isDataLoading} error={dataError} label="membership plans" onRetry={() => void fetchMembershipPlans()} />
+              )}
               <div className="grid gap-3 md:grid-cols-2 mt-6">
                 {plans
                   .filter((p) => p.isActive === 1)

@@ -1,3 +1,4 @@
+import GymDataState from "@/components/gym-data-state";
 import { useState, useEffect } from "react";
 import gymImage from "@/assets/gym-signup.jpg";
 import { getMembershipPlans } from "@/services/memberships-api";
@@ -15,6 +16,8 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
   const [step, setStep] = useState(1);
   const [gender, setGender] = useState<number | null>(null);
   const [confirm, setConfirm] = useState(false);
+  const [isDataLoading, setIsDataLoading] = useState(true);
+  const [dataError, setDataError] = useState(false);
   const [plans, setPlans] = useState<any[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [registeredMemberId, setRegisteredMemberId] = useState<string | null>(null);
@@ -30,11 +33,16 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
 
 
   const fetchMembershipPlans = async () => {
+    setIsDataLoading(true);
+    setDataError(false);
     try {
       const res = await getMembershipPlans();
       setPlans(res.additionalData.response.filter((plan: any) => Number(plan.isActive) === 1));
     } catch (error) {
       console.error("Error fetching membership plans:", error);
+      setDataError(true);
+    } finally {
+      setIsDataLoading(false);
     }
   };
 
@@ -747,6 +755,9 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                   </p>
                 </div>
 
+                {(isDataLoading || dataError || plans.length === 0) && (
+                  <GymDataState loading={isDataLoading} error={dataError} label="membership plans" onRetry={() => void fetchMembershipPlans()} />
+                )}
                 {/* PLAN CARDS */}
                 <div className="grid gap-3 md:grid-cols-2">
                   {plans
