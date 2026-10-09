@@ -28,7 +28,6 @@ interface CarServiceApiResponse {
   description: string;
   price: number;
   image: string | null;
-  features: string | null;
 }
 
 interface CarPackageApiResponse {
@@ -58,7 +57,6 @@ interface PackageService {
   serviceCategory: number;
   separatePrice: number;
   image: string;
-  features: string[];
 }
 
 interface CarwashPackage {
@@ -77,19 +75,6 @@ interface CarwashPackage {
 /* =========================================================
    HELPERS
 ========================================================= */
-
-const parseFeatures = (
-  features: string | null | undefined,
-): string[] => {
-  if (!features?.trim()) {
-    return [];
-  }
-
-  return features
-    .split(",")
-    .map((feature) => feature.trim())
-    .filter(Boolean);
-};
 
 const getImageSource = (
   image: string | null | undefined,
@@ -310,9 +295,6 @@ export default function CarwashPackages() {
                   IMG,
                 ),
 
-                features: parseFeatures(
-                  service.features,
-                ),
               }))
             : [],
         }));
@@ -1112,24 +1094,6 @@ export default function CarwashPackages() {
                               </div>
                             </div>
 
-                            {service.features
-                              .length > 0 && (
-                              <div className="mt-3 flex flex-wrap gap-2 pl-12">
-                                {service.features.map(
-                                  (
-                                    feature,
-                                    index,
-                                  ) => (
-                                    <span
-                                      key={`${service.id}-${feature}-${index}`}
-                                      className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-medium text-slate-600"
-                                    >
-                                      {feature}
-                                    </span>
-                                  ),
-                                )}
-                              </div>
-                            )}
                           </div>
                         ),
                       )}
