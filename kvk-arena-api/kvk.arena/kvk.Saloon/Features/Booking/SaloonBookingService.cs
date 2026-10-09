@@ -16,6 +16,7 @@ namespace kvk.Saloon.Features.Booking;
 
 public class SaloonBookingService : ISaloonBookingService
 {
+    private const int BookingWindowWorkingDays = 7;
     private readonly SaloonDbContext _db;
     private readonly IHolidayService _holidayService;
     private readonly ISmsService _smsService;
@@ -126,16 +127,18 @@ public class SaloonBookingService : ISaloonBookingService
             return Result.Failure("Request cannot be null");
 
         // Date Validation
-        var today = DateOnly.FromDateTime(DateTime.Today);
-        if (request.BookingDate < today)
+        var today = GetNowInSriLanka().Date;
+        if (request.BookingDate < DateOnly.FromDateTime(today))
             return Result.Failure("Cannot book in the past");
 
-        var nextWorkingDays = await _holidayService.GetNextWorkingDaysAsync(DateTime.Today, 2, cancellationToken);
-        var validDates = new List<DateOnly> { today };
-        validDates.AddRange(nextWorkingDays.Select(d => DateOnly.FromDateTime(d)));
+        // The working-day lookup excludes its starting date. Start yesterday to
+        // include today when it is a working day, matching the seven-date picker.
+        var workingDays = await _holidayService.GetNextWorkingDaysAsync(
+            today.AddDays(-1), BookingWindowWorkingDays, cancellationToken);
+        var validDates = workingDays.Select(DateOnly.FromDateTime).ToHashSet();
 
         if (!validDates.Contains(request.BookingDate))
-            return Result.Failure("Can only book for current day and next two working days (excluding holidays).");
+            return Result.Failure("Can only book within the next seven working days, including today when available (excluding holidays).");
 
         try
         {
@@ -247,16 +250,18 @@ public class SaloonBookingService : ISaloonBookingService
         if (request == null)
             return Result.Failure("Request cannot be null");
 
-        var today = DateOnly.FromDateTime(DateTime.Today);
-        if (request.BookingDate < today)
+        var today = GetNowInSriLanka().Date;
+        if (request.BookingDate < DateOnly.FromDateTime(today))
             return Result.Failure("Cannot book in the past");
 
-        var nextWorkingDays = await _holidayService.GetNextWorkingDaysAsync(DateTime.Today, 2, cancellationToken);
-        var validDates = new List<DateOnly> { today };
-        validDates.AddRange(nextWorkingDays.Select(d => DateOnly.FromDateTime(d)));
+        // The working-day lookup excludes its starting date. Start yesterday to
+        // include today when it is a working day, matching the seven-date picker.
+        var workingDays = await _holidayService.GetNextWorkingDaysAsync(
+            today.AddDays(-1), BookingWindowWorkingDays, cancellationToken);
+        var validDates = workingDays.Select(DateOnly.FromDateTime).ToHashSet();
 
         if (!validDates.Contains(request.BookingDate))
-            return Result.Failure("Can only book for current day and next two working days (excluding holidays).");
+            return Result.Failure("Can only book within the next seven working days, including today when available (excluding holidays).");
 
         try
         {
@@ -700,16 +705,18 @@ public class SaloonBookingService : ISaloonBookingService
             return Result.Failure("Request cannot be null");
 
         // Date Validation
-        var today = DateOnly.FromDateTime(DateTime.Today);
-        if (request.BookingDate < today)
+        var today = GetNowInSriLanka().Date;
+        if (request.BookingDate < DateOnly.FromDateTime(today))
             return Result.Failure("Cannot book in the past");
 
-        var nextWorkingDays = await _holidayService.GetNextWorkingDaysAsync(DateTime.Today, 2, cancellationToken);
-        var validDates = new List<DateOnly> { today };
-        validDates.AddRange(nextWorkingDays.Select(d => DateOnly.FromDateTime(d)));
+        // The working-day lookup excludes its starting date. Start yesterday to
+        // include today when it is a working day, matching the seven-date picker.
+        var workingDays = await _holidayService.GetNextWorkingDaysAsync(
+            today.AddDays(-1), BookingWindowWorkingDays, cancellationToken);
+        var validDates = workingDays.Select(DateOnly.FromDateTime).ToHashSet();
 
         if (!validDates.Contains(request.BookingDate))
-            return Result.Failure("Can only book for current day and next two working days (excluding holidays).");
+            return Result.Failure("Can only book within the next seven working days, including today when available (excluding holidays).");
 
         try
         {
