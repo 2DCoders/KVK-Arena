@@ -143,6 +143,19 @@ export default function CarwashFooter() {
                         Cafe
                       </a>
                     </li>
+
+                    <li>
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigate("/salon");
+                        }}
+                        className="text-sm text-slate-500 hover:text-slate-900 transition"
+                      >
+                        Salon
+                      </a>
+                    </li>
                   </ul>
                 </div>
 

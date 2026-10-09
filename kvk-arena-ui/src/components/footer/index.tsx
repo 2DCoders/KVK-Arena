@@ -5,23 +5,13 @@ import {
   TikTokOutlined,
   FacebookOutlined,
 } from "@ant-design/icons";
-// import { useNavigate } from "react-router-dom";
-import ConstructionModal from "../404";
-import { useState } from "react";
+import { Link } from "react-router-dom";
 
 export default function Footer() {
-  const [openConstructionModal, setOpenConstructionModal] = useState(false);
-  const [constructionPageName, setConstructionPageName] = useState("");
-  // const navigate = useNavigate();
-  
+
   return (
     <footer className="relative overflow-hidden bg-[#f5f5f5] py-16 md:py-24">
 
-      <ConstructionModal
-        open={openConstructionModal}
-        onClose={() => setOpenConstructionModal(false)}
-        pageName={constructionPageName}
-      />
       {/* Background Text */}
       <div className="pointer-events-none absolute bottom-[-90px] left-1/2 -translate-x-1/2 select-none">
         <h1 className="text-[140px] md:text-[260px] font-black tracking-tight text-slate-200/40 whitespace-nowrap">
@@ -90,93 +80,57 @@ export default function Footer() {
 
                   <ul className="mt-5 space-y-3">
                     <li>
-                      <a
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setConstructionPageName("Gym Section");
-                          setOpenConstructionModal(true);
-                          // navigate("/gym");
-                        }}
+                      <Link
+                        to="/gym"
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
                         Gym
-                      </a>
+                      </Link>
                     </li>
 
                     <li>
-                      <a
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setConstructionPageName("Badminton Section");
-                          setOpenConstructionModal(true);
-                          // navigate("/badminton");
-                        }}
+                      <Link
+                        to="/badminton"
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
                         Badminton
-                      </a>
+                      </Link>
                     </li>
 
                     <li>
-                      <a
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setConstructionPageName("Gaming Section");
-                          setOpenConstructionModal(true);
-                          // navigate("/gaming");
-                        }}
+                      <Link
+                        to="/gaming"
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
                         Gaming
-                      </a>
+                      </Link>
                     </li>
 
                     <li>
-                      <a
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setConstructionPageName("Carwash Section");
-                          setOpenConstructionModal(true);
-                          // navigate("/carwash");
-                        }}
+                      <Link
+                        to="/carwash"
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
                         Carwash
-                      </a>
+                      </Link>
                     </li>
 
                     <li>
-                      <a
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setConstructionPageName("Cafe Section");
-                          setOpenConstructionModal(true);
-                          // navigate("/cafe");
-                        }}
+                      <Link
+                        to="/cafe"
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
                         Cafe
-                      </a>
+                      </Link>
                     </li>
 
                     <li>
-                      <a
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setConstructionPageName("Salon Section");
-                          setOpenConstructionModal(true);
-                          // navigate("/salon");
-                        }}
+                      <Link
+                        to="/salon"
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
                         Salon
-                      </a>
+                      </Link>
                     </li>
                   </ul>
                 </div>
