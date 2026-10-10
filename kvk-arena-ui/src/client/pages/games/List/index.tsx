@@ -306,7 +306,7 @@ export default function GamesList() {
         </div>
 
         {/* No Games */}
-        {games.length === 0 && (
+        {!loading && games.length === 0 && (
           <div className="py-10 text-center text-slate-500">
             No games available.
           </div>
