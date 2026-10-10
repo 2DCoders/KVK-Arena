@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Search, X, ChevronLeft, ChevronRight } from "lucide-react";
+import GameCardSkeleton from "./game-card-skeleton";
 import { getGames } from "@/services/games-api";
 
 interface GameLibraryModalProps {
@@ -30,7 +31,7 @@ export default function GameLibraryModal({
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [animate, setAnimate] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Convert Base64 image to usable image URL
   const getImageUrl = (image: string) => {
@@ -193,13 +194,17 @@ export default function GameLibraryModal({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
+        <div aria-busy={loading} className="flex-1 overflow-y-auto px-6 py-5">
 
           {/* Loading */}
           {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="h-10 w-10 rounded-full border-4 border-gray-200 border-t-red-500 animate-spin" />
-            </div>
+            <>
+              <span role="status" className="sr-only">Loading games...</span>
+              <div aria-hidden="true" className="mb-5 h-5 w-32 rounded bg-slate-200 motion-safe:animate-pulse" />
+              <div className="grid grid-cols-2 gap-5 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+                {Array.from({ length: 10 }, (_, index) => <GameCardSkeleton key={index} library />)}
+              </div>
+            </>
           ) : (
             <>
               {/* Top Info */}

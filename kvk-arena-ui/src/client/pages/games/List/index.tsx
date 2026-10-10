@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import GameCardSkeleton from "@/components/games-list/game-card-skeleton";
 import GameLibraryModal from "@/components/games-list";
 import { getGames } from "@/services/games-api";
 
@@ -19,6 +20,7 @@ export default function GamesList() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const [games, setGames] = useState<Game[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showGames, setShowGames] = useState(false);
 
   useEffect(() => {
@@ -35,6 +37,8 @@ export default function GamesList() {
       } catch (error) {
         console.error("Failed to fetch games:", error);
         setGames([]);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -159,6 +163,7 @@ export default function GamesList() {
 
         {/* Cards */}
         <div
+          aria-busy={loading}
           ref={scrollRef}
           className="
             flex gap-3 overflow-x-auto scroll-smooth
@@ -167,7 +172,9 @@ export default function GamesList() {
             sm:gap-5
           "
         >
-          {games.map((game) => {
+          {loading && <span role="status" className="sr-only">Loading games...</span>}
+          {loading && Array.from({ length: 6 }, (_, index) => <GameCardSkeleton key={index} />)}
+          {!loading && games.map((game) => {
             const category = game.gamingCategoryName || "Gaming";
 
             return (
