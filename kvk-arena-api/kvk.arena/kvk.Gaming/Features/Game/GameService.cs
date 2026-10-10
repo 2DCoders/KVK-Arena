@@ -241,19 +241,16 @@ public class GameService : IGameService
         if (game == null)
             return Result.Failure($"Game with ID '{id}' not found.");
 
-        if (!game.IsActive)
-            return Result.Failure("Game is already inactive.");
-
         try
         {
             _db.Games.Remove(game);
             await _db.SaveChangesAsync(cancellationToken);
 
-            return Result.Success("Game deactivated successfully.");
+            return Result.Success("Game deleted successfully.");
         }
         catch (Exception ex)
         {
-            return Result.Failure($"Failed to deactivate game: {ex.Message}");
+            return Result.Failure($"Failed to delete game: {ex.Message}");
         }
     }
 }
