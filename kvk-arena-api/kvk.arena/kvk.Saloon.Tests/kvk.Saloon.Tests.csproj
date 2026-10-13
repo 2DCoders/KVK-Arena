@@ -7,5 +7,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../kvk.Saloon/Features/Booking/BookingTimeRules.cs" Link="BookingTimeRules.cs" />
+    <Compile Include="../kvk.Saloon/Features/Booking/BookingPaymentRules.cs" Link="BookingPaymentRules.cs" />
+    <Compile Include="../kvk.Saloon/Domain/SaloonBookingStatus.cs" Link="SaloonBookingStatus.cs" />
+    <Compile Include="../kvk.BuildingBlocks/Enums/PaymentType.cs" Link="PaymentType.cs" />
   </ItemGroup>
 </Project>

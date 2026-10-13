@@ -1,5 +1,6 @@
 using kvk.BuildingBlocks.Common;
 using kvk.BuildingBlocks.Enums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace kvk.Saloon.Domain;
 
@@ -33,15 +34,9 @@ public class SaloonBooking : AuditableEntity
     public virtual ICollection<SaloonBookingService> Services { get; set; }
         = new List<SaloonBookingService>();
     
-    public PaymentType PaymentType { get; set; }
-}
-
-public enum SaloonBookingStatus
-{
-    Pending = 1,
-    Confirmed = 2,
-    InProgress = 3,
-    Completed = 4,
-    Cancelled = 5,
-    NoShow = 6
+    public PaymentType? PaymentType { get; set; }
+    public bool IsWalkIn { get; set; }
+    public bool IsPaid { get; set; }
+    [Column(TypeName = "timestamp without time zone")]
+    public DateTime? PaidAt { get; set; }
 }

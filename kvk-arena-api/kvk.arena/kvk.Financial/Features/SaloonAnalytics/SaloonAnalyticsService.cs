@@ -16,30 +16,34 @@ public class SaloonAnalyticsService
 
     public async Task<SaloonAnalyticsResponse> GetAsync(DateTime startDate, DateTime endDate, CancellationToken cancellationToken)
     {
-        var bookings = await _context.SaloonBookings.ToListAsync(cancellationToken);
+        var paidBookings = await _context.SaloonBookings.AsNoTracking()
+            .Where(b => b.IsPaid && b.PaidAt >= startDate && b.PaidAt < endDate)
+            .ToListAsync(cancellationToken);
+        var bookings = await _context.SaloonBookings.AsNoTracking()
+            .Where(b => b.CreatedAt >= startDate && b.CreatedAt < endDate)
+            .ToListAsync(cancellationToken);
 
-        var filteredBookings = bookings.Where(b => b.CreatedAt >= startDate && b.CreatedAt <= endDate).ToList();
+        var filteredBookings = bookings;
 
-        var successfulStatuses = new[] { SaloonBookingStatus.Confirmed, SaloonBookingStatus.InProgress, SaloonBookingStatus.Completed };
 
         var response = new SaloonAnalyticsResponse
         {
             StartDate = startDate,
             EndDate = endDate,
-            TotalTransactions = filteredBookings.Count,
-            SuccessfulTransactions = filteredBookings.Count(b => successfulStatuses.Contains(b.Status)),
-            PendingTransactions = filteredBookings.Count(b => b.Status == SaloonBookingStatus.Pending),
+            TotalTransactions = paidBookings.Count,
+            SuccessfulTransactions = paidBookings.Count,
+            PendingTransactions = filteredBookings.Count(b => !b.IsPaid && b.Status != SaloonBookingStatus.Cancelled && b.Status != SaloonBookingStatus.NoShow),
             CancelledTransactions = filteredBookings.Count(b => b.Status == SaloonBookingStatus.Cancelled || b.Status == SaloonBookingStatus.NoShow),
 
-            TotalRevenue = filteredBookings.Where(b => successfulStatuses.Contains(b.Status)).Sum(b => b.TotalAmount),
-            PendingRevenue = filteredBookings.Where(b => b.Status == SaloonBookingStatus.Pending).Sum(b => b.TotalAmount),
+            TotalRevenue = paidBookings.Sum(b => b.TotalAmount),
+            PendingRevenue = filteredBookings.Where(b => !b.IsPaid && b.Status != SaloonBookingStatus.Cancelled && b.Status != SaloonBookingStatus.NoShow).Sum(b => b.TotalAmount),
             CancelledRevenue = filteredBookings.Where(b => b.Status == SaloonBookingStatus.Cancelled || b.Status == SaloonBookingStatus.NoShow).Sum(b => b.TotalAmount),
 
-            CashRevenue = filteredBookings.Where(b => b.PaymentType == PaymentType.Cash && successfulStatuses.Contains(b.Status)).Sum(b => b.TotalAmount),
-            CreditCardRevenue = filteredBookings.Where(b => b.PaymentType == PaymentType.CreditCard && successfulStatuses.Contains(b.Status)).Sum(b => b.TotalAmount),
-            DebitCardRevenue = filteredBookings.Where(b => b.PaymentType == PaymentType.DebitCard && successfulStatuses.Contains(b.Status)).Sum(b => b.TotalAmount),
-            PayPalRevenue = filteredBookings.Where(b => b.PaymentType == PaymentType.PayPal && successfulStatuses.Contains(b.Status)).Sum(b => b.TotalAmount),
-            OnlinePaymentRevenue = filteredBookings.Where(b => b.PaymentType == PaymentType.OnlinePayment && successfulStatuses.Contains(b.Status)).Sum(b => b.TotalAmount),
+            CashRevenue = paidBookings.Where(b => b.PaymentType == PaymentType.Cash).Sum(b => b.TotalAmount),
+            CreditCardRevenue = paidBookings.Where(b => b.PaymentType == PaymentType.CreditCard).Sum(b => b.TotalAmount),
+            DebitCardRevenue = paidBookings.Where(b => b.PaymentType == PaymentType.DebitCard).Sum(b => b.TotalAmount),
+            PayPalRevenue = paidBookings.Where(b => b.PaymentType == PaymentType.PayPal).Sum(b => b.TotalAmount),
+            OnlinePaymentRevenue = paidBookings.Where(b => b.PaymentType == PaymentType.OnlinePayment).Sum(b => b.TotalAmount),
         };
 
         return response;

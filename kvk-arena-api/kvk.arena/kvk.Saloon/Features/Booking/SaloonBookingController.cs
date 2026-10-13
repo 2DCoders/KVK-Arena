@@ -108,6 +108,22 @@ public class SaloonBookingController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("{id:guid}/collect-payment")]
+    public async Task<IActionResult> CollectPayment(Guid id, [FromBody] SaloonCollectPaymentRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _service.CollectPaymentAsync(id, request, cancellationToken);
+        return result.Succeeded ? Ok(result) : BadRequest(result);
+    }
+
+    [HttpPatch("{id:guid}/service-status")]
+    public async Task<IActionResult> SetServiceStatus(Guid id, [FromBody] SaloonServiceStatusRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _service.SetServiceStatusAsync(id, request, cancellationToken);
+        return result.Succeeded ? Ok(result) : BadRequest(result);
+    }
+
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] SaloonBookingUpdateRequest request,
         CancellationToken cancellationToken)

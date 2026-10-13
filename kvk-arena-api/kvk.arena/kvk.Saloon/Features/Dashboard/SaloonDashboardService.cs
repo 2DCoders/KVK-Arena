@@ -1,3 +1,5 @@
+using Kvk.Cafe;
+using Microsoft.EntityFrameworkCore;
 using kvk.Saloon.Domain;
 using kvk.Saloon.Features.Booking;
 using kvk.Saloon.Interfaces;
@@ -13,14 +15,16 @@ public class SaloonDashboardService : ISaloonDashboardService
     private static readonly int OpenHour = 9;
     private static readonly int CloseHour = 19;
 
+    private readonly SaloonDbContext _db;
     private readonly ISaloonService _saloonService;
     private readonly ISaloonStaffService _staffService;
     private readonly ISaloonServiceItemService _serviceItemService;
     private readonly ISaloonBookingService _bookingService;
 
     public SaloonDashboardService(ISaloonService saloonService, ISaloonStaffService staffService,
-        ISaloonServiceItemService serviceItemService, ISaloonBookingService bookingService)
+        ISaloonServiceItemService serviceItemService, ISaloonBookingService bookingService, SaloonDbContext db)
     {
+        _db = db;
         _saloonService = saloonService ?? throw new ArgumentNullException(nameof(saloonService));
         _staffService = staffService ?? throw new ArgumentNullException(nameof(staffService));
         _serviceItemService = serviceItemService ?? throw new ArgumentNullException(nameof(serviceItemService));
@@ -34,7 +38,7 @@ public class SaloonDashboardService : ISaloonDashboardService
         var staff = (await _staffService.GetAllAsync(cancellationToken)).ToList();
         var services = (await _serviceItemService.GetAllAsync(cancellationToken)).ToList();
 
-        var now = DateTime.Now;
+        var now = kvk.Saloon.Features.Booking.SaloonBookingService.GetNowInSriLanka();
         var today = DateOnly.FromDateTime(now);
 
         var rangeStart = DateOnly.FromDateTime(new DateTime(now.Year, now.Month, 1).AddMonths(-(MonthlyRevenueMonths - 1)));
@@ -46,25 +50,24 @@ public class SaloonDashboardService : ISaloonDashboardService
             PageSize = BookingFetchPageSize
         }, cancellationToken);
 
-        var paidBookings = bookings
-            .Where(b => b.Status == SaloonBookingStatus.Confirmed ||
-                        b.Status == SaloonBookingStatus.InProgress ||
-                        b.Status == SaloonBookingStatus.Completed)
-            .ToList();
+        var paidBookings = await _db.SaloonBookings.AsNoTracking()
+            .Where(b => b.IsPaid && b.PaidAt >= rangeStart.ToDateTime(TimeOnly.MinValue) &&
+                b.PaidAt < today.AddDays(1).ToDateTime(TimeOnly.MinValue))
+            .ToListAsync(cancellationToken);
 
         var response = new SaloonDashboardResponse
         {
             TotalStaff = staff.Count(s => s.IsActive),
             TotalSeats = activeSeats.Count,
             TotalServices = services.Count(s => s.IsActive),
-            TodaysRevenue = paidBookings.Where(b => b.BookingDate == today).Sum(b => b.TotalAmount),
+            TodaysRevenue = paidBookings.Where(b => DateOnly.FromDateTime(b.PaidAt!.Value) == today).Sum(b => b.TotalAmount),
         };
 
         for (var i = MonthlyRevenueMonths - 1; i >= 0; i--)
         {
             var monthStart = new DateTime(now.Year, now.Month, 1).AddMonths(-i);
             var monthRevenue = paidBookings
-                .Where(b => b.BookingDate.Year == monthStart.Year && b.BookingDate.Month == monthStart.Month)
+                .Where(b => b.PaidAt!.Value.Year == monthStart.Year && b.PaidAt.Value.Month == monthStart.Month)
                 .Sum(b => b.TotalAmount);
 
             response.MonthlyRevenue.Add(new MonthlyRevenuePoint
@@ -78,7 +81,7 @@ public class SaloonDashboardService : ISaloonDashboardService
         {
             var day = DateOnly.FromDateTime(now.Date.AddDays(-i));
             var dayRevenue = paidBookings
-                .Where(b => b.BookingDate == day)
+                .Where(b => DateOnly.FromDateTime(b.PaidAt!.Value) == day)
                 .Sum(b => b.TotalAmount);
 
             response.DailyRevenue.Add(new DailyRevenuePoint

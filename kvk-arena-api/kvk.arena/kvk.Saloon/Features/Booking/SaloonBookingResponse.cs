@@ -23,7 +23,10 @@ public class SaloonBookingResponse
     
     public List<SaloonBookingServiceResponse> Services { get; set; } = new();
     
-    public PaymentType PaymentType { get; set; }
+    public PaymentType? PaymentType { get; set; }
+    public bool IsWalkIn { get; set; }
+    public bool IsPaid { get; set; }
+    public DateTime? PaidAt { get; set; }
 }
 
 public class SaloonBookingServiceResponse

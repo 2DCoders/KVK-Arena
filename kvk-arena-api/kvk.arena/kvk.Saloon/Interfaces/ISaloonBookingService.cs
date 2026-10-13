@@ -25,4 +25,6 @@ public interface ISaloonBookingService
     Task<Result> UpdateAsync(SaloonBookingUpdateRequest request, CancellationToken cancellationToken = default);
 
     Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Result> SetServiceStatusAsync(Guid id, SaloonServiceStatusRequest request, CancellationToken cancellationToken = default);
+    Task<Result> CollectPaymentAsync(Guid id, SaloonCollectPaymentRequest request, CancellationToken cancellationToken = default);
 }

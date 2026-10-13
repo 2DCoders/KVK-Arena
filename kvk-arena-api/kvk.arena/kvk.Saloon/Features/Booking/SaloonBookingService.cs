@@ -80,7 +80,9 @@ public class SaloonBookingService : ISaloonBookingService
 
         if (request.FromDate.HasValue)
         {
-            query = query.Where(b => b.BookingDate >= request.FromDate.Value);
+            query = query.Where(b => b.BookingDate >= request.FromDate.Value ||
+                (request.IncludeUnpaid && !b.IsPaid && (b.Status == kvk.Saloon.Domain.SaloonBookingStatus.Confirmed ||
+                    b.Status == kvk.Saloon.Domain.SaloonBookingStatus.InProgress || b.Status == kvk.Saloon.Domain.SaloonBookingStatus.Completed)));
         }
 
         if (request.ToDate.HasValue)
@@ -241,7 +243,10 @@ public class SaloonBookingService : ISaloonBookingService
                 Notes = isWalkIn
                     ? $"Walk-in. {request.Notes}".Trim()
                     : request.Notes,
-                PaymentType = request.PaymentType,
+                PaymentType = isWalkIn ? null : request.PaymentType,
+                IsWalkIn = isWalkIn,
+                IsPaid = !isWalkIn && request.Status is kvk.Saloon.Domain.SaloonBookingStatus.Confirmed or kvk.Saloon.Domain.SaloonBookingStatus.InProgress or kvk.Saloon.Domain.SaloonBookingStatus.Completed,
+                PaidAt = !isWalkIn && request.Status is kvk.Saloon.Domain.SaloonBookingStatus.Confirmed or kvk.Saloon.Domain.SaloonBookingStatus.InProgress or kvk.Saloon.Domain.SaloonBookingStatus.Completed ? GetNowInSriLanka() : null,
                 Services = servicesToAdd
             };
 
@@ -443,6 +448,8 @@ public class SaloonBookingService : ISaloonBookingService
             return;
 
         booking.Status = kvk.Saloon.Domain.SaloonBookingStatus.Confirmed;
+        booking.IsPaid = true;
+        booking.PaidAt = GetNowInSriLanka();
         await _db.SaveChangesAsync(cancellationToken);
 
         await SendBookingConfirmationSmsAsync(booking, cancellationToken);
@@ -719,7 +726,7 @@ public class SaloonBookingService : ISaloonBookingService
     private static readonly TimeZoneInfo SriLankaTimeZone =
         TimeZoneInfo.FindSystemTimeZoneById("Asia/Colombo");
 
-    private static DateTime GetNowInSriLanka()
+    internal static DateTime GetNowInSriLanka()
     {
         return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, SriLankaTimeZone);
     }
@@ -766,6 +773,13 @@ public class SaloonBookingService : ISaloonBookingService
 
             if (booking == null)
                 return Result.Failure("Booking not found");
+
+            if (booking.IsPaid && (booking.TotalAmount != request.TotalAmount || booking.PaymentType != request.PaymentType))
+                return Result.Failure("Collected payments cannot be changed through an appointment edit.");
+            if (booking.IsWalkIn && booking.Status != request.Status &&
+                !BookingPaymentRules.CanChangeServiceStatus(booking.Status, request.Status) &&
+                request.Status != kvk.Saloon.Domain.SaloonBookingStatus.Cancelled)
+                return Result.Failure("Start the walk-in service before marking it completed.");
 
             int totalDurationMinutes = 0;
             int totalBufferMinutes = 0;
@@ -853,7 +867,7 @@ public class SaloonBookingService : ISaloonBookingService
             booking.TotalAmount = request.TotalAmount;
             booking.DiscountAmount = request.DiscountAmount;
             booking.Notes = request.Notes;
-            booking.PaymentType = request.PaymentType;
+            if (booking.IsPaid) booking.PaymentType = request.PaymentType;
 
             // Update services (simple remove and re-add for simplicity in this example)
             booking.Services.Clear();
@@ -877,6 +891,56 @@ public class SaloonBookingService : ISaloonBookingService
         }
     }
 
+    public async Task<Result> SetServiceStatusAsync(Guid id, SaloonServiceStatusRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        await using var transaction = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+        try
+        {
+            var booking = await _db.SaloonBookings.Include(b => b.Saloon).Include(b => b.Services)
+                .ThenInclude(s => s.Service).SingleOrDefaultAsync(b => b.Id == id, cancellationToken);
+            if (booking == null) return Result.Failure("Booking not found.");
+            if (!BookingPaymentRules.CanChangeServiceStatus(booking.Status, request.Status))
+                return Result.Failure("Start the confirmed service before marking it completed.");
+            booking.Status = request.Status;
+            await _db.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return Result.Success("Service status updated.").WithData("Response", MapToResponse(booking));
+        }
+        catch (Exception ex) when (ex is Npgsql.PostgresException { SqlState: "40001" } ||
+            ex.InnerException is Npgsql.PostgresException { SqlState: "40001" })
+        {
+            return Result.Failure("This appointment changed. Refresh and try again.");
+        }
+    }
+
+    public async Task<Result> CollectPaymentAsync(Guid id, SaloonCollectPaymentRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        await using var transaction = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+        try
+        {
+            var booking = await _db.SaloonBookings.Include(b => b.Saloon).Include(b => b.Services)
+                .ThenInclude(s => s.Service).SingleOrDefaultAsync(b => b.Id == id, cancellationToken);
+            if (booking == null) return Result.Failure("Booking not found.");
+            if (booking.IsPaid)
+                return Result.Failure("Payment has already been collected. Refresh to view the receipt.");
+            if (!BookingPaymentRules.CanCollectPayment(booking.Status, booking.IsPaid, request.PaymentType))
+                return Result.Failure("Complete the service first, then collect payment using cash or card.");
+            booking.PaymentType = request.PaymentType;
+            booking.IsPaid = true;
+            booking.PaidAt = GetNowInSriLanka();
+            await _db.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return Result.Success("Payment collected.").WithData("Response", MapToResponse(booking));
+        }
+        catch (Exception ex) when (ex is Npgsql.PostgresException { SqlState: "40001" } ||
+            ex.InnerException is Npgsql.PostgresException { SqlState: "40001" })
+        {
+            return Result.Failure("Payment or service status changed. Refresh before collecting payment again.");
+        }
+    }
+
     public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         if (id == Guid.Empty)
@@ -889,6 +953,9 @@ public class SaloonBookingService : ISaloonBookingService
 
             if (booking == null)
                 return Result.Failure("Booking not found");
+
+            if (booking.IsPaid)
+                return Result.Failure("A collected payment has a receipt and cannot be deleted.");
 
             _db.Set<DomainBooking>().Remove(booking);
             await _db.SaveChangesAsync(cancellationToken);
@@ -919,6 +986,9 @@ public class SaloonBookingService : ISaloonBookingService
             DiscountAmount = booking.DiscountAmount,
             Notes = booking.Notes,
             PaymentType = booking.PaymentType,
+            IsWalkIn = booking.IsWalkIn,
+            IsPaid = booking.IsPaid,
+            PaidAt = booking.PaidAt,
             Services = booking.Services?.Select(s => new SaloonBookingServiceResponse
             {
                 Id = s.Id,

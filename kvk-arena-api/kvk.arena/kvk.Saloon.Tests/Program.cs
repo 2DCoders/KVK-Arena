@@ -1,4 +1,31 @@
 using kvk.Saloon.Features.Booking;
+using kvk.Saloon.Domain;
+using kvk.BuildingBlocks.Enums;
+
+var paymentCases = new (string Name, SaloonBookingStatus Status, bool Paid, PaymentType Method, bool Allowed)[]
+{
+    ("Arrival is unpaid and cannot collect before service", SaloonBookingStatus.Confirmed, false, PaymentType.Cash, false),
+    ("Cannot collect during service", SaloonBookingStatus.InProgress, false, PaymentType.Cash, false),
+    ("Completed unpaid walk-in accepts cash", SaloonBookingStatus.Completed, false, PaymentType.Cash, true),
+    ("Completed unpaid walk-in accepts card", SaloonBookingStatus.Completed, false, PaymentType.CreditCard, true),
+    ("Completed unpaid walk-in accepts debit card", SaloonBookingStatus.Completed, false, PaymentType.DebitCard, true),
+    ("Repeated payment cannot charge again", SaloonBookingStatus.Completed, true, PaymentType.Cash, false),
+    ("Cancelled services cannot collect payment", SaloonBookingStatus.Cancelled, false, PaymentType.Cash, false),
+    ("Invalid payment method is rejected", SaloonBookingStatus.Completed, false, (PaymentType)0, false),
+    ("Online payment cannot be recorded as terminal payment", SaloonBookingStatus.Completed, false, PaymentType.OnlinePayment, false),
+};
+foreach (var test in paymentCases)
+{
+    if (BookingPaymentRules.CanCollectPayment(test.Status, test.Paid, test.Method) != test.Allowed)
+        throw new Exception($"FAIL: {test.Name}");
+    Console.WriteLine($"PASS: {test.Name}");
+}
+if (!BookingPaymentRules.CanChangeServiceStatus(SaloonBookingStatus.Confirmed, SaloonBookingStatus.InProgress) ||
+    !BookingPaymentRules.CanChangeServiceStatus(SaloonBookingStatus.InProgress, SaloonBookingStatus.Completed) ||
+    BookingPaymentRules.CanChangeServiceStatus(SaloonBookingStatus.Confirmed, SaloonBookingStatus.Completed) ||
+    BookingPaymentRules.CanChangeServiceStatus(SaloonBookingStatus.Completed, SaloonBookingStatus.InProgress))
+    throw new Exception("Service must progress from confirmed to in progress to completed.");
+Console.WriteLine("PASS: Valid service transitions accepted; skipping or reversing service progress is rejected.");
 
 // Walk-ins reserve the same capacity as scheduled appointments.
 var occupiedSeat = new[] { (TimeSpan.FromHours(12), TimeSpan.FromHours(13)) };
