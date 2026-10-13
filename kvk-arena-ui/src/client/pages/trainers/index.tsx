@@ -20,7 +20,6 @@ interface Trainer {
 }
 
 export default function Trainers() {
-
   const [isDataLoading, setIsDataLoading] = useState(true);
   const [dataError, setDataError] = useState(false);
   const [trainers, setTrainers] = useState<Trainer[]>([]);
@@ -111,7 +110,11 @@ export default function Trainers() {
               </button>
             </div>
 
-            <div className="flex items-center justify-between" data-aos="fade-up" data-aos-delay="150">
+            <div
+              className="flex items-center justify-between"
+              data-aos="fade-up"
+              data-aos-delay="150"
+            >
               <p
                 className="
                 mt-4
@@ -148,7 +151,13 @@ export default function Trainers() {
         </div>
 
         {isDataLoading || dataError || trainers.length === 0 ? (
-          <GymDataState loading={isDataLoading} error={dataError} label="trainers" onRetry={() => void handleGetTrainers()} cards="trainers" />
+          <GymDataState
+            loading={isDataLoading}
+            error={dataError}
+            label="trainers"
+            onRetry={() => void handleGetTrainers()}
+            cards="trainers"
+          />
         ) : (
           <>
             {/* Slider */}
@@ -258,10 +267,11 @@ export default function Trainers() {
                         </span>
 
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold ${trainer.isFreelance
-                            ? "bg-emerald-50 text-emerald-600"
-                            : "bg-orange-50 text-orange-600"
-                            }`}
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            trainer.isFreelance
+                              ? "bg-emerald-50 text-emerald-600"
+                              : "bg-orange-50 text-orange-600"
+                          }`}
                         >
                           {trainer.isFreelance ? "Freelance" : "Gym Trainer"}
                         </span>
