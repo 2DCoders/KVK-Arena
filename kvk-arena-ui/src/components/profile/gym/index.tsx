@@ -103,6 +103,20 @@ export default function UserProfileModal({
   });
 
   const memberId = localStorage.getItem("memberId") || "N/A";
+  const [trainerImagePreview, setTrainerImagePreview] = useState("");
+  useEffect(() => {
+    if (!showEditTrainerModal) {
+      setTrainerImagePreview("");
+      return;
+    }
+    const picture = trainerForm.profilePicture;
+    if (picture instanceof File) {
+      const objectUrl = URL.createObjectURL(picture);
+      setTrainerImagePreview(objectUrl);
+      return () => URL.revokeObjectURL(objectUrl);
+    }
+    setTrainerImagePreview(picture ? `data:image/jpeg;base64,${picture}` : "");
+  }, [trainerForm.profilePicture, showEditTrainerModal]);
   const memberName = localStorage.getItem("memberName") || "N/A";
   const memberEmail = localStorage.getItem("memberEmail") || "N/A";
   // Ensure memberToken is always a string, default to empty string if null/undefined
@@ -1150,11 +1164,7 @@ export default function UserProfileModal({
                     >
                       {memberData?.profilePicture ? (
                         <img
-                          src={
-                            trainerForm.profilePicture instanceof File
-                              ? URL.createObjectURL(memberData?.profilePicture)
-                              : `data:image/jpeg;base64,${memberData?.profilePicture}`
-                          }
+                          src={`data:image/jpeg;base64,${memberData.profilePicture}`}
                           alt="Profile"
                           className="h-full w-full object-cover"
                         />
@@ -1906,11 +1916,7 @@ export default function UserProfileModal({
                     {trainerForm.profilePicture ? (
                       <>
                         <img
-                          src={
-                            trainerForm.profilePicture instanceof File
-                              ? URL.createObjectURL(trainerForm.profilePicture)
-                              : `data:image/jpeg;base64,${trainerForm.profilePicture}`
-                          }
+                          src={trainerImagePreview || undefined}
                           alt="Profile Preview"
                           className="w-full h-full object-cover"
                         />

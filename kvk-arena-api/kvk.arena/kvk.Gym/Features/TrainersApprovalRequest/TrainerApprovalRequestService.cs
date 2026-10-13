@@ -1,4 +1,5 @@
 using kvk.BuildingBlocks.Common;
+using kvk.BuildingBlocks.Interfaces;
 using kvk.Gym.Domain;
 using kvk.Gym.Enums;
 using kvk.Gym.Features.Trainers;
@@ -9,10 +10,12 @@ namespace kvk.Gym.Features.TrainersApprovalRequest;
 public class TrainerApprovalRequestService
 {
     private readonly GymDbContext _db;
+    private readonly ISmsService _smsService;
 
-    public TrainerApprovalRequestService(GymDbContext db)
+    public TrainerApprovalRequestService(GymDbContext db, ISmsService smsService)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
+        _smsService = smsService ?? throw new ArgumentNullException(nameof(smsService));
     }
 
     public async Task<Result> CreateAsync(TrainerApprovalRequestCreateRequest request,
@@ -256,6 +259,7 @@ public class TrainerApprovalRequestService
             var response = entities.Select(entity => new TrainerApprovalRequestResponse
             {
                 Id = entity.Id,
+                TrainerId = entity.TrainerId,
                 FirstName = entity.FirstName,
                 LastName = entity.LastName,
                 UserName = entity.UserName,
@@ -313,14 +317,22 @@ public class TrainerApprovalRequestService
     {
         if (id == Guid.Empty)
             return Result.Failure("Id cannot be empty");
+        if (approvalStatus != ApprovalStatus.Approved && approvalStatus != ApprovalStatus.Rejected)
+            return Result.Failure("Select Approved or Rejected");
 
         try
         {
             var entity = await _db.Set<TrainerApprovalRequests>()
-                .SingleAsync(
+                .SingleOrDefaultAsync(
                     x => x.TrainerId == id && x.ApprovalStatus == ApprovalStatus.Pending,
                     cancellationToken);
-
+            if (entity == null)
+                return Result.Failure("Pending trainer request not found");
+            // Notify the trainer at their current registered number, including when
+            // a request to change that number is rejected.
+            var registeredPhone = await _db.Set<Trainer>().AsNoTracking()
+                .Where(x => x.Id == id).Select(x => x.Phone)
+                .SingleOrDefaultAsync(cancellationToken);
 
             switch (approvalStatus)
             {
@@ -426,17 +438,33 @@ public class TrainerApprovalRequestService
                 }
             }
             
+            _db.TrainerApprovalRequests.Remove(entity);
             await _db.SaveChangesAsync(cancellationToken);
-            
-            var existingRequest = _db.TrainerApprovalRequests.Where(t => t.TrainerId == entity.TrainerId)
-                .FirstOrDefaultAsync(cancellationToken);
-            
-            if (existingRequest != null)
-                _db.TrainerApprovalRequests.Remove(await existingRequest);
-            
-            await _db.SaveChangesAsync(cancellationToken);
-            
-            return Result.Success("Approved");
+
+            var decision = approvalStatus == ApprovalStatus.Approved ? "approved" : "rejected";
+            var smsSent = false;
+            var phone = string.IsNullOrWhiteSpace(registeredPhone) ? entity.Phone : registeredPhone;
+            if (!string.IsNullOrWhiteSpace(phone))
+            {
+                try
+                {
+                    var sms = await _smsService.SendSingleMessageAsync(phone,
+                        $"KVK Gym: Your trainer profile update request has been {decision}. " +
+                        (approvalStatus == ApprovalStatus.Approved
+                            ? "Your updated profile is now available."
+                            : "Your current profile remains unchanged. Please contact the gym for details."),
+                        cancellationToken);
+                    smsSent = sms.Succeeded;
+                }
+                catch (Exception)
+                {
+                    // The decision is already saved; report delivery failure separately
+                    // so the admin does not retry a completed decision.
+                    smsSent = false;
+                }
+            }
+            return Result.Success($"Trainer request {decision}.")
+                .WithData("smsSent", smsSent);
         }
         catch (Exception e)
         {
