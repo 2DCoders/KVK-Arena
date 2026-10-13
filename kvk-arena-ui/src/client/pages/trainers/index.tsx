@@ -250,16 +250,6 @@ export default function Trainers() {
                         <h3 className="font-bold text-lg text-slate-900 truncate">
                           {trainer.firstName} {trainer.lastName}
                         </h3>
-
-                        <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-full">
-                          <Star
-                            size={14}
-                            className="text-amber-500 fill-amber-500"
-                          />
-                          <span className="text-xs font-bold">
-                            {trainer.rating ?? 0}
-                          </span>
-                        </div>
                       </div>
 
                       <div className="flex flex-wrap gap-2 mb-4">
@@ -420,13 +410,6 @@ export default function Trainers() {
                   <p className="text-[#296BE1] font-medium mt-1">
                     {selectedTrainer.role}
                   </p>
-                </div>
-
-                <div className="flex items-center gap-2 bg-amber-50 px-4 py-2 rounded-full">
-                  <Star size={18} className="fill-amber-500 text-amber-500" />
-                  <span className="font-semibold">
-                    {selectedTrainer.rating ?? 0}
-                  </span>
                 </div>
               </div>
 
