@@ -1,3 +1,4 @@
+using System.Data;
 using kvk.BuildingBlocks;
 using kvk.BuildingBlocks.Common;
 using kvk.BuildingBlocks.Constants;
@@ -122,7 +123,7 @@ public class SaloonBookingService : ISaloonBookingService
     }
 
     public async Task<Result> CreateAsync(SaloonBookingCreateRequest request, CancellationToken cancellationToken = default,
-        bool isWalkIn = false, bool allowConflict = false)
+        bool isWalkIn = false)
     {
         if (request == null)
             return Result.Failure("Request cannot be null");
@@ -147,6 +148,7 @@ public class SaloonBookingService : ISaloonBookingService
 
         try
         {
+            await using var transaction = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
             int totalDurationMinutes = 0;
             int totalBufferMinutes = 0;
             var servicesToAdd = new List<DomainBookingService>();
@@ -206,16 +208,15 @@ public class SaloonBookingService : ISaloonBookingService
                 .ToListAsync(cancellationToken);
 
             Guid? assignedSaloonId = null;
-            var conflictOverridden = false;
 
             foreach (var saloon in allSaloons)
             {
-                var overlappingBookings = saloon.Bookings.Where(b => b.BookingDate == request.BookingDate &&
-                    b.Status != kvk.Saloon.Domain.SaloonBookingStatus.Cancelled &&
-                    BookingTimeRules.OverlapsWithGap(b.StartTime, b.EndTime,
-                        request.StartTime, requestedEndTime, gapMinutes));
+                var reservations = saloon.Bookings
+                    .Where(b => b.BookingDate == request.BookingDate &&
+                        b.Status != kvk.Saloon.Domain.SaloonBookingStatus.Cancelled)
+                    .Select(b => (b.StartTime, b.EndTime));
 
-                if (!overlappingBookings.Any())
+                if (BookingTimeRules.IsSeatFree(reservations, request.StartTime, requestedEndTime, gapMinutes))
                 {
                     assignedSaloonId = saloon.Id;
                     break;
@@ -223,15 +224,7 @@ public class SaloonBookingService : ISaloonBookingService
             }
 
             if (!assignedSaloonId.HasValue)
-            {
-                if (isWalkIn && allowConflict && allSaloons.Count > 0)
-                {
-                    assignedSaloonId = allSaloons[0].Id;
-                    conflictOverridden = true;
-                }
-                else
-                    return Result.Failure("No seat is available at this time. Choose another time, or confirm a schedule conflict override for this walk-in.");
-            }
+                return Result.Failure("No seat is available at this time. Choose another start time; existing appointments cannot be overlapped.");
 
             var booking = new DomainBooking
             {
@@ -242,11 +235,11 @@ public class SaloonBookingService : ISaloonBookingService
                 BookingDate = request.BookingDate,
                 StartTime = request.StartTime,
                 EndTime = requestedEndTime,
-                Status = request.Status,
+                Status = isWalkIn ? kvk.Saloon.Domain.SaloonBookingStatus.Confirmed : request.Status,
                 TotalAmount = request.TotalAmount,
                 DiscountAmount = request.DiscountAmount,
                 Notes = isWalkIn
-                    ? $"Walk-in{(conflictOverridden ? " (schedule conflict override approved)" : "")}. {request.Notes}".Trim()
+                    ? $"Walk-in. {request.Notes}".Trim()
                     : request.Notes,
                 PaymentType = request.PaymentType,
                 Services = servicesToAdd
@@ -254,6 +247,7 @@ public class SaloonBookingService : ISaloonBookingService
 
             _db.Set<DomainBooking>().Add(booking);
             await _db.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
 
             await SendBookingConfirmationSmsAsync(booking, cancellationToken);
 
@@ -262,6 +256,11 @@ public class SaloonBookingService : ISaloonBookingService
                 : "Booking created successfully.";
 
             return Result.Success(resultMsg);
+        }
+        catch (Exception ex) when (ex is Npgsql.PostgresException { SqlState: "40001" } ||
+            ex.InnerException is Npgsql.PostgresException { SqlState: "40001" })
+        {
+            return Result.Failure("Seat availability changed while saving. Please refresh availability and choose a free time.");
         }
         catch (Exception ex)
         {
@@ -289,6 +288,7 @@ public class SaloonBookingService : ISaloonBookingService
 
         try
         {
+            await using var transaction = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
             int totalDurationMinutes = 0;
             var servicesToAdd = new List<DomainBookingService>();
             var currentTime = request.StartTime;
@@ -343,12 +343,12 @@ public class SaloonBookingService : ISaloonBookingService
 
             foreach (var saloon in allSaloons)
             {
-                var overlappingBookings = saloon.Bookings.Where(b => b.BookingDate == request.BookingDate &&
-                    b.Status != kvk.Saloon.Domain.SaloonBookingStatus.Cancelled &&
-                    BookingTimeRules.OverlapsWithGap(b.StartTime, b.EndTime,
-                        request.StartTime, requestedEndTime, gapMinutes));
+                var reservations = saloon.Bookings
+                    .Where(b => b.BookingDate == request.BookingDate &&
+                        b.Status != kvk.Saloon.Domain.SaloonBookingStatus.Cancelled)
+                    .Select(b => (b.StartTime, b.EndTime));
 
-                if (!overlappingBookings.Any())
+                if (BookingTimeRules.IsSeatFree(reservations, request.StartTime, requestedEndTime, gapMinutes))
                 {
                     assignedSaloonId = saloon.Id;
                     break;
@@ -380,6 +380,7 @@ public class SaloonBookingService : ISaloonBookingService
 
             _db.Set<DomainBooking>().Add(booking);
             await _db.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
 
             // The booking's own id is used as the PayHere order id — the webhook
             // (VerifyPaymentNotificationAsync) matches back to it directly, no
@@ -398,6 +399,11 @@ public class SaloonBookingService : ISaloonBookingService
                 Amount = request.TotalAmount.ToString("0.00"),
                 Hash = hash
             });
+        }
+        catch (Exception ex) when (ex is Npgsql.PostgresException { SqlState: "40001" } ||
+            ex.InnerException is Npgsql.PostgresException { SqlState: "40001" })
+        {
+            return Result.Failure("Seat availability changed while saving. Please refresh availability and choose a free time.");
         }
         catch (Exception ex)
         {
@@ -658,11 +664,11 @@ public class SaloonBookingService : ISaloonBookingService
             var seatFree = seatWindows.Any(w =>
                 candidate >= w.Open &&
                 candidateEnd <= w.Close &&
-                !w.Saloon.Bookings.Any(b =>
-                    b.BookingDate == request.Date &&
-                    b.Status != kvk.Saloon.Domain.SaloonBookingStatus.Cancelled &&
-                    BookingTimeRules.OverlapsWithGap(b.StartTime, b.EndTime,
-                        candidate, candidateEnd, businessHours.SlotIntervalMinutes)));
+                BookingTimeRules.IsSeatFree(w.Saloon.Bookings
+                    .Where(b => b.BookingDate == request.Date &&
+                        b.Status != kvk.Saloon.Domain.SaloonBookingStatus.Cancelled)
+                    .Select(b => (b.StartTime, b.EndTime)),
+                    candidate, candidateEnd, businessHours.SlotIntervalMinutes));
 
             if (seatFree)
                 availableStarts.Add(candidate);

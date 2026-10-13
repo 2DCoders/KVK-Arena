@@ -2,6 +2,11 @@ namespace kvk.Saloon.Features.Booking;
 
 internal static class BookingTimeRules
 {
+    public static bool IsSeatFree(IEnumerable<(TimeSpan Start, TimeSpan End)> reservations,
+        TimeSpan requestedStart, TimeSpan requestedEnd, int gapMinutes) =>
+        !reservations.Any(booking => OverlapsWithGap(booking.Start, booking.End,
+            requestedStart, requestedEnd, gapMinutes));
+
     public static bool IsStartAllowed(TimeSpan start, TimeSpan end, TimeSpan open, TimeSpan close,
         bool isToday, TimeSpan now, bool isWalkIn)
     {

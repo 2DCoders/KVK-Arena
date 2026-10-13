@@ -44,9 +44,9 @@ public class SaloonBookingController : ControllerBase
 
     [HttpPost("~/api/saloon/bookings/walk-in")]
     public async Task<IActionResult> CreateWalkIn([FromBody] SaloonBookingCreateRequest request,
-        [FromQuery] bool allowConflict, CancellationToken cancellationToken)
+        CancellationToken cancellationToken)
     {
-        var result = await _service.CreateAsync(request, cancellationToken, isWalkIn: true, allowConflict: allowConflict);
+        var result = await _service.CreateAsync(request, cancellationToken, isWalkIn: true);
         if (!result.Succeeded)
             return BadRequest(result);
         return Ok(result);

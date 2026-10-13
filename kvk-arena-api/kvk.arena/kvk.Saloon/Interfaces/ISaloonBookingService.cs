@@ -14,7 +14,7 @@ public interface ISaloonBookingService
     Task<Result> CheckDayAvailabilityAsync(SaloonDayAvailabilityRequest request, CancellationToken cancellationToken = default);
 
     Task<Result> CreateAsync(SaloonBookingCreateRequest request, CancellationToken cancellationToken = default,
-        bool isWalkIn = false, bool allowConflict = false);
+        bool isWalkIn = false);
 
     Task<Result> CreateWithPaymentAsync(SaloonBookingCreateRequest request, CancellationToken cancellationToken = default);
 

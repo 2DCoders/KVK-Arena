@@ -326,11 +326,14 @@ export default function SalonBooking() {
     }
 
     let isCancelled = false;
+    let isRefreshing = false;
+    setSelectedTime("");
 
-    const loadAvailability = async () => {
+    const loadAvailability = async (initial = false) => {
+      if (isRefreshing || isCancelled) return;
+      isRefreshing = true;
       try {
-        setIsCheckingAvailability(true);
-        setSelectedTime("");
+        if (initial) setIsCheckingAvailability(true);
 
         const { slots, message } = await fetchAvailability(
           selectedDate,
@@ -340,6 +343,7 @@ export default function SalonBooking() {
         if (isCancelled) return;
 
         setAvailableSlots(slots);
+        setSelectedTime((previous) => slots.includes(previous) ? previous : "");
         setAvailabilityMessage(message);
       } catch (error) {
         console.error("Unable to check availability:", error);
@@ -347,18 +351,29 @@ export default function SalonBooking() {
         if (isCancelled) return;
 
         setAvailableSlots([]);
+        setSelectedTime("");
         setAvailabilityMessage(
           "Unable to check availability right now. Please try again.",
         );
       } finally {
+        isRefreshing = false;
         if (!isCancelled) setIsCheckingAvailability(false);
       }
     };
 
-    void loadAvailability();
+    void loadAvailability(true);
+    const refresh = () => {
+      if (document.visibilityState === "visible") void loadAvailability();
+    };
+    const timer = window.setInterval(refresh, 15000);
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
 
     return () => {
       isCancelled = true;
+      window.clearInterval(timer);
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
     };
   }, [selectedDate, selectedServiceIds]);
 

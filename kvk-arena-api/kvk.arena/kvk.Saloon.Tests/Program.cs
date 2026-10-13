@@ -1,5 +1,21 @@
 using kvk.Saloon.Features.Booking;
 
+// Walk-ins reserve the same capacity as scheduled appointments.
+var occupiedSeat = new[] { (TimeSpan.FromHours(12), TimeSpan.FromHours(13)) };
+var emptySeat = Array.Empty<(TimeSpan Start, TimeSpan End)>();
+var duringWalkInStart = TimeSpan.FromHours(12.25);
+var duringWalkInEnd = TimeSpan.FromHours(12.75);
+if (BookingTimeRules.IsSeatFree(occupiedSeat, duringWalkInStart, duringWalkInEnd, 15))
+    throw new Exception("A walk-in must remove overlapping customer times for its seat.");
+if (!BookingTimeRules.IsSeatFree(emptySeat, duringWalkInStart, duringWalkInEnd, 15))
+    throw new Exception("Another empty seat must remain available.");
+if (new[] { occupiedSeat, occupiedSeat }.Any(seat =>
+    BookingTimeRules.IsSeatFree(seat, duringWalkInStart, duringWalkInEnd, 15)))
+    throw new Exception("No customer time is available when every seat is occupied.");
+if (!BookingTimeRules.IsSeatFree(occupiedSeat, TimeSpan.FromHours(13.25), TimeSpan.FromHours(14.25), 15))
+    throw new Exception("A seat must become available after the walk-in and its gap.");
+Console.WriteLine("PASS: Walk-in reserves a seat, preserves other seats, blocks full capacity, and releases after the gap.");
+
 // Existing middle-of-day appointment: 10:00-11:00, with a 15-minute gap.
 var cases = new (string Name, string Start, string End, int Gap, bool Conflict)[]
 {
