@@ -42,6 +42,16 @@ public class SaloonBookingController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("~/api/saloon/bookings/walk-in")]
+    public async Task<IActionResult> CreateWalkIn([FromBody] SaloonBookingCreateRequest request,
+        [FromQuery] bool allowConflict, CancellationToken cancellationToken)
+    {
+        var result = await _service.CreateAsync(request, cancellationToken, isWalkIn: true, allowConflict: allowConflict);
+        if (!result.Succeeded)
+            return BadRequest(result);
+        return Ok(result);
+    }
+
     [AllowAnonymous]
     [HttpPost("~/api/saloon/bookings/create-with-payment")]
     public async Task<IActionResult> CreateWithPayment([FromBody] SaloonBookingCreateRequest request, CancellationToken cancellationToken)

@@ -29,3 +29,24 @@ foreach (var test in cases)
     Console.WriteLine($"PASS: {test.Name}");
 }
 Console.WriteLine($"All {cases.Length} salon booking gap checks passed.");
+
+var timeCases = new (string Name, string Start, string End, bool Today, bool WalkIn, bool Allowed)[]
+{
+    ("Late haircut walk-in can finish after closing", "21:15", "22:15", true, true, true),
+    ("Customer late haircut cannot finish after closing", "21:15", "22:15", true, false, false),
+    ("Walk-in can record an earlier arrival today", "20:45", "21:45", true, true, true),
+    ("Customer cannot book an elapsed start today", "20:45", "21:45", true, false, false),
+    ("Future appointment can finish exactly at closing", "21:00", "22:00", false, false, true),
+    ("Walk-in before opening is allowed", "08:30", "09:30", true, true, true),
+    ("Customer before opening is blocked", "08:30", "09:30", false, false, false),
+    ("Walk-in crossing midnight is blocked", "23:30", "1.00:30", true, true, false),
+    ("Zero duration is blocked", "21:00", "21:00", true, true, false),
+};
+foreach (var test in timeCases)
+{
+    var actual = BookingTimeRules.IsStartAllowed(TimeSpan.Parse(test.Start), TimeSpan.Parse(test.End),
+        TimeSpan.FromHours(9), TimeSpan.FromHours(22), test.Today, TimeSpan.FromHours(21), test.WalkIn);
+    if (actual != test.Allowed)
+        throw new Exception($"FAIL: {test.Name}: expected allowed={test.Allowed}, actual={actual}");
+    Console.WriteLine($"PASS: {test.Name}");
+}

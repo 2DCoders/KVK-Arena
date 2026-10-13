@@ -17,6 +17,7 @@ import { getNextWorkingDays } from "@/services/holidays-api";
 import { getSalonServiceItems } from "@/services/salon-service-api";
 import {
   checkDayAvailability,
+  getSalonBusinessHours,
   createSalonBookingWithPayment,
   reverseSalonBookingPayment,
 } from "@/services/salon-booking-api";
@@ -109,7 +110,7 @@ const formatTimeLabel = (value: string): string => {
   return parsed.toLocaleTimeString("en-GB", {
     hour: "2-digit",
     minute: "2-digit",
-    hour12: true,
+    hour12: false,
   });
 };
 
@@ -179,6 +180,15 @@ export default function SalonBooking() {
   const [availabilityMessage, setAvailabilityMessage] = useState("");
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
   const [selectedTime, setSelectedTime] = useState("");
+  const [businessHours, setBusinessHours] = useState<{ openTime: string; closeTime: string } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getSalonBusinessHours().then((hours) => {
+      if (!cancelled) setBusinessHours(hours);
+    }).catch(() => { /* Booking availability still works if hours cannot be loaded. */ });
+    return () => { cancelled = true; };
+  }, []);
 
   const [customerName, setCustomerName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -800,6 +810,13 @@ export default function SalonBooking() {
                   <label className="mb-3 block text-[11px] font-medium uppercase tracking-[0.2em] text-white/45">
                     Select Time
                   </label>
+
+                  {businessHours && (
+                    <p className="mb-3 flex items-center gap-2 text-xs text-purple-200">
+                      <Clock3 size={14} className="shrink-0" />
+                      Salon opens at {formatTimeLabel(businessHours.openTime)} and closes at {formatTimeLabel(businessHours.closeTime)}.
+                    </p>
+                  )}
 
                   {isCheckingAvailability ? (
                     <div className="flex h-14 items-center gap-2 text-xs text-white/40">

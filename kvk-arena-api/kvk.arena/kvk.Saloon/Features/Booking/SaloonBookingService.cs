@@ -121,13 +121,18 @@ public class SaloonBookingService : ISaloonBookingService
         }
     }
 
-    public async Task<Result> CreateAsync(SaloonBookingCreateRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> CreateAsync(SaloonBookingCreateRequest request, CancellationToken cancellationToken = default,
+        bool isWalkIn = false, bool allowConflict = false)
     {
         if (request == null)
             return Result.Failure("Request cannot be null");
 
         // Date Validation
         var today = GetNowInSriLanka().Date;
+        if (isWalkIn && request.BookingDate != DateOnly.FromDateTime(today))
+            return Result.Failure("Walk-ins must be recorded for today.");
+        if (request.Services.Count == 0 || request.StartTime < TimeSpan.Zero || request.StartTime >= TimeSpan.FromDays(1))
+            return Result.Failure("Select at least one service and a valid start time.");
         if (request.BookingDate < DateOnly.FromDateTime(today))
             return Result.Failure("Cannot book in the past");
 
@@ -137,7 +142,7 @@ public class SaloonBookingService : ISaloonBookingService
             today.AddDays(-1), BookingWindowWorkingDays, cancellationToken);
         var validDates = workingDays.Select(DateOnly.FromDateTime).ToHashSet();
 
-        if (!validDates.Contains(request.BookingDate))
+        if (!isWalkIn && !validDates.Contains(request.BookingDate))
             return Result.Failure("Can only book within the next seven working days, including today when available (excluding holidays).");
 
         try
@@ -188,6 +193,12 @@ public class SaloonBookingService : ISaloonBookingService
             var gapMinutes = businessHours.SlotIntervalMinutes;
 
             var requestedEndTime = request.StartTime.Add(TimeSpan.FromMinutes(totalDurationMinutes));
+            if (requestedEndTime > TimeSpan.FromDays(1))
+                return Result.Failure("This appointment would finish on the next day. Please choose an earlier start time.");
+            if (!BookingTimeRules.IsStartAllowed(request.StartTime, requestedEndTime, businessHours.OpenTime,
+                businessHours.CloseTime, request.BookingDate == DateOnly.FromDateTime(today),
+                GetNowInSriLanka().TimeOfDay, isWalkIn))
+                return Result.Failure("Choose a future time within salon opening hours, or use Add walk-in.");
 
             var allSaloons = await _db.Set<kvk.Saloon.Domain.Saloon>()
                 .Where(s => s.IsActive)
@@ -195,6 +206,7 @@ public class SaloonBookingService : ISaloonBookingService
                 .ToListAsync(cancellationToken);
 
             Guid? assignedSaloonId = null;
+            var conflictOverridden = false;
 
             foreach (var saloon in allSaloons)
             {
@@ -212,7 +224,13 @@ public class SaloonBookingService : ISaloonBookingService
 
             if (!assignedSaloonId.HasValue)
             {
-                return Result.Failure("For this start time to this time there is a booking. If convenient, please set the booking after this time.");
+                if (isWalkIn && allowConflict && allSaloons.Count > 0)
+                {
+                    assignedSaloonId = allSaloons[0].Id;
+                    conflictOverridden = true;
+                }
+                else
+                    return Result.Failure("No seat is available at this time. Choose another time, or confirm a schedule conflict override for this walk-in.");
             }
 
             var booking = new DomainBooking
@@ -227,7 +245,9 @@ public class SaloonBookingService : ISaloonBookingService
                 Status = request.Status,
                 TotalAmount = request.TotalAmount,
                 DiscountAmount = request.DiscountAmount,
-                Notes = request.Notes,
+                Notes = isWalkIn
+                    ? $"Walk-in{(conflictOverridden ? " (schedule conflict override approved)" : "")}. {request.Notes}".Trim()
+                    : request.Notes,
                 PaymentType = request.PaymentType,
                 Services = servicesToAdd
             };
@@ -687,7 +707,7 @@ public class SaloonBookingService : ISaloonBookingService
 
     private static string FormatTime(TimeSpan time)
     {
-        return DateTime.Today.Add(time).ToString("h:mm tt");
+        return DateTime.Today.Add(time).ToString("HH:mm");
     }
 
     private static readonly TimeZoneInfo SriLankaTimeZone =

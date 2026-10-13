@@ -4,6 +4,11 @@ import { getEnv } from "@/env";
 const { API_URL } = getEnv();
 const BOOKINGS_API_URL = `${API_URL}saloon/bookings`;
 
+export const getSalonBusinessHours = async () => {
+  const response = await axios.get(`${API_URL}saloon/business-hours`);
+  return response.data;
+};
+
 export const checkDayAvailability = async (
   date: string,
   serviceIds: string[],

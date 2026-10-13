@@ -1,6 +1,6 @@
 import GymDataState from "@/components/gym-data-state";
 import { useRef, useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Eye, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import { getTrainers } from "@/services/trainers-api";
 import TrainerLibraryModal from "@/components/trainers-list";
 

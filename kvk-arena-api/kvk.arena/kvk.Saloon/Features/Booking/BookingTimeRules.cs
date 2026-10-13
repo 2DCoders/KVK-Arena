@@ -2,6 +2,14 @@ namespace kvk.Saloon.Features.Booking;
 
 internal static class BookingTimeRules
 {
+    public static bool IsStartAllowed(TimeSpan start, TimeSpan end, TimeSpan open, TimeSpan close,
+        bool isToday, TimeSpan now, bool isWalkIn)
+    {
+        if (start < TimeSpan.Zero || start >= TimeSpan.FromDays(1) || end <= start || end > TimeSpan.FromDays(1))
+            return false;
+        return isWalkIn || (start >= open && end <= close && (!isToday || start >= now));
+    }
+
     public static bool OverlapsWithGap(TimeSpan existingStart, TimeSpan existingEnd,
         TimeSpan requestedStart, TimeSpan requestedEnd, int gapMinutes)
     {

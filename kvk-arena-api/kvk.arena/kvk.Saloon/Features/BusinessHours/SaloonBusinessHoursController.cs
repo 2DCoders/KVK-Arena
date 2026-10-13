@@ -16,6 +16,7 @@ public class SaloonBusinessHoursController : ControllerBase
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> Get(CancellationToken cancellationToken)
     {
