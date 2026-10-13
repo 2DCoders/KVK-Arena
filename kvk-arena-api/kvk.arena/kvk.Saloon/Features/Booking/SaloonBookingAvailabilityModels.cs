@@ -10,6 +10,8 @@ public class SaloonBookingAvailabilityRequest
 public class SaloonBookingAvailabilityResponse
 {
     public bool IsAvailable { get; set; }
+    public int AvailableSeatCount { get; set; }
+    public int TotalSeatCount { get; set; }
     public TimeSpan? AvailableStartTime { get; set; }
     public TimeSpan? AvailableEndTime { get; set; }
     public Guid? AssignedSaloonId { get; set; }

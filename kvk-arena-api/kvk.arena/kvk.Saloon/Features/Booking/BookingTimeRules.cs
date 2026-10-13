@@ -1,7 +1,13 @@
+using kvk.Saloon.Domain;
+
 namespace kvk.Saloon.Features.Booking;
 
 internal static class BookingTimeRules
 {
+    public static bool OccupiesSeatUntilCompleted(bool isWalkIn, SaloonBookingStatus status) =>
+        status == SaloonBookingStatus.InProgress ||
+        (isWalkIn && status == SaloonBookingStatus.Confirmed);
+
     public static bool IsSeatFree(IEnumerable<(TimeSpan Start, TimeSpan End)> reservations,
         TimeSpan requestedStart, TimeSpan requestedEnd, int gapMinutes) =>
         !reservations.Any(booking => OverlapsWithGap(booking.Start, booking.End,

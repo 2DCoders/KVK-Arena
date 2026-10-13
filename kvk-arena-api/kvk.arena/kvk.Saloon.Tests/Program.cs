@@ -2,6 +2,21 @@ using kvk.Saloon.Features.Booking;
 using kvk.Saloon.Domain;
 using kvk.BuildingBlocks.Enums;
 
+// Estimated end time and payment state cannot release an unfinished walk-in.
+if (!BookingTimeRules.OccupiesSeatUntilCompleted(true, SaloonBookingStatus.Confirmed) ||
+    !BookingTimeRules.OccupiesSeatUntilCompleted(true, SaloonBookingStatus.InProgress) ||
+    BookingTimeRules.OccupiesSeatUntilCompleted(true, SaloonBookingStatus.Completed) ||
+    BookingTimeRules.OccupiesSeatUntilCompleted(true, SaloonBookingStatus.Cancelled) ||
+    BookingTimeRules.OccupiesSeatUntilCompleted(false, SaloonBookingStatus.Confirmed))
+    throw new Exception("Walk-in capacity must stay occupied until completed or cancelled.");
+var liveSeats = new[] { SaloonBookingStatus.Confirmed, SaloonBookingStatus.InProgress };
+if (liveSeats.Count(status => !BookingTimeRules.OccupiesSeatUntilCompleted(true, status)) != 0)
+    throw new Exception("Two unfinished walk-ins must block a third when there are two seats.");
+liveSeats[1] = SaloonBookingStatus.Completed;
+if (liveSeats.Count(status => !BookingTimeRules.OccupiesSeatUntilCompleted(true, status)) != 1)
+    throw new Exception("Completing one service must release its live occupancy, even before payment.");
+Console.WriteLine("PASS: Two active walk-ins block a third; completed unpaid services release live occupancy.");
+
 var paymentCases = new (string Name, SaloonBookingStatus Status, bool Paid, PaymentType Method, bool Allowed)[]
 {
     ("Arrival is unpaid and cannot collect before service", SaloonBookingStatus.Confirmed, false, PaymentType.Cash, false),
