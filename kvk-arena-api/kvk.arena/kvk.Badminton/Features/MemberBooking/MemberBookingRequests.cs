@@ -19,7 +19,7 @@ public class MemberCouponRequest
 public class MemberReverseRequest
 {
     public Guid HoldToken { get; set; }
-    [Required] public string OrderId { get; set; } = "";
+    public string? OrderId { get; set; }
 }
 public class MemberConfirmRequest : MemberCouponRequest
 {

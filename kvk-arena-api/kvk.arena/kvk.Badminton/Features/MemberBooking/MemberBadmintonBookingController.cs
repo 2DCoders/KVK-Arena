@@ -272,7 +272,7 @@ public class MemberBadmintonBookingController(BadmintonDbContext db, IReservatio
         await LockCourtAsync(holds[0].CourtId, ct);
         var payment = ReadPayment(holds[0]);
         if (payment is null) return Ok(new { Status = "reversed" });
-        if (payment.OrderId != request.OrderId)
+        if (!string.IsNullOrWhiteSpace(request.OrderId) && payment.OrderId != request.OrderId)
         {
             var previous = payment.PreviousAttempts.SingleOrDefault(p => p.OrderId == request.OrderId);
             if (previous is null) throw new InvalidOperationException("This checkout could not be found.");

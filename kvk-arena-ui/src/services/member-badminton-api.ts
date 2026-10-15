@@ -29,15 +29,15 @@ export async function quoteMemberCoupon(holdToken: string, couponCode: string) {
   return (await axios.post<CouponQuote>(endpoint("coupon"), { holdToken, couponCode })).data;
 }
 export async function releaseMemberHold(token: string) {
-  await axios.delete(endpoint(`hold/${encodeURIComponent(token)}`));
+  await axios.delete(endpoint(`hold/${encodeURIComponent(token)}`), { timeout: 10000 });
 }
 export type MemberPayment = { orderId: string; merchantId: string; currency: string; amount: string; hash: string; sandbox: boolean; expiresInSeconds: number; confirmation?: BookingConfirmation };
 export type MemberPaymentStatus = { status: "pending" | "confirmed" | "failed" | "review" | "expired" | "not_started" | "reversed" | "paid"; confirmation?: BookingConfirmation };
-export async function reverseMemberPayment(holdToken: string, orderId: string) {
-  return (await axios.post<MemberPaymentStatus>(endpoint("payment/reverse"), { holdToken, orderId })).data;
+export async function reverseMemberPayment(holdToken: string, orderId?: string) {
+  return (await axios.post<MemberPaymentStatus>(endpoint("payment/reverse"), { holdToken, orderId }, { timeout: 10000 })).data;
 }
 export async function createMemberPayment(request: MemberBookingRequest) {
-  return (await axios.post<MemberPayment>(endpoint("payment"), request)).data;
+  return (await axios.post<MemberPayment>(endpoint("payment"), request, { timeout: 10000 })).data;
 }
 export async function getMemberPaymentStatus(token: string) {
   return (await axios.get<MemberPaymentStatus>(endpoint(`payment-status/${encodeURIComponent(token)}`), { timeout: 10000 })).data;

@@ -127,6 +127,7 @@ export default function MemberBadmintonBooking() {
       if (!result.holdToken || result.expiresInSeconds <= 0) throw new Error("Your sessions could not be reserved. Please check availability again.");
       const clock = Date.now();
       setHold(result); setDeadline(clock + result.expiresInSeconds * 1000); setNow(clock);
+      setPaymentPending(false); setPaymentFailed(false); setPaymentNotice("");
       setCouponQuote(null); setAppliedCoupon(""); setStage("details");
     });
   }
@@ -147,7 +148,7 @@ export default function MemberBadmintonBooking() {
         setPaymentPending(true); setPaymentNotice("Your payment is awaiting secure confirmation. Please do not pay again.");
       },
       onReversed: () => { setPaymentPending(false); setPaymentFailed(false); setPaymentNotice(""); setError(""); setNow(Date.now()); },
-      onFailed: () => { setPaymentPending(false); setPaymentFailed(true); setError("Payment was not completed. Release this reservation and choose your sessions again."); },
+      onFailed: () => { setPaymentPending(false); setPaymentFailed(false); setPaymentNotice(""); setError("Payment was not completed. You can try Pay again or go back while your reservation is active."); setNow(Date.now()); },
       onExpired: () => { setPaymentPending(false); setPaymentFailed(true); setError("Checkout has expired. If you completed a payment, contact KVK Arena before paying again. Otherwise, choose your sessions again."); },
       onReview: () => { setPaymentPending(true); setPaymentNotice("Your payment was received and needs review. Please contact KVK Arena before paying again."); },
       onError: (reason: unknown) => { setError(bookingError(reason)); setPaymentPending(!!pendingMemberPayment()); },
@@ -171,6 +172,14 @@ export default function MemberBadmintonBooking() {
     });
   }
   function edit() {
+    if (expired) {
+      const token = hold?.holdToken;
+      setHold(null); setCouponQuote(null); setAppliedCoupon(""); setAvailability(null);
+      setPaymentPending(false); setPaymentFailed(false); setPaymentNotice(""); setError(""); setStage("schedule");
+      // Expired holds no longer block availability. Cleanup must not block navigation.
+      if (token) void releaseMemberHold(token).catch(() => {});
+      return;
+    }
     void run("release", async () => {
       if (hold) await releaseMemberHold(hold.holdToken);
       setHold(null); setCouponQuote(null); setAppliedCoupon(""); setAvailability(null); setPaymentFailed(false); setPaymentNotice(""); setStage("schedule");
@@ -259,7 +268,7 @@ export default function MemberBadmintonBooking() {
                     <div className="mb-field"><label htmlFor="mb-email"><span>Email address</span></label><input id="mb-email" type="email" autoComplete="email" required maxLength={254} value={email} placeholder="you@example.com" onChange={event => setEmail(event.target.value)} /><p className="mb-help">Used for your secure payment checkout.</p></div>
                     <div className="mb-available"><ShieldCheck size={19} /><span>Secure online checkout with PayHere. Your booking is confirmed after payment verification.</span></div>
                   </fieldset>
-                  <div className="mb-form-action"><button className="mb-text-button" type="button" disabled={!!busy || paymentPending} onClick={edit}><ArrowLeft size={15} /> {expired || paymentFailed ? "Choose sessions again" : "Release & edit schedule"}</button><button className="mb-primary" type="submit" disabled={!!busy || expired || !couponReady || paymentPending || paymentFailed}>{busy === "payment" ? <>{spinner} Opening checkout...</> : <>Pay {money(total)} <ArrowRight size={16} /></>}</button></div>
+                  <div className="mb-form-action"><button className="mb-text-button" type="button" disabled={!expired && (!!busy || paymentPending)} onClick={edit}><ArrowLeft size={15} /> {expired || paymentFailed ? "Choose sessions again" : "Release & edit schedule"}</button><button className="mb-primary" type="submit" disabled={!!busy || expired || !couponReady || paymentPending || paymentFailed}>{busy === "payment" ? <>{spinner} Opening checkout...</> : <>Pay {money(total)} <ArrowRight size={16} /></>}</button></div>
                 </form>
               </>}
             </section>

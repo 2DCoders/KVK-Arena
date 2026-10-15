@@ -47,13 +47,43 @@ export async function resumeMemberPayment(callbacks: Callbacks) {
 }
 export async function startMemberCheckout(request: MemberBookingRequest, view: ReservationView, callbacks: Callbacks) {
   if (!window.payhere) throw new Error("PayHere is not loaded. Please refresh and try again.");
-  if (pendingMemberPayment()) throw new Error("Please check your existing payment before starting another checkout.");
-  sessionStorage.setItem(key, JSON.stringify({ token: request.holdToken, view }));
+  const previous = pendingMemberPayment();
+  if (previous) {
+    const status = await getMemberPaymentStatus(previous.token);
+    if (["expired", "reversed", "failed", "not_started"].includes(status.status)) clear(previous.token);
+    else if (status.status === "confirmed" || status.status === "paid" || status.status === "review") {
+      await verify(previous.token, callbacks, 1);
+      return;
+    } else throw new Error("Please check your existing payment before starting another checkout.");
+  }
   let payment;
-  try { payment = await createMemberPayment(request); }
-  catch (error) { callbacks.onError(error); throw error; }
+  try {
+    payment = await createMemberPayment(request);
+    const confirmed = payment.confirmation?.succeeded === true && !!payment.confirmation.bookings?.length;
+    if (!confirmed && (!payment.orderId || !payment.hash || !payment.merchantId || !payment.currency || !payment.amount))
+      throw new Error("Payment could not be prepared. Please try again.");
+  } catch (error) {
+    // The gateway has not opened, so this attempt cannot have charged the customer.
+    // Cancel any order prepared before a timeout, without creating a local pending lock.
+    try {
+      const status = await reverseMemberPayment(request.holdToken);
+      if (status.status === "paid" || status.status === "review" || status.status === "confirmed") {
+        sessionStorage.setItem(key, JSON.stringify({ token: request.holdToken, view }));
+        await verify(request.holdToken, callbacks, 1);
+        return;
+      }
+    } catch { /* Keep the controls available when checkout never opened. */ }
+    clear(request.holdToken);
+    callbacks.onReversed();
+    callbacks.onError(error);
+    return;
+  }
   if (payment.confirmation?.succeeded && payment.confirmation.bookings?.length) { clear(request.holdToken); callbacks.onConfirmed(payment.confirmation); return; }
-  if (!payment.orderId || !payment.hash || !payment.merchantId) throw new Error("Payment could not be prepared. Please contact KVK Arena before retrying.");
+  if (view.deadline <= Date.now()) {
+    try { await reverseMemberPayment(request.holdToken, payment.orderId); } catch { /* No gateway was opened. */ }
+    callbacks.onExpired();
+    return;
+  }
   const pending = { token: request.holdToken, view };
   sessionStorage.setItem(key, JSON.stringify(pending));
   callbacks.onPending();
@@ -78,7 +108,7 @@ export async function startMemberCheckout(request: MemberBookingRequest, view: R
     } catch (error) { callbacks.onError(error); }
     finally { handling = false; }
   };
-  startPayHereCheckout({
+  try { startPayHereCheckout({
     orderId: payment.orderId, merchantId: payment.merchantId, currency: payment.currency,
     amount: payment.amount, hash: payment.hash, sandbox: payment.sandbox,
     firstName: request.customerName, phone: request.phoneNumber, email: request.email,
@@ -86,6 +116,9 @@ export async function startMemberCheckout(request: MemberBookingRequest, view: R
   }, {
     onCompleted: () => { void check(15); },
     onDismissed: () => { void dismiss(); },
-    onError: error => { callbacks.onError(error); void dismiss(); },
-  });
+    onError: error => { void dismiss().then(() => callbacks.onError(error)); },
+  }); } catch (error) {
+    await dismiss();
+    callbacks.onError(error);
+  }
 }
