@@ -4,11 +4,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const ts = require('typescript');
-
 function load(file, globals = {}) {
   const source = fs.readFileSync(path.join(__dirname, '../src', file), 'utf8');
   const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS } });
-  const context = { exports: {}, Intl, Date, Error, FormData, ...globals };
+  const context = { exports: {}, Intl, Date, Error, ...globals };
   vm.runInNewContext(outputText, context);
   return context.exports;
 }
@@ -18,76 +17,88 @@ const slots = [
   { slotId: 'b', startTime: '09:00:00', endTime: '10:00:00' },
   { slotId: 'c', startTime: '11:00:00', endTime: '12:00:00' },
 ];
-
-test('rejects missing slots, gaps, duplicates, invalid dates and invalid durations', () => {
-  const check = (date, weeks, ids) => utils.validateSchedule(date, '2027-01-01', weeks, ['Monday'], ids, slots);
-  assert.equal(check('2027-01-04', '4', ['a', 'b']), '');
-  for (const args of [ ['2027-01-04', '4', []], ['2027-01-04', '4', ['a', 'c']], ['2027-01-04', '4', ['a', 'a']], ['2027-02-30', '4', ['a']], ['2026-12-31', '4', ['a']], ['2027-01-04', '0', ['a']], ['2027-01-04', '1.5', ['a']], ['2027-01-04', 'Infinity', ['a']] ]) assert.notEqual(check(...args), '');
-  assert.notEqual(utils.validateSchedule('2027-01-04', '2027-01-01', '4', [], ['a'], slots), '');
+test('duration maximum uses env weeks without converting to months', () => {
+  assert.equal(utils.maximumWeeks('12'), 12);
+  assert.equal(utils.maximumWeeks('0'), 0);
+  assert.equal(utils.maximumWeeks('1.5'), 0);
+  assert.equal(utils.maximumWeeks(''), 0);
 });
-
-test('time selection requires actual adjacency rather than adjacent array positions', () => {
-  assert.equal(utils.consecutiveSlots(['a', 'b'], slots), true);
-  assert.equal(utils.consecutiveSlots(['b', 'c'], slots), false);
-  assert.equal(utils.consecutiveSlots(['missing'], slots), false);
+test('booking end is inclusive and handles month and leap-year boundaries', () => {
+  assert.equal(utils.endDate('2027-01-01', 1), '2027-01-07');
+  assert.equal(utils.endDate('2027-01-01', 12), '2027-03-25');
+  assert.equal(utils.endDate('2028-02-26', 1), '2028-03-03');
+  assert.equal(utils.endDate('2027-12-29', 2), '2028-01-11');
+  assert.equal(utils.endDate('2027-02-30', 1), '');
 });
-
-test('calendar configuration is converted to explicit whole weeks', () => {
-  assert.equal(utils.initialWeeks('2027-01-01', '3'), '13');
-  assert.equal(utils.initialWeeks('2027-01-01', ''), '4');
-  assert.equal(utils.isDate('2028-02-29'), true);
-  assert.equal(utils.isDate('2027-02-29'), false);
+test('schedule rejects durations above the env maximum, invalid days, duplicates and slot gaps', () => {
+  const check = (weeks, days, ids) => utils.validateSchedule('2027-01-04', '2027-01-01', weeks, 12, days, ids, slots);
+  assert.equal(check(12, ['Monday'], ['a', 'b']), '');
+  for (const args of [[13, ['Monday'], ['a']], [0, ['Monday'], ['a']], [1, [], ['a']], [1, ['Invalid'], ['a']], [1, ['Monday', 'Monday'], ['a']], [1, ['Monday'], ['b', 'c']], [1, ['Monday'], ['a', 'a']]]) assert.notEqual(check(...args), '');
 });
-
-test('time labels distinguish noon and midnight', () => {
-  assert.equal(utils.slotTime('00:00:00'), '12:00 AM');
-  assert.equal(utils.slotTime('12:30:00'), '12:30 PM');
+test('countdown uses an absolute deadline and never goes negative after a sleeping tab resumes', () => {
+  assert.equal(utils.remainingSeconds(420000, 0), 420);
+  assert.equal(utils.remainingSeconds(420000, 419001), 1);
+  assert.equal(utils.remainingSeconds(420000, 900000), 0);
+  assert.equal(utils.countdown(420), '07:00');
+  assert.equal(utils.countdown(0), '00:00');
 });
-
-function apiFixture(response = { succeeded: true }) {
+function fixture(response = {}) {
   const calls = [];
-  const axios = { post: async (...args) => { calls.push(args); return { data: response }; }, get: async (...args) => { calls.push(args); return { data: [] }; }, isAxiosError: error => error?.isAxiosError === true };
-  const api = load('services/member-badminton-api.ts', {
-    localStorage: { getItem: () => null },
-    require: name => {
-      if (name === 'axios') return axios;
-      if (name === '@/env') return { getEnv: () => ({ API_URL: 'https://arena.test/api' }) };
-      throw new Error(name);
-    },
-  });
+  let responseIndex = 0;
+  const nextResponse = () => Array.isArray(response) ? response[responseIndex++] : response;
+  const axios = { get: async (...args) => { calls.push(['GET', ...args]); return { data: response }; }, post: async (...args) => { calls.push(['POST', ...args]); return { data: nextResponse() }; }, delete: async (...args) => { calls.push(['DELETE', ...args]); return { data: response }; }, isAxiosError: error => error?.isAxiosError === true };
+  const api = load('services/member-badminton-api.ts', { require: name => {
+    if (name === 'axios') return axios;
+    if (name === '@/env') return { getEnv: () => ({ API_URL: 'https://arena.test/api' }) };
+    throw new Error(name);
+  } });
   return { api, calls };
 }
-const schedule = { courtId: 'court', startDate: '2027-01-04T00:00:00', numberOfSlots: 4, slotIds: ['a', 'b'], daysOfWeek: ['Monday', 'Friday'] };
-
-test('anonymous member checks use the dedicated endpoint and member/coupon query', async () => {
-  const { api, calls } = apiFixture();
-  await api.checkMemberBooking(schedule, 'KVK-MEM-20261234', 'MEMBER');
-  assert.equal(calls[0][0], 'https://arena.test/api/member-badminton-bookings/check-availability');
-  assert.equal(calls[0][1].startDate, '2027-01-04T00:00:00');
-  assert.equal(calls[0][2].params.memberId, 'KVK-MEM-20261234');
-  assert.equal(calls[0][2].params.couponCode, 'MEMBER');
-  assert.equal(calls[0][2].headers.Authorization, undefined);
+const schedule = { startDate: '2027-01-04', weeks: 12, slotIds: ['a', 'b'], daysOfWeek: ['Monday', 'Friday'] };
+test('availability and hold contain only the schedule, with no member ID or coupon', async () => {
+  const { api, calls } = fixture();
+  await api.checkMemberBooking(schedule);
+  await api.holdMemberBooking(schedule);
+  assert.equal(calls[0][1], 'https://arena.test/api/member-badminton-bookings/check-availability');
+  assert.equal(calls[1][1], 'https://arena.test/api/member-badminton-bookings/hold');
+  assert.deepEqual(calls[0][2], schedule);
+  assert.equal(calls[0][2].memberId, undefined);
+  assert.equal(calls[1][2].couponCode, undefined);
 });
-
-test('booking submission preserves every selected slot/day using multipart fields', async () => {
-  const { api, calls } = apiFixture();
-  await api.createMemberBooking({ ...schedule, memberId: 'KVK-MEM-20261234', couponCode: 'MEMBER', paymentType: 2, isHalfPayment: true, amount: 500 });
-  const body = calls[0][1];
-  assert.deepEqual(body.getAll('SlotIds'), ['a', 'b']);
-  assert.deepEqual(body.getAll('DaysOfWeek'), ['Monday', 'Friday']);
-  assert.equal(body.get('IsHalfPayment'), 'true');
-  assert.equal(body.get('PaymentType'), '2');
-  assert.equal(body.get('Amount'), '500');
-  assert.equal(body.get('StartDate'), '2027-01-04T00:00:00');
+test('coupon validation happens against a held reservation', async () => {
+  const { api, calls } = fixture();
+  await api.quoteMemberCoupon('reservation', 'UNUSED');
+  assert.equal(calls[0][1], 'https://arena.test/api/member-badminton-bookings/coupon');
+  assert.equal(calls[0][2].holdToken, 'reservation');
+  assert.equal(calls[0][2].couponCode, 'UNUSED');
 });
-
-test('a rejected booking is never reported as a success', async () => {
-  const { api } = apiFixture({ succeeded: false, message: 'Slot was just booked.' });
-  await assert.rejects(api.createMemberBooking({ ...schedule, memberId: 'member', couponCode: '', paymentType: 1, isHalfPayment: false, amount: 500 }), /Slot was just booked/);
+test('confirm uses customer details and coupon, never a client-supplied price or member ID', async () => {
+  const { api, calls } = fixture({ succeeded: true, finalAmount: 1500, bookings: [{ bookingNumber: 'BOOK-1' }] });
+  await api.createMemberPayment({ holdToken: 'reservation', customerName: 'Test', phoneNumber: '0771234567', couponCode: 'UNUSED', email: 'test@example.com' });
+  const payload = calls[0][2];
+  assert.equal(payload.couponCode, 'UNUSED');
+  assert.equal(payload.memberId, undefined);
+  assert.equal(payload.amount, undefined);
+  assert.equal(calls[0][1], 'https://arena.test/api/member-badminton-bookings/payment');
 });
-
-test('an unexpected server response never confirms a reservation', async () => {
-  const { api } = apiFixture({});
-  await assert.rejects(api.createMemberBooking({ ...schedule, memberId: 'member', couponCode: '', paymentType: 1, isHalfPayment: false, amount: 500 }), /could not be confirmed/);
+test('editing a schedule releases the hold through the dedicated endpoint', async () => {
+  const { api, calls } = fixture();
+  await api.releaseMemberHold('reservation');
+  assert.equal(calls[0][0], 'DELETE');
+  assert.equal(calls[0][1], 'https://arena.test/api/member-badminton-bookings/hold/reservation');
 });
-
+test('Book rechecks availability before requesting a hold', async () => {
+  const { api, calls } = fixture([{ isAvailable: true }, { holdToken: 'new-hold' }]);
+  const result = await api.checkAndHoldMemberBooking(schedule);
+  assert.equal(calls.length, 2);
+  assert.ok(calls[0][1].endsWith('/check-availability'));
+  assert.ok(calls[1][1].endsWith('/hold'));
+  assert.equal(result.hold.holdToken, 'new-hold');
+});
+test('Book never creates a hold when the recheck finds a conflict', async () => {
+  const { api, calls } = fixture({ isAvailable: false, unavailableSchedules: [{ date: '2027-01-04' }] });
+  const result = await api.checkAndHoldMemberBooking(schedule);
+  assert.equal(calls.length, 1);
+  assert.equal(result.hold, null);
+  assert.equal(result.availability.unavailableSchedules.length, 1);
+});

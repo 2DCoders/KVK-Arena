@@ -126,3 +126,21 @@
   .mb-header-members { display: none; }
   .mb-header .mb-header-court { width: 75%; }
 }
+.mb-court-display { display: flex; align-items: center; gap: 13px; padding: 17px; margin-bottom: 25px; border: 1px solid #d3aa7c26; background: #d3aa7c08; border-radius: 12px; }
+.mb-court-display > div { display: flex; flex-direction: column; gap: 7px; }.mb-court-display > div > span { font-size: 8px; letter-spacing: .16em; color: #b79b7a; }.mb-court-display strong { font-size: 17px; font-weight: 500; }
+.mb-court-status { margin-left: auto; color: #8fa996; font-size: 9px; display: flex; align-items: center; gap: 6px; }.mb-court-status i { width: 4px; height: 4px; background: #a3c5ae; border-radius: 50%; }
+.mb-end-date { display: flex; align-items: center; gap: 9px; margin: -9px 0 28px; padding: 12px 14px; border-radius: 8px; background: #ffffff03; border: 1px solid #ffffff0c; font-size: 11px; color: #959da7; }.mb-end-date svg { color: #bc9c77; }.mb-end-date strong { margin-left: auto; color: #dcc3a4; font-weight: 500; }
+.mb-slot-price { display: block; font-size: 9px; color: #bca88f; margin-top: 5px; }
+.mb-availability-ready { border-top: 1px solid #ffffff0d; padding-top: 22px; }.mb-availability-ready .mb-available { margin-bottom: 10px; }.mb-availability-ready .mb-primary { margin-top: 18px; width: 100%; }
+.mb-hold-timer { display: flex; align-items: center; gap: 12px; padding: 17px; margin-bottom: 27px; background: #d3aa7c0b; border: 1px solid #d3aa7c3d; border-radius: 11px; color: #d3aa7c; }.mb-hold-timer > svg { flex-shrink: 0; }.mb-hold-timer > div { display: flex; flex-direction: column; gap: 6px; }.mb-hold-timer strong { font-size: 12px; font-weight: 500; }.mb-hold-timer span { font-size: 10px; color: #939ba5; line-height: 1.7; }.mb-hold-timer b { margin-left: auto; font-size: 27px; font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: -.03em; }.mb-hold-timer.is-urgent { border-color: #df8f744f; color: #e5a38b; background: #df8f740a; }
+.mb-coupon-input { display: flex; gap: 9px; }.mb-coupon-input input { flex: 1; min-width: 0; }.mb-coupon-input button { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 98px; padding: 0 13px; border: 1px solid #caa47866; background: #caa47814; color: #e2c29c; border-radius: 9px; font-size: 11px; }.mb-coupon-success { display: flex; align-items: flex-start; gap: 7px; color: #9cc9ab; font-size: 10px; line-height: 1.8; margin-top: 12px; }.mb-coupon-success svg { margin-top: 2px; flex-shrink: 0; }
+.mb-booking-references { max-width: 520px; margin: 0 auto 20px; border: 1px solid #ffffff12; border-radius: 10px; padding: 15px; text-align: left; font-size: 11px; color: #c7b49c; }.mb-booking-references summary { cursor: pointer; }.mb-booking-references p { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; font-size: 10px; line-height: 1.8; color: #9ca3ad; }.mb-booking-references code { font-size: 9px; overflow-wrap: anywhere; }
+@media (max-width: 560px) { .mb-court-display { padding: 13px; gap: 10px; }.mb-court-display strong { font-size: 15px; }.mb-court-status { display: none; }.mb-end-date { padding: 11px; gap: 7px; font-size: 10px; }.mb-hold-timer { padding: 13px; gap: 9px; flex-wrap: wrap; }.mb-hold-timer > div { flex: 1; }.mb-hold-timer b { font-size: 24px; }.mb-hold-timer strong { font-size: 11px; }.mb-hold-timer span { font-size: 9px; }.mb-coupon-input button { min-width: 84px; padding-inline: 9px; font-size: 10px; } }
+.mb-availability-actions { display: flex; align-items: stretch; gap: 12px; margin-top: 18px; }
+.mb-availability-actions .mb-primary { flex: 1; width: auto; margin-top: 0; white-space: normal; }
+.mb-cancel { min-height: 45px; padding: 12px 24px; border: 1px solid #ffffff26; border-radius: 9px; background: #101317; color: #c6bdb2; font-size: 11px; }
+.mb-cancel:hover:not(:disabled) { background: #ffffff08; border-color: #d3aa7c66; }
+@media (max-width: 560px) { .mb-availability-actions { gap: 8px; }.mb-cancel { padding-inline: 18px; min-height: 48px; } }
+.mb-payment-pending { padding: 20px; margin-bottom: 24px; border: 1px solid #cfa67540; border-radius: 12px; background: #cfa6750b; color: #d9b78c; }
+.mb-payment-pending p { font-size: 12px; line-height: 1.9; margin: 10px 0 17px; }
+.mb-payment-pending .mb-primary { font-size: 11px; }

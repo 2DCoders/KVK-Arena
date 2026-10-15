@@ -1,64 +1,51 @@
 import axios from "axios";
 import { getEnv } from "@/env";
 
-export type MemberCourt = { id: string; name: string; pricePerSlot?: number };
+export type MemberCourt = { id: string; name: string };
 export type MemberSlot = { courtId: string; slotId: string; startTime: string; endTime: string; price: number };
-export type BookingSchedule = { courtId: string; startDate: string; numberOfSlots: number; slotIds: string[]; daysOfWeek: string[] };
-export type AvailabilityQuote = {
-  isAvailable: boolean;
-  durationInWeeks: number;
-  originalAmount: number;
-  discountAmount: number;
-  finalAmount: number;
-  unavailableSchedules: { dayOfWeek?: string; slotId?: string; slotName?: string; message: string }[];
-};
-export type MemberBookingRequest = BookingSchedule & {
-  memberId: string; couponCode: string; paymentType: 1 | 2; isHalfPayment: boolean; amount: number;
-};
-
-const headers = () => {
-  const token = localStorage.getItem("memberToken");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
-const endpoint = (path: string) => `${getEnv().API_URL.replace(/\/?$/, "/")}${path}`;
-
-export async function getMemberCourtSlots(courtId: string, signal?: AbortSignal) {
-  const { data } = await axios.get<MemberSlot[]>(endpoint(`member-badminton-bookings/courts/${encodeURIComponent(courtId)}/slots`), { headers: headers(), signal });
-  return data;
+export type BookingSchedule = { startDate: string; weeks: number; slotIds: string[]; daysOfWeek: string[] };
+export type BookingSetup = { court: MemberCourt; slots: MemberSlot[]; maximumWeeks: number };
+export type AvailabilityQuote = { isAvailable: boolean; originalAmount: number; endDate: string; bookingCount: number; unavailableSchedules: { date: string; slotId: string; slotName: string; message: string }[] };
+export type BookingHold = { holdToken: string; expiresInSeconds: number; originalAmount: number; endDate: string; bookingCount: number };
+export type CouponQuote = { originalAmount: number; discountAmount: number; finalAmount: number };
+export type BookingConfirmation = { succeeded: boolean; finalAmount: number; bookings: { bookingNumber: string; bookingDate: string; bookingAmount: number }[] };
+export type MemberBookingRequest = { holdToken: string; customerName: string; phoneNumber: string; couponCode: string; email: string };
+const endpoint = (path: string) => `${getEnv().API_URL.replace(/\/?$/, "/")}member-badminton-bookings/${path}`;
+export async function getMemberBookingSetup(signal?: AbortSignal) {
+  return (await axios.get<BookingSetup>(endpoint("setup"), { signal })).data;
 }
-
-export async function checkMemberBooking(schedule: BookingSchedule, memberId: string, couponCode: string) {
-  const { data } = await axios.post<AvailabilityQuote>(endpoint("member-badminton-bookings/check-availability"), schedule, {
-    headers: headers(), params: { memberId, couponCode: couponCode || undefined },
-  });
-  return data;
+export async function checkMemberBooking(schedule: BookingSchedule) {
+  return (await axios.post<AvailabilityQuote>(endpoint("check-availability"), schedule)).data;
 }
-
-export async function createMemberBooking(request: MemberBookingRequest) {
-  const body = new FormData();
-  body.append("CourtId", request.courtId);
-  body.append("StartDate", request.startDate);
-  body.append("NumberOfSlots", String(request.numberOfSlots));
-  request.slotIds.forEach(id => body.append("SlotIds", id));
-  request.daysOfWeek.forEach(day => body.append("DaysOfWeek", day));
-  body.append("MemberId", request.memberId);
-  body.append("CouponCode", request.couponCode);
-  body.append("PaymentType", String(request.paymentType));
-  body.append("IsHalfPayment", String(request.isHalfPayment));
-  body.append("Amount", String(request.amount));
-  const { data } = await axios.post(endpoint("member-badminton-bookings/"), body, { headers: headers() });
-  if (data?.succeeded !== true) {
-    throw new Error(data?.message || "Your booking could not be confirmed. Please contact KVK Arena before retrying.");
-  }
-  return data;
+export async function holdMemberBooking(schedule: BookingSchedule) {
+  return (await axios.post<BookingHold>(endpoint("hold"), schedule)).data;
 }
-
+export async function checkAndHoldMemberBooking(schedule: BookingSchedule) {
+  const availability = await checkMemberBooking(schedule);
+  const hold = availability.isAvailable ? await holdMemberBooking(schedule) : null;
+  return { availability, hold };
+}
+export async function quoteMemberCoupon(holdToken: string, couponCode: string) {
+  return (await axios.post<CouponQuote>(endpoint("coupon"), { holdToken, couponCode })).data;
+}
+export async function releaseMemberHold(token: string) {
+  await axios.delete(endpoint(`hold/${encodeURIComponent(token)}`));
+}
+export type MemberPayment = { orderId: string; merchantId: string; currency: string; amount: string; hash: string; sandbox: boolean; expiresInSeconds: number; confirmation?: BookingConfirmation };
+export type MemberPaymentStatus = { status: "pending" | "confirmed" | "failed" | "review" | "expired" | "not_started" | "reversed" | "paid"; confirmation?: BookingConfirmation };
+export async function reverseMemberPayment(holdToken: string, orderId: string) {
+  return (await axios.post<MemberPaymentStatus>(endpoint("payment/reverse"), { holdToken, orderId })).data;
+}
+export async function createMemberPayment(request: MemberBookingRequest) {
+  return (await axios.post<MemberPayment>(endpoint("payment"), request)).data;
+}
+export async function getMemberPaymentStatus(token: string) {
+  return (await axios.get<MemberPaymentStatus>(endpoint(`payment-status/${encodeURIComponent(token)}`), { timeout: 10000 })).data;
+}
 export function bookingError(error: unknown): string {
   if (axios.isAxiosError(error)) {
-    if (error.response?.status === 401 || error.response?.status === 403) return "Member access could not be verified. Please contact KVK Arena for assistance.";
     const data = error.response?.data;
     return (typeof data === "string" && data.length < 250 ? data : data?.message || data?.title || data?.error) || "Unable to connect. Please try again.";
   }
   return error instanceof Error ? error.message : "Something went wrong. Please try again.";
 }
-

@@ -12,6 +12,7 @@ export type PayHereCheckoutDetails = {
   email?: string;
   phone: string;
   notifyPath: string;
+  sandbox?: boolean;
 };
 
 export type PayHereCallbacks = {
@@ -64,7 +65,7 @@ export const startPayHereCheckout = (
   const lastName = details.lastName?.trim() || nameParts.slice(1).join(" ") || "Customer";
 
   const paymentDetails = {
-    sandbox: true,
+    sandbox: details.sandbox ?? true,
 
     merchant_id: details.merchantId,
     order_id: details.orderId,
