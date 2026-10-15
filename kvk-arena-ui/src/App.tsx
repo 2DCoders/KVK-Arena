@@ -16,6 +16,7 @@ import CarwashHome from "./client/pages/home/carwash";
 import CafeHome from "./client/pages/home/cafe";
 import SalonHome from "./client/pages/home/salon";
 import { getEnv } from "./env";
+import MemberBadmintonBooking from "./client/pages/members/badminton";
 
 function App() {
   const env = getEnv();
@@ -26,6 +27,7 @@ function App() {
       <Route path="/gym" element={env.GYM_COMING_SOON ? <GymComingSoon /> : <GymHome />} />
       <Route path="/carwash" element={env.CARWASH_COMING_SOON ? <CarwashComingSoon /> : <CarwashHome />} />
       <Route path="/badminton" element={env.BADMINTON_COMING_SOON ? <BadmintonComingSoon /> : <BadmintonHome />} />
+      <Route path="/members/badminton" element={<MemberBadmintonBooking />} />
       <Route path="/gaming" element={env.GAMING_COMING_SOON ? <GamingComingSoon /> : <GamingHome />} />
       <Route path="/cafe" element={env.CAFE_COMING_SOON ? <CafeComingSoon /> : <CafeHome />} />
       <Route path="/salon" element={env.SALON_COMING_SOON ? <SalonComingSoon /> : <SalonHome />} />
