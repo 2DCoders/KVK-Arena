@@ -2,16 +2,22 @@ import brand1 from "@/assets/brands/gym.png";
 import brand2 from "@/assets/brands/car-wash.png";
 import brand3 from "@/assets/brands/gaming.png";
 import brand4 from "@/assets/brands/badminton.png";
+import brand5 from "@/assets/brands/salon.png";
+import brand6 from "@/assets/brands/cafe.png";
 
 const brands = [
   brand1,
   brand2,
   brand3,
   brand4,
+  brand5,
+  brand6,
   brand1,
   brand2,
   brand3,
   brand4,
+  brand5,
+  brand6,
 ];
 
 export default function BrandsSlider() {
