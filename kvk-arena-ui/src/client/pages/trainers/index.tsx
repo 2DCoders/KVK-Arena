@@ -463,15 +463,15 @@ export default function Trainers() {
                       <span
                         key={index}
                         className="
-  px-3
-  py-2
-  rounded-full
-  bg-blue-50
-  text-[#296BE1]
-  text-xs
-  sm:text-sm
-  font-medium
-"
+                          px-3
+                          py-2
+                          rounded-full
+                          bg-blue-50
+                          text-[#296BE1]
+                          text-xs
+                          sm:text-sm
+                          font-medium
+                        "
                       >
                         {item.trim()}
                       </span>
