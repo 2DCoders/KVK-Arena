@@ -9,6 +9,8 @@ window.env = {
   BADMINTON_RATE: "10",
   // Member badminton booking start date (YYYY-MM-DD). Leave empty until set.
   BADMINTON_BOOKING_START_DATE: "",
+  BOOKING_DURATION: "12", //weeks
+  COUPON_CODE_ID: "b025087f-c79b-4eea-8945-566226168557",
   CARWASH_RATE: "10",
   GAMING_RATE: "10",
   CAFE_RATE: "10",
