@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 
-import { Dumbbell, Truck, Gamepad, SportShoe, Coffee } from "lucide-react"
+import { Dumbbell, Truck, Gamepad, SportShoe, Coffee, Scissors } from "lucide-react"
 import bg from "@/assets/flow1.png"
 
 const features = [
@@ -59,6 +59,17 @@ const features = [
         dot: "bg-pink-300",
         text: "text-pink-300",
     },
+    {
+        id: 6,
+        title: "Salon",
+        subtitle: "Style & Care",
+        desc: "Refresh your look with hair styling, grooming and beauty care.",
+        icon: Scissors,
+        color: "from-purple-500 to-violet-600",
+        glow: "shadow-[0_0_40px_rgba(168,85,247,0.45)]",
+        dot: "bg-purple-300",
+        text: "text-purple-300",
+    },
 ]
 
 export default function WorkFlow() {
@@ -99,7 +110,7 @@ export default function WorkFlow() {
 
                     {/* Header */}
                     <div className="mx-auto max-w-3xl text-center">
-                        <h2 data-aos="fade-up" className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl bg-linear-to-r from-[#2d86fc] via-[#CFEFFF] to-[#8FC0FF] bg-clip-text text-transparent">
+                        <h2 data-aos="fade-up" className="pb-2 text-3xl font-extrabold leading-[1.25] tracking-tight sm:text-4xl lg:text-5xl bg-linear-to-r from-[#2d86fc] via-[#CFEFFF] to-[#8FC0FF] bg-clip-text text-transparent">
                             Every Step of the Journey
                         </h2>
 
@@ -114,7 +125,7 @@ export default function WorkFlow() {
                         {/* Connection Line */}
                         <div className="absolute left-0 right-0 top-10 hidden h-px bg-white/10 lg:block" />
 
-                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
+                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                             {features.map((f, index) => {
                                 const Icon = f.icon
 
