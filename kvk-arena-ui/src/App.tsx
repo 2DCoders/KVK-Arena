@@ -2,25 +2,25 @@ import { Route, Routes } from "react-router-dom"
 import Home from "./client/pages/home"
 import NotFound from "./client/pages/not-found"
 import "leaflet/dist/leaflet.css";
-import GymHome from "./client/pages/home/gym";
-import BadmintonHome from "./client/pages/home/badminton";
-import GamingHome from "./client/pages/home/gaming";
-import CarwashHome from "./client/pages/home/carwash";
-import CafeHome from "./client/pages/home/cafe";
+import GymComingSoon from "./client/pages/coming-soon/gym";
+import BadmintonComingSoon from "./client/pages/coming-soon/badminton";
+import GamingComingSoon from "./client/pages/coming-soon/gaming";
+import CarwashComingSoon from "./client/pages/coming-soon/carwash";
+import CafeComingSoon from "./client/pages/coming-soon/cafe";
 import Sample from "./client/sample";
-import SalonHome from "./client/pages/home/salon";
+import SalonComingSoon from "./client/pages/coming-soon/salon";
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="*" element={<NotFound />} />
-      <Route path="/gym" element={<GymHome />} />
-      <Route path="/carwash" element={<CarwashHome />} />
-      <Route path="/badminton" element={<BadmintonHome />} />
-      <Route path="/gaming" element={<GamingHome />} />
-      <Route path="/cafe" element={<CafeHome />} />
-      <Route path="/salon" element={<SalonHome />} />
+      <Route path="/gym" element={<GymComingSoon />} />
+      <Route path="/carwash" element={<CarwashComingSoon />} />
+      <Route path="/badminton" element={<BadmintonComingSoon />} />
+      <Route path="/gaming" element={<GamingComingSoon />} />
+      <Route path="/cafe" element={<CafeComingSoon />} />
+      <Route path="/salon" element={<SalonComingSoon />} />
       <Route path="/sample" element={<Sample />} />
     </Routes>
   )

@@ -1,7 +1,7 @@
 window.env = {
   // API_URL: "https://api-kvkarena.premiumasp.net/api/",
   API_URL: "https://klc.runasp.net/api/",
-  // API_URL: "https://api-kvkarena.premiumasp.net/api/",
+  // API_URL: "https://localhost:7007/api/",
   BASE_URL: "https://kvkarena.lk/",
   OFFER_END_DATE: "2026-08-23",
   MEMBERSHIP_PRICE: "100,000",
