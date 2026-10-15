@@ -10,4 +10,11 @@ window.env = {
   CARWASH_RATE: "10",
   GAMING_RATE: "10",
   CAFE_RATE: "10",
+  // true = coming-soon page; false = full module page. Refresh after changing.
+  GYM_COMING_SOON: true,
+  BADMINTON_COMING_SOON: true,
+  GAMING_COMING_SOON: true,
+  CARWASH_COMING_SOON: true,
+  CAFE_COMING_SOON: true,
+  SALON_COMING_SOON: true,
 };
