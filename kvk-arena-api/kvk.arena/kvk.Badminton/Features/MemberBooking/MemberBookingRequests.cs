@@ -11,6 +11,12 @@ public class MemberScheduleRequest
     [MinLength(1), MaxLength(7)] public List<DaysOfWeek> DaysOfWeek { get; set; } = [];
     [MinLength(1), MaxLength(48)] public List<Guid> SlotIds { get; set; } = [];
 }
+public class CashierAvailabilityRequest
+{
+    public DateOnly StartDate { get; set; }
+    [Range(1, 52)] public int Weeks { get; set; }
+    [MinLength(1), MaxLength(7)] public List<DaysOfWeek> DaysOfWeek { get; set; } = [];
+}
 public class MemberCouponRequest
 {
     public Guid HoldToken { get; set; }
@@ -26,6 +32,12 @@ public class MemberConfirmRequest : MemberCouponRequest
     [Required, MaxLength(100)] public string CustomerName { get; set; } = "";
     [Required, RegularExpression(@"^\+?[0-9]{9,15}$")] public string PhoneNumber { get; set; } = "";
     [Required, EmailAddress, MaxLength(254)] public string Email { get; set; } = "";
+}
+public class CashierMemberConfirmRequest : MemberCouponRequest
+{
+    [Required, MaxLength(100)] public string CustomerName { get; set; } = "";
+    [Required, RegularExpression(@"^\+?[0-9]{9,15}$")] public string PhoneNumber { get; set; } = "";
+    [Range(1, 2)] public int PaymentType { get; set; }
 }
 public static class MemberSchedule
 {

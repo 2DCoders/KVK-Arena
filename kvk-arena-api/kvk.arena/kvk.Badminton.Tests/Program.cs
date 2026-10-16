@@ -48,4 +48,24 @@ notification.StatusCode = 2;
 notification.Md5Sig = "forged";
 Assert(!MemberPaymentSecurity.Verify(notification, options, hashes, "MBR-order", 900m, "LKR"), "Unsigned browser claims must not confirm payment.");
 Assert(typeof(MemberBadmintonBookingController).GetMethod("Confirm") is null, "There must be no public unpaid booking confirmation endpoint.");
+var cashier = new CashierMemberConfirmRequest { HoldToken = Guid.NewGuid(), CustomerName = "Cash customer", PhoneNumber = "0771234567", CouponCode = "UNUSED", PaymentType = 1 };
+foreach (var method in new[] { 1, 2 }) {
+    cashier.PaymentType = method;
+    Assert(Validator.TryValidateObject(cashier, new ValidationContext(cashier), new List<ValidationResult>(), true), "Cash and Card must confirm without an email, gateway, or member ID.");
+}
+foreach (var method in new[] { 0, 3, -1 }) {
+    cashier.PaymentType = method;
+    Assert(!Validator.TryValidateObject(cashier, new ValidationContext(cashier), new List<ValidationResult>(), true), "Only Cash and Card are permitted.");
+}
+cashier.PaymentType = 1;
+cashier.CouponCode = "";
+Assert(!Validator.TryValidateObject(cashier, new ValidationContext(cashier), new List<ValidationResult>(), true), "Cashier confirmation must require an unredeemed coupon.");
+cashier.CouponCode = "UNUSED";
+cashier.PhoneNumber = "invalid";
+Assert(!Validator.TryValidateObject(cashier, new ValidationContext(cashier), new List<ValidationResult>(), true), "Cashier confirmation must validate the customer phone.");
+foreach (var method in new[] { "CashierConfirm", "CashierAvailability" }) {
+    Assert(typeof(MemberBadmintonBookingController).GetMethod(method)!.IsDefined(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), true), "Cashier endpoints must require authentication.");
+}
+var period = new CashierAvailabilityRequest { StartDate = start, Weeks = 12, DaysOfWeek = [DaysOfWeek.Monday] };
+Assert(Validator.TryValidateObject(period, new ValidationContext(period), new List<ValidationResult>(), true), "Availability browsing must not require selected slot IDs.");
 Console.WriteLine($"Passed {checks} member badminton booking checks.");

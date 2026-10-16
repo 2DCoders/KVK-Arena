@@ -10,6 +10,7 @@ using kvk.Badminton.Enums;
 using kvk.Badminton.Features.Booking;
 using kvk.BuildingBlocks.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
@@ -196,6 +197,86 @@ public class MemberBadmintonBookingController(BadmintonDbContext db, IReservatio
         await transaction.CommitAsync(ct);
         return Ok(new { Succeeded = true, OriginalAmount = original, quote.DiscountAmount, FinalAmount = final, Bookings = bookings.Select(b => new { b.BookingNumber, b.BookingDate, b.BookingAmount }) });
     }
+
+    [Authorize]
+    [HttpPost("cashier-availability")]
+    public Task<IActionResult> CashierAvailability([FromBody] CashierAvailabilityRequest request, CancellationToken ct) => Respond(async () =>
+    {
+        var court = await CourtAsync(ct);
+        var slots = await db.CourtSlots.AsNoTracking().Where(s => s.CourtId == court.Id && s.IsActive).OrderBy(s => s.StartTime).ToListAsync(ct);
+        if (slots.Count == 0) return Ok(Array.Empty<object>());
+        // Validate dates and days with the same rules as the member schedule.
+        var validated = await ScheduleAsync(new MemberScheduleRequest { StartDate = request.StartDate, Weeks = request.Weeks, DaysOfWeek = request.DaysOfWeek, SlotIds = [slots[0].Id] }, ct);
+        var ids = slots.Select(s => s.Id).ToList();
+        var dates = validated.Dates;
+        var now = Now;
+        var booked = await db.CourtBookings.AsNoTracking().Where(b => ids.Contains(b.CourtSlotId) && dates.Contains(b.BookingDate) && b.Status != BookingStatus.Cancelled)
+            .Select(b => new { b.CourtSlotId, b.BookingDate }).ToListAsync(ct);
+        var held = await db.BookingHolds.AsNoTracking().Where(h => ids.Contains(h.CourtSlotId) && dates.Contains(h.BookingDate) && h.Status == BookingHoldStatus.Pending && h.ExpiresAt > now)
+            .Select(h => new { h.CourtSlotId, h.BookingDate }).ToListAsync(ct);
+        var taken = booked.Concat(held).Select(x => (x.CourtSlotId, x.BookingDate)).ToHashSet();
+        var local = ColomboNow;
+        return Ok(request.DaysOfWeek.Select(day => new { DayOfWeekName = day.ToString(), DayOfWeekDetails = dates
+            .Where(date => date.DayOfWeek.ToString() == day.ToString())
+            .SelectMany(date => slots.Where(slot => !taken.Contains((slot.Id, date)) &&
+                (date != DateOnly.FromDateTime(local) || slot.StartTime > TimeOnly.FromDateTime(local)))
+                .Select(slot => new { Date = date, AvailableSlotId = slot.Id, AvailableSlotName = $"{slot.StartTime:HH:mm} - {slot.EndTime:HH:mm}" })) }));
+    });
+
+    // Staff settlement shares member holds and coupon pricing without a gateway.
+    [Authorize]
+    [HttpPost("cashier-confirm")]
+    public Task<IActionResult> CashierConfirm([FromBody] CashierMemberConfirmRequest request, CancellationToken ct) => Respond(async () =>
+    {
+        if (string.IsNullOrWhiteSpace(request.CustomerName) || string.IsNullOrWhiteSpace(request.CouponCode) || request.PaymentType is not (1 or 2))
+            throw new InvalidOperationException("Enter customer details, a coupon, and Cash or Card payment.");
+        await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
+        var holds = await HoldsAsync(request.HoldToken, ct);
+        await LockCourtAsync(holds[0].CourtId, ct);
+        // Reload after the court lock, so simultaneous retries see the committed result.
+        foreach (var hold in holds) await db.Entry(hold).ReloadAsync(ct);
+        if (holds.Any(h => !string.IsNullOrEmpty(h.PaymentId)))
+            throw new InvalidOperationException("This reservation has an online payment. Use its payment status instead.");
+        var key = Key(request.HoldToken);
+        if (holds.All(h => h.Status == BookingHoldStatus.Confirmed))
+        {
+            var existing = await db.CourtBookings.AsNoTracking().Where(b => b.PaymentId == key)
+                .Select(b => new { b.BookingNumber, b.BookingDate, b.BookingAmount }).ToListAsync(ct);
+            return Ok(new { Succeeded = true, Bookings = existing, FinalAmount = existing.Sum(b => b.BookingAmount) });
+        }
+        EnsureActive(holds);
+        var slotIds = holds.Select(h => h.CourtSlotId).Distinct().ToList();
+        var dates = holds.Select(h => h.BookingDate).Distinct().ToList();
+        if (holds.Any(h => !h.CourtSlot.IsActive) || await db.Courts.AnyAsync(c => c.Id == holds[0].CourtId && c.Status != CourtStatus.Active, ct))
+            throw new InvalidOperationException("The court or selected sessions are no longer available.");
+        if (await db.CourtBookings.AnyAsync(b => slotIds.Contains(b.CourtSlotId) && dates.Contains(b.BookingDate) && b.Status != BookingStatus.Cancelled, ct))
+            throw new InvalidOperationException("Some sessions are no longer available. Please check your schedule again.");
+        var now = Now;
+        if (await db.BookingHolds.AnyAsync(h => h.PaymentIntentId != key && slotIds.Contains(h.CourtSlotId) && dates.Contains(h.BookingDate) && h.Status == BookingHoldStatus.Pending && h.ExpiresAt > now, ct))
+            throw new InvalidOperationException("Some sessions are held by another reservation. Please check your schedule again.");
+        var quote = await coupons.RedeemAsync(request.CouponCode.Trim().ToUpperInvariant(), holds.Select(h => h.Amount).ToList(), transaction.GetDbTransaction(), ct);
+        if (!quote.IsValid) throw new InvalidOperationException(quote.ErrorMessage);
+        var original = holds.Sum(h => h.Amount);
+        var amounts = MemberSchedule.Amounts(holds.Select(h => h.Amount).ToList(), quote.DiscountAmount);
+        var bookings = new List<CourtBooking>();
+        for (var i = 0; i < holds.Count; i++)
+        {
+            var hold = holds[i];
+            var booking = new CourtBooking { CourtId = hold.CourtId, CourtSlotId = hold.CourtSlotId, BookingDate = hold.BookingDate,
+                BookingAmount = amounts[i], Status = BookingStatus.Confirmed, CustomerName = request.CustomerName.Trim(), PhoneNumber = request.PhoneNumber.Trim(),
+                PaymentType = (PaymentTypes)request.PaymentType, PaymentId = key, BookingNumber = $"BCKG-{Guid.NewGuid():N}",
+                Notes = $"Coupon: {request.CouponCode.Trim().ToUpperInvariant()}. Cashier settlement." };
+            db.CourtBookings.Add(booking);
+            bookings.Add(booking);
+            hold.Status = BookingHoldStatus.Confirmed;
+            hold.CustomerName = booking.CustomerName;
+            hold.PhoneNumber = booking.PhoneNumber;
+        }
+        await db.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
+        return Ok(new { Succeeded = true, OriginalAmount = original, quote.DiscountAmount, FinalAmount = original - quote.DiscountAmount,
+            Bookings = bookings.Select(b => new { b.BookingNumber, b.BookingDate, b.BookingAmount }) });
+    });
 
     private sealed class MemberPaymentState
     {
