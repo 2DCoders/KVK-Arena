@@ -68,19 +68,39 @@ public class MemberBadmintonBookingController(BadmintonDbContext db, IReservatio
         return new(court, slots, MemberSchedule.Dates(request.StartDate, request.Weeks, request.DaysOfWeek), MemberSchedule.EndDate(request.StartDate, request.Weeks));
     }
 
-    private async Task<List<object>> ConflictsAsync(ScheduleData schedule, CancellationToken ct)
+    private async Task<Dictionary<(Guid SlotId, DateOnly Date), string>> TakenSessionsAsync(ScheduleData schedule, CancellationToken ct, string? excludingHoldKey = null)
     {
         var ids = schedule.Slots.Select(s => s.Id).ToList();
         var dates = schedule.Dates;
         var now = Now;
         var booked = await db.CourtBookings.AsNoTracking().Where(b => ids.Contains(b.CourtSlotId) && dates.Contains(b.BookingDate) && b.Status != BookingStatus.Cancelled)
             .Select(b => new { b.CourtSlotId, b.BookingDate }).ToListAsync(ct);
-        var held = await db.BookingHolds.AsNoTracking().Where(h => ids.Contains(h.CourtSlotId) && dates.Contains(h.BookingDate) && h.Status == BookingHoldStatus.Pending && h.ExpiresAt > now)
+        var held = await db.BookingHolds.AsNoTracking().Where(h => ids.Contains(h.CourtSlotId) && dates.Contains(h.BookingDate) && h.Status == BookingHoldStatus.Pending && h.ExpiresAt > now &&
+                (excludingHoldKey == null || h.PaymentIntentId != excludingHoldKey))
             .Select(h => new { h.CourtSlotId, h.BookingDate }).ToListAsync(ct);
-        var taken = booked.Concat(held).Select(x => (x.CourtSlotId, x.BookingDate)).ToHashSet();
+        var taken = new Dictionary<(Guid SlotId, DateOnly Date), string>();
+        foreach (var session in held) taken[(session.CourtSlotId, session.BookingDate)] = "held";
+        foreach (var session in booked) taken[(session.CourtSlotId, session.BookingDate)] = "booked";
+        // Earlier cashier bookings may still live in the temporary recurring tables.
+        var last = schedule.EndDate.ToDateTime(TimeOnly.MaxValue);
+        var first = dates.Min().ToDateTime(TimeOnly.MinValue);
+        var legacy = await db.CourtBookingTemporarySchedules.AsNoTracking()
+            .Where(s => ids.Contains(s.SlotId) && s.CourtBookingTemporary.CourtId == schedule.Court.Id &&
+                !s.CourtBookingTemporary.IsMigrated && s.CourtBookingTemporary.StartDate <= last &&
+                s.CourtBookingTemporary.StartDate.AddDays(s.CourtBookingTemporary.NumberOfSlots * 7) > first)
+            .Select(s => new { s.SlotId, s.DayOfWeek, s.CourtBookingTemporary.StartDate, s.CourtBookingTemporary.NumberOfSlots }).ToListAsync(ct);
+        foreach (var reservation in legacy)
+            foreach (var date in dates)
+                if (MemberAvailability.BlocksDate(date, DateOnly.FromDateTime(reservation.StartDate), reservation.NumberOfSlots, Enum.Parse<DayOfWeek>(reservation.DayOfWeek.ToString())))
+                    taken[(reservation.SlotId, date)] = "booked";
+        return taken;
+    }
+
+    private async Task<List<object>> ConflictsAsync(ScheduleData schedule, CancellationToken ct)
+    {
+        var taken = await TakenSessionsAsync(schedule, ct);
         var local = ColomboNow;
-        return dates.SelectMany(date => schedule.Slots.Where(slot => taken.Contains((slot.Id, date)) ||
-                (date == DateOnly.FromDateTime(local) && slot.StartTime <= TimeOnly.FromDateTime(local)))
+        return schedule.Dates.SelectMany(date => schedule.Slots.Where(slot => MemberAvailability.Status(date, slot.Id, slot.StartTime, local, taken) != "available")
             .Select(slot => (object)new { Date = date, SlotId = slot.Id, SlotName = $"{slot.StartTime:HH:mm} - {slot.EndTime:HH:mm}", Message = "This session is booked, held or has already started." })).ToList();
     }
 
@@ -163,15 +183,12 @@ public class MemberBadmintonBookingController(BadmintonDbContext db, IReservatio
         }
         if (holds.Any(h => h.Status is BookingHoldStatus.Released or BookingHoldStatus.Confirmed))
             throw new InvalidOperationException("The paid reservation needs review. Please contact KVK Arena.");
-        var slotIds = holds.Select(h => h.CourtSlotId).Distinct().ToList();
-        var dates = holds.Select(h => h.BookingDate).Distinct().ToList();
         if (holds.Any(h => !h.CourtSlot.IsActive) || await db.Courts.AnyAsync(c => c.Id == holds[0].CourtId && c.Status != CourtStatus.Active, ct))
             throw new InvalidOperationException("The court or selected sessions are no longer available.");
-        if (await db.CourtBookings.AnyAsync(b => slotIds.Contains(b.CourtSlotId) && dates.Contains(b.BookingDate) && b.Status != BookingStatus.Cancelled, ct))
-            throw new InvalidOperationException("Some sessions are no longer available. Please select your schedule again.");
-        var now = Now;
-        if (await db.BookingHolds.AnyAsync(h => h.PaymentIntentId != key && slotIds.Contains(h.CourtSlotId) && dates.Contains(h.BookingDate) && h.Status == BookingHoldStatus.Pending && h.ExpiresAt > now, ct))
-            throw new InvalidOperationException("The paid sessions need review. Please contact KVK Arena.");
+        var settlementSchedule = new ScheduleData(await db.Courts.AsNoTracking().SingleAsync(c => c.Id == holds[0].CourtId, ct), holds.Select(h => h.CourtSlot).DistinctBy(slot => slot.Id).ToList(),
+            holds.Select(h => h.BookingDate).Distinct().ToList(), holds.Max(h => h.BookingDate));
+        if ((await TakenSessionsAsync(settlementSchedule, ct, key)).Count > 0)
+            throw new InvalidOperationException("Some sessions are no longer available. Please contact KVK Arena.");
         var quote = await coupons.RedeemAsync(payment.CouponCode, holds.Select(h => h.Amount).ToList(), transaction.GetDbTransaction(), ct);
         if (!quote.IsValid) throw new InvalidOperationException(quote.ErrorMessage);
         var original = holds.Sum(h => h.Amount);
@@ -204,23 +221,16 @@ public class MemberBadmintonBookingController(BadmintonDbContext db, IReservatio
     {
         var court = await CourtAsync(ct);
         var slots = await db.CourtSlots.AsNoTracking().Where(s => s.CourtId == court.Id && s.IsActive).OrderBy(s => s.StartTime).ToListAsync(ct);
-        if (slots.Count == 0) return Ok(Array.Empty<object>());
-        // Validate dates and days with the same rules as the member schedule.
-        var validated = await ScheduleAsync(new MemberScheduleRequest { StartDate = request.StartDate, Weeks = request.Weeks, DaysOfWeek = request.DaysOfWeek, SlotIds = [slots[0].Id] }, ct);
-        var ids = slots.Select(s => s.Id).ToList();
-        var dates = validated.Dates;
-        var now = Now;
-        var booked = await db.CourtBookings.AsNoTracking().Where(b => ids.Contains(b.CourtSlotId) && dates.Contains(b.BookingDate) && b.Status != BookingStatus.Cancelled)
-            .Select(b => new { b.CourtSlotId, b.BookingDate }).ToListAsync(ct);
-        var held = await db.BookingHolds.AsNoTracking().Where(h => ids.Contains(h.CourtSlotId) && dates.Contains(h.BookingDate) && h.Status == BookingHoldStatus.Pending && h.ExpiresAt > now)
-            .Select(h => new { h.CourtSlotId, h.BookingDate }).ToListAsync(ct);
-        var taken = booked.Concat(held).Select(x => (x.CourtSlotId, x.BookingDate)).ToHashSet();
-        var local = ColomboNow;
-        return Ok(request.DaysOfWeek.Select(day => new { DayOfWeekName = day.ToString(), DayOfWeekDetails = dates
-            .Where(date => date.DayOfWeek.ToString() == day.ToString())
-            .SelectMany(date => slots.Where(slot => !taken.Contains((slot.Id, date)) &&
-                (date != DateOnly.FromDateTime(local) || slot.StartTime > TimeOnly.FromDateTime(local)))
-                .Select(slot => new { Date = date, AvailableSlotId = slot.Id, AvailableSlotName = $"{slot.StartTime:HH:mm} - {slot.EndTime:HH:mm}" })) }));
+        // Validate the requested window even when the court has no active slots.
+        if (request.StartDate == default || request.StartDate < DateOnly.FromDateTime(ColomboNow) || request.Weeks < 1 || request.Weeks > MaximumWeeks ||
+            request.DaysOfWeek is not { Count: > 0 } || request.DaysOfWeek.Any(day => !Enum.IsDefined(day)) || request.DaysOfWeek.Distinct().Count() != request.DaysOfWeek.Count)
+            throw new InvalidOperationException("Choose a valid start date, duration, and booking day.");
+        var dates = MemberSchedule.Dates(request.StartDate, request.Weeks, request.DaysOfWeek);
+        var end = MemberSchedule.EndDate(request.StartDate, request.Weeks);
+        var schedule = new ScheduleData(court, slots, dates, end);
+        var taken = await TakenSessionsAsync(schedule, ct);
+        return Ok(new CashierAvailabilityResponse(request.StartDate, end, request.Weeks, dates,
+            MemberAvailability.Slots(dates, slots, ColomboNow, taken)));
     });
 
     // Staff settlement shares member holds and coupon pricing without a gateway.
@@ -245,15 +255,12 @@ public class MemberBadmintonBookingController(BadmintonDbContext db, IReservatio
             return Ok(new { Succeeded = true, Bookings = existing, FinalAmount = existing.Sum(b => b.BookingAmount) });
         }
         EnsureActive(holds);
-        var slotIds = holds.Select(h => h.CourtSlotId).Distinct().ToList();
-        var dates = holds.Select(h => h.BookingDate).Distinct().ToList();
         if (holds.Any(h => !h.CourtSlot.IsActive) || await db.Courts.AnyAsync(c => c.Id == holds[0].CourtId && c.Status != CourtStatus.Active, ct))
             throw new InvalidOperationException("The court or selected sessions are no longer available.");
-        if (await db.CourtBookings.AnyAsync(b => slotIds.Contains(b.CourtSlotId) && dates.Contains(b.BookingDate) && b.Status != BookingStatus.Cancelled, ct))
+        var settlementSchedule = new ScheduleData(await db.Courts.AsNoTracking().SingleAsync(c => c.Id == holds[0].CourtId, ct), holds.Select(h => h.CourtSlot).DistinctBy(slot => slot.Id).ToList(),
+            holds.Select(h => h.BookingDate).Distinct().ToList(), holds.Max(h => h.BookingDate));
+        if ((await TakenSessionsAsync(settlementSchedule, ct, key)).Count > 0)
             throw new InvalidOperationException("Some sessions are no longer available. Please check your schedule again.");
-        var now = Now;
-        if (await db.BookingHolds.AnyAsync(h => h.PaymentIntentId != key && slotIds.Contains(h.CourtSlotId) && dates.Contains(h.BookingDate) && h.Status == BookingHoldStatus.Pending && h.ExpiresAt > now, ct))
-            throw new InvalidOperationException("Some sessions are held by another reservation. Please check your schedule again.");
         var quote = await coupons.RedeemAsync(request.CouponCode.Trim().ToUpperInvariant(), holds.Select(h => h.Amount).ToList(), transaction.GetDbTransaction(), ct);
         if (!quote.IsValid) throw new InvalidOperationException(quote.ErrorMessage);
         var original = holds.Sum(h => h.Amount);

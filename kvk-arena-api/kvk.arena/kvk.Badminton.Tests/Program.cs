@@ -68,4 +68,29 @@ foreach (var method in new[] { "CashierConfirm", "CashierAvailability" }) {
 }
 var period = new CashierAvailabilityRequest { StartDate = start, Weeks = 12, DaysOfWeek = [DaysOfWeek.Monday] };
 Assert(Validator.TryValidateObject(period, new ValidationContext(period), new List<ValidationResult>(), true), "Availability browsing must not require selected slot IDs.");
+// Availability must include every requested date, even when no slots are free.
+var monday = new DateOnly(2027, 1, 4);
+var recurringDates = MemberSchedule.Dates(monday, 3, [DaysOfWeek.Monday]);
+Assert(recurringDates.SequenceEqual(new[] { monday, monday.AddDays(7), monday.AddDays(14) }), "Availability dates must match the real weekday without shifting by a day.");
+Assert(MemberAvailability.BlocksDate(monday, monday, 1, DayOfWeek.Monday), "Legacy reservations block a matching start day.");
+Assert(!MemberAvailability.BlocksDate(monday.AddDays(7), monday, 1, DayOfWeek.Monday), "Legacy reservations must not block the first day after their inclusive end date.");
+Assert(!MemberAvailability.BlocksDate(monday.AddDays(-7), monday, 1, DayOfWeek.Monday), "Legacy reservations must not block dates before their start.");
+Assert(!MemberAvailability.BlocksDate(monday.AddDays(1), monday, 1, DayOfWeek.Monday), "Legacy reservations only block their chosen weekday.");
+Assert(MemberAvailability.BlocksDate(new DateOnly(2028, 2, 29), new DateOnly(2028, 2, 26), 1, DayOfWeek.Tuesday), "Legacy reservations must include matching leap-day sessions.");
+Assert(!MemberAvailability.BlocksDate(monday, monday, 0, DayOfWeek.Monday), "Invalid legacy durations must not block slots.");
+var slotA = new kvk.Badminton.Domain.CourtSlot { Id = Guid.NewGuid(), StartTime = new TimeOnly(8, 0), EndTime = new TimeOnly(9, 0) };
+var slotB = new kvk.Badminton.Domain.CourtSlot { Id = Guid.NewGuid(), StartTime = new TimeOnly(9, 0), EndTime = new TimeOnly(10, 0) };
+var slotC = new kvk.Badminton.Domain.CourtSlot { Id = Guid.NewGuid(), StartTime = new TimeOnly(10, 0), EndTime = new TimeOnly(11, 0) };
+var occupancy = new Dictionary<(Guid, DateOnly), string> { [(slotA.Id, monday)] = "booked", [(slotA.Id, monday.AddDays(7))] = "held" };
+foreach (var date in recurringDates) occupancy[(slotC.Id, date)] = "booked";
+var matrix = MemberAvailability.Slots(recurringDates, [slotC, slotB, slotA], new DateTime(2027, 1, 1), occupancy);
+Assert(matrix.Select(slot => slot.SlotId).SequenceEqual(new[] { slotA.Id, slotB.Id, slotC.Id }), "Availability must sort slots chronologically.");
+Assert(matrix[0].AvailableCount == 1 && matrix[0].TotalCount == 3 && !matrix[0].AvailableEveryWeek, "A slot free once out of three weeks is only partly available.");
+Assert(matrix[0].Sessions.Select(session => session.Status).SequenceEqual(new[] { "booked", "held", "available" }), "Date details must distinguish bookings, active holds, and free sessions.");
+Assert(matrix[1].AvailableEveryWeek && matrix[1].AvailableCount == 3, "Only a slot free on every requested date may be recommended for a recurring booking.");
+Assert(matrix[2].AvailableCount == 0 && matrix[2].Sessions.Count == 3, "Fully booked slots and dates must remain visible rather than disappearing from results.");
+Assert(MemberAvailability.Status(monday, slotB.Id, slotB.StartTime, new DateTime(2027, 1, 4, 9, 0, 0), occupancy) == "past", "Sessions starting now must not appear available.");
+Assert(MemberAvailability.Status(monday, slotB.Id, slotB.StartTime, new DateTime(2027, 1, 4, 8, 59, 0), occupancy) == "available", "A future session today remains available.");
+Assert(MemberAvailability.Status(monday, slotB.Id, slotB.StartTime, new DateTime(2027, 1, 5), occupancy) == "past", "Past dates must not appear available.");
+Assert(MemberAvailability.Slots([], [slotA], new DateTime(2027, 1, 1), occupancy)[0].AvailableEveryWeek == false, "An empty window must never be advertised as free every week.");
 Console.WriteLine($"Passed {checks} member badminton booking checks.");
