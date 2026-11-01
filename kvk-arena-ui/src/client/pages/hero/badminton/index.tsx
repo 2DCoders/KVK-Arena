@@ -1,8 +1,8 @@
+import { createFrameLoader, nearestLoadedFrame } from "@/lib/progressive-frames";
 import {
   ArrowRight,
   Check,
   Crosshair,
-  LoaderCircle,
   Zap,
 } from "lucide-react";
 import {
@@ -41,15 +41,15 @@ const easeInOut = (value: number) =>
 
 export default function BadmintonHero() {
   const sectionRef = useRef<HTMLElement | null>(null);
+  const requestFramesRef = useRef<(frame: number) => void>(() => {});
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const animationFrameRef = useRef<number | null>(null);
   const lastRenderedFrameRef = useRef(-1);
+  const targetFrameRef = useRef(0);
 
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [loadedFrames, setLoadedFrames] = useState(0);
-  const [isReady, setIsReady] = useState(false);
 
   const frameSources = useMemo(
     () =>
@@ -83,7 +83,8 @@ export default function BadmintonHero() {
   const drawFrame = useCallback(
     (frameIndex: number) => {
       const canvas = canvasRef.current;
-      const image = imagesRef.current[frameIndex];
+      const availableIndex = nearestLoadedFrame(imagesRef.current, frameIndex);
+      const image = imagesRef.current[availableIndex];
 
       if (
         !canvas ||
@@ -142,8 +143,8 @@ export default function BadmintonHero() {
       const canvasRatio =
         canvas.width / canvas.height;
 
-      let drawWidth = canvas.width;
-      let drawHeight = canvas.height;
+      let drawWidth: number;
+      let drawHeight: number;
       let offsetX = 0;
       let offsetY = 0;
 
@@ -168,70 +169,34 @@ export default function BadmintonHero() {
         drawHeight,
       );
 
-      lastRenderedFrameRef.current = frameIndex;
+      lastRenderedFrameRef.current = availableIndex;
     },
     [],
   );
 
   /*
-   * Preload all badminton sequence frames.
+   * Load badminton frames near the scroll position.
    */
   useEffect(() => {
-    if (frameSources.length === 0) {
-      console.error(
-        "No badminton frames found. Check the folder and filename format.",
-      );
-
-      return;
-    }
-
-    let cancelled = false;
-    let completedCount = 0;
-
-    const images = frameSources.map(
-      (source, index) => {
-        const image = new Image();
-
-        image.decoding = "async";
-        image.src = source;
-
-        image.onload = () => {
-          if (cancelled) return;
-
-          completedCount += 1;
-          setLoadedFrames(completedCount);
-
-          if (index === 0) {
-            drawFrame(0);
-            setIsReady(true);
-          }
-
-          if (
-            completedCount === frameSources.length
-          ) {
-            setIsReady(true);
-          }
-        };
-
-        image.onerror = () => {
-          if (cancelled) return;
-
-          completedCount += 1;
-          setLoadedFrames(completedCount);
-
-          console.error(
-            `Unable to load badminton frame: ${source}`,
-          );
-        };
-
-        return image;
-      },
-    );
-
-    imagesRef.current = images;
-
+    const media = window.matchMedia("(min-width: 640px)");
+    let loader: ReturnType<typeof createFrameLoader> | undefined;
+    const update = () => {
+      loader?.stop();
+      imagesRef.current = [];
+      requestFramesRef.current = () => {};
+      if (!media.matches) return;
+      loader = createFrameLoader(frameSources, imagesRef.current, () => {
+        drawFrame(targetFrameRef.current);
+      });
+      requestFramesRef.current = loader.request;
+      loader.request(targetFrameRef.current);
+    };
+    update();
+    media.addEventListener("change", update);
     return () => {
-      cancelled = true;
+      media.removeEventListener("change", update);
+      loader?.stop();
+      requestFramesRef.current = () => {};
       imagesRef.current = [];
     };
   }, [drawFrame, frameSources]);
@@ -266,6 +231,9 @@ export default function BadmintonHero() {
           progress * (frameSources.length - 1),
         ),
       );
+
+      targetFrameRef.current = frameIndex;
+      requestFramesRef.current(frameIndex);
 
       if (
         frameIndex !==
@@ -390,15 +358,6 @@ export default function BadmintonHero() {
     precisionEnter * (1 - precisionExit);
 
   const finalOpacity = finalEnter;
-
-  const loadingPercentage =
-    frameSources.length > 0
-      ? Math.round(
-          (loadedFrames /
-            frameSources.length) *
-            100,
-        )
-      : 0;
 
   return (
     <section
@@ -527,39 +486,6 @@ export default function BadmintonHero() {
 
         <div className="pointer-events-none absolute -left-[8%] top-[34%] h-px w-[46%] -rotate-[9deg] bg-gradient-to-r from-transparent via-[#E7A66E]/25 to-transparent" />
 
-        {/* Loading screen */}
-        <div
-          className={`absolute inset-0 z-50 grid place-items-center bg-[#0d0805] transition-all duration-700 ${
-            isReady
-              ? "pointer-events-none opacity-0"
-              : "opacity-100"
-          }`}
-        >
-          <div className="flex flex-col items-center px-5 text-center">
-            <div className="relative grid h-20 w-20 place-items-center rounded-full border border-white/10">
-              <LoaderCircle className="h-8 w-8 animate-spin text-[#D98B4D]" />
-
-              <div className="absolute inset-2 rounded-full border border-[#D98B4D]/15" />
-            </div>
-
-            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.3em] text-white/60">
-              Preparing the court
-            </p>
-
-            <div className="mt-4 h-1 w-48 overflow-hidden rounded-full bg-white/10">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-[#8D481F] via-[#D98B4D] to-[#F0B37C] transition-[width] duration-200"
-                style={{
-                  width: `${loadingPercentage}%`,
-                }}
-              />
-            </div>
-
-            <p className="mt-2 text-xs text-white/40">
-              {loadingPercentage}%
-            </p>
-          </div>
-        </div>
 
         {/* ================= INTRO CONTENT ================= */}
         <div

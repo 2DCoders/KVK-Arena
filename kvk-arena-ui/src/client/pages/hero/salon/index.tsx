@@ -1,3 +1,4 @@
+import { createFrameLoader, nearestLoadedFrame } from "@/lib/progressive-frames";
 import {
   ArrowRight,
   Clock3,
@@ -70,6 +71,7 @@ export default function SalonHero() {
   const sectionRef =
     useRef<HTMLElement | null>(null);
 
+  const requestFramesRef = useRef<(frame: number) => void>(() => {});
   const canvasRef =
     useRef<HTMLCanvasElement | null>(null);
 
@@ -82,11 +84,7 @@ export default function SalonHero() {
   const animationFrameRef =
     useRef<number | null>(null);
 
-  const [loadingProgress, setLoadingProgress] =
-    useState(0);
 
-  const [isReady, setIsReady] =
-    useState(false);
 
   const [scrollProgress, setScrollProgress] =
     useState(0);
@@ -102,8 +100,8 @@ export default function SalonHero() {
   const drawFrame = useCallback(
     (frameIndex: number) => {
       const canvas = canvasRef.current;
-      const image =
-        imagesRef.current[frameIndex];
+      const availableIndex = nearestLoadedFrame(imagesRef.current, frameIndex);
+      const image = imagesRef.current[availableIndex];
 
       if (
         !canvas ||
@@ -166,8 +164,8 @@ export default function SalonHero() {
       const canvasRatio =
         width / height;
 
-      let drawWidth = width;
-      let drawHeight = height;
+      let drawWidth: number;
+      let drawHeight: number;
       let offsetX = 0;
       let offsetY = 0;
 
@@ -204,7 +202,7 @@ export default function SalonHero() {
     [],
   );
 
-  const animateFrame = useCallback(() => {
+  const animateFrame = useCallback(function animate() {
     const current =
       currentFrameRef.current;
 
@@ -245,68 +243,35 @@ export default function SalonHero() {
 
     animationFrameRef.current =
       window.requestAnimationFrame(
-        animateFrame,
+        animate,
       );
   }, [drawFrame]);
 
   useEffect(() => {
-    let cancelled = false;
-    let loadedFrames = 0;
-
-    const images: HTMLImageElement[] =
-      [];
-
-    const updateLoading = () => {
-      loadedFrames += 1;
-
-      const progress = Math.round(
-        (loadedFrames / FRAME_COUNT) *
-          100,
-      );
-
-      if (!cancelled) {
-        setLoadingProgress(progress);
-      }
-
-      if (
-        loadedFrames === FRAME_COUNT &&
-        !cancelled
-      ) {
-        imagesRef.current = images;
-
-        setIsReady(true);
-
-        window.requestAnimationFrame(
-          () => {
-            drawFrame(0);
-          },
-        );
-      }
+    const media = window.matchMedia("(min-width: 640px)");
+    let loader: ReturnType<typeof createFrameLoader> | undefined;
+    const update = () => {
+      loader?.stop();
+      imagesRef.current = [];
+      requestFramesRef.current = () => {};
+      if (!media.matches) return;
+      loader = createFrameLoader(Array.from({ length: FRAME_COUNT }, (_, index) => getFramePath(index)), imagesRef.current, () => {
+        drawFrame(targetFrameRef.current);
+      });
+      requestFramesRef.current = loader.request;
+      loader.request(targetFrameRef.current);
     };
-
-    for (
-      let index = 0;
-      index < FRAME_COUNT;
-      index += 1
-    ) {
-      const image = new Image();
-
-      image.src = getFramePath(index);
-      image.decoding = "async";
-
-      image.onload = updateLoading;
-      image.onerror = updateLoading;
-
-      images.push(image);
-    }
-
+    update();
+    media.addEventListener("change", update);
     return () => {
-      cancelled = true;
+      media.removeEventListener("change", update);
+      loader?.stop();
+      requestFramesRef.current = () => {};
+      imagesRef.current = [];
     };
   }, [drawFrame]);
 
   useEffect(() => {
-    if (!isReady) return;
 
     let ticking = false;
 
@@ -354,6 +319,7 @@ export default function SalonHero() {
 
         targetFrameRef.current =
           targetFrame;
+      requestFramesRef.current(targetFrame);
 
         if (
           animationFrameRef.current ===
@@ -426,7 +392,6 @@ export default function SalonHero() {
   }, [
     animateFrame,
     drawFrame,
-    isReady,
   ]);
 
   const introProgress =
@@ -904,98 +869,6 @@ export default function SalonHero() {
           }}
         />
 
-        {/* =====================================================
-            LOADING SCREEN
-        ===================================================== */}
-
-        <div
-          className={`
-            absolute inset-0 z-50
-            flex items-center
-            justify-center
-            bg-[#090511]
-            transition-all
-            duration-700
-            ${
-              isReady
-                ? "pointer-events-none opacity-0"
-                : "opacity-100"
-            }
-          `}
-        >
-          <div className="flex flex-col items-center">
-            <div
-              className="
-                relative flex
-                h-20 w-20
-                items-center justify-center
-                rounded-full
-                border border-[#a855f7]/25
-                bg-[#7c3aed]/10
-              "
-            >
-              <Scissors
-                className="
-                  h-8 w-8
-                  animate-pulse
-                  text-[#c084fc]
-                "
-              />
-
-              <div
-                className="
-                  absolute inset-[-8px]
-                  animate-spin
-                  rounded-full
-                  border border-transparent
-                  border-t-[#a855f7]
-                "
-              />
-            </div>
-
-            <p
-              className="
-                mt-6
-                text-xs
-                font-semibold
-                uppercase
-                tracking-[0.3em]
-                text-[#c084fc]
-              "
-            >
-              Preparing Your Experience
-            </p>
-
-            <div
-              className="
-                mt-4 h-1 w-48
-                overflow-hidden
-                rounded-full
-                bg-white/10
-              "
-            >
-              <div
-                className="
-                  h-full
-                  rounded-full
-                  bg-gradient-to-r
-                  from-[#6d28d9]
-                  via-[#9333ea]
-                  to-[#d8b4fe]
-                  transition-all
-                  duration-300
-                "
-                style={{
-                  width: `${loadingProgress}%`,
-                }}
-              />
-            </div>
-
-            <p className="mt-3 text-xs text-white/50">
-              {loadingProgress}%
-            </p>
-          </div>
-        </div>
 
         {/* =====================================================
             INTRO

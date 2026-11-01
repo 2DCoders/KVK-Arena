@@ -1,7 +1,7 @@
+import { createFrameLoader, nearestLoadedFrame } from "@/lib/progressive-frames";
 import {
   ArrowRight,
   Check,
-  LoaderCircle,
   Shield,
   Swords,
   Trophy,
@@ -46,15 +46,15 @@ const easeInOut = (value: number) =>
 
 export default function GamingHero() {
   const sectionRef = useRef<HTMLElement | null>(null);
+  const requestFramesRef = useRef<(frame: number) => void>(() => {});
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const animationFrameRef = useRef<number | null>(null);
   const lastRenderedFrameRef = useRef(-1);
+  const targetFrameRef = useRef(0);
 
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [loadedFrames, setLoadedFrames] = useState(0);
-  const [isReady, setIsReady] = useState(false);
 
   const frameSources = useMemo(
     () =>
@@ -90,7 +90,8 @@ export default function GamingHero() {
   const drawFrame = useCallback(
     (frameIndex: number) => {
       const canvas = canvasRef.current;
-      const image = imagesRef.current[frameIndex];
+      const availableIndex = nearestLoadedFrame(imagesRef.current, frameIndex);
+      const image = imagesRef.current[availableIndex];
 
       if (
         !canvas ||
@@ -142,8 +143,8 @@ export default function GamingHero() {
       const canvasRatio =
         canvas.width / canvas.height;
 
-      let drawWidth = canvas.width;
-      let drawHeight = canvas.height;
+      let drawWidth: number;
+      let drawHeight: number;
       let offsetX = 0;
       let offsetY = 0;
 
@@ -184,69 +185,34 @@ export default function GamingHero() {
         drawHeight,
       );
 
-      lastRenderedFrameRef.current =
-        frameIndex;
+      lastRenderedFrameRef.current = availableIndex;
     },
     [],
   );
 
   /*
-   * Preload all gaming sequence frames.
+   * Load gaming frames near the scroll position.
    */
   useEffect(() => {
-    if (frameSources.length === 0) {
-      console.error(
-        "No gaming frames found. Check the frame folder and filenames.",
-      );
-
-      return;
-    }
-
-    let cancelled = false;
-    let loadedCount = 0;
-
-    const images = frameSources.map(
-      (source, index) => {
-        const image = new Image();
-
-        image.decoding = "async";
-        image.src = source;
-
-        image.onload = () => {
-          if (cancelled) return;
-
-          loadedCount += 1;
-          setLoadedFrames(loadedCount);
-
-          /*
-           * Display the first frame immediately.
-           */
-          if (index === 0) {
-            drawFrame(0);
-            setIsReady(true);
-          }
-
-          if (
-            loadedCount === frameSources.length
-          ) {
-            setIsReady(true);
-          }
-        };
-
-        image.onerror = () => {
-          console.error(
-            `Unable to load gaming frame: ${source}`,
-          );
-        };
-
-        return image;
-      },
-    );
-
-    imagesRef.current = images;
-
+    const media = window.matchMedia("(min-width: 640px)");
+    let loader: ReturnType<typeof createFrameLoader> | undefined;
+    const update = () => {
+      loader?.stop();
+      imagesRef.current = [];
+      requestFramesRef.current = () => {};
+      if (!media.matches) return;
+      loader = createFrameLoader(frameSources, imagesRef.current, () => {
+        drawFrame(targetFrameRef.current);
+      });
+      requestFramesRef.current = loader.request;
+      loader.request(targetFrameRef.current);
+    };
+    update();
+    media.addEventListener("change", update);
     return () => {
-      cancelled = true;
+      media.removeEventListener("change", update);
+      loader?.stop();
+      requestFramesRef.current = () => {};
       imagesRef.current = [];
     };
   }, [drawFrame, frameSources]);
@@ -286,6 +252,9 @@ export default function GamingHero() {
             (frameSources.length - 1),
         ),
       );
+
+      targetFrameRef.current = frameIndex;
+      requestFramesRef.current(frameIndex);
 
       if (
         frameIndex !==
@@ -424,15 +393,6 @@ export default function GamingHero() {
 
   const finalOpacity = finalEnter;
 
-  const loadingPercentage =
-    frameSources.length > 0
-      ? Math.round(
-          (loadedFrames /
-            frameSources.length) *
-            100,
-        )
-      : 0;
-
   return (
     <section
       id="gaming-hero"
@@ -562,39 +522,6 @@ export default function GamingHero() {
 
         <div className="pointer-events-none absolute -left-[8%] top-[36%] h-px w-[46%] -rotate-[9deg] bg-gradient-to-r from-transparent via-red-500/25 to-transparent" />
 
-        {/* Loading screen */}
-        <div
-          className={`absolute inset-0 z-50 grid place-items-center bg-black transition-all duration-700 ${
-            isReady
-              ? "pointer-events-none opacity-0"
-              : "opacity-100"
-          }`}
-        >
-          <div className="flex flex-col items-center px-5 text-center">
-            <div className="relative grid h-20 w-20 place-items-center rounded-full border border-red-500/20 bg-red-500/5">
-              <LoaderCircle className="h-8 w-8 animate-spin text-red-500" />
-
-              <div className="absolute inset-2 rounded-full border border-red-400/10" />
-            </div>
-
-            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.32em] text-white/60">
-              Loading the arena
-            </p>
-
-            <div className="mt-4 h-1 w-48 overflow-hidden rounded-full bg-white/10">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-red-900 via-red-600 to-red-400 transition-[width] duration-200"
-                style={{
-                  width: `${loadingPercentage}%`,
-                }}
-              />
-            </div>
-
-            <p className="mt-2 text-xs text-white/40">
-              {loadingPercentage}%
-            </p>
-          </div>
-        </div>
 
         {/* ================= INTRO ================= */}
         <div

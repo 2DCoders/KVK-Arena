@@ -3,7 +3,6 @@ import {
   ArrowRight,
   Dumbbell,
   HeartPulse,
-  LoaderCircle,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
@@ -44,10 +43,10 @@ export default function GymHero() {
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const animationFrameRef = useRef<number | null>(null);
   const lastRenderedFrameRef = useRef(-1);
+  const targetFrameRef = useRef(0);
+  const requestFramesRef = useRef<(frame: number) => void>(() => {});
 
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [loadedFrames, setLoadedFrames] = useState(0);
-  const [isReady, setIsReady] = useState(false);
   const [isOpenSignup, setIsOpenSignup] = useState(false);
   const [isDesktop, setIsDesktop] = useState(() =>
     window.matchMedia("(min-width: 1024px)").matches,
@@ -95,7 +94,17 @@ export default function GymHero() {
 
   const drawFrame = useCallback((frameIndex: number) => {
     const canvas = canvasRef.current;
-    const image = imagesRef.current[frameIndex];
+    // Use the closest completed frame until the requested frame arrives.
+    let availableIndex = -1;
+    let distance = Infinity;
+    imagesRef.current.forEach((candidate, index) => {
+      if (candidate?.complete && candidate.naturalWidth > 0 &&
+          Math.abs(index - frameIndex) < distance) {
+        availableIndex = index;
+        distance = Math.abs(index - frameIndex);
+      }
+    });
+    const image = imagesRef.current[availableIndex];
 
     if (!canvas || !image || !image.complete || image.naturalWidth === 0) {
       return;
@@ -129,8 +138,8 @@ export default function GymHero() {
     const imageRatio = image.naturalWidth / image.naturalHeight;
     const canvasRatio = canvas.width / canvas.height;
 
-    let drawWidth = canvas.width;
-    let drawHeight = canvas.height;
+    let drawWidth: number;
+    let drawHeight: number;
     let offsetX = 0;
     let offsetY = 0;
 
@@ -155,72 +164,73 @@ export default function GymHero() {
       drawHeight,
     );
 
-    lastRenderedFrameRef.current = frameIndex;
+    lastRenderedFrameRef.current = availableIndex;
   }, []);
 
   useEffect(() => {
-    if (!isDesktop) {
-      setIsReady(true);
-      return;
-    }
-
-    if (frameSources.length === 0) {
-      console.error(
-        "No gym frames were found. Check the frame folder and filename format.",
-      );
-      return;
-    }
+    if (!isDesktop) return;
 
     let cancelled = false;
-    let completedCount = 0;
-
-    setIsReady(false);
-    setLoadedFrames(0);
+    let active = 0;
+    let firstFrameSettled = false;
+    let pending: number[] = [];
+    const requested = new Set<number>();
+    const images: HTMLImageElement[] = [];
+    imagesRef.current = images;
     lastRenderedFrameRef.current = -1;
 
-    const images = frameSources.map(() => new Image());
-    imagesRef.current = images;
-
-    const updateLoading = () => {
+    // Keep the first image uncontested; then allow at most four downloads.
+    // Only fetch a small window around the current position, not all 254 PNGs.
+    const pump = () => {
       if (cancelled) return;
-
-      completedCount += 1;
-      setLoadedFrames(completedCount);
-
-      if (completedCount === frameSources.length) {
-        const firstAvailableFrame = images.findIndex(
-          image => image.complete && image.naturalWidth > 0,
-        );
-        if (firstAvailableFrame !== -1) drawFrame(firstAvailableFrame);
-        setIsReady(true);
+      const limit = firstFrameSettled ? 4 : 1;
+      while (active < limit && pending.length > 0) {
+        const index = pending.shift()!;
+        if (requested.has(index)) continue;
+        requested.add(index);
+        active += 1;
+        const image = new Image();
+        images[index] = image;
+        image.decoding = "async";
+        image.fetchPriority = index === 0 ? "high" : "low";
+        const finish = () => {
+          if (cancelled) return;
+          active -= 1;
+          if (index === 0) firstFrameSettled = true;
+          drawFrame(targetFrameRef.current);
+          pump();
+        };
+        image.onload = finish;
+        image.onerror = finish;
+        image.src = frameSources[index];
       }
     };
 
-    images.forEach((image, index) => {
-      image.decoding = "async";
-      image.onload = updateLoading;
-      image.onerror = () => {
-        if (cancelled) return;
-        console.error(
-          `Unable to load gym frame: ${frameSources[index]}`,
-        );
-        updateLoading();
-      };
-      image.src = frameSources[index];
-    });
+    const requestFrames = (frame: number) => {
+      const nearby = Array.from({ length: frameSources.length }, (_, index) => index)
+        .filter(index => Math.abs(index - frame) <= 8 && !requested.has(index))
+        .sort((a, b) => Math.abs(a - frame) - Math.abs(b - frame));
+      // Replace queued work when scrolling, prioritizing the new position.
+      pending = firstFrameSettled ? nearby : [0, ...nearby.filter(index => index !== 0)];
+      pump();
+    };
+    requestFramesRef.current = requestFrames;
+    requestFrames(targetFrameRef.current);
 
     return () => {
       cancelled = true;
+      requestFramesRef.current = () => {};
       images.forEach(image => {
         image.onload = null;
         image.onerror = null;
+        if (!image.complete) image.removeAttribute("src");
       });
       imagesRef.current = [];
     };
   }, [drawFrame, frameSources, isDesktop]);
 
   useEffect(() => {
-    if (!isDesktop || !isReady) return;
+    if (!isDesktop) return;
 
     const updateScrollProgress = () => {
       const section = sectionRef.current;
@@ -244,6 +254,9 @@ export default function GymHero() {
         frameSources.length - 1,
         Math.floor(progress * (frameSources.length - 1)),
       );
+
+      targetFrameRef.current = frameIndex;
+      requestFramesRef.current(frameIndex);
 
       if (frameIndex !== lastRenderedFrameRef.current) {
         drawFrame(frameIndex);
@@ -280,7 +293,7 @@ export default function GymHero() {
         animationFrameRef.current = null;
       }
     };
-  }, [drawFrame, frameSources.length, isDesktop, isReady]);
+  }, [drawFrame, frameSources.length, isDesktop]);
 
   /*
    * Different content blocks enter and leave at different scroll points.
@@ -313,11 +326,6 @@ export default function GymHero() {
   const strengthOpacity = strengthEnter * (1 - strengthExit);
   const cardioOpacity = cardioEnter * (1 - cardioExit);
   const finalOpacity = finalEnter;
-
-  const loadingPercentage =
-    frameSources.length > 0
-      ? Math.round((loadedFrames / frameSources.length) * 100)
-      : 0;
 
   return (
     <>
@@ -450,38 +458,6 @@ export default function GymHero() {
           {/* Blue decorative glow */}
           <div className="pointer-events-none absolute -right-40 top-1/3 h-[500px] w-[500px] rounded-full bg-[#296BE1]/15 blur-[140px]" />
 
-
-          {/* Initial loading screen */}
-          <div
-            className={`absolute inset-0 z-50 grid place-items-center bg-[#05070b] transition-all duration-700 ${
-              isReady
-                ? "pointer-events-none opacity-0"
-                : "opacity-100"
-            }`}
-          >
-            <div className="flex flex-col items-center">
-              <div className="relative grid h-20 w-20 place-items-center rounded-full border border-white/10">
-                <LoaderCircle className="h-8 w-8 animate-spin text-[#296BE1]" />
-
-                <div className="absolute inset-2 rounded-full border border-[#296BE1]/20" />
-              </div>
-
-              <p className="mt-6 text-xs font-semibold uppercase tracking-[0.35em] text-white/60">
-                Preparing your workout
-              </p>
-
-              <div className="mt-4 h-1 w-48 overflow-hidden rounded-full bg-white/10">
-                <div
-                  className="h-full rounded-full bg-[#296BE1] transition-[width] duration-200"
-                  style={{ width: `${loadingPercentage}%` }}
-                />
-              </div>
-
-              <p className="mt-2 text-xs text-white/40">
-                {loadingPercentage}%
-              </p>
-            </div>
-          </div>
 
           {/* First hero content */}
           <div

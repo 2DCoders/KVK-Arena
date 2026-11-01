@@ -1,8 +1,8 @@
+import { createFrameLoader, nearestLoadedFrame } from "@/lib/progressive-frames";
 import {
   ArrowRight,
   Check,
   Droplets,
-  LoaderCircle,
   ShieldCheck,
 } from "lucide-react";
 import {
@@ -42,6 +42,7 @@ const easeInOut = (value: number) =>
 
 export default function CarwashHero() {
   const sectionRef = useRef<HTMLElement | null>(null);
+  const requestFramesRef = useRef<(frame: number) => void>(() => {});
   const canvasRef = useRef<HTMLCanvasElement | null>(
     null,
   );
@@ -52,14 +53,12 @@ export default function CarwashHero() {
   );
 
   const lastRenderedFrameRef = useRef(-1);
+  const targetFrameRef = useRef(0);
 
   const [scrollProgress, setScrollProgress] =
     useState(0);
 
-  const [loadedFrames, setLoadedFrames] =
-    useState(0);
 
-  const [isReady, setIsReady] = useState(false);
 
   const frameSources = useMemo(
     () =>
@@ -92,7 +91,8 @@ export default function CarwashHero() {
   const drawFrame = useCallback(
     (frameIndex: number) => {
       const canvas = canvasRef.current;
-      const image = imagesRef.current[frameIndex];
+      const availableIndex = nearestLoadedFrame(imagesRef.current, frameIndex);
+      const image = imagesRef.current[availableIndex];
 
       if (
         !canvas ||
@@ -151,8 +151,8 @@ export default function CarwashHero() {
       const canvasRatio =
         canvas.width / canvas.height;
 
-      let drawWidth = canvas.width;
-      let drawHeight = canvas.height;
+      let drawWidth: number;
+      let drawHeight: number;
       let offsetX = 0;
       let offsetY = 0;
 
@@ -181,79 +181,35 @@ export default function CarwashHero() {
         drawHeight,
       );
 
-      lastRenderedFrameRef.current =
-        frameIndex;
+      lastRenderedFrameRef.current = availableIndex;
     },
     [],
   );
 
   /**
-   * Preload desktop image-sequence frames.
+   * Load desktop frames near the scroll position.
    * Frames are loaded only on screens 640px and wider.
    */
   useEffect(() => {
-    const desktopQuery = window.matchMedia(
-      "(min-width: 640px)",
-    );
-
-    if (!desktopQuery.matches) {
-      setIsReady(true);
-      return;
-    }
-
-    if (frameSources.length === 0) {
-      console.error(
-        "No car wash frames found. Check the folder and filename format.",
-      );
-
-      return;
-    }
-
-    let cancelled = false;
-    let loadedCount = 0;
-
-    const images = frameSources.map(
-      (source, index) => {
-        const image = new Image();
-
-        image.decoding = "async";
-        image.src = source;
-
-        image.onload = () => {
-          if (cancelled) return;
-
-          loadedCount += 1;
-          setLoadedFrames(loadedCount);
-
-          if (index === 0) {
-            requestAnimationFrame(() => {
-              drawFrame(0);
-            });
-
-            setIsReady(true);
-          }
-
-          if (
-            loadedCount === frameSources.length
-          ) {
-            setIsReady(true);
-          }
-        };
-
-        image.onerror = () => {
-          console.error(
-            `Unable to load car wash frame: ${source}`,
-          );
-        };
-
-        return image;
-      },
-    );
-
-    imagesRef.current = images;
-
+    const media = window.matchMedia("(min-width: 640px)");
+    let loader: ReturnType<typeof createFrameLoader> | undefined;
+    const update = () => {
+      loader?.stop();
+      imagesRef.current = [];
+      requestFramesRef.current = () => {};
+      if (!media.matches) return;
+      loader = createFrameLoader(frameSources, imagesRef.current, () => {
+        drawFrame(targetFrameRef.current);
+      });
+      requestFramesRef.current = loader.request;
+      loader.request(targetFrameRef.current);
+    };
+    update();
+    media.addEventListener("change", update);
     return () => {
-      cancelled = true;
+      media.removeEventListener("change", update);
+      loader?.stop();
+      requestFramesRef.current = () => {};
       imagesRef.current = [];
     };
   }, [drawFrame, frameSources]);
@@ -302,6 +258,9 @@ export default function CarwashHero() {
             (frameSources.length - 1),
         ),
       );
+
+      targetFrameRef.current = frameIndex;
+      requestFramesRef.current(frameIndex);
 
       if (
         frameIndex !==
@@ -441,15 +400,6 @@ export default function CarwashHero() {
     detailEnter * (1 - detailExit);
 
   const finalOpacity = finalEnter;
-
-  const loadingPercentage =
-    frameSources.length > 0
-      ? Math.round(
-          (loadedFrames /
-            frameSources.length) *
-            100,
-        )
-      : 0;
 
   return (
     <section
@@ -654,39 +604,6 @@ export default function CarwashHero() {
 
         <div className="pointer-events-none absolute -left-[8%] top-[34%] h-px w-[46%] -rotate-[9deg] bg-gradient-to-r from-transparent via-blue-300/25 to-transparent" />
 
-        {/* Loading screen */}
-        <div
-          className={`absolute inset-0 z-50 grid place-items-center bg-[#02040a] transition-all duration-700 ${
-            isReady
-              ? "pointer-events-none opacity-0"
-              : "opacity-100"
-          }`}
-        >
-          <div className="flex flex-col items-center px-5 text-center">
-            <div className="relative grid h-20 w-20 place-items-center rounded-full border border-white/10">
-              <LoaderCircle className="h-8 w-8 animate-spin text-[#1473ff]" />
-
-              <div className="absolute inset-2 rounded-full border border-blue-400/15" />
-            </div>
-
-            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.3em] text-white/60">
-              Preparing your experience
-            </p>
-
-            <div className="mt-4 h-1 w-48 overflow-hidden rounded-full bg-white/10">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-[#0757d4] to-[#1688ff] transition-[width] duration-200"
-                style={{
-                  width: `${loadingPercentage}%`,
-                }}
-              />
-            </div>
-
-            <p className="mt-2 text-xs text-white/40">
-              {loadingPercentage}%
-            </p>
-          </div>
-        </div>
 
         {/* ================= INTRO CONTENT ================= */}
         <div
