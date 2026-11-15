@@ -18,11 +18,16 @@ import SalonHome from "./client/pages/home/salon";
 import { getEnv } from "./env";
 import MemberBadmintonBooking from "./client/pages/members/badminton";
 
+import PolicyPage from "./client/pages/policies";
+
 function App() {
   const env = getEnv();
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/privacy-policy" element={<PolicyPage policy="privacy" />} />
+      <Route path="/terms-and-conditions" element={<PolicyPage policy="terms" />} />
+      <Route path="/refund-policy" element={<PolicyPage policy="refund" />} />
       <Route path="*" element={<NotFound />} />
       <Route path="/gym" element={env.GYM_COMING_SOON ? <GymComingSoon /> : <GymHome />} />
       <Route path="/carwash" element={env.CARWASH_COMING_SOON ? <CarwashComingSoon /> : <CarwashHome />} />

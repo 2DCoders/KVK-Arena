@@ -400,7 +400,7 @@ export default function ContactUs() {
               <div>
                 <p className="text-xs text-slate-400">Email</p>
                 <p className="text-sm font-semibold text-white">
-                  kvkarena28@gmail.com
+                  info@kvkarena.lk 
                 </p>
               </div>
             </div>

@@ -216,7 +216,7 @@ export default function SalonFooter() {
                   <ul className="mt-5 space-y-3">
                     <li>
                       <a
-                        href="#"
+                        href="/privacy-policy"
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
                         Privacy Policy
@@ -225,7 +225,7 @@ export default function SalonFooter() {
 
                     <li>
                       <a
-                        href="#"
+                        href="/terms-and-conditions"
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
                         Terms & Conditions
@@ -234,7 +234,7 @@ export default function SalonFooter() {
 
                     <li>
                       <a
-                        href="#"
+                        href="/refund-policy"
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
                         Refund Policy
