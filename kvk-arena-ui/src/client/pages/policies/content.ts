@@ -8,7 +8,7 @@ export const policies = {
     "sections": [
       [
         "Who we are",
-        "KVK Arena operates at 387 Galle Road, Colombo-04, Sri Lanka. For privacy enquiries, contact info@kvkarena.lk or +94 76 560 5885."
+        "KVK Arena is the registered business name. We operate at 387 Galle Road, Colombo-04, Sri Lanka. For privacy enquiries, contact info@kvkarena.lk or +94 76 560 5885."
       ],
       [
         "Information you provide",
@@ -24,27 +24,27 @@ export const policies = {
       ],
       [
         "Browser storage and external content",
-        "The reviewed website does not include an advertising or analytics tracker. It does use local storage for member sign-in details, authentication tokens, pending gym payments and promotional-popup preferences, and session storage to recover pending member badminton payments. You can clear this information in your browser; doing so may sign you out or interrupt payment recovery. Maps use OpenStreetMap tiles and external marker assets from Cloudflare CDN. Google Fonts is requested by the stylesheet. These providers receive connection information, such as your IP address, when your browser requests their content. External providers may apply their own storage and privacy practices."
+        "Our website does not use advertising or analytics trackers. It does use local storage for member sign-in details, authentication tokens, pending gym payments and promotional-popup preferences, and session storage to recover pending member badminton payments. You can clear this information in your browser; doing so may sign you out or interrupt payment recovery. Maps use OpenStreetMap tiles and external marker assets from Cloudflare CDN. Google Fonts is requested by the stylesheet. These providers receive connection information, such as your IP address, when your browser requests their content. External providers may apply their own storage and privacy practices."
       ],
       [
         "Who receives information",
-        "Customer records are available to KVK Arena administrators for service administration. Relevant information is processed by our application systems and PayHere, and external content providers receive browser requests as described above. Information may also need to be disclosed to meet applicable legal obligations or resolve payment disputes. The complete hosting and messaging provider list and processing locations require confirmation."
+        "Within KVK Arena, access to customer records is restricted to administrators for service administration. Our frontend is hosted by Cloudflare, our backend by MonsterASP, and our database by Neon. We use SMSLenz to send SMS messages and Spacemail to send emails. These providers process relevant information as needed to deliver their services. PayHere processes online payment information, and external content providers receive browser requests as described above. Information may also need to be disclosed to meet applicable legal obligations or resolve payment disputes. Our providers may store or process information outside Sri Lanka. Processing locations depend on the provider and the infrastructure used to deliver the service. Contact us with questions about the processing of your information."
       ],
       [
         "Promotional messages",
-        "KVK Arena sends promotional emails or SMS messages. To ask us to stop promotional messages, contact info@kvkarena.lk or +94 76 560 5885 and identify the email address or phone number concerned. Booking, payment and account communications may still be needed to provide your service. Subscription and opt-out procedures are subject to business confirmation."
+        "Registering for a membership or making a booking automatically adds the contact details you provide to KVK Arena's promotional email or SMS communications. To request that promotional messages stop, contact info@kvkarena.lk or +94 76 560 5885 and identify the email address or phone number concerned. Booking, payment and account communications may still be needed to provide your service. KVK Arena administration handles these opt-out requests manually by removing or suppressing the specified contact details from future promotional sends. Opting out of promotions does not cancel your booking or membership."
       ],
       [
         "Retention and your requests",
-        "The business information supplied for this draft describes customer records as retained for a lifetime, without a fixed deletion period. The precise retention and deletion schedule requires confirmation and must account for applicable requirements. Contact us to request access, correction or deletion, or to raise a privacy concern. We may need to verify your identity and explain any records that must be retained."
+        "KVK Arena currently retains customer records indefinitely and does not operate a scheduled deletion process. Contact info@kvkarena.lk or +94 76 560 5885 to request access, correction or deletion, or to raise a privacy concern. Administration manually reviews and responds to requests for access, correction or deletion received by email or phone. A deletion request does not automatically delete records. Administration may need to verify your identity and will explain the outcome and any records that must be retained. This retention practice does not limit any rights or obligations that apply under law."
       ],
       [
-        "Children and processing locations",
-        "The business serves customers in Sri Lanka and has not specified a general age restriction. Its questionnaire states that it does not collect children's information; however, the website includes date-of-birth fields and does not establish a consistent minimum age. Parents or guardians should contact us before submitting a child's details. Child-data handling and provider processing locations must be confirmed before this draft is finalized."
+        "Age and children's information",
+        "KVK Arena has no general age limit for its services. Membership registration may collect date of birth and other personal information described in this policy, including information about customers under 18. Parents or guardians may contact info@kvkarena.lk or +94 76 560 5885 with questions or requests concerning a child's information. KVK Arena does not currently obtain or verify parent or guardian consent as part of registration or booking. KVK Arena does not currently have formal activity-specific adult supervision requirements in place. Contact administration with any questions about a child's participation."
       ],
       [
         "Account safety and updates",
-        "Keep account credentials private and sign out on shared devices. Browser storage can persist between visits. This notice does not make claims about backend security controls that have not been verified. Updates to this policy will be posted on this page with a revised date."
+        "Keep account credentials private and sign out on shared devices. Browser storage can persist between visits. Updates to this policy will be posted on this page with a revised date."
       ]
     ]
   },
@@ -55,35 +55,35 @@ export const policies = {
     "sections": [
       [
         "Business and contact details",
-        "This website, kvkarena.lk, is operated by KVK Arena, 387 Galle Road, Colombo-04, Sri Lanka. Contact info@kvkarena.lk or +94 76 560 5885 for enquiries or complaints."
+        "This website, kvkarena.lk, is operated by KVK Arena, the registered business name, at 387 Galle Road, Colombo-04, Sri Lanka. Contact info@kvkarena.lk or +94 76 560 5885 for enquiries or complaints."
       ],
       [
         "Using the website",
-        "Provide accurate contact, membership and booking information. Keep your account details private and use the website lawfully. Do not attempt unauthorized access, interfere with the service or submit misleading payment or identity information."
+        "KVK Arena has no general age limit for its services. Provide accurate contact, membership and booking information. Keep your account details private and use the website lawfully. Do not attempt unauthorized access, interfere with the service or submit misleading payment or identity information."
       ],
       [
         "Bookings and confirmation",
-        "Select an available service or membership, provide the requested information and complete the applicable checkout steps. A payment-provider completion message alone does not establish that a booking or membership has been confirmed: wait for the KVK Arena system to verify the payment and display confirmation. If a payment remains pending or you have been charged without confirmation, contact us with the order reference before attempting another payment."
+        "Select an available service or membership, provide the requested information and complete the applicable checkout steps. Bookings and memberships paid through PayHere are confirmed only after KVK Arena's system verifies successful payment and displays confirmation. A payment-provider completion message alone does not confirm your booking or membership. If a payment remains pending or you have been charged without confirmation, contact us with the order reference before attempting another payment."
       ],
       [
         "Prices and payments",
-        "Check the price, currency, service details and membership period displayed before paying. Available online payment methods are shown by PayHere during checkout. Any deposit, tax or additional charge should be disclosed before payment. Contact us if the total or the service description is unclear."
+        "All website booking and membership prices are charged in Sri Lankan rupees (LKR). The full payable total is displayed before payment. Review the total, service details and membership period before paying. Available online payment methods are shown by PayHere during checkout. Contact us before paying if the total or the service description is unclear."
       ],
       [
         "Changes, late arrival and missed bookings",
-        "Contact us as early as possible to request a change, transfer or rescheduling. A requested change is not confirmed until KVK Arena accepts it. Specific notice periods, change fees and late-arrival arrangements have not been supplied for this draft; check these with the team before booking. Customer cancellations and unused bookings are subject to the Refund Policy."
+        "Bookings and memberships are non-refundable, subject to rights that cannot lawfully be excluded. Bookings and memberships cannot be transferred to another person. Contact administration to request rescheduling; changes are subject to availability and administrator confirmation. A request does not change the booking until confirmed. Customers are responsible for arriving on time. If you arrive late, your booking still ends at the original scheduled end time. Lost time will not be added, and you may not use the facility beyond your booked slot. Late arrival does not entitle you to a refund."
       ],
       [
         "Facility use and safety",
-        "Follow staff instructions and the safety and equipment-use rules for the facility you attend. Treat staff, other visitors and equipment with care. Raise any relevant participation or supervision questions with the team before using a facility. Any service-specific safety requirements, waivers or damage charges should be explained before participation."
+        "Follow staff instructions and the safety and equipment-use rules for the facility you attend. Treat staff, other visitors and equipment with care. Raise any participation or safety concerns with administration before using a facility. KVK Arena does not currently have formal activity-specific safety briefing, signed waiver or adult supervision requirements in place. If equipment or facilities are damaged through misuse, KVK Arena administration will review the incident and explain any repair or replacement charge to the customer."
       ],
       [
         "Memberships and promotions",
-        "Membership access, validity, inclusions and promotional eligibility are governed by the details shown for the selected plan or offer. Check these before purchase. This draft does not establish a right to transfer, freeze or extend a membership, or authorize recurring payments. Ask the team about any plan-specific restrictions."
+        "Membership access, validity and inclusions are governed by the details shown for the selected plan. Each promotional offer states its eligibility requirements, validity dates and included benefits. Review these details before purchase. The normal non-refundable and non-transferable rules also apply to promotional bookings and memberships, subject to rights that cannot lawfully be excluded. Memberships are personal and cannot be transferred to another person. Membership access ends on the expiry date of the purchased plan. Customers must renew their membership to continue using membership benefits after that date. Memberships cannot be paused or frozen. The original expiry date remains unchanged, including during periods when the membership is not used. Recurring payments are not authorized by these terms. Ask the team about any plan-specific restrictions."
       ],
       [
         "Service availability and account issues",
-        "Availability shown on the website may change while a booking is being completed. Contact us about service interruptions or an account restriction. Specific rules for refusal of service, account suspension and cancellation by KVK Arena require business confirmation. Where we cannot provide a paid service, contact us under the Refund Policy."
+        "Availability shown on the website may change while a booking is being completed. If KVK Arena cancels or cannot provide a booked service, contact administration to arrange rescheduling under the Refund Policy. Any remedy required by applicable law remains available. Decisions to refuse service or suspend an account are made individually by KVK Arena administration. Administration will specify the reason for the decision to the affected customer. Contact administration if you have questions about a restriction or wish to raise a concern."
       ],
       [
         "Website content and privacy",
@@ -91,7 +91,7 @@ export const policies = {
       ],
       [
         "Complaints and applicable rights",
-        "Send complaints to info@kvkarena.lk with your booking or membership reference and the issue you would like resolved. These terms do not exclude rights or remedies that apply under Sri Lankan law. No exclusive court, arbitration requirement or liability waiver is established by this draft."
+        "Send complaints to info@kvkarena.lk with your booking or membership reference and the issue you would like resolved. These terms do not exclude rights or remedies that apply under Sri Lankan law."
       ],
       [
         "Changes to these terms",
@@ -102,31 +102,31 @@ export const policies = {
   "refund": {
     "path": "/refund-policy",
     "title": "Refund Policy",
-    "intro": "Information about cancellations, non-refundable bookings and memberships, and payment enquiries.",
+    "intro": "Information about non-refundable payments and rescheduling through KVK Arena administration.",
     "sections": [
       [
-        "General policy",
-        "KVK Arena's stated policy is that bookings and memberships are non-refundable. Review the selected service, date, time, membership period and price carefully before paying. This policy is subject to any rights or remedies required by applicable law."
+        "Non-refundable payments",
+        "All payments for KVK Arena bookings and memberships are non-refundable, including customer cancellations, changes of plans, missed bookings and unused services. KVK Arena does not offer discretionary refunds. This policy does not exclude any rights or remedies that cannot lawfully be excluded."
       ],
       [
-        "Customer cancellations and unused services",
-        "A customer cancellation, change of plans or decision not to use a booking or membership does not ordinarily qualify for a refund under the stated non-refundable policy. Contact the team to discuss any request to change or reschedule a service; an alternative arrangement is not guaranteed."
+        "Rescheduling through administration",
+        "To request rescheduling, contact KVK Arena administration at info@kvkarena.lk or +94 76 560 5885. Rescheduling is handled by an administrator and is subject to availability and confirmation. A request alone does not change your existing booking; wait for the administrator to confirm the revised arrangement."
       ],
       [
-        "Payment errors and services we cannot provide",
-        "If you believe you have paid twice, were charged an incorrect amount, or paid for a service KVK Arena cancelled or could not provide, contact us with supporting details. We will need to verify the transaction and explain the available resolution, including any remedy required by applicable law. Do not make a second payment while the first payment is awaiting confirmation without first checking its status."
+        "If KVK Arena cannot provide the service",
+        "If KVK Arena cancels or cannot provide a booked service, contact administration to arrange rescheduling. KVK Arena's policy is to offer rescheduling rather than a discretionary refund. Any remedy required by applicable law remains available."
       ],
       [
-        "How to contact us",
-        "Email info@kvkarena.lk or call +94 76 560 5885. Provide your name, booking or membership reference, payment or order reference, payment date, amount and the reason for your request. Attach a receipt or relevant payment confirmation where available. Do not send your full card number, CVV, password or one-time payment codes."
+        "Payment discrepancies",
+        "If you believe you have paid twice or were charged an incorrect amount, contact administration with the transaction details so the payment records can be investigated and any necessary correction or legally required remedy can be addressed. Do not repeat a payment while its status is pending without first checking with the team."
       ],
       [
-        "Review and payment of approved refunds",
-        "Submitting a request does not mean a refund has been approved. Any approved refund will be arranged through the applicable payment channel where supported, or another method agreed after verification. Review times, bank processing times and any lawful deductions will be explained for the particular transaction; no fixed timeline or deduction has been confirmed for this draft."
+        "Contact and supporting information",
+        "Email info@kvkarena.lk or call +94 76 560 5885. Include your name, booking or membership reference, payment or order reference, payment date and amount, and the rescheduling request or payment issue. Attach a receipt or payment confirmation where available. Do not send your full card number, CVV, password or one-time payment codes."
       ],
       [
-        "Deposits, promotions and exceptions",
-        "Specific rules for deposits, partially used memberships, promotional offers, vouchers and emergency exceptions have not been supplied. Contact us before paying if these affect your purchase. Nothing in this policy removes an entitlement that cannot lawfully be excluded."
+        "Refund timelines",
+        "Because KVK Arena does not offer discretionary refunds, no standard refund review or payment timeline applies under this policy. Any payment correction or remedy required by applicable law will be handled according to the requirements applicable to that case."
       ]
     ]
   }

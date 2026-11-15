@@ -26,10 +26,7 @@ export default function PolicyPage({ policy }: { policy: PolicyKey }) {
         <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">KVK Arena · Policies</p>
         <h1 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">{content.title}</h1>
         <p className="mt-5 max-w-3xl leading-7 text-slate-300">{content.intro}</p>
-        <p className="mt-4 text-sm text-slate-400">Draft updated: 15 November 2026 · Effective date pending approval</p>
-        <aside className="mt-8 rounded-xl border border-amber-300/30 bg-amber-300/5 p-5 text-sm leading-6 text-amber-100">
-          Draft for review. Business details and operating procedures still need confirmation before this policy is finalized.
-        </aside>
+        <p className="mt-4 text-sm text-slate-400">Last updated: 15 November 2026 | Effective upon publication</p>
         <div className="mt-10 grid gap-10 lg:grid-cols-[240px_minmax(0,1fr)]">
           <nav aria-label="Policies" className="self-start rounded-xl border border-white/10 p-4 lg:sticky lg:top-6">
             <p className="px-3 pb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">Our policies</p>

@@ -65,7 +65,6 @@ export default function MembershipRegistration({
       nextErrors.whatsapp = "Enter a valid mobile number, such as 07xxxxxxxx.";
     }
 
-    console.log("Validating email:", formData.email);
 
     const emailValue = formData.email.trim();
     if (!emailValue) {

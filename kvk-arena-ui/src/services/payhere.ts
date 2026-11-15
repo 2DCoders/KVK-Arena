@@ -25,7 +25,6 @@ export const startPayHereCheckout = (
   details: PayHereCheckoutDetails,
   callbacks: PayHereCallbacks,
 ) => {
-  console.log("[PayHere] startPayHereCheckout called with:", details);
 
   if (!window.payhere) {
     console.error("[PayHere] window.payhere is not defined — the SDK script has not loaded.");
@@ -38,23 +37,21 @@ export const startPayHereCheckout = (
   ).filter((key) => !details[key]);
 
   if (missingFields.length > 0) {
-    console.error("[PayHere] Missing required checkout fields:", missingFields, details);
+    console.error("[PayHere] Missing required checkout fields:", missingFields);
     callbacks.onError(`Payment could not be started (missing: ${missingFields.join(", ")}).`);
     return;
   }
 
   window.payhere.onCompleted = (orderId: string) => {
-    console.log("[PayHere] onCompleted:", orderId);
     callbacks.onCompleted(orderId);
   };
 
   window.payhere.onDismissed = () => {
-    console.log("[PayHere] onDismissed");
     callbacks.onDismissed();
   };
 
   window.payhere.onError = (error: any) => {
-    console.error("[PayHere] onError:", error);
+    console.error("[PayHere] Payment provider reported an error.");
     callbacks.onError(error);
   };
 
@@ -89,12 +86,11 @@ export const startPayHereCheckout = (
     notify_url: `${getEnv().API_URL}${details.notifyPath}`,
   };
 
-  console.log("[PayHere] Calling window.payhere.startPayment with:", paymentDetails);
 
   try {
     window.payhere.startPayment(paymentDetails);
   } catch (error) {
-    console.error("[PayHere] startPayment threw synchronously:", error);
+    console.error("[PayHere] Payment checkout could not be opened.");
     callbacks.onError(error);
   }
 };
