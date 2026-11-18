@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using kvk.BuildingBlocks.Common;
 using kvk.Gaming.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,7 @@ public class AdditionalPurchaseController : ControllerBase
     }
 
     [HttpPost]
+    [AuthorizeByPermission("KVK:Gaming:AdditionalPurchase:Create")]
     public async Task<IActionResult> Create([FromBody] AdditionalPurchaseCreateRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.CreateAsync(request, cancellationToken);
@@ -27,6 +29,7 @@ public class AdditionalPurchaseController : ControllerBase
     }
 
     [HttpPut]
+    [AuthorizeByPermission("KVK:Gaming:AdditionalPurchase:Edit")]
     public async Task<IActionResult> Update([FromBody] AdditionalPurchaseUpdateRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.UpdateAsync(request, cancellationToken);
@@ -38,6 +41,7 @@ public class AdditionalPurchaseController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [AuthorizeByPermission("KVK:Gaming:AdditionalPurchase:View")]
     public async Task<ActionResult<AdditionalPurchaseResponse>> GetById(Guid id, CancellationToken cancellationToken = default)
     {
         var response = await _service.GetByIdAsync(id, cancellationToken);
@@ -49,6 +53,7 @@ public class AdditionalPurchaseController : ControllerBase
     }
 
     [HttpGet]
+    [AuthorizeByPermission("KVK:Gaming:AdditionalPurchase:View")]
     public async Task<ActionResult<List<AdditionalPurchaseResponse>>> GetPagedList([FromQuery] AdditionalPurchasePagedRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.GetPagedListAsync(request, cancellationToken);
@@ -56,6 +61,7 @@ public class AdditionalPurchaseController : ControllerBase
     }
 
     [HttpGet("by-category/{categoryId:guid}")]
+    [AuthorizeByPermission("KVK:Gaming:AdditionalPurchase:View")]
     public async Task<ActionResult<List<AdditionalPurchaseResponse>>> GetByCategory(Guid categoryId, CancellationToken cancellationToken = default)
     {
         var result = await _service.GetByCategoryAsync(categoryId, cancellationToken);
@@ -63,6 +69,7 @@ public class AdditionalPurchaseController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [AuthorizeByPermission("KVK:Gaming:AdditionalPurchase:Delete")]
     public async Task<IActionResult> SoftDelete(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _service.SoftDeleteAsync(id, cancellationToken);
@@ -74,6 +81,7 @@ public class AdditionalPurchaseController : ControllerBase
     }
 
     [HttpPut("{id:guid}/activate")]
+    [AuthorizeByPermission("KVK:Gaming:AdditionalPurchase:Manage")]
     public async Task<IActionResult> Activate(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _service.ActivateAsync(id, cancellationToken);
@@ -85,6 +93,7 @@ public class AdditionalPurchaseController : ControllerBase
     }
 
     [HttpPut("{id:guid}/deactivate")]
+    [AuthorizeByPermission("KVK:Gaming:AdditionalPurchase:Manage")]
     public async Task<IActionResult> Deactivate(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _service.DeactivateAsync(id, cancellationToken);

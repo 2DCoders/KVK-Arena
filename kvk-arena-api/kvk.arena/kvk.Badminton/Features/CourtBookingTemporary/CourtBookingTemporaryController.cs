@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Badminton.Features.CourtBookingTemporary;
@@ -14,6 +15,7 @@ public class CourtBookingTemporaryController : ControllerBase
     }
 
     [HttpPost("check-availability")]
+    [AuthorizeByPermission("KVK:Badminton:BookingAvailability:View")]
     public async Task<IActionResult> CheckAvailability([FromBody] CourtBookingTemporaryAvailabilityCheckRequest request,
         [FromQuery] string? memberId, [FromQuery] string? couponCode = null)
     {
@@ -22,6 +24,7 @@ public class CourtBookingTemporaryController : ControllerBase
     }
 
     [HttpPost]
+    [AuthorizeByPermission("KVK:Badminton:CourtBookingTemporary:Create")]
     public async Task<IActionResult> CreateBooking([FromForm] CreateCourtBookingTemporaryRequest request,
         CancellationToken cancellationToken)
     {
@@ -37,6 +40,7 @@ public class CourtBookingTemporaryController : ControllerBase
     }
 
     [HttpPost("availability-for-certain-period")]
+    [AuthorizeByPermission("KVK:Badminton:BookingAvailability:View")]
     public async Task<IActionResult> AvailabilityForCertainPeriod(
         [FromForm] AvailabilityForCertainPeriodTemporaryRequest request)
     {

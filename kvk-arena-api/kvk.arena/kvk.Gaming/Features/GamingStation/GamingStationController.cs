@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using kvk.BuildingBlocks.Common;
 using kvk.Gaming.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +18,7 @@ public class GamingStationController : ControllerBase
     }
 
     [HttpPost]
+    [AuthorizeByPermission("KVK:Gaming:GamingStation:Create")]
     public async Task<IActionResult> Create([FromBody] GamingStationCreateRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.CreateAsync(request, cancellationToken);
@@ -28,6 +30,7 @@ public class GamingStationController : ControllerBase
     }
 
     [HttpPut]
+    [AuthorizeByPermission("KVK:Gaming:GamingStation:Edit")]
     public async Task<IActionResult> Update([FromBody] GamingStationUpdateRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.UpdateAsync(request, cancellationToken);
@@ -39,6 +42,7 @@ public class GamingStationController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [AuthorizeByPermission("KVK:Gaming:GamingStation:View")]
     public async Task<ActionResult<GamingStationResponse>> GetById(Guid id, CancellationToken cancellationToken = default)
     {
         var response = await _service.GetByIdAsync(id, cancellationToken);
@@ -50,6 +54,7 @@ public class GamingStationController : ControllerBase
     }
 
     [HttpGet]
+    [AuthorizeByPermission("KVK:Gaming:GamingStation:View")]
     public async Task<ActionResult<List<GamingStationResponse>>> GetList([FromQuery] GamingStationListRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.GetListAsync(request, cancellationToken);
@@ -57,6 +62,7 @@ public class GamingStationController : ControllerBase
     }
 
     [HttpGet("by-category/{categoryId:guid}")]
+    [AuthorizeByPermission("KVK:Gaming:GamingStation:View")]
     public async Task<ActionResult<List<GamingStationResponse>>> GetStationsByCategory(Guid categoryId, CancellationToken cancellationToken = default)
     {
         var result = await _service.GetStationsByCategoryAsync(categoryId, cancellationToken);
@@ -64,6 +70,7 @@ public class GamingStationController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [AuthorizeByPermission("KVK:Gaming:GamingStation:Delete")]
     public async Task<IActionResult> SoftDelete(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _service.SoftDeleteAsync(id, cancellationToken);
@@ -75,6 +82,7 @@ public class GamingStationController : ControllerBase
     }
 
     [HttpPut("{id:guid}/activate")]
+    [AuthorizeByPermission("KVK:Gaming:GamingStation:Manage")]
     public async Task<IActionResult> Activate(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _service.ActivateAsync(id, cancellationToken);
@@ -86,6 +94,7 @@ public class GamingStationController : ControllerBase
     }
 
     [HttpPut("{id:guid}/deactivate")]
+    [AuthorizeByPermission("KVK:Gaming:GamingStation:Manage")]
     public async Task<IActionResult> Deactivate(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _service.DeactivateAsync(id, cancellationToken);

@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using kvk.BuildingBlocks.Common;
 using kvk.Gaming.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,7 @@ public class GamingCategoryController : ControllerBase
     }
 
     [HttpPost]
+    [AuthorizeByPermission("KVK:Gaming:GamingCategory:Create")]
     public async Task<IActionResult> Create([FromBody] GamingCategoryCreateRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.CreateAsync(request, cancellationToken);
@@ -27,6 +29,7 @@ public class GamingCategoryController : ControllerBase
     }
 
     [HttpPut]
+    [AuthorizeByPermission("KVK:Gaming:GamingCategory:Edit")]
     public async Task<IActionResult> Update([FromBody] GamingCategoryUpdateRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.UpdateAsync(request, cancellationToken);
@@ -38,6 +41,7 @@ public class GamingCategoryController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [AuthorizeByPermission("KVK:Gaming:GamingCategory:View")]
     public async Task<ActionResult<GamingCategoryResponse>> GetById(Guid id, CancellationToken cancellationToken = default)
     {
         var response = await _service.GetByIdAsync(id, cancellationToken);
@@ -49,6 +53,7 @@ public class GamingCategoryController : ControllerBase
     }
 
     [HttpGet]
+    [AuthorizeByPermission("KVK:Gaming:GamingCategory:View")]
     public async Task<ActionResult<List<GamingCategoryResponse>>> GetPagedList([FromQuery] GamingCategoryPagedRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.GetGameCategoryListAsync(request, cancellationToken);
@@ -56,6 +61,7 @@ public class GamingCategoryController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [AuthorizeByPermission("KVK:Gaming:GamingCategory:Delete")]
     public async Task<IActionResult> SoftDelete(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _service.SoftDeleteAsync(id, cancellationToken);
@@ -67,6 +73,7 @@ public class GamingCategoryController : ControllerBase
     }
 
     [HttpPut("{id:guid}/activate")]
+    [AuthorizeByPermission("KVK:Gaming:GamingCategory:Manage")]
     public async Task<IActionResult> Activate(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _service.ActivateAsync(id, cancellationToken);
@@ -78,6 +85,7 @@ public class GamingCategoryController : ControllerBase
     }
 
     [HttpPut("{id:guid}/deactivate")]
+    [AuthorizeByPermission("KVK:Gaming:GamingCategory:Manage")]
     public async Task<IActionResult> Deactivate(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _service.DeactivateAsync(id, cancellationToken);

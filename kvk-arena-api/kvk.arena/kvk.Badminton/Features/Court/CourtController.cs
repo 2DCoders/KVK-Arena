@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using kvk.Badminton.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,6 +16,7 @@ public class CourtController : ControllerBase
     }
 
     [HttpGet]
+    [AuthorizeByPermission("KVK:Badminton:Court:View")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
         var courts = await _service.GetAllAsync(cancellationToken);
@@ -22,6 +24,7 @@ public class CourtController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [AuthorizeByPermission("KVK:Badminton:Court:View")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _service.GetByIdAsync(id, cancellationToken);
@@ -29,6 +32,7 @@ public class CourtController : ControllerBase
     }
 
     [HttpPost]
+    [AuthorizeByPermission("KVK:Badminton:Court:Create")]
     public async Task<IActionResult> Create([FromBody] CourtCreateRequest request, CancellationToken cancellationToken)
     {
         var result = await _service.CreateAsync(request, cancellationToken);
@@ -40,6 +44,7 @@ public class CourtController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [AuthorizeByPermission("KVK:Badminton:Court:Edit")]
     public async Task<IActionResult> Update(Guid id, [FromBody] CourtUpdateRequest request,
         CancellationToken cancellationToken)
     {
@@ -55,6 +60,7 @@ public class CourtController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [AuthorizeByPermission("KVK:Badminton:Court:Delete")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         var result = await _service.DeleteAsync(id, cancellationToken);

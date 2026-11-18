@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using kvk.BuildingBlocks.Common;
 using kvk.Gym.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,7 @@ public class PaymentGatewayController : ControllerBase
     }
 
     [HttpPost("create")]
+    [AuthorizeByPermission("KVK:Gym:PaymentGateway:Create")]
     public async Task<IActionResult> CreatePayment([FromBody] PaymentGatewayRequest request)
     {
         var response = await _paymentGatewayService.ProcessPayment(request);
@@ -23,6 +25,7 @@ public class PaymentGatewayController : ControllerBase
     }
     
     [HttpPost("reverse")]
+    [AuthorizeByPermission("KVK:Gym:PaymentGateway:Delete")]
     public async Task<IActionResult> DeletePendingPayment([FromBody]PendingPaymentDeleteRequest request)
     {
         var response = await _paymentGatewayService.DeletePendingPayment(request);

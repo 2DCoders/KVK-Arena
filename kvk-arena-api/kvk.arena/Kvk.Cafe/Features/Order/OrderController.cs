@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using Kvk.Cafe.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,6 +9,7 @@ namespace Kvk.Cafe.Features.Order;
 public class OrderController(IOrderService orderService) : ControllerBase
 {
     [HttpPost]
+    [AuthorizeByPermission("KVK:Cafe:Order:Create")]
     public async Task<IActionResult> Create([FromBody] OrderCreateRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -21,6 +23,7 @@ public class OrderController(IOrderService orderService) : ControllerBase
     }
 
     [HttpPut]
+    [AuthorizeByPermission("KVK:Cafe:Order:Edit")]
     public async Task<IActionResult> Update([FromBody] OrderUpdateRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -34,6 +37,7 @@ public class OrderController(IOrderService orderService) : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [AuthorizeByPermission("KVK:Cafe:Order:Delete")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await orderService.DeleteOrderAsync(id, cancellationToken);
@@ -46,6 +50,7 @@ public class OrderController(IOrderService orderService) : ControllerBase
     }
 
     [HttpGet]
+    [AuthorizeByPermission("KVK:Cafe:Order:View")]
     public async Task<ActionResult<List<OrderResponse>>> Get(CancellationToken cancellationToken = default)
     {
         var orders = await orderService.GetOrdersAsync(cancellationToken);
@@ -53,6 +58,7 @@ public class OrderController(IOrderService orderService) : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [AuthorizeByPermission("KVK:Cafe:Order:View")]
     public async Task<ActionResult<OrderResponse>> GetById(Guid id,
         CancellationToken cancellationToken = default)
     {

@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using Microsoft.AspNetCore.Mvc;
 using kvk.BuildingBlocks.Interfaces;
 using kvk.Gaming.Services;
@@ -16,6 +17,7 @@ public class DayEndController : ControllerBase
     }
 
     [HttpPost]
+    [AuthorizeByPermission("KVK:Gaming:DayEnd:Create")]
     public async Task<IActionResult> Create([FromBody] kvk.BuildingBlocks.Common.DayEnd request, CancellationToken cancellationToken = default)
     {
         var result = await _service.CreateDayEndAsync(request, cancellationToken);
@@ -27,6 +29,7 @@ public class DayEndController : ControllerBase
 
     // GET /api/gaming/dayend?date=2026-05-24
     [HttpGet]
+    [AuthorizeByPermission("KVK:Gaming:DayEnd:View")]
     public async Task<IActionResult> Get([FromQuery] DateTime? date, CancellationToken cancellationToken = default)
     {
         var list = await _service.GetDayEndsAsync(date, cancellationToken);

@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using Microsoft.AspNetCore.Mvc;
 using kvk.BuildingBlocks.Common;
 using kvk.Gym.Services;
@@ -17,6 +18,7 @@ public class PaymentsController : ControllerBase
     }
 
     [HttpPost]
+    [AuthorizeByPermission("KVK:Gym:Payment:Create")]
     public async Task<IActionResult> Create(Guid memberId, [FromBody] CreatePaymentRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.CreatePaymentAsync(memberId, request, cancellationToken);
@@ -27,6 +29,7 @@ public class PaymentsController : ControllerBase
     }
     
     [HttpGet]
+    [AuthorizeByPermission("KVK:Gym:Payment:View")]
     public async Task<IActionResult> GetByMember(Guid memberId, CancellationToken cancellationToken = default)
     {
         var result = await _service.GetPaymentsByMembershipIdAsync(memberId, cancellationToken);
@@ -35,6 +38,7 @@ public class PaymentsController : ControllerBase
 
     // GET /api/gym/payments?from=2026-01-01&to=2026-01-31
     [HttpGet("/api/gym/payments")]
+    [AuthorizeByPermission("KVK:Gym:Payment:View")]
     public async Task<IActionResult> GetByDateRange([FromQuery] DateTime? from, [FromQuery] DateTime? to, CancellationToken cancellationToken = default)
     {
         var result = await _service.GetPaymentsByDateRangeAsync(from, to, cancellationToken);

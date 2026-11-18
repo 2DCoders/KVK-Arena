@@ -26,9 +26,7 @@ using kvk.Saloon;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ============================================================
 // Serilog Configuration
-// ============================================================
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
@@ -39,13 +37,11 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 
-// ============================================================
 // Services Registration
-// ============================================================
-
-// Add OpenAPI/Swagger documentation
 builder.Services.AddOpenApi();
-builder.Services.AddControllers().AddJsonOptions(options =>
+builder.Services.AddControllers()
+    .AddApplicationPart(typeof(kvk.SeedAndUnitTesting.Features.ApplicationPermissions.GymApplicationPermissionsSeedController).Assembly)
+    .AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     options.JsonSerializerOptions.WriteIndented = true;
@@ -60,8 +56,6 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 
 builder.Services.Configure<PayHereOptions>(builder.Configuration.GetSection(PayHereOptions.SectionName));
-// builder.Services.AddHttpClient<IPaymentGatewayService, PaymentGatewayService>();
-
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>
@@ -80,6 +74,7 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("Cafe", new OpenApiInfo { Title = "Cafe API", Version = "v1" });
     c.SwaggerDoc("Badminton", new OpenApiInfo { Title = "Badminton API", Version = "v1" });
     c.SwaggerDoc("Saloon", new OpenApiInfo { Title = "Saloon API", Version = "v1" });
+    c.SwaggerDoc("SeedAndUnitTesting", new OpenApiInfo { Title = "Seed And Testing API", Version = "v1" });
 
     c.DocInclusionPredicate((docName, apiDesc) =>
     {
@@ -104,6 +99,10 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "bearer",
         BearerFormat = "JWT"
     });
+    c.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+    });
 });
 
 
@@ -114,14 +113,6 @@ builder.Services
         options.TokenValidationParameters = JwtService.CreateTokenValidationParameters();
     });
 builder.Services.AddAuthorization();
-// Add logging
-// builder.Services.AddLogging(config =>
-// {
-//     config.AddConsole();
-//     if (builder.Environment.IsDevelopment())
-//         config.SetMinimumLevel(LogLevel.Debug);
-// });
-
 // Add CORS
 builder.Services.AddCors(options =>
 {
@@ -174,18 +165,7 @@ cafeInitializer.RegisterModule(builder.Services, builder.Configuration);
 var saloonInitializer  = new SaloonModuleInitializer();
 saloonInitializer.RegisterModule(builder.Services, builder.Configuration);
 
-
-
-
 var app = builder.Build();
-
-
-// Apply EF Core migrations at startup
-// using (var scope = app.Services.CreateScope())
-// {
-//     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContextBase>();
-//     dbContext.Database.Migrate();
-// }
 
 
 // CORS must run before any middleware that can short-circuit the pipeline
@@ -203,14 +183,6 @@ app.UseCors();
 app.UseMiddleware<TenantPermissionMiddleware>();
 app.UseMiddleware<ErrorHandlerMiddleware>();
 
-// if (app.Environment.IsDevelopment())
-// {
-//     app.Map("/logger", loggerApp =>
-//     {
-//         loggerApp.UseLoggerViewer();
-//     });
-// }
-
 
 if (app.Environment.IsDevelopment())
 {
@@ -226,6 +198,7 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/Cafe/swagger.json", "Cafe API");
         c.SwaggerEndpoint("/swagger/Badminton/swagger.json", "Badminton API");
         c.SwaggerEndpoint("/swagger/Saloon/swagger.json", "Saloon API");
+        c.SwaggerEndpoint("/swagger/SeedAndUnitTesting/swagger.json", "SeedAndUnitTesting API");
         c.RoutePrefix = "swagger";
     });
 }

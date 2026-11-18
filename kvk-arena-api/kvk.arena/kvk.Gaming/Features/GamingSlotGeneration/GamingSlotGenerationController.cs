@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using kvk.BuildingBlocks.Common;
 using kvk.Gaming.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,7 @@ public class GamingSlotGenerationController : ControllerBase
     }
 
     [HttpPost]
+    [AuthorizeByPermission("KVK:Gaming:GamingSlotGeneration:Create")]
     public async Task<IActionResult> GenerateSlotsForGamingCategoryAsync([FromBody] GamingCategorySlotConfigurationRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.GenerateSlotsForGamingCategoryeAsync(request, cancellationToken);
@@ -27,6 +29,7 @@ public class GamingSlotGenerationController : ControllerBase
     }
 
     [HttpPut]
+    [AuthorizeByPermission("KVK:Gaming:GamingSlotGeneration:Edit")]
     public async Task<IActionResult> Update([FromBody] GamingSlotGenerationConfigurationUpdateRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.UpdateAsync(request, cancellationToken);
@@ -38,6 +41,7 @@ public class GamingSlotGenerationController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [AuthorizeByPermission("KVK:Gaming:GamingSlotGeneration:Delete")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _service.DeleteAsync(id, cancellationToken);
@@ -48,6 +52,7 @@ public class GamingSlotGenerationController : ControllerBase
         return Ok(result);
     }
     [HttpGet("availability-by-station-category")]
+    [AuthorizeByPermission("KVK:Gaming:BookingAvailability:View")]
     public async Task<IActionResult> GetByStationCategoryIdAndDate([FromQuery]Guid stationId,[FromQuery]Guid categoryId,[FromQuery] DateOnly date, CancellationToken cancellationToken)
     {
         var result = await _service.GetByStationCategoryIdAndDate(stationId, categoryId, date, cancellationToken);
@@ -56,6 +61,7 @@ public class GamingSlotGenerationController : ControllerBase
     
     //configuration by category
     [HttpGet("configuration-by-category")]
+    [AuthorizeByPermission("KVK:Gaming:GamingSlotGeneration:View")]
     public async Task<IActionResult> GetConfigurationByCategory([FromQuery]Guid categoryId, CancellationToken cancellationToken)
     {
         var result = await _service.GetConfigurationByCategory(categoryId, cancellationToken);

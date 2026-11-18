@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using kvk.BuildingBlocks.Common;
 using Kvk.Cafe.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,7 @@ public class CafePaymentGatewayController : ControllerBase
     }
 
     [HttpPost("create")]
+    [AuthorizeByPermission("KVK:Cafe:PaymentGateway:Create")]
     public async Task<IActionResult> CreatePayment([FromBody] CafePaymentGatewayRequest request)
     {
         var response = await _paymentGatewayService.ProcessPayment(request);
@@ -23,6 +25,7 @@ public class CafePaymentGatewayController : ControllerBase
     }
     
     [HttpPost("reverse")]
+    [AuthorizeByPermission("KVK:Cafe:PaymentGateway:Delete")]
     public async Task<IActionResult> DeletePendingPayment([FromBody]CafePendingPaymentDeleteRequest request)
     {
         var response = await _paymentGatewayService.DeletePendingPayment(request);

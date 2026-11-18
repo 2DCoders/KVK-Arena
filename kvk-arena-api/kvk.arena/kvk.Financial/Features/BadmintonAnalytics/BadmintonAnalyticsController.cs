@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using kvk.BuildingBlocks.Common;
 using kvk.Financial.Features.BadmintonAnayltics;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,7 @@ public class BadmintonAnalyticsController : ControllerBase
     
     
     [HttpGet]
+    [AuthorizeByPermission("KVK:Financial:BadmintonAnalytics:View")]
     public async Task<IActionResult> Get([FromQuery] BadmintonAnalyticsRequest request, CancellationToken cancellationToken = default)
     {
         if (request == null)

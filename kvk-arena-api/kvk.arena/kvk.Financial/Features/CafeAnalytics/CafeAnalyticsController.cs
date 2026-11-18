@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using kvk.BuildingBlocks.Common;
 using kvk.Financial.Features.CafeAnalytics;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,7 @@ public class CafeAnalyticsController : ControllerBase
     
     
     [HttpGet]
+    [AuthorizeByPermission("KVK:Financial:CafeAnalytics:View")]
     public async Task<IActionResult> Get([FromQuery] CafeAnalyticsRequest request, CancellationToken cancellationToken = default)
     {
         if (request == null)

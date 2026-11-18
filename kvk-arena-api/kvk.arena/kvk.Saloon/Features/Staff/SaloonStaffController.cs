@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using kvk.Saloon.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,6 +16,7 @@ public class SaloonStaffController : ControllerBase
     }
 
     [HttpGet]
+    [AuthorizeByPermission("KVK:Saloon:Staff:View")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
         var staff = await _service.GetAllAsync( cancellationToken);
@@ -22,6 +24,7 @@ public class SaloonStaffController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [AuthorizeByPermission("KVK:Saloon:Staff:View")]
     public async Task<IActionResult> GetById(Guid saloonId, Guid id, CancellationToken cancellationToken)
     {
         var result = await _service.GetByIdAsync(id, cancellationToken);
@@ -30,6 +33,7 @@ public class SaloonStaffController : ControllerBase
     }
 
     [HttpPost]
+    [AuthorizeByPermission("KVK:Saloon:Staff:Create")]
     public async Task<IActionResult> Create([FromBody] SaloonStaffCreateRequest request, CancellationToken cancellationToken)
     {
 
@@ -42,6 +46,7 @@ public class SaloonStaffController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [AuthorizeByPermission("KVK:Saloon:Staff:Edit")]
     public async Task<IActionResult> Update(Guid saloonId, Guid id, [FromBody] SaloonStaffUpdateRequest request,
         CancellationToken cancellationToken)
     {
@@ -57,6 +62,7 @@ public class SaloonStaffController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [AuthorizeByPermission("KVK:Saloon:Staff:Delete")]
     public async Task<IActionResult> Delete(Guid saloonId, Guid id, CancellationToken cancellationToken)
     {
         var result = await _service.DeleteAsync(id, cancellationToken);

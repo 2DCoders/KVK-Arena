@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using kvk.BuildingBlocks.Common;
 using kvk.Gaming.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,7 @@ public class GameController : ControllerBase
     }
 
     [HttpPost]
+    [AuthorizeByPermission("KVK:Gaming:Game:Create")]
     public async Task<IActionResult> Create([FromForm] GameCreateRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.CreateAsync(request, cancellationToken);
@@ -27,6 +29,7 @@ public class GameController : ControllerBase
     }
 
     [HttpPut]
+    [AuthorizeByPermission("KVK:Gaming:Game:Edit")]
     public async Task<IActionResult> Update([FromForm] GameUpdateRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.UpdateAsync(request, cancellationToken);
@@ -38,6 +41,7 @@ public class GameController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [AuthorizeByPermission("KVK:Gaming:Game:View")]
     public async Task<ActionResult<GameResponse>> GetById(Guid id, CancellationToken cancellationToken = default)
     {
         var response = await _service.GetByIdAsync(id, cancellationToken);
@@ -49,6 +53,7 @@ public class GameController : ControllerBase
     }
 
     [HttpGet]
+    [AuthorizeByPermission("KVK:Gaming:Game:View")]
     public async Task<ActionResult<List<GameResponse>>> GetPagedList([FromQuery] GameListRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.GetListAsync(request, cancellationToken);
@@ -57,6 +62,7 @@ public class GameController : ControllerBase
     
 
     [HttpPut("{id:guid}/activate")]
+    [AuthorizeByPermission("KVK:Gaming:Game:Manage")]
     public async Task<IActionResult> Activate(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _service.ActivateAsync(id, cancellationToken);
@@ -68,6 +74,7 @@ public class GameController : ControllerBase
     }
 
     [HttpPut("{id:guid}/deactivate")]
+    [AuthorizeByPermission("KVK:Gaming:Game:Manage")]
     public async Task<IActionResult> Deactivate(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _service.DeactivateAsync(id, cancellationToken);
@@ -79,6 +86,7 @@ public class GameController : ControllerBase
     }
     
     [HttpDelete("{id:guid}")]
+    [AuthorizeByPermission("KVK:Gaming:Game:Manage")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _service.DeactivateAsync(id, cancellationToken);

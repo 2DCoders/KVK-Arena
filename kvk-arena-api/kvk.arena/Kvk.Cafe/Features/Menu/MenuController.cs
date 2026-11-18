@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using Kvk.Cafe.Enums;
 using Kvk.Cafe.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +10,7 @@ namespace kvk.Cafe.Features.Menu;
 public class MenuController(IMenuService menuService) : ControllerBase
 {
     [HttpPost]
+    [AuthorizeByPermission("KVK:Cafe:Menu:Create")]
     public async Task<IActionResult> Create([FromForm] MenuCreateRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -22,6 +24,7 @@ public class MenuController(IMenuService menuService) : ControllerBase
     }
 
     [HttpPut]
+    [AuthorizeByPermission("KVK:Cafe:Menu:Edit")]
     public async Task<IActionResult> Update([FromForm] MenuUpdateRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -35,6 +38,7 @@ public class MenuController(IMenuService menuService) : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [AuthorizeByPermission("KVK:Cafe:Menu:Delete")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await menuService.DeleteMenuAsync(id, cancellationToken);
@@ -47,6 +51,7 @@ public class MenuController(IMenuService menuService) : ControllerBase
     }
 
     [HttpGet]
+    [AuthorizeByPermission("KVK:Cafe:Menu:View")]
     public async Task<ActionResult<List<MenuResponse>>> Get(CancellationToken cancellationToken = default)
     {
         var menus = await menuService.GetMenusAsync(cancellationToken);
@@ -54,6 +59,7 @@ public class MenuController(IMenuService menuService) : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [AuthorizeByPermission("KVK:Cafe:Menu:View")]
     public async Task<ActionResult<MenuResponse>> GetById(Guid id,
         CancellationToken cancellationToken = default)
     {
@@ -62,6 +68,7 @@ public class MenuController(IMenuService menuService) : ControllerBase
     }
 
     [HttpGet("category/{category}")]
+    [AuthorizeByPermission("KVK:Cafe:Menu:View")]
     public async Task<ActionResult<List<MenuResponse>>> GetByCategory(MenuCategory category,
         CancellationToken cancellationToken = default)
     {

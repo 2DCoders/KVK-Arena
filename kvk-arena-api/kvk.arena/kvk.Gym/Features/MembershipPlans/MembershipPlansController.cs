@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using Microsoft.AspNetCore.Mvc;
 using kvk.BuildingBlocks.Common;
 using kvk.Gym.Services;
@@ -16,6 +17,7 @@ public class MembershipPlansController : ControllerBase
     }
 
     [HttpPost]
+    [AuthorizeByPermission("KVK:Gym:MembershipPlan:Create")]
     public async Task<IActionResult> Create([FromBody] MembershipPlanCreateRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.CreateAsync(request, cancellationToken);
@@ -26,6 +28,7 @@ public class MembershipPlansController : ControllerBase
     }
 
     [HttpGet]
+    [AuthorizeByPermission("KVK:Gym:MembershipPlan:View")]
     public async Task<IActionResult> Get(CancellationToken cancellationToken = default)
     {
         var result = await _service.GetAllAsync(cancellationToken);
@@ -33,6 +36,7 @@ public class MembershipPlansController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [AuthorizeByPermission("KVK:Gym:MembershipPlan:View")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _service.GetByIdAsync(id, cancellationToken);
@@ -43,6 +47,7 @@ public class MembershipPlansController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [AuthorizeByPermission("KVK:Gym:MembershipPlan:Edit")]
     public async Task<IActionResult> Update(Guid id, [FromBody] MembershipPlanUpdateRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.UpdateAsync(id, request, cancellationToken);
@@ -58,6 +63,7 @@ public class MembershipPlansController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [AuthorizeByPermission("KVK:Gym:MembershipPlan:Delete")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _service.DeleteAsync(id, cancellationToken);

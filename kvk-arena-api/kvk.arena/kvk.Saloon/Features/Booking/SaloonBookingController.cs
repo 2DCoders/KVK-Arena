@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using kvk.Saloon.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,6 +16,7 @@ public class SaloonBookingController : ControllerBase
     }
 
     [HttpGet]
+    [AuthorizeByPermission("KVK:Saloon:Booking:View")]
     public async Task<IActionResult> GetAll([FromQuery] GetSaloonBookingsListRequest request, CancellationToken cancellationToken)
     {
         var bookings = await _service.GetBookingsListAsync(request, cancellationToken);
@@ -22,6 +24,7 @@ public class SaloonBookingController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [AuthorizeByPermission("KVK:Saloon:Booking:View")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _service.GetByIdAsync(id, cancellationToken);
@@ -29,6 +32,7 @@ public class SaloonBookingController : ControllerBase
     }
 
     [HttpPost("~/api/saloon/bookings")]
+    [AuthorizeByPermission("KVK:Saloon:Booking:Create")]
     public async Task<IActionResult> Create([FromBody] SaloonBookingCreateRequest request, CancellationToken cancellationToken)
     {
         var result = await _service.CreateAsync(request, cancellationToken);
@@ -40,6 +44,7 @@ public class SaloonBookingController : ControllerBase
     }
 
     [HttpPost("~/api/saloon/bookings/create-with-payment")]
+    [AuthorizeByPermission("KVK:Saloon:Booking:Create")]
     public async Task<IActionResult> CreateWithPayment([FromBody] SaloonBookingCreateRequest request, CancellationToken cancellationToken)
     {
         var result = await _service.CreateWithPaymentAsync(request, cancellationToken);
@@ -58,6 +63,7 @@ public class SaloonBookingController : ControllerBase
     }
 
     [HttpPost("~/api/saloon/bookings/reverse")]
+    [AuthorizeByPermission("KVK:Saloon:BookingPayment:Delete")]
     public async Task<IActionResult> ReversePendingPayment([FromBody] SaloonPendingPaymentDeleteRequest request, CancellationToken cancellationToken)
     {
         var result = await _service.DeletePendingPayment(request, cancellationToken);
@@ -69,6 +75,7 @@ public class SaloonBookingController : ControllerBase
     }
 
     [HttpGet("~/api/saloon/bookings/availability")]
+    [AuthorizeByPermission("KVK:Saloon:BookingAvailability:View")]
     public async Task<IActionResult> CheckAvailability([FromQuery] SaloonBookingAvailabilityRequest request, CancellationToken cancellationToken)
     {
         var result = await _service.CheckAvailabilityAsync(request, cancellationToken);
@@ -80,6 +87,7 @@ public class SaloonBookingController : ControllerBase
     }
 
     [HttpGet("~/api/saloon/bookings/day-availability")]
+    [AuthorizeByPermission("KVK:Saloon:BookingAvailability:View")]
     public async Task<IActionResult> CheckDayAvailability([FromQuery] SaloonDayAvailabilityRequest request, CancellationToken cancellationToken)
     {
         var result = await _service.CheckDayAvailabilityAsync(request, cancellationToken);
@@ -91,6 +99,7 @@ public class SaloonBookingController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [AuthorizeByPermission("KVK:Saloon:Booking:Edit")]
     public async Task<IActionResult> Update(Guid id, [FromBody] SaloonBookingUpdateRequest request,
         CancellationToken cancellationToken)
     {
@@ -106,6 +115,7 @@ public class SaloonBookingController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [AuthorizeByPermission("KVK:Saloon:Booking:Delete")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         var result = await _service.DeleteAsync(id, cancellationToken);

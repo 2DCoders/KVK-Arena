@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using kvk.Saloon.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,6 +16,7 @@ public class SaloonStaffScheduleController : ControllerBase
     }
 
     [HttpGet]
+    [AuthorizeByPermission("KVK:Saloon:StaffSchedule:View")]
     public async Task<IActionResult> GetAll(Guid staffId, CancellationToken cancellationToken)
     {
         var schedules = await _service.GetAllAsync(staffId, cancellationToken);
@@ -22,6 +24,7 @@ public class SaloonStaffScheduleController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [AuthorizeByPermission("KVK:Saloon:StaffSchedule:View")]
     public async Task<IActionResult> GetById(Guid staffId, Guid id, CancellationToken cancellationToken)
     {
         var result = await _service.GetByIdAsync(id, cancellationToken);
@@ -29,6 +32,7 @@ public class SaloonStaffScheduleController : ControllerBase
     }
 
     [HttpPost]
+    [AuthorizeByPermission("KVK:Saloon:StaffSchedule:Create")]
     public async Task<IActionResult> Create(Guid staffId, [FromBody] SaloonStaffScheduleCreateRequest request, CancellationToken cancellationToken)
     {
         if (request.SaloonStaffId != staffId)
@@ -43,6 +47,7 @@ public class SaloonStaffScheduleController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [AuthorizeByPermission("KVK:Saloon:StaffSchedule:Edit")]
     public async Task<IActionResult> Update(Guid staffId, Guid id, [FromBody] SaloonStaffScheduleUpdateRequest request,
         CancellationToken cancellationToken)
     {
@@ -58,6 +63,7 @@ public class SaloonStaffScheduleController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [AuthorizeByPermission("KVK:Saloon:StaffSchedule:Delete")]
     public async Task<IActionResult> Delete(Guid staffId, Guid id, CancellationToken cancellationToken)
     {
         var result = await _service.DeleteAsync(id, cancellationToken);

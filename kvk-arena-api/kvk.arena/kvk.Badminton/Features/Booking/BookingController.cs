@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using kvk.Badminton.Interfaces;
 using kvk.BuildingBlocks.Common;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,7 @@ public class BookingController : ControllerBase
     }
 
     [HttpPost("hold")]
+    [AuthorizeByPermission("KVK:Badminton:BookingHold:Create")]
     public async Task<IActionResult> CreateHold([FromBody] BookingHoldRequest request, CancellationToken ct)
     {
         var result = await _service.CreateHoldAsync(request, ct);
@@ -27,6 +29,7 @@ public class BookingController : ControllerBase
     }
 
     [HttpPost("confirm/{holdId:guid}")]
+    [AuthorizeByPermission("KVK:Badminton:BookingPayment:Edit")]
     public async Task<IActionResult> Confirm(Guid holdId,[FromBody] CustomerDetails customerDetails, [FromQuery] string? paymentIntentId, CancellationToken ct)
     {
         var result = await _service.ProcessPaymentSuccessAsync(holdId,customerDetails, paymentIntentId, ct);
@@ -41,6 +44,7 @@ public class BookingController : ControllerBase
     }
 
     [HttpPost("multi-hold")]
+    [AuthorizeByPermission("KVK:Badminton:BookingHold:Create")]
     public async Task<IActionResult> CreateMultiHold([FromBody] MultiBookingRequest request, CancellationToken ct)
     {
         var result = await _service.CreateMultiHoldAsync(request, ct);
@@ -52,6 +56,7 @@ public class BookingController : ControllerBase
     }
 
     [HttpPost("confirm-multi")]
+    [AuthorizeByPermission("KVK:Badminton:BookingPayment:Edit")]
     public async Task<IActionResult> ConfirmMulti([FromBody] MultiPaymentRequest request, CancellationToken ct)
     {
         var result = await _service.ProcessMultiPaymentSuccessAsync(request, ct);
@@ -66,6 +71,7 @@ public class BookingController : ControllerBase
     }
 
     [HttpPost("create")] // New endpoint for single booking with payment
+    [AuthorizeByPermission("KVK:Badminton:Booking:Create")]
     public async Task<IActionResult> CreateSingleBookingWithPayment([FromBody] SingleBookingWithPaymentRequest request, CancellationToken ct)
     {
         var result = await _service.CreateSingleBookingWithPaymentAsync(request, ct);
@@ -77,6 +83,7 @@ public class BookingController : ControllerBase
     }
 
     [HttpPost("create-multi")] // Initiates PayHere payment for an existing batch of holds (from multi-hold)
+    [AuthorizeByPermission("KVK:Badminton:BookingPayment:Create")]
     public async Task<IActionResult> CreateMultiPayment([FromBody] MultiBookingPaymentRequest request, CancellationToken ct)
     {
         var result = await _service.CreateMultiPaymentAsync(request, ct);
@@ -95,6 +102,7 @@ public class BookingController : ControllerBase
     }
 
     [HttpPost("internal/cleanup")]
+    [AuthorizeByPermission("KVK:Badminton:BookingMaintenance:Manage")]
     public async Task<IActionResult> Cleanup(CancellationToken ct)
     {
         var result = await _service.CleanupExpiredHoldsAsync(ct);
@@ -102,6 +110,7 @@ public class BookingController : ControllerBase
     }
 
     [HttpPost("internal/fix-stale-pending")]
+    [AuthorizeByPermission("KVK:Badminton:BookingMaintenance:Manage")]
     public async Task<IActionResult> FixStalePendingBookings(CancellationToken ct)
     {
         var result = await _service.FixStalePendingBookingsAsync(ct);
@@ -109,6 +118,7 @@ public class BookingController : ControllerBase
     }
 
     [HttpGet]
+    [AuthorizeByPermission("KVK:Badminton:Booking:View")]
     public async Task<ActionResult<List<BookingListResponse>>> GetBookingsList([FromQuery] GetBookingsListRequest request, CancellationToken ct = default)
     {
         var result = await _service.GetBookingsListAsync(request, ct);
@@ -116,6 +126,7 @@ public class BookingController : ControllerBase
     }
 
     [HttpPost("reverse")]
+    [AuthorizeByPermission("KVK:Badminton:BookingPayment:Delete")]
     public async Task<IActionResult> ReversePendingPayment([FromBody] BadmintonPendingPaymentDeleteRequest request, CancellationToken ct)
     {
         var result = await _service.DeletePendingPayment(request, ct);

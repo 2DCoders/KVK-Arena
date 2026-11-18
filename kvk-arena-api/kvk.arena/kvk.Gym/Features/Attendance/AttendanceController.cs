@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using Microsoft.AspNetCore.Mvc;
 using kvk.BuildingBlocks.Common;
 using kvk.Gym.Services;
@@ -17,6 +18,7 @@ public class AttendanceController : ControllerBase
     }
 
     [HttpPost("/scan")]
+    [AuthorizeByPermission("KVK:Gym:Attendance:Create")]
     public async Task<IActionResult> Scan([FromBody] RecordScanRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _service.RecordScanAsync(request, cancellationToken);

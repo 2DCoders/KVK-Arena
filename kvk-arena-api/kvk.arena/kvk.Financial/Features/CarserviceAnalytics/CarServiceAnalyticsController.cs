@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using kvk.BuildingBlocks.Common;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,6 +16,7 @@ public class CarServiceAnalyticsController : ControllerBase
     
     
     [HttpGet]
+    [AuthorizeByPermission("KVK:Financial:CarServiceAnalytics:View")]
     public async Task<IActionResult> Get([FromQuery] CarServiceAnalyticsRequest request, CancellationToken cancellationToken = default)
     {
         if (request == null)

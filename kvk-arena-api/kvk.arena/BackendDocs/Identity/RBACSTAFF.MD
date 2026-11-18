@@ -90,7 +90,7 @@ All permissions are stored as a single string code.
 
 ### Example codes
 - `KVK:Gym:Category:View`
-- `KVK:Gym:Category:Manage`
+- `KVK:Gym:Category:Update`
 - `KVK:CarWash:Order:Create`
 - `KVK:Gym:DayEnd:Create`
 
@@ -99,7 +99,6 @@ All permissions are stored as a single string code.
 - `Create`
 - `Edit`
 - `Delete`
-- `Manage`
 
 ### Rules
 - permission codes are case-sensitive and must follow the exact format

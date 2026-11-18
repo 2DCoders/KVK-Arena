@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using kvk.Gym.Domain;
 using kvk.Gym.Features.Trainers;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,7 @@ public class TrainersApprovalRequestController : ControllerBase
     }
 
     [HttpPost]
+    [AuthorizeByPermission("KVK:Gym:TrainerApprovalRequest:Create")]
     public async Task<IActionResult> Create([FromForm] TrainerApprovalRequestCreateRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _approvalRequestService.CreateAsync(request, cancellationToken);
@@ -27,6 +29,7 @@ public class TrainersApprovalRequestController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [AuthorizeByPermission("KVK:Gym:TrainerApprovalRequest:View")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _approvalRequestService.GetPendingRecordByIdAsync(id, cancellationToken);
@@ -38,6 +41,7 @@ public class TrainersApprovalRequestController : ControllerBase
     }
     
     [HttpGet]
+    [AuthorizeByPermission("KVK:Gym:TrainerApprovalRequest:View")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken = default)
     {
         var result = await _approvalRequestService.GetAllAsync(cancellationToken);
@@ -49,6 +53,7 @@ public class TrainersApprovalRequestController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [AuthorizeByPermission("KVK:Gym:TrainerApprovalRequest:Edit")]
     public async Task<IActionResult> Update(Guid id, [FromForm] TrainerApprovalRequstUpdateRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _approvalRequestService.UpdateAsync(id, request, cancellationToken);
@@ -60,6 +65,7 @@ public class TrainersApprovalRequestController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [AuthorizeByPermission("KVK:Gym:TrainerApprovalRequest:Delete")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _approvalRequestService.DeleteAsync(id, cancellationToken);
@@ -72,6 +78,7 @@ public class TrainersApprovalRequestController : ControllerBase
     
     //this is for admin to approve or reject the trainer approval request
     [HttpPost("{id:guid}/approve")]
+    [AuthorizeByPermission("KVK:Gym:TrainerApprovalRequest:Manage")]
     public async Task<IActionResult> Approve(Guid id,ApprovalStatus approvalStatus, CancellationToken cancellationToken = default)
     {
         var result = await _approvalRequestService.ApproveAsync(id,approvalStatus, cancellationToken);

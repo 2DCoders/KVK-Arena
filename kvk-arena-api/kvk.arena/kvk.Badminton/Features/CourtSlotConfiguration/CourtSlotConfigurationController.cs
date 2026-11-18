@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using kvk.Badminton.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,6 +16,7 @@ public class CourtSlotConfigurationController : ControllerBase
     }
 
     [HttpGet("court/{courtId:guid}")]
+    [AuthorizeByPermission("KVK:Badminton:CourtSlotConfiguration:View")]
     public async Task<IActionResult> GetByCourtId(Guid courtId, CancellationToken cancellationToken)
     {
         var result = await _service.GetByCourtIdAsync(courtId, cancellationToken);
@@ -22,6 +24,7 @@ public class CourtSlotConfigurationController : ControllerBase
     }
 
     [HttpGet("court-slots-by-id/{courtId:guid}")]
+    [AuthorizeByPermission("KVK:Badminton:CourtSlotConfiguration:View")]
     public async Task<IActionResult> GetAllSlotsByCourtId(Guid courtId, CancellationToken cancellationToken)
     {
         var result = await _service.GetSlotsByCourtIdAsync(courtId, cancellationToken);
@@ -29,6 +32,7 @@ public class CourtSlotConfigurationController : ControllerBase
     }
 
     [HttpGet("availability-by-court")]
+    [AuthorizeByPermission("KVK:Badminton:BookingAvailability:View")]
     public async Task<IActionResult> GetByCourtIdAndDate([FromQuery] Guid courtId, [FromQuery] DateOnly date,
         CancellationToken cancellationToken)
     {
@@ -37,6 +41,7 @@ public class CourtSlotConfigurationController : ControllerBase
     }
 
     [HttpPost]
+    [AuthorizeByPermission("KVK:Badminton:CourtSlotConfiguration:Create")]
     public async Task<IActionResult> Create([FromBody] CourtSlotConfigurationCreateRequest request,
         CancellationToken cancellationToken)
     {
@@ -46,6 +51,7 @@ public class CourtSlotConfigurationController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [AuthorizeByPermission("KVK:Badminton:CourtSlotConfiguration:Edit")]
     public async Task<IActionResult> Update(Guid id, [FromBody] CourtSlotConfigurationUpdateRequest request,
         CancellationToken cancellationToken)
     {
@@ -57,6 +63,7 @@ public class CourtSlotConfigurationController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [AuthorizeByPermission("KVK:Badminton:CourtSlotConfiguration:Delete")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         var result = await _service.DeleteAsync(id, cancellationToken);

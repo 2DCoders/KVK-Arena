@@ -1,3 +1,4 @@
+using kvk.BuildingBlocks.Auth;
 using Microsoft.AspNetCore.Mvc;
 using kvk.Gym.Interfaces;
 
@@ -15,6 +16,7 @@ public class MembershipsController : ControllerBase
     }
 
     [HttpPost]
+    [AuthorizeByPermission("KVK:Gym:Membership:Create")]
     public async Task<IActionResult> Create([FromBody] CreateMembershipRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -48,6 +50,7 @@ public class MembershipsController : ControllerBase
 
 
     [HttpPut("{id:guid}/fingerprints")]
+    [AuthorizeByPermission("KVK:Gym:MembershipFingerprint:Edit")]
     public async Task<IActionResult> UpdateFingerprints(Guid id, [FromBody] UpdateFingerprintsRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -59,6 +62,7 @@ public class MembershipsController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [AuthorizeByPermission("KVK:Gym:Membership:Edit")]
     public async Task<IActionResult> Edit(Guid id, [FromBody] EditMembershipRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -70,6 +74,7 @@ public class MembershipsController : ControllerBase
     }
 
     [HttpPost("{id:guid}/upgrade")]
+    [AuthorizeByPermission("KVK:Gym:Membership:Edit")]
     public async Task<IActionResult> Upgrade(Guid id, [FromBody] UpgradeMembershipPlanRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -81,6 +86,7 @@ public class MembershipsController : ControllerBase
     }
 
     [HttpGet]
+    [AuthorizeByPermission("KVK:Gym:Membership:View")]
     public async Task<IActionResult> Get([FromQuery] bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
         // For simplicity, this example does not implement pagination or filtering
@@ -89,6 +95,7 @@ public class MembershipsController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [AuthorizeByPermission("KVK:Gym:Membership:View")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _service.GetMemberAsync(id, cancellationToken);
@@ -96,6 +103,7 @@ public class MembershipsController : ControllerBase
     }
 
     [HttpPost("{id:guid}/soft-delete")]
+    [AuthorizeByPermission("KVK:Gym:Membership:Delete")]
     public async Task<IActionResult> SoftDelete(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _service.SoftDeleteMemberAsync(id, cancellationToken);
@@ -106,6 +114,7 @@ public class MembershipsController : ControllerBase
     }
 
     [HttpPost("{id:guid}/reverse-soft-delete")]
+    [AuthorizeByPermission("KVK:Gym:Membership:Manage")]
     public async Task<IActionResult> ReverseSoftDelete(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _service.ReverseSoftDeleteMemberAsync(id, cancellationToken);
@@ -117,6 +126,7 @@ public class MembershipsController : ControllerBase
 
 
     [HttpDelete("{id:guid}")]
+    [AuthorizeByPermission("KVK:Gym:MembershipPermanentDeletion:Delete")]
     public async Task<IActionResult> PermanentlyDelete(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _service.PermanentlyDeleteMemberAsync(id, cancellationToken);
@@ -127,6 +137,7 @@ public class MembershipsController : ControllerBase
     }
 
     [HttpPost("{id:guid}/assign-trainer")]
+    [AuthorizeByPermission("KVK:Gym:MembershipTrainer:Manage")]
     public async Task<IActionResult> AssignTrainer(Guid id, [FromBody] AssignTrainerRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -139,6 +150,7 @@ public class MembershipsController : ControllerBase
     
     
     [HttpGet("trainers")]
+    [AuthorizeByPermission("KVK:Gym:Trainer:View")]
     public async Task<IActionResult> GetAllTrainers([FromQuery] bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
         var result = await _service.GetAllTrainersAsync(includeDeleted, cancellationToken);
