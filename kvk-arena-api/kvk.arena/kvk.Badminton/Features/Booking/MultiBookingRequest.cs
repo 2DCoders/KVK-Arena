@@ -14,5 +14,6 @@ public class MultiBookingRequest
 public enum PaymentTypes
 {
     Cash = 1,
-    Card = 2
+    Card = 2,
+    BankTransfer = 3
 }

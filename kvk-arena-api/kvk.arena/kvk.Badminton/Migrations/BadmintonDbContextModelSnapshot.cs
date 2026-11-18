@@ -460,6 +460,89 @@ namespace kvk.Badminton.Migrations
                     b.ToTable("CourtSlotConfigurations", "badminton");
                 });
 
+            modelBuilder.Entity("kvk.Badminton.Domain.MemberSlipReservation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Approved")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("Cancelled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("CouponCode")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("FinalAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("HoldToken")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("LastModifiedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("MaximumDiscountableSlots")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("PaymentDueUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Rejected")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("text");
+
+                    b.Property<byte[]>("Slip")
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("SlipContentType")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("SmsSent")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HoldToken")
+                        .IsUnique();
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_MemberSlipReservation_TenantId");
+
+                    b.HasIndex("TenantId", "CreatedAt")
+                        .HasDatabaseName("IX_MemberSlipReservation_TenantId_CreatedAt");
+
+                    b.ToTable("MemberSlipReservations", "badminton");
+                });
+
             modelBuilder.Entity("kvk.Badminton.Domain.BookingHold", b =>
                 {
                     b.HasOne("kvk.Badminton.Domain.Court", "Court")

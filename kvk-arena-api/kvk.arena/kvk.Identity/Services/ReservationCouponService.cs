@@ -19,15 +19,37 @@ public class ReservationCouponService(IdentityApplicationDbContext db, IConfigur
     public async Task<CouponValidationResult> RedeemAsync(string couponCode, IReadOnlyList<decimal> slotPrices,
         DbTransaction transaction, CancellationToken ct)
     {
+        await using var enlisted = await EnlistAsync(transaction, ct);
+        return await CalculateAsync(enlisted, couponCode, slotPrices, true, ct);
+    }
+
+    public async Task RestoreAsync(string couponCode, DbTransaction transaction, CancellationToken ct)
+    {
+        await using var enlisted = await EnlistAsync(transaction, ct);
+        await enlisted.MemberEligibleOffers.Where(x => x.CouponCode == couponCode && x.IsRedeemed)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(x => x.IsRedeemed, false)
+                .SetProperty(x => x.RedeemedDate, DateTime.MinValue), ct);
+    }
+
+    private async Task<IdentityApplicationDbContext> EnlistAsync(DbTransaction transaction, CancellationToken ct)
+    {
         // Both schemas share the application database. Enlist coupon redemption in the booking transaction.
         var connection = transaction.Connection ?? throw new InvalidOperationException("The booking transaction is no longer active.");
         var identityConnection = db.Database.GetDbConnection();
         if (connection.Database != identityConnection.Database || connection.DataSource != identityConnection.DataSource)
             throw new InvalidOperationException("Coupon bookings require identity and badminton to share the application database.");
         var options = new DbContextOptionsBuilder<IdentityApplicationDbContext>().UseNpgsql(connection).Options;
-        await using var enlisted = new IdentityApplicationDbContext(options, tenant, logger, accessor);
-        await enlisted.Database.UseTransactionAsync(transaction, ct);
-        return await CalculateAsync(enlisted, couponCode, slotPrices, true, ct);
+        var enlisted = new IdentityApplicationDbContext(options, tenant, logger, accessor);
+        try
+        {
+            await enlisted.Database.UseTransactionAsync(transaction, ct);
+            return enlisted;
+        }
+        catch
+        {
+            await enlisted.DisposeAsync();
+            throw;
+        }
     }
 
     private async Task<CouponValidationResult> CalculateAsync(IdentityApplicationDbContext context, string code,

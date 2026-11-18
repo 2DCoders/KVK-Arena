@@ -109,7 +109,8 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => options.TokenValidationParameters = JwtService.CreateTokenValidationParameters());
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options => options.AddPolicy("BadmintonSlipReview",
+    policy => policy.RequireClaim("permission", "admin.badminton.slip-review")));
 // Add logging
 // builder.Services.AddLogging(config =>
 // {

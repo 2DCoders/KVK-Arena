@@ -19,6 +19,7 @@ public class BadmintonDbContext(
     public DbSet<CourtSlot> CourtSlots => Set<Domain.CourtSlot>();
     public DbSet<CourtBooking> CourtBookings => Set<Domain.CourtBooking>();
     public DbSet<BookingHold> BookingHolds => Set<Domain.BookingHold>();
+    public DbSet<MemberSlipReservation> MemberSlipReservations => Set<MemberSlipReservation>();
     public DbSet<BadmintonDayEnd> BadmintonDayEnds => Set<Domain.BadmintonDayEnd>();
     
     public DbSet<CourtBookingTemporary> CourtBookingTemporaries => Set<Domain.CourtBookingTemporary>();
@@ -37,6 +38,7 @@ public class BadmintonDbContext(
             .HasColumnType("timestamp without time zone");
 
 
+        modelBuilder.Entity<MemberSlipReservation>().HasIndex(x => x.HoldToken).IsUnique();
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(BadmintonDbContext).Assembly);
         
         modelBuilder.Entity<CourtBookingTemporarySchedule>()

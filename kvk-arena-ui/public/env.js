@@ -1,14 +1,20 @@
 window.env = {
   // API_URL: "https://api-kvkarena.premiumasp.net/api/",
-  API_URL: "https://klc.runasp.net/api/",
-  // API_URL: "https://localhost:7007/api/",
+  // API_URL: "https://klc.runasp.net/api/",
+  API_URL: "https://localhost:7007/api/",
   BASE_URL: "https://kvkarena.lk/",
   OFFER_END_DATE: "2026-08-23",
   MEMBERSHIP_PRICE: "100,000",
   GYM_RATE: "10",
   BADMINTON_RATE: "10",
   // Member badminton booking start date (YYYY-MM-DD). Leave empty until set.
-  BADMINTON_BOOKING_START_DATE: "",
+  BADMINTON_BOOKING_START_DATE: "2026-11-29",
+  BADMINTON_BANK_NAME: "Hatton National Bank",
+  BADMINTON_ACCOUNT_OWNER_NAME: "Mr. Vidooshan",
+  BADMINTON_ACCOUNT_NUMBER: "12345689",
+  BADMINTON_BRANCH_NAME: "Colombo",
+  BADMINTON_PAYMENT_INSTRUCTIONS: "", // Approved bank transfer instructions shown on the tracking page.
+  MAXIMUM_DISCOUNTABLE_SLOTS: 5, // The API enforces its configured upper limit.
   BOOKING_DURATION: "12", //weeks
   COUPON_CODE_ID: "b025087f-c79b-4eea-8945-566226168557",
   CARWASH_RATE: "10",

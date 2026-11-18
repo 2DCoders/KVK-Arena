@@ -16,6 +16,7 @@ import CarwashHome from "./client/pages/home/carwash";
 import CafeHome from "./client/pages/home/cafe";
 import SalonHome from "./client/pages/home/salon";
 import { getEnv } from "./env";
+import MemberBadmintonTracking from "./client/pages/members/badminton/tracking";
 import MemberBadmintonBooking from "./client/pages/members/badminton";
 
 import PolicyPage from "./client/pages/policies";
@@ -33,6 +34,7 @@ function App() {
       <Route path="/carwash" element={env.CARWASH_COMING_SOON ? <CarwashComingSoon /> : <CarwashHome />} />
       <Route path="/badminton" element={env.BADMINTON_COMING_SOON ? <BadmintonComingSoon /> : <BadmintonHome />} />
       <Route path="/members/badminton" element={<MemberBadmintonBooking />} />
+      <Route path="/members/badminton/track/:reference?" element={<MemberBadmintonTracking />} />
       <Route path="/gaming" element={env.GAMING_COMING_SOON ? <GamingComingSoon /> : <GamingHome />} />
       <Route path="/cafe" element={env.CAFE_COMING_SOON ? <CafeComingSoon /> : <CafeHome />} />
       <Route path="/salon" element={env.SALON_COMING_SOON ? <SalonComingSoon /> : <SalonHome />} />

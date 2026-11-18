@@ -1,5 +1,4 @@
 using System.Data;
-using System.Globalization;
 using System.Text.Json;
 using kvk.BuildingBlocks;
 using kvk.BuildingBlocks.Common;
@@ -10,6 +9,7 @@ using kvk.Badminton.Enums;
 using kvk.Badminton.Features.Booking;
 using kvk.BuildingBlocks.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -22,14 +22,21 @@ namespace kvk.Badminton.Features.MemberBooking;
 // Public coupon-booking flow. Cashier and temporary-booking endpoints remain separate.
 [ApiController]
 [Route("api/member-badminton-bookings")]
-public class MemberBadmintonBookingController(BadmintonDbContext db, IReservationCouponService coupons,
-    IConfiguration configuration, IHashService hashes, IOptions<PayHereOptions> paymentOptions) : ControllerBase
+public partial class MemberBadmintonBookingController(BadmintonDbContext db, IReservationCouponService coupons,
+    IConfiguration configuration, IHashService hashes, IOptions<PayHereOptions> paymentOptions, ISmsService sms,
+    ILogger<MemberBadmintonBookingController> logger) : ControllerBase
 {
-    private const int HoldSeconds = 7 * 60;
+    private TimeSpan HoldTime => TimeSpan.FromMinutes(Math.Max(1, configuration.GetValue("MemberBadmintonBooking:HoldMinutes", 7)));
+    private int GlobalDiscountSlotLimit => Math.Max(0, configuration.GetValue<int>("BadmintonMaxDiscountSlotLimit"));
+    private int MaximumDiscountableSlots =>
+        Math.Clamp(configuration.GetValue("MemberBadmintonBooking:MaximumDiscountableSlots", GlobalDiscountSlotLimit), 0, GlobalDiscountSlotLimit);
     private static DateTime Now => DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified);
     private static DateTime ColomboNow => TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Colombo"));
     private static string Key(Guid token) => $"MEMBER:{token:N}";
     private int MaximumWeeks => Math.Clamp(configuration.GetValue("MemberBadmintonBooking:MaximumWeeks", 52), 1, 52);
+
+    private int DiscountSlotLimit(int? requested) =>
+        Math.Clamp(requested ?? MaximumDiscountableSlots, 0, MaximumDiscountableSlots);
 
     private async Task<BookingCourt> CourtAsync(CancellationToken ct)
     {
@@ -45,7 +52,7 @@ public class MemberBadmintonBookingController(BadmintonDbContext db, IReservatio
         var court = await CourtAsync(ct);
         var slots = await db.CourtSlots.AsNoTracking().Where(s => s.CourtId == court.Id && s.IsActive)
             .OrderBy(s => s.StartTime).Select(s => new { SlotId = s.Id, s.CourtId, s.StartTime, s.EndTime, s.Price }).ToListAsync(ct);
-        return Ok(new { Court = new { court.Id, court.Name }, Slots = slots, MaximumWeeks });
+        return Ok(new { Court = new { court.Id, court.Name }, Slots = slots, MaximumWeeks, MaximumDiscountableSlots, BankTransfer = GetBankTransferDetails() });
     });
 
     private sealed record ScheduleData(BookingCourt Court, List<CourtSlot> Slots, List<DateOnly> Dates, DateOnly EndDate)
@@ -122,13 +129,13 @@ public class MemberBadmintonBookingController(BadmintonDbContext db, IReservatio
         await LockCourtAsync(schedule.Court.Id, ct);
         if ((await ConflictsAsync(schedule, ct)).Count > 0) throw new InvalidOperationException("Some sessions are no longer available. Please check your schedule again.");
         var token = Guid.NewGuid();
-        var expiry = Now.AddSeconds(HoldSeconds);
+        var expiry = Now.Add(HoldTime);
         foreach (var date in schedule.Dates)
             foreach (var slot in schedule.Slots)
                 db.BookingHolds.Add(new BookingHold { CourtId = schedule.Court.Id, CourtSlotId = slot.Id, BookingDate = date, Amount = slot.Price, Status = BookingHoldStatus.Pending, ExpiresAt = expiry, PaymentIntentId = Key(token) });
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
-        return Ok(new { HoldToken = token, ExpiresInSeconds = Math.Max(0, (int)(expiry - Now).TotalSeconds), OriginalAmount = schedule.Amount, schedule.EndDate, BookingCount = schedule.Prices.Count });
+        return Ok(new { HoldToken = token, ExpiresInSeconds = (int)Math.Clamp((expiry - Now).TotalSeconds, 0, int.MaxValue), OriginalAmount = schedule.Amount, schedule.EndDate, BookingCount = schedule.Prices.Count });
     });
 
     private async Task<List<BookingHold>> HoldsAsync(Guid token, CancellationToken ct)
@@ -150,7 +157,9 @@ public class MemberBadmintonBookingController(BadmintonDbContext db, IReservatio
     {
         var holds = await HoldsAsync(request.HoldToken, ct);
         EnsureActive(holds);
-        var quote = await coupons.QuoteAsync(request.CouponCode, holds.Select(h => h.Amount).ToList(), ct);
+        // Cashier clients omit the member page cap and use the global badminton limit.
+        var slotLimit = request.MaximumDiscountableSlots is { } requested ? DiscountSlotLimit(requested) : GlobalDiscountSlotLimit;
+        var quote = await coupons.QuoteAsync(request.CouponCode, holds.Take(slotLimit).Select(h => h.Amount).ToList(), ct);
         if (!quote.IsValid) throw new InvalidOperationException(quote.ErrorMessage);
         var total = holds.Sum(h => h.Amount);
         return Ok(new { OriginalAmount = total, quote.DiscountAmount, FinalAmount = total - quote.DiscountAmount });
@@ -164,7 +173,8 @@ public class MemberBadmintonBookingController(BadmintonDbContext db, IReservatio
         var payment = ReadPayment(existing.FirstOrDefault());
         if (payment is not null && (payment.Status is "paid" or "review" || payment.Status == "pending" && existing.Any(h => h.ExpiresAt > Now)))
             throw new InvalidOperationException("Please check your payment status before releasing this reservation.");
-        await db.BookingHolds.Where(h => h.PaymentIntentId == key && h.Status == BookingHoldStatus.Pending)
+        await db.BookingHolds.Where(h => h.PaymentIntentId == key && h.Status == BookingHoldStatus.Pending &&
+                (h.PaymentId == null || h.PaymentId != ManualPaymentMarker))
             .ExecuteUpdateAsync(setters => setters.SetProperty(h => h.Status, BookingHoldStatus.Released), ct);
         return Ok(new { Succeeded = true });
     });
@@ -300,7 +310,7 @@ public class MemberBadmintonBookingController(BadmintonDbContext db, IReservatio
     }
     // Existing hold payment metadata persists the prepared order and verified result across refreshes.
     private static MemberPaymentState? ReadPayment(BookingHold? hold) =>
-        string.IsNullOrWhiteSpace(hold?.PaymentId) ? null : JsonSerializer.Deserialize<MemberPaymentState>(hold.PaymentId);
+        string.IsNullOrWhiteSpace(hold?.PaymentId) || hold.PaymentId == ManualPaymentMarker ? null : JsonSerializer.Deserialize<MemberPaymentState>(hold.PaymentId);
     private async Task SavePayment(List<BookingHold> holds, MemberPaymentState state, CancellationToken ct)
     {
         var json = JsonSerializer.Serialize(state);
@@ -309,48 +319,7 @@ public class MemberBadmintonBookingController(BadmintonDbContext db, IReservatio
     }
 
     [HttpPost("payment")]
-    public Task<IActionResult> StartPayment([FromBody] MemberConfirmRequest request, CancellationToken ct) => Respond(async () =>
-    {
-        var options = paymentOptions.Value;
-        if (string.IsNullOrWhiteSpace(options.MerchantId) || string.IsNullOrWhiteSpace(options.MerchantSecret))
-            throw new InvalidOperationException("Online payments are not available right now. Please contact KVK Arena.");
-        await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
-        var holds = await HoldsAsync(request.HoldToken, ct);
-        await LockCourtAsync(holds[0].CourtId, ct);
-        EnsureActive(holds);
-        var payment = ReadPayment(holds[0]);
-        if (payment is not null && payment.Status is not ("reversed" or "failed"))
-            throw new InvalidOperationException("A payment already exists for this reservation. Please check its status before paying again.");
-        var history = payment?.PreviousAttempts.ToList() ?? [];
-        if (payment is not null) { payment.PreviousAttempts = []; history.Add(payment); }
-        var code = request.CouponCode.Trim().ToUpperInvariant();
-        await db.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({code}, 1))", ct);
-        var now = Now;
-        var otherPayments = await db.BookingHolds.AsNoTracking().Where(h => h.PaymentIntentId != Key(request.HoldToken) && h.PaymentIntentId != null &&
-            h.PaymentIntentId.StartsWith("MEMBER:") && h.PaymentId != null && h.PaymentId.Contains(code) && h.Status == BookingHoldStatus.Pending && h.ExpiresAt > now).ToListAsync(ct);
-        if (otherPayments.Any(h => ReadPayment(h) is { Status: "pending" or "paid" } state && state.CouponCode == code))
-            throw new InvalidOperationException("This coupon is already being used in another checkout. Please complete that payment first.");
-        var quote = await coupons.QuoteAsync(code, holds.Select(h => h.Amount).ToList(), ct);
-        if (!quote.IsValid) throw new InvalidOperationException(quote.ErrorMessage);
-        payment = new MemberPaymentState { OrderId = $"MBR-{request.HoldToken:N}-{Guid.NewGuid():N}", CouponCode = code, Email = request.Email.Trim(),
-            Currency = options.Currency, OriginalAmount = holds.Sum(h => h.Amount), DiscountAmount = quote.DiscountAmount, PreviousAttempts = history };
-        payment.Amount = payment.OriginalAmount - payment.DiscountAmount;
-        foreach (var hold in holds)
-        {
-            hold.CustomerName = request.CustomerName.Trim();
-            hold.PhoneNumber = request.PhoneNumber.Trim();
-        }
-        if (payment.Amount == 0) { payment.Status = "paid"; payment.GatewayPaymentId = "COUPON-COVERED"; }
-        await SavePayment(holds, payment, ct);
-        await transaction.CommitAsync(ct);
-        if (payment.Amount == 0)
-        {
-            var confirmed = await FinalizeVerifiedPayment(request.HoldToken, payment, ct);
-            return Ok(new { Confirmation = ((ObjectResult)confirmed).Value });
-        }
-        return Ok(new { payment.OrderId, options.MerchantId, payment.Currency, Amount = payment.Amount.ToString("0.00", CultureInfo.InvariantCulture), options.Sandbox,
-            Hash = hashes.GeneratePayHereHash(options.MerchantId, options.MerchantSecret, payment.OrderId, payment.Amount, payment.Currency), ExpiresInSeconds = Math.Max(0, (int)(holds.Min(h => h.ExpiresAt) - Now).TotalSeconds) });
-    });
+    public IActionResult StartPayment() => StatusCode(410, new { Message = "Book your sessions and upload a payment slip." });
 
     [HttpPost("payment/reverse")]
     public Task<IActionResult> ReversePayment([FromBody] MemberReverseRequest request, CancellationToken ct) => Respond(async () =>

@@ -20,6 +20,7 @@ public class CashierAvailabilityRequest
 public class MemberCouponRequest
 {
     public Guid HoldToken { get; set; }
+    [Range(0, int.MaxValue)] public int? MaximumDiscountableSlots { get; set; }
     [Required, MaxLength(100)] public string CouponCode { get; set; } = "";
 }
 public class MemberReverseRequest
@@ -64,4 +65,10 @@ public static class MemberSchedule
         var days = weekdays.Select(day => Enum.Parse<DayOfWeek>(day.ToString())).ToHashSet();
         return Enumerable.Range(0, weeks * 7).Select(start.AddDays).Where(date => days.Contains(date.DayOfWeek)).ToList();
     }
+}
+
+public class MemberSlipReviewRequest
+{
+    [Required] public bool? Approve { get; set; }
+    [MaxLength(200)] public string? Reason { get; set; }
 }
