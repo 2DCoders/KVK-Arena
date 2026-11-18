@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, ArrowRight, CalendarDays, Check, CheckCircle2, ChevronRight, Clock3, LoaderCircle, ShieldCheck, Ticket, Users } from "lucide-react";
-import logo from "@/assets/badminton_logo.png";
-import courtImage from "@/assets/court.png";
+import { ArrowLeft, ArrowRight, CalendarDays, Check, CheckCircle2, ChevronRight, Clock3, Info, LoaderCircle, ShieldCheck, Ticket, Users } from "lucide-react";
+import MemberHeader from "./member-header";
 import { getEnv } from "@/env";
 import { bookingError, checkMemberBooking, getMemberBookingSetup, holdMemberBooking, quoteMemberCoupon, releaseMemberHold, type AvailabilityQuote, type BookingSetup, type BookingHold, type CouponQuote, type MemberSlipBooking, bookMemberSessions, type MemberBookingRequest } from "@/services/member-badminton-api";
 import { consecutiveSlots, countdown, endDate, isDate, maximumWeeks, money, remainingSeconds, slotLabel, sriLankaToday, validateSchedule, WEEKDAYS } from "./booking-utils";
@@ -41,6 +40,8 @@ export default function MemberBadmintonBooking() {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const max = Math.min(configuredMax, setup?.maximumWeeks ?? configuredMax);
   const slots = setup?.slots ?? [];
+  const firstSlotPrice = slots[0]?.price;
+  const uniformSlotPrice = slots.every(slot => slot.price === firstSlotPrice) ? firstSlotPrice : undefined;
   const selectedSlots = slots.filter(slot => slotIds.includes(slot.slotId));
   const finish = endDate(startDate, weeks);
   const seconds = hold ? remainingSeconds(deadline, now) : 0;
@@ -168,37 +169,24 @@ export default function MemberBadmintonBooking() {
 
   return (
     <div className="member-badminton">
-      <header className="mb-header">
-        <img className="mb-header-court" src={courtImage} alt="" aria-hidden="true" />
-        <div className="mb-container mb-header-content">
-          <div className="mb-header-inner">
-            <Link to="/" className="mb-header-brand" aria-label="KVK Arena home">
-              <img src={logo} alt="KVK Badminton" />
-              <span className="mb-header-brand-copy"><strong>KVK ARENA</strong><span>BADMINTON CLUB</span></span>
-            </Link>
-            <div className="mb-header-actions">
-              <span className="mb-member-label"><ShieldCheck size={14} /> MEMBER RESERVATIONS</span>
-              <Link to="/" className="mb-back"><ArrowLeft size={14} /><span>Back to Arena</span></Link>
-            </div>
-          </div>
-          <div className="mb-header-title">
-            <div>
-              <p><span /> A COURT. A COMMITMENT. YOUR GAME.</p>
-              <h1>Member court <em>reservations.</em></h1>
-            </div>
-            <span className="mb-header-members"><Users size={16} /><span>EXCLUSIVELY FOR<br /><strong>KVK MEMBERS</strong></span></span>
-          </div>
-        </div>
-      </header>
+      <MemberHeader />
 
       <main className="mb-container mb-booking-area">
-        <Link className="mb-back" to="/members/badminton/track">Track an existing booking</Link>
         <nav className="mb-steps" aria-label="Booking progress">
           {["Your schedule", "Your details", "Submitted"].map((label, index) => {
             const current = stage === "schedule" ? 0 : stage === "details" ? 1 : 2;
-            return <span key={label} className={current === index ? "is-current" : current > index ? "is-complete" : ""} aria-current={current === index ? "step" : undefined}><i>{current > index ? <Check size={13} /> : `0${index + 1}`}</i>{label}{index < 2 && <ChevronRight size={14} />}</span>;
+            return <span key={label} className={current === index ? "is-current" : current > index ? "is-complete" : ""} aria-current={current === index ? "step" : undefined}><i>{current > index ? <Check size={13} /> : index + 1}</i>{label}{index < 2 && <ChevronRight size={14} />}</span>;
           })}
         </nav>
+        <details className="mb-booking-guide">
+          <summary><Info size={17} aria-hidden="true" /> How to book <ChevronRight size={15} aria-hidden="true" /></summary>
+          <ol>
+            <li><strong>Choose your sessions.</strong> Pick a start date, duration, days, and consecutive time slots. Check the estimated total.</li>
+            <li><strong>Check availability and reserve.</strong> If all sessions are available, select Reserve sessions to hold them while you complete your details.</li>
+            <li><strong>Apply your coupon and book.</strong> Enter your details, apply your coupon, review the final amount, and select Book sessions before the timer ends.</li>
+            <li><strong>Pay and upload your slip.</strong> If payment is due, transfer the amount and upload the slip within 24 hours using the link in your SMS or receipt. Use your reference to track approval or replace your slip while Admin reviews it.</li>
+          </ol>
+        </details>
         {stage === "success" && receipt ? (
           <section className="mb-panel mb-success">
             <div className="mb-success-icon"><CheckCircle2 size={38} /></div>
@@ -211,7 +199,7 @@ export default function MemberBadmintonBooking() {
               <div><span>Time</span><strong>{selectedSlots.map(slotLabel).join(", ")}</strong></div>
               <div><span>Final amount</span><strong>{money(receipt.finalAmount)}</strong></div>
             </div>
-            <p>Booking reference <strong>{receipt.reference}</strong></p>
+            <div className="mb-reference"><span>Booking reference</span><strong>{receipt.reference}</strong></div>
             <p>{receipt.finalAmount > 0
               ? `Pay ${money(receipt.finalAmount)} within 24 hours and upload your payment slip for admin approval.`
               : "Your coupon covered the full amount. Your booking is awaiting admin approval."}</p>
@@ -233,14 +221,29 @@ export default function MemberBadmintonBooking() {
                 {loadError && <div className="mb-alert" role="alert">{loadError}<button type="button" onClick={() => setReload(value => value + 1)}>Try again</button></div>}
                 {loading ? <p className="mb-loading" role="status">{spinner} Loading your court...</p> : <form onSubmit={event => { event.preventDefault(); check(); }}>
                   <fieldset className="mb-fields" disabled={!!busy || !!loadError}>
-                    <div className="mb-court-display"><span className="mb-section-icon"><CalendarDays size={21} /></span><div><span>YOUR BOOKING COURT</span><strong>{setup?.court.name}</strong></div><span className="mb-court-status"><i /> Indoor court</span></div>
+                    <div className="mb-court-display"><span className="mb-section-icon"><CalendarDays size={21} /></span><div><span>Booking court</span><strong>{setup?.court.name}</strong></div><span className="mb-court-status"><i /> Indoor court</span></div>
                     <div className="mb-input-row">
-                      <div className="mb-field"><label htmlFor="mb-start">01 <span>First booking date</span></label><input id="mb-start" type="date" required min={minDate} value={startDate} onChange={event => { invalidate(); setStartDate(event.target.value); }} /></div>
-                      <div className="mb-field"><label htmlFor="mb-weeks">02 <span>Duration</span></label><select id="mb-weeks" value={weeks} required onChange={event => { invalidate(); setWeeks(Number(event.target.value)); }}>{Array.from({ length: max }, (_, i) => i + 1).map(value => <option key={value} value={value}>{value} {value === 1 ? "week" : "weeks"}</option>)}</select><p className="mb-help">Up to {max} weeks per booking.</p></div>
+                      <div className="mb-field"><label htmlFor="mb-start">First booking date</label><input id="mb-start" type="date" required min={minDate} value={startDate} onChange={event => { invalidate(); setStartDate(event.target.value); }} /></div>
+                      <div className="mb-field"><label htmlFor="mb-weeks">Duration</label><select id="mb-weeks" value={weeks} required onChange={event => { invalidate(); setWeeks(Number(event.target.value)); }}>{Array.from({ length: max }, (_, i) => i + 1).map(value => <option key={value} value={value}>{value} {value === 1 ? "week" : "weeks"}</option>)}</select><p className="mb-help">Up to {max} weeks per booking.</p></div>
                     </div>
                     <div className="mb-end-date"><CalendarDays size={16} /><span>Booking period ends</span><strong>{finish || "Choose a start date"}</strong></div>
-                    <div className="mb-field"><label>03 <span>Days you want to play</span></label><div className="mb-days" role="group" aria-label="Days of the week">{WEEKDAYS.map(day => <button key={day} type="button" aria-label={day} aria-pressed={days.includes(day)} className={days.includes(day) ? "is-selected" : ""} onClick={() => { invalidate(); setDays(current => WEEKDAYS.filter(value => value === day ? !current.includes(day) : current.includes(value))); }}>{day.slice(0, 3)}</button>)}</div></div>
-                    <div className="mb-field"><label>04 <span>Choose your time</span></label><p className="mb-help">Select consecutive slots. Prices shown are per session.</p><div className="mb-slots" role="group" aria-label="Time slots">{slots.map(slot => <button key={slot.slotId} type="button" aria-pressed={slotIds.includes(slot.slotId)} className={slotIds.includes(slot.slotId) ? "is-selected" : ""} onClick={() => toggleSlot(slot.slotId)}><Clock3 size={14} /><span>{slotLabel(slot)}<small className="mb-slot-price">{money(slot.price)}</small></span>{slotIds.includes(slot.slotId) && <Check size={14} />}</button>)}</div></div>
+                    <div className="mb-field"><label>Days you want to play</label><div className="mb-days" role="group" aria-label="Days of the week">{WEEKDAYS.map(day => <button key={day} type="button" aria-label={day} aria-pressed={days.includes(day)} className={days.includes(day) ? "is-selected" : ""} onClick={() => { invalidate(); setDays(current => WEEKDAYS.filter(value => value === day ? !current.includes(day) : current.includes(value))); }}>{day.slice(0, 3)}</button>)}</div></div>
+                    <div className="mb-field">
+                      <label>Choose your time</label>
+                      <p className="mb-help">Select consecutive slots.{uniformSlotPrice === undefined && slots.length > 0 && " Prices shown are per session."}</p>
+                      {uniformSlotPrice !== undefined && <div className="mb-session-rate">
+                        <span><Ticket size={18} /> Price per session</span>
+                        <strong>{money(uniformSlotPrice)}</strong>
+                      </div>}
+                      <div className="mb-slots" role="group" aria-label="Time slots">
+                        {slots.map(slot => <button key={slot.slotId} type="button" aria-pressed={slotIds.includes(slot.slotId)}
+                          className={slotIds.includes(slot.slotId) ? "is-selected" : ""} onClick={() => toggleSlot(slot.slotId)}>
+                          <Clock3 size={14} />
+                          <span>{slotLabel(slot)}{uniformSlotPrice === undefined && <small className="mb-slot-price">{money(slot.price)}</small>}</span>
+                          <Check className="mb-slot-check" size={14} aria-hidden="true" />
+                        </button>)}
+                      </div>
+                    </div>
                   </fieldset>
                   {!!availability?.unavailableSchedules.length && <div className="mb-conflicts" role="status"><strong>Unavailable sessions</strong>{availability.unavailableSchedules.map((item, index) => <p key={`${item.date}-${item.slotId}-${index}`}>{item.date} · {item.slotName}<br />{item.message}</p>)}</div>}
                   {availability?.isAvailable ? <div className="mb-availability-ready"><div className="mb-available"><CheckCircle2 size={18} /><span>All {availability.bookingCount} sessions are available.</span></div><p className="mb-help">Reserve these sessions before entering your details.</p><div className="mb-availability-actions"><button className="mb-cancel" type="button" disabled={!!busy} onClick={invalidate}>Cancel</button><button className="mb-primary" type="button" disabled={!!busy} onClick={reserve}>{busy === "hold" ? <>{spinner} Checking & reserving...</> : <>Reserve sessions <ArrowRight size={16} /></>}</button></div></div> : <div className="mb-form-action"><span><ShieldCheck size={15} /> Every selected date is checked</span><button className="mb-primary" type="submit" disabled={!!busy || !slots.length || !!loadError}>{busy === "check" ? <>{spinner} Checking...</> : <>Check availability <ArrowRight size={16} /></>}</button></div>}
@@ -259,11 +262,11 @@ export default function MemberBadmintonBooking() {
                 </form>
               </>}
             </section>
-            <aside className="mb-summary mb-panel" aria-label="Booking summary"><div className="mb-summary-heading"><span>YOUR RESERVATION</span><CalendarDays size={18} /></div><h3>{setup?.court.name || "Your next game"}</h3><div className="mb-summary-list"><div><span>Starting</span><strong>{startDate || "Choose a date"}</strong></div><div><span>Ending</span><strong>{finish || "Choose a duration"}</strong></div><div><span>Duration</span><strong>{weeks} {weeks === 1 ? "week" : "weeks"}</strong></div><div><span>Days</span><strong>{days.length ? days.map(day => day.slice(0, 3)).join(", ") : "Choose days"}</strong></div><div><span>Total sessions</span><strong>{hold?.bookingCount ?? availability?.bookingCount ?? weeks * days.length * slotIds.length}</strong></div></div><div className="mb-pricing"><div><span>{availability || hold ? "Original amount" : "Estimated amount"}</span><strong>{money(original)}</strong></div>{couponReady && <div className="mb-discount"><span>Coupon discount</span><strong>- {money(couponQuote.discountAmount)}</strong></div>}<div className="mb-total"><span>{couponReady ? "Final amount" : "Before coupon"}</span><strong>{money(total)}</strong></div></div><div className="mb-summary-note"><ShieldCheck size={18} /><span>{stage === "details" ? "Submit your booking before the hold expires." : "Check availability first, then reserve your sessions and add your coupon."}</span></div></aside>
+            <aside className="mb-summary mb-panel" aria-label="Booking summary"><div className="mb-summary-heading"><span>Booking summary</span><CalendarDays size={18} /></div><h3>{setup?.court.name || "Your next game"}</h3><div className="mb-summary-list"><div><span>Starting</span><strong>{startDate || "Choose a date"}</strong></div><div><span>Ending</span><strong>{finish || "Choose a duration"}</strong></div><div><span>Duration</span><strong>{weeks} {weeks === 1 ? "week" : "weeks"}</strong></div><div><span>Days</span><strong>{days.length ? days.map(day => day.slice(0, 3)).join(", ") : "Choose days"}</strong></div><div><span>Total sessions</span><strong>{hold?.bookingCount ?? availability?.bookingCount ?? weeks * days.length * slotIds.length}</strong></div></div><div className="mb-pricing"><div><span>{availability || hold ? "Original amount" : "Estimated amount"}</span><strong>{money(original)}</strong></div>{couponReady && <div className="mb-discount"><span>Coupon discount</span><strong>- {money(couponQuote.discountAmount)}</strong></div>}<div className="mb-total"><span>{couponReady ? "Final amount" : "Before coupon"}</span><strong>{money(total)}</strong></div></div><div className="mb-summary-note"><ShieldCheck size={18} /><span>{stage === "details" ? "Submit your booking before the hold expires." : "Check availability first, then reserve your sessions and add your coupon."}</span></div></aside>
           </div>
         )}
       </main>
-      <footer className="mb-container mb-footer"><span>KVK ARENA</span><span>MAKE EVERY GAME COUNT.</span><a href="https://wa.me/94765605885" target="_blank" rel="noreferrer">Need a hand? Contact us <ArrowRight size={12} /></a></footer>
+      <footer className="mb-container mb-footer"><strong>KVK Arena</strong><a href="https://wa.me/94765605885" target="_blank" rel="noreferrer">Need a hand? Contact us <ArrowRight size={12} /></a></footer>
     </div>
   );
 }

@@ -17,6 +17,7 @@ public class MemberSlipReservation : AuditableEntity
     public string? RejectionReason { get; set; }
     public bool Rejected { get; set; }
     public bool SmsSent { get; set; }
+    public Guid? SlipRevision { get; set; }
     public byte[]? Slip { get; set; }
     public string? SlipContentType { get; set; }
 }

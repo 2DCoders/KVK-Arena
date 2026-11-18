@@ -70,5 +70,6 @@ public static class MemberSchedule
 public class MemberSlipReviewRequest
 {
     [Required] public bool? Approve { get; set; }
+    public Guid? SlipRevision { get; set; }
     [MaxLength(200)] public string? Reason { get; set; }
 }

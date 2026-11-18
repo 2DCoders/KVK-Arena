@@ -1,3 +1,4 @@
+import { Landmark } from "lucide-react";
 import { getEnv } from "@/env";
 import type { BankTransferDetails } from "@/services/member-badminton-api";
 
@@ -16,10 +17,13 @@ export default function BankTransferInstructions({ details }: { details?: BankTr
       : <p><a href="https://wa.me/94765605885" target="_blank" rel="noreferrer">Contact KVK Arena for bank transfer details</a>.</p>;
   }
 
-  return <dl className="mb-receipt w-full">
-    <div><dt>Bank name</dt><dd>{bank.bankName}</dd></div>
-    <div><dt>Account owner</dt><dd>{bank.accountOwnerName}</dd></div>
-    <div><dt>Account number</dt><dd>{bank.accountNumber}</dd></div>
-    <div><dt>Branch name</dt><dd>{bank.branchName}</dd></div>
-  </dl>;
+  return <div className="mb-bank">
+    <div className="mb-bank-heading"><Landmark size={18} /> Bank transfer details</div>
+    <dl>
+      <div><dt>Bank name</dt><dd>{bank.bankName}</dd></div>
+      <div><dt>Account owner</dt><dd>{bank.accountOwnerName}</dd></div>
+      <div><dt>Account number</dt><dd>{bank.accountNumber}</dd></div>
+      <div><dt>Branch name</dt><dd>{bank.branchName}</dd></div>
+    </dl>
+  </div>;
 }

@@ -523,6 +523,9 @@ namespace kvk.Badminton.Migrations
                     b.Property<string>("SlipContentType")
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("SlipRevision")
+                        .HasColumnType("uuid");
+
                     b.Property<bool>("SmsSent")
                         .HasColumnType("boolean");
 

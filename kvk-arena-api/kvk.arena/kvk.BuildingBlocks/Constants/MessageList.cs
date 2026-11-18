@@ -31,10 +31,10 @@ public static class MessageList
 
     public static string GetKvkMemberCouponCodeMessage(string firstName, string couponCode)
     {
-        return
-            $"Hi {firstName}! 🎉 Your KVK Arena coupon code is {couponCode}. " +
-            $"Use this code when booking badminton courts and enjoy a special discount on your booking. " +
-            $"We look forward to seeing you at KVK Arena!";
+        return $"Hi {firstName}, your KVK Arena badminton coupon is {couponCode}. Use it once only. " +
+            "Book at https://kvkarena.lk/members/badminton\n" +
+            "Choose sessions, check availability, reserve, then enter your details, apply the code and book. " +
+            "If payment is due, pay and upload your slip within 24 hours using your booking link.";
     }
 
     public static string GetSalonBookingConfirmedMessage(string customerName, DateOnly bookingDate, TimeSpan startTime)

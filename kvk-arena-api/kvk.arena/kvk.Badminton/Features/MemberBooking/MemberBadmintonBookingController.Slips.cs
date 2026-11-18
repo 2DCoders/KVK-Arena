@@ -162,12 +162,14 @@ public partial class MemberBadmintonBookingController
         await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
         var reservation = await db.MemberSlipReservations.SingleOrDefaultAsync(r => r.Id == reference, ct);
         if (reservation is null) return NotFound(new { Message = "Booking reference could not be found." });
-        if (Status(reservation) is not ("awaiting_payment" or "retry_payment"))
+        var status = Status(reservation);
+        var replacing = status == "awaiting_approval" && reservation.Slip != null;
+        if (!replacing && status is not ("awaiting_payment" or "retry_payment"))
             throw new InvalidOperationException("This booking is no longer accepting payment slips.");
         var holds = await HoldsAsync(reservation.HoldToken, ct);
         await LockCourtAsync(holds[0].CourtId, ct);
         EnsureActive(holds);
-        if (reservation.PaymentDueUtc <= DateTime.UtcNow)
+        if (!replacing && reservation.PaymentDueUtc <= DateTime.UtcNow)
             throw new InvalidOperationException("The payment deadline has passed.");
         if (reservation.Rejected)
         {
@@ -185,6 +187,7 @@ public partial class MemberBadmintonBookingController
             reservation.RejectionReason = null;
         }
         reservation.Slip = bytes;
+        reservation.SlipRevision = Guid.NewGuid();
         reservation.SlipContentType = contentType;
         foreach (var hold in holds) hold.ExpiresAt = DateTime.MaxValue;
         await db.SaveChangesAsync(ct);
@@ -199,17 +202,19 @@ public partial class MemberBadmintonBookingController
         var reservations = await db.MemberSlipReservations.AsNoTracking()
             .Where(r => !r.Approved && !r.Rejected && !r.Cancelled && (r.Slip != null || r.FinalAmount == 0))
             .OrderBy(r => r.CreatedAt)
-            .Select(r => new { Reference = r.Id, r.CustomerName, r.PhoneNumber, r.FinalAmount, HasSlip = r.Slip != null })
+            .Select(r => new { Reference = r.Id, r.CustomerName, r.PhoneNumber, r.FinalAmount, r.SlipRevision, HasSlip = r.Slip != null })
             .ToListAsync(ct);
         return Ok(reservations);
     }
 
     [Authorize(Policy = "BadmintonSlipReview")]
     [HttpGet("slip-review/{reference:guid}/slip")]
-    public async Task<IActionResult> DownloadSlip(Guid reference, CancellationToken ct)
+    public async Task<IActionResult> DownloadSlip(Guid reference, [FromQuery] Guid? slipRevision, CancellationToken ct)
     {
         var reservation = await db.MemberSlipReservations.AsNoTracking().SingleOrDefaultAsync(r => r.Id == reference, ct);
         if (reservation?.Slip is not { } data) return NotFound();
+        if (slipRevision != reservation.SlipRevision)
+            return Conflict(new { Message = "The customer replaced this slip. Refresh and download the latest version." });
         var extension = reservation.SlipContentType switch { "application/pdf" => "pdf", "image/png" => "png", _ => "jpg" };
         Response.Headers["X-Content-Type-Options"] = "nosniff";
         return File(data, reservation.SlipContentType ?? "application/octet-stream", $"badminton-{reference:N}.{extension}");
@@ -229,6 +234,8 @@ public partial class MemberBadmintonBookingController
             return Ok(new { Status = Status(reservation) });
         if (Status(reservation) != "awaiting_approval")
             throw new InvalidOperationException("This booking is no longer awaiting approval.");
+        if (request.SlipRevision != reservation.SlipRevision)
+            return Conflict(new { Message = "The customer replaced this slip. Refresh and review the latest version." });
 
         var holds = await HoldsAsync(reservation.HoldToken, ct);
         await LockCourtAsync(holds[0].CourtId, ct);
@@ -259,6 +266,7 @@ public partial class MemberBadmintonBookingController
             reservation.Rejected = true;
             reservation.RejectionReason = reason;
             reservation.Slip = null;
+            reservation.SlipRevision = null;
             reservation.SlipContentType = null;
             reservation.PaymentDueUtc = DateTime.UtcNow.AddHours(24);
             foreach (var hold in holds)
