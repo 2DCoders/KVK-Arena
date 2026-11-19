@@ -4,5 +4,6 @@ public class CouponValidationResult
 {
     public bool IsValid { get; set; }
     public decimal DiscountAmount { get; set; }
+    public decimal DiscountRate { get; set; }
     public string? ErrorMessage { get; set; }
 }

@@ -62,7 +62,8 @@ public class ReservationCouponService(IdentityApplicationDbContext db, IConfigur
         if (coupon is null || !coupon.IsEligible || !coupon.OfferRate.IsActive)
             return Invalid("This coupon is invalid or no longer eligible.");
         if (coupon.IsRedeemed) return Invalid("This coupon has already been redeemed.");
-        var discount = ReservationCouponPricing.Discount(prices, coupon.OfferRate.RateBadminton ?? 0,
+        var rate = Math.Clamp(coupon.OfferRate.RateBadminton ?? 0, 0, 100);
+        var discount = ReservationCouponPricing.Discount(prices, rate,
             configuration.GetValue<int>("BadmintonMaxDiscountSlotLimit"));
         if (redeem)
         {
@@ -71,7 +72,7 @@ public class ReservationCouponService(IdentityApplicationDbContext db, IConfigur
                 .ExecuteUpdateAsync(setters => setters.SetProperty(x => x.IsRedeemed, true).SetProperty(x => x.RedeemedDate, now), ct);
             if (updated != 1) return Invalid("This coupon is no longer available. Please use another unredeemed code.");
         }
-        return new CouponValidationResult { IsValid = true, DiscountAmount = discount };
+        return new CouponValidationResult { IsValid = true, DiscountAmount = discount, DiscountRate = rate };
     }
 
     private static CouponValidationResult Invalid(string message) => new() { IsValid = false, ErrorMessage = message };

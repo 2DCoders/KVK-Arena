@@ -7,7 +7,7 @@ export type BookingSchedule = { startDate: string; weeks: number; slotIds: strin
 export type BookingSetup = { court: MemberCourt; slots: MemberSlot[]; maximumWeeks: number; maximumDiscountableSlots: number; bankTransfer?: BankTransferDetails | null };
 export type AvailabilityQuote = { isAvailable: boolean; originalAmount: number; endDate: string; bookingCount: number; unavailableSchedules: { date: string; slotId: string; slotName: string; message: string }[] };
 export type BookingHold = { holdToken: string; expiresInSeconds: number; originalAmount: number; endDate: string; bookingCount: number };
-export type CouponQuote = { originalAmount: number; discountAmount: number; finalAmount: number };
+export type CouponQuote = { originalAmount: number; discountAmount: number; finalAmount: number; discountRate?: number; maximumDiscountableSlots?: number };
 export type BookingConfirmation = { succeeded: boolean; finalAmount: number; bookings: { bookingNumber: string; bookingDate: string; bookingAmount: number }[] };
 export type MemberBookingRequest = { holdToken: string; customerName: string; phoneNumber: string; couponCode: string; email: string; maximumDiscountableSlots?: number };
 const endpoint = (path: string) => `${getEnv().API_URL.replace(/\/?$/, "/")}member-badminton-bookings/${path}`;

@@ -172,7 +172,7 @@ public partial class MemberBadmintonBookingController(BadmintonDbContext db, IRe
         var quote = await coupons.QuoteAsync(request.CouponCode, holds.Take(slotLimit).Select(h => h.Amount).ToList(), ct);
         if (!quote.IsValid) throw new InvalidOperationException(quote.ErrorMessage);
         var total = holds.Sum(h => h.Amount);
-        return Ok(new { OriginalAmount = total, quote.DiscountAmount, FinalAmount = total - quote.DiscountAmount });
+        return Ok(new { OriginalAmount = total, quote.DiscountAmount, quote.DiscountRate, MaximumDiscountableSlots = slotLimit, FinalAmount = total - quote.DiscountAmount });
     });
 
     [HttpDelete("hold/{token:guid}")]

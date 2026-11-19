@@ -84,13 +84,14 @@ public partial class MemberBadmintonBookingController
             var amount = reservation.FinalAmount.ToString("0.00", CultureInfo.InvariantCulture);
             var instructions = reservation.FinalAmount == 0
                 ? "No payment is due. Your booking is awaiting admin approval."
-                : $"Pay LKR {amount} within 24 hours and upload your slip for admin approval.";
+                : $"Amount due: LKR {amount}\nPay and upload your slip within 24 hours for approval.";
             var bankInstructions = bank is null ? "" :
-                $" Bank: {bank.BankName}, account owner: {bank.AccountOwnerName}, account no.: {bank.AccountNumber}, branch: {bank.BranchName}.";
+                $"\n\nBank transfer\nBank: {bank.BankName}\nAccount name: {bank.AccountOwnerName}\nAccount no.: {bank.AccountNumber}\nBranch: {bank.BranchName}";
+            var trackingAction = reservation.FinalAmount > 0 ? "Track booking or upload your slip" : "Track booking";
             try
             {
                 var result = await sms.SendSingleMessageAsync(reservation.PhoneNumber,
-                    $"KVK Badminton ref {reservation.Id:N}. {instructions}{bankInstructions} Track your booking using your reference: {link}", ct);
+                    $"KVK Badminton booking\nRef: {reservation.Id:N}\n\n{instructions}{bankInstructions}\n\n{trackingAction}:\n{link}", ct);
                 if (result.Succeeded)
                 {
                     await db.MemberSlipReservations.Where(r => r.Id == reservation.Id)
