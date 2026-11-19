@@ -22,6 +22,7 @@ public class MemberCouponRequest
     public Guid HoldToken { get; set; }
     [Range(0, int.MaxValue)] public int? MaximumDiscountableSlots { get; set; }
     [Required, MaxLength(100)] public string CouponCode { get; set; } = "";
+    [RegularExpression(@"^\+?[0-9]{9,15}$")] public string? BookingPhoneNumber { get; set; }
 }
 public class MemberReverseRequest
 {

@@ -170,7 +170,7 @@ public partial class MemberBadmintonBookingController(BadmintonDbContext db, IRe
         // Cashier clients omit the member page cap and use the global badminton limit.
         var slotLimit = request.MaximumDiscountableSlots is { } requested ? DiscountSlotLimit(requested) : GlobalDiscountSlotLimit;
         var quote = await coupons.QuoteAsync(request.CouponCode, holds.Take(slotLimit).Select(h => h.Amount).ToList(), ct);
-        if (!quote.IsValid) throw new InvalidOperationException(quote.ErrorMessage);
+        if (!quote.IsValid) return await CouponFailureAsync(request.CouponCode, request.BookingPhoneNumber, quote.ErrorMessage, ct);
         var total = holds.Sum(h => h.Amount);
         return Ok(new { OriginalAmount = total, quote.DiscountAmount, quote.DiscountRate, MaximumDiscountableSlots = slotLimit, FinalAmount = total - quote.DiscountAmount });
     });
@@ -184,7 +184,7 @@ public partial class MemberBadmintonBookingController(BadmintonDbContext db, IRe
         if (payment is not null && (payment.Status is "paid" or "review" || payment.Status == "pending" && existing.Any(h => h.ExpiresAt > Now)))
             throw new InvalidOperationException("Please check your payment status before releasing this reservation.");
         await db.BookingHolds.Where(h => h.PaymentIntentId == key && h.Status == BookingHoldStatus.Pending &&
-                (h.PaymentId == null || h.PaymentId != ManualPaymentMarker))
+                h.PaymentId != ManualPaymentMarker && h.PaymentId != RejectedSlipCouponHeldMarker)
             .ExecuteUpdateAsync(setters => setters.SetProperty(h => h.Status, BookingHoldStatus.Released), ct);
         return Ok(new { Succeeded = true });
     });
@@ -320,7 +320,7 @@ public partial class MemberBadmintonBookingController(BadmintonDbContext db, IRe
     }
     // Existing hold payment metadata persists the prepared order and verified result across refreshes.
     private static MemberPaymentState? ReadPayment(BookingHold? hold) =>
-        string.IsNullOrWhiteSpace(hold?.PaymentId) || hold.PaymentId == ManualPaymentMarker ? null : JsonSerializer.Deserialize<MemberPaymentState>(hold.PaymentId);
+        string.IsNullOrWhiteSpace(hold?.PaymentId) || hold.PaymentId is ManualPaymentMarker or RejectedSlipCouponHeldMarker ? null : JsonSerializer.Deserialize<MemberPaymentState>(hold.PaymentId);
     private async Task SavePayment(List<BookingHold> holds, MemberPaymentState state, CancellationToken ct)
     {
         var json = JsonSerializer.Serialize(state);

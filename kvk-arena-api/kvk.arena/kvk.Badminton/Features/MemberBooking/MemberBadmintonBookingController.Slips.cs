@@ -16,6 +16,7 @@ namespace kvk.Badminton.Features.MemberBooking;
 public partial class MemberBadmintonBookingController
 {
     private const string ManualPaymentMarker = "PAYMENT-SLIP";
+    private const string RejectedSlipCouponHeldMarker = "PAYMENT-SLIP-COUPON-HELD";
     private const int MaxSlipBytes = 5 * 1024 * 1024;
 
     private sealed record BankTransferDetails(string BankName, string AccountOwnerName, string AccountNumber, string BranchName);
@@ -53,7 +54,7 @@ public partial class MemberBadmintonBookingController
                 var prices = holds.Select(h => h.Amount).ToList();
                 var slotLimit = DiscountSlotLimit(request.MaximumDiscountableSlots);
                 var quote = await coupons.RedeemAsync(request.CouponCode, prices.Take(slotLimit).ToList(), transaction.GetDbTransaction(), ct);
-                if (!quote.IsValid) throw new InvalidOperationException(quote.ErrorMessage);
+                if (!quote.IsValid) return await CouponFailureAsync(request.CouponCode, request.PhoneNumber, quote.ErrorMessage, ct);
                 reservation = new MemberSlipReservation
                 {
                     Id = Guid.NewGuid(),
@@ -91,7 +92,7 @@ public partial class MemberBadmintonBookingController
             try
             {
                 var result = await sms.SendSingleMessageAsync(reservation.PhoneNumber,
-                    $"KVK Badminton Booking Confirmed!\n\nReference: {reservation.Id:N}\n{instructions}{bankInstructions}\n\n{trackingAction}:\n{link}", ct);
+                    $"Hi {reservation.CustomerName},\n\nKVK Badminton Booking Confirmed!\n\nReference: {reservation.Id:N}\n{instructions}{bankInstructions}\n\n{trackingAction}:\n{link}", ct);
                 if (result.Succeeded)
                 {
                     await db.MemberSlipReservations.Where(r => r.Id == reservation.Id)
@@ -136,7 +137,8 @@ public partial class MemberBadmintonBookingController
 
         var holds = await HoldsAsync(reservation.HoldToken, ct);
         await LockCourtAsync(holds[0].CourtId, ct);
-        if (!reservation.Rejected && reservation.CouponCode is { } code)
+        if (reservation.CouponCode is { } code &&
+            (!reservation.Rejected || holds.Any(h => h.PaymentId == RejectedSlipCouponHeldMarker)))
             await coupons.RestoreAsync(code, transaction.GetDbTransaction(), ct);
         foreach (var hold in holds.Where(h => h.Status == BookingHoldStatus.Pending))
             hold.Status = BookingHoldStatus.Released;
@@ -176,7 +178,8 @@ public partial class MemberBadmintonBookingController
         if (reservation.Rejected)
         {
             await EnsureBookableAsync(holds, ct);
-            if (reservation.CouponCode is { } code)
+            // Older rejected bookings released the coupon and still need to redeem it again.
+            if (reservation.CouponCode is { } code && holds.All(h => h.PaymentId != RejectedSlipCouponHeldMarker))
             {
                 var prices = holds.Select(h => h.Amount).ToList();
                 var slotLimit = reservation.MaximumDiscountableSlots ?? GlobalDiscountSlotLimit;
@@ -191,7 +194,11 @@ public partial class MemberBadmintonBookingController
         reservation.Slip = bytes;
         reservation.SlipRevision = Guid.NewGuid();
         reservation.SlipContentType = contentType;
-        foreach (var hold in holds) hold.ExpiresAt = DateTime.MaxValue;
+        foreach (var hold in holds)
+        {
+            hold.ExpiresAt = DateTime.MaxValue;
+            hold.PaymentId = ManualPaymentMarker;
+        }
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
         return Ok(new { Status = "awaiting_approval" });
@@ -263,8 +270,6 @@ public partial class MemberBadmintonBookingController
         }
         else
         {
-            if (reservation.CouponCode is { } code)
-                await coupons.RestoreAsync(code, transaction.GetDbTransaction(), ct);
             reservation.Rejected = true;
             reservation.RejectionReason = reason;
             reservation.Slip = null;
@@ -273,6 +278,7 @@ public partial class MemberBadmintonBookingController
             reservation.PaymentDueUtc = DateTime.UtcNow.AddHours(24);
             foreach (var hold in holds)
             {
+                hold.PaymentId = RejectedSlipCouponHeldMarker;
                 if (reservation.FinalAmount > 0) hold.ExpiresAt = HoldExpiry(reservation.PaymentDueUtc);
                 else hold.Status = BookingHoldStatus.Released;
             }
@@ -293,7 +299,7 @@ public partial class MemberBadmintonBookingController
         var smsSent = false;
         try
         {
-            smsSent = (await sms.SendSingleMessageAsync(reservation.PhoneNumber, message, CancellationToken.None)).Succeeded;
+            smsSent = (await sms.SendSingleMessageAsync(reservation.PhoneNumber, $"Hi {reservation.CustomerName},\n\n{message}", CancellationToken.None)).Succeeded;
             if (!smsSent) logger.LogWarning("Review SMS failed for badminton reference {Reference}", reference);
         }
         catch (Exception ex)
@@ -314,6 +320,26 @@ public partial class MemberBadmintonBookingController
         var local = ColomboNow;
         if (holds.Any(h => MemberAvailability.Status(h.BookingDate, h.CourtSlotId, h.CourtSlot.StartTime, local, taken) != "available"))
             throw new InvalidOperationException("One or more sessions have started or are no longer available.");
+    }
+
+    private async Task<IActionResult> CouponFailureAsync(string couponCode, string? phone, string? error, CancellationToken ct)
+    {
+        if (!string.IsNullOrEmpty(phone))
+        {
+            var code = couponCode.Trim().ToUpperInvariant();
+            var bookings = await db.MemberSlipReservations.AsNoTracking()
+                .Where(r => r.CouponCode == code && r.PhoneNumber == phone && !r.Approved && !r.Cancelled)
+                .OrderByDescending(r => r.CreatedAt)
+                .Select(r => new { r.Id, r.HoldToken, r.Rejected }).ToListAsync(ct);
+            var rejectedKeys = bookings.Where(r => r.Rejected).Select(r => Key(r.HoldToken)).ToList();
+            var retainedKeys = await db.BookingHolds.AsNoTracking()
+                .Where(h => h.PaymentId == RejectedSlipCouponHeldMarker && rejectedKeys.Contains(h.PaymentIntentId!))
+                .Select(h => h.PaymentIntentId).Distinct().ToListAsync(ct);
+            var booking = bookings.FirstOrDefault(r => !r.Rejected || retainedKeys.Contains(Key(r.HoldToken)));
+            if (booking is not null)
+                return Conflict(new { Message = "Your coupon code is already used for a booking that hasn't been approved. Cancel it before making a new booking.", BookingReference = booking.Id });
+        }
+        return BadRequest(new { Message = error });
     }
 
     // Booking holds store server-local timestamps without a time zone.

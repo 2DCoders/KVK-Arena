@@ -72,6 +72,15 @@ test('coupon validation happens against a held reservation', async () => {
   assert.equal(calls[0][2].holdToken, 'reservation');
   assert.equal(calls[0][2].couponCode, 'UNUSED');
 });
+test('coupon conflicts can link to the previous booking after a phone number is supplied', async () => {
+  const { api, calls } = fixture();
+  await api.quoteMemberCoupon('reservation', 'USED', 5, '0771234567');
+  assert.equal(calls[0][2].bookingPhoneNumber, '0771234567');
+  const reference = '137478ed-efe2-4f23-89ad-c78a269b4390';
+  const conflict = { isAxiosError: true, response: { status: 409, data: { bookingReference: reference } } };
+  assert.equal(api.conflictingBookingReference(conflict), reference);
+  assert.equal(api.conflictingBookingReference({ ...conflict, response: { status: 409, data: {} } }), undefined);
+});
 test('confirm uses customer details and coupon, never a client-supplied price or member ID', async () => {
   const { api, calls } = fixture({ succeeded: true, finalAmount: 1500, bookings: [{ bookingNumber: 'BOOK-1' }] });
   await api.createMemberPayment({ holdToken: 'reservation', customerName: 'Test', phoneNumber: '0771234567', couponCode: 'UNUSED', email: 'test@example.com' });

@@ -146,6 +146,11 @@
 .mb-pricing { display: grid; gap: 8px; padding-top: 15px; font-size: 13px; }
 .mb-pricing .mb-discount strong { color: #176046; }
 .mb-summary-coupon { overflow-wrap: anywhere; }
+.mb-coupon-dialog { width: min(440px, calc(100% - 32px)); margin: auto; padding: 24px; }
+.mb-coupon-dialog::backdrop { background: rgb(15 30 56 / 55%); }
+.mb-coupon-dialog h2 { margin: 0 0 8px; font-size: 20px; }
+.mb-coupon-dialog p { margin: 0 0 18px; }
+.mb-coupon-dialog .mb-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 .mb-pricing .mb-total { padding: 12px; border: 1px solid #d4e4fc; border-radius: 11px; background: var(--mb-pale); margin-top: 3px; flex-wrap: wrap; }
 .mb-total strong { color: var(--mb-blue-deep); font-size: 19px; font-weight: 800; letter-spacing: -.025em; overflow-wrap: anywhere; }
 .mb-summary-note { display: flex; align-items: flex-start; gap: 8px; color: var(--mb-muted); font-size: 12px; margin-top: 14px; }

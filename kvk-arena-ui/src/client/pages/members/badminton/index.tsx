@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight, CalendarDays, Check, CheckCircle2, ChevronRight, Clock3, Info, LoaderCircle, ShieldCheck, Ticket, Users } from "lucide-react";
 import MemberHeader from "./member-header";
 import { getEnv } from "@/env";
-import { bookingError, checkMemberBooking, getMemberBookingSetup, holdMemberBooking, quoteMemberCoupon, releaseMemberHold, type AvailabilityQuote, type BookingSetup, type BookingHold, type CouponQuote, type MemberSlipBooking, bookMemberSessions, type MemberBookingRequest } from "@/services/member-badminton-api";
+import { bookingError, checkMemberBooking, conflictingBookingReference, getMemberBookingSetup, holdMemberBooking, quoteMemberCoupon, releaseMemberHold, type AvailabilityQuote, type BookingSetup, type BookingHold, type CouponQuote, type MemberSlipBooking, bookMemberSessions, type MemberBookingRequest } from "@/services/member-badminton-api";
 import { consecutiveSlots, countdown, endDate, isDate, maximumWeeks, money, remainingSeconds, slotLabel, sriLankaToday, validateSchedule, WEEKDAYS } from "./booking-utils";
 import BankTransferInstructions from "./bank-transfer-details";
 import "./member-booking.css";
@@ -33,6 +33,8 @@ export default function MemberBadmintonBooking() {
   const [receipt, setReceipt] = useState<MemberSlipBooking | null>(null);
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
+  const [couponConflict, setCouponConflict] = useState<{ reference: string; message: string } | null>(null);
+  const couponDialog = useRef<HTMLDialogElement>(null);
   const [loadError, setLoadError] = useState("");
   const [loading, setLoading] = useState(true);
   const [reload, setReload] = useState(0);
@@ -55,6 +57,10 @@ export default function MemberBadmintonBooking() {
     ? Math.min(configuredSlotLimit, serverSlotLimit ?? configuredSlotLimit)
     : serverSlotLimit;
   const couponReady = !!couponQuote && appliedCoupon === coupon.trim().toUpperCase();
+
+  useEffect(() => {
+    if (couponConflict && !couponDialog.current?.open) couponDialog.current?.showModal();
+  }, [couponConflict]);
 
   useEffect(() => {
     const previous = document.title;
@@ -102,7 +108,12 @@ export default function MemberBadmintonBooking() {
   async function run(action: string, work: () => Promise<void>) {
     if (lock.current) return;
     lock.current = true; setBusy(action); setError("");
-    try { await work(); } catch (reason) { setError(bookingError(reason)); }
+    try { await work(); } catch (reason) {
+      const reference = conflictingBookingReference(reason);
+      const message = bookingError(reason);
+      if (reference) setCouponConflict({ reference, message });
+      else setError(message);
+    }
     finally { lock.current = false; setBusy(""); }
   }
   function check() {
@@ -132,9 +143,10 @@ export default function MemberBadmintonBooking() {
     if (!hold || remainingSeconds(deadline) === 0) return;
     const code = coupon.trim().toUpperCase();
     if (!code) { setError("Enter your unredeemed coupon code."); return; }
+    if (!/^\+?[0-9]{9,15}$/.test(phone)) { setError("Enter a valid phone number before applying your coupon."); return; }
     void run("coupon", async () => {
       setCouponQuote(null); setAppliedCoupon("");
-      const quote = await quoteMemberCoupon(hold.holdToken, code, discountSlotLimit);
+      const quote = await quoteMemberCoupon(hold.holdToken, code, discountSlotLimit, phone);
       setCouponQuote(quote); setAppliedCoupon(code);
     });
   }
@@ -170,6 +182,20 @@ export default function MemberBadmintonBooking() {
   return (
     <div className="member-badminton">
       <MemberHeader />
+      {couponConflict && (
+        <dialog ref={couponDialog} className="mb-panel mb-coupon-dialog" aria-labelledby="mb-coupon-conflict-title"
+          onClose={() => setCouponConflict(null)}>
+          <h2 id="mb-coupon-conflict-title">Coupon already in use</h2>
+          <p>{couponConflict.message}</p>
+          <div className="mb-actions">
+            <button type="button" className="mb-cancel" onClick={() => couponDialog.current?.close()}>Close</button>
+            <Link className="mb-primary" to={`/members/badminton/track/${couponConflict.reference}`}
+              onClick={() => { if (hold) void releaseMemberHold(hold.holdToken).catch(() => {}); }}>
+              Open previous booking
+            </Link>
+          </div>
+        </dialog>
+      )}
 
       <main className="mb-container mb-booking-area">
         <nav className="mb-steps" aria-label="Booking progress">

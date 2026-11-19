@@ -25,8 +25,8 @@ export async function checkAndHoldMemberBooking(schedule: BookingSchedule) {
   const hold = availability.isAvailable ? await holdMemberBooking(schedule) : null;
   return { availability, hold };
 }
-export async function quoteMemberCoupon(holdToken: string, couponCode: string, maximumDiscountableSlots?: number) {
-  return (await axios.post<CouponQuote>(endpoint("coupon"), { holdToken, couponCode, maximumDiscountableSlots })).data;
+export async function quoteMemberCoupon(holdToken: string, couponCode: string, maximumDiscountableSlots?: number, bookingPhoneNumber?: string) {
+  return (await axios.post<CouponQuote>(endpoint("coupon"), { holdToken, couponCode, maximumDiscountableSlots, ...(bookingPhoneNumber && { bookingPhoneNumber }) })).data;
 }
 export async function releaseMemberHold(token: string) {
   await axios.delete(endpoint(`hold/${encodeURIComponent(token)}`), { timeout: 10000 });
@@ -69,4 +69,10 @@ export function bookingError(error: unknown): string {
     return (typeof data === "string" && data.length < 250 ? data : data?.message || data?.title || data?.error) || "Unable to connect. Please try again.";
   }
   return error instanceof Error ? error.message : "Something went wrong. Please try again.";
+}
+
+export function conflictingBookingReference(error: unknown): string | undefined {
+  if (!axios.isAxiosError(error) || error.response?.status !== 409) return;
+  const reference = error.response.data?.bookingReference;
+  return typeof reference === "string" && /^[\da-f-]{36}$/i.test(reference) ? reference : undefined;
 }

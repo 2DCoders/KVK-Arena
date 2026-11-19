@@ -31,10 +31,11 @@ public static class MessageList
             $"Thank you for registering. Once the pre-registration period ends on 20th August 2026, the KVK Arena team will contact you with the next steps. Stay tuned!";
     }
 
-    public static string GetKvkMemberCouponCodeMessage(string couponCode, MemberBadmintonOffer offer)
+    public static string GetKvkMemberCouponCodeMessage(string? firstName, string couponCode, MemberBadmintonOffer offer)
     {
         var expiry = offer.LastDay.ToString("d MMMM yyyy", CultureInfo.InvariantCulture);
-        return $"🏸 Good news! You've received a badminton coupon from KVK Arena!\n\n" +
+        var name = string.IsNullOrWhiteSpace(firstName) ? "Member" : firstName.Trim();
+        return $"Hi {name},\n\n🏸 Good news! You've received a badminton coupon from KVK Arena!\n\n" +
             $"Your coupon code: {couponCode}\n\n" +
             $"- Valid for registered members only\n- One-time use\n- Expires on {expiry}\n\n" +
             "Book now:\nhttps://kvk-arena-main.2dcoders.workers.dev/members/badminton\n\n" +
