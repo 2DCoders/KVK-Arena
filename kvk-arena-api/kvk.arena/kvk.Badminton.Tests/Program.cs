@@ -4,6 +4,8 @@ using kvk.Badminton.Features.CourtBookingTemporary;
 using kvk.Badminton.Domain;
 using kvk.Badminton.Enums;
 using kvk.BuildingBlocks.Common;
+using kvk.BuildingBlocks.Constants;
+using Microsoft.Extensions.Configuration;
 
 var checks = 0;
 void Assert(bool value, string message) { if (!value) throw new Exception(message); checks++; }
@@ -118,4 +120,15 @@ foreach (var (now, expectedStatus) in new[]
     Assert(availability[1].Sessions.Single().Status == "held", "A session awaiting slip approval must stay held beyond the cutoff.");
     Assert(availability[2].Sessions.Single().Status == "available", "Released holds must never block availability.");
 }
+var offer = MemberBadmintonOffer.FromConfiguration(new ConfigurationBuilder().AddInMemoryCollection(
+    new Dictionary<string, string?> {
+        ["MemberBadmintonBooking:OfferStartDate"] = "2026-11-19",
+        ["MemberBadmintonBooking:OfferDays"] = "7"
+    }).Build());
+var offerCutoff = new DateTime(2026, 11, 25, 18, 30, 0, DateTimeKind.Utc);
+Assert(offer.LastDay == new DateOnly(2026, 11, 25), "A seven-day offer must include its start date.");
+Assert(!offer.IsExpired(offerCutoff.AddSeconds(-1)), "The offer must be open through the end of its last day in Sri Lanka.");
+Assert(offer.IsExpired(offerCutoff), "The offer must expire at midnight in Sri Lanka.");
+Assert(MessageList.GetKvkMemberCouponCodeMessage("Member", "TEST", offer).Contains("7-day offer"),
+    "The coupon SMS must include the configured offer duration.");
 Console.WriteLine($"Passed {checks} member badminton booking checks.");

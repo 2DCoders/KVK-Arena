@@ -6,11 +6,12 @@ using kvk.BuildingBlocks.Services;
 using kvk.Identity.Domain;
 using kvk.Identity.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Throw;
 
 namespace kvk.Identity.Features.KvkMember;
 
-public class KvkMemberService(IdentityApplicationDbContext db, ISmsService smsService) : IKvkMemberService
+public class KvkMemberService(IdentityApplicationDbContext db, ISmsService smsService, IConfiguration configuration) : IKvkMemberService
 {
     private readonly IdentityApplicationDbContext _db = db ?? throw new ArgumentNullException(nameof(db));
     private readonly ISmsService _smsService = smsService;
@@ -185,7 +186,8 @@ public class KvkMemberService(IdentityApplicationDbContext db, ISmsService smsSe
 
     public async Task<Result> SendSmsCouponCodeBulkAsync(CancellationToken cancellationToken)
     {
-        
+        var offer = MemberBadmintonOffer.FromConfiguration(configuration);
+        if (offer.IsExpired(DateTime.UtcNow)) return Result.Failure(MemberBadmintonOffer.ExpiredMessage);
         var eligibleMembersWithCouponCodes = await _db.MemberEligibleOffers
             .Include(m => m.Member)
             .Include(m => m.OfferRate)
@@ -193,7 +195,7 @@ public class KvkMemberService(IdentityApplicationDbContext db, ISmsService smsSe
             .Select(m => new SmsService.BulkSmsItem
             {
                 PhoneNumber = m.Member.Phone!,
-                Message = MessageList.GetKvkMemberCouponCodeMessage(m.Member.FirstName, m.CouponCode!)
+                Message = MessageList.GetKvkMemberCouponCodeMessage(m.Member.FirstName, m.CouponCode!, offer)
             })
             .ToListAsync(cancellationToken);
         
@@ -205,6 +207,8 @@ public class KvkMemberService(IdentityApplicationDbContext db, ISmsService smsSe
 
     public async Task<Result> SendSmsCouponCodeSingleAsync(Guid memberId, CancellationToken cancellationToken)
     {
+        var offer = MemberBadmintonOffer.FromConfiguration(configuration);
+        if (offer.IsExpired(DateTime.UtcNow)) return Result.Failure(MemberBadmintonOffer.ExpiredMessage);
         var eligibleMemberWithCouponCodes = await _db.MemberEligibleOffers
             .Include(m => m.Member)
             .Include(m => m.OfferRate)
@@ -217,7 +221,7 @@ public class KvkMemberService(IdentityApplicationDbContext db, ISmsService smsSe
             })
             .FirstOrDefaultAsync(cancellationToken);
         
-        await _smsService.SendSingleMessageAsync(eligibleMemberWithCouponCodes!.PhoneNumber,MessageList.GetKvkMemberCouponCodeMessage(eligibleMemberWithCouponCodes.FirstName, eligibleMemberWithCouponCodes.CouponCode!), cancellationToken);
+        await _smsService.SendSingleMessageAsync(eligibleMemberWithCouponCodes!.PhoneNumber, MessageList.GetKvkMemberCouponCodeMessage(eligibleMemberWithCouponCodes.FirstName, eligibleMemberWithCouponCodes.CouponCode!, offer), cancellationToken);
         
         return Result.Success("SMS sent successfully");
     }

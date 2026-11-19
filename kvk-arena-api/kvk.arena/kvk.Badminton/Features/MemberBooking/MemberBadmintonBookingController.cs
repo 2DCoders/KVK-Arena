@@ -2,6 +2,7 @@ using System.Data;
 using System.Text.Json;
 using kvk.BuildingBlocks;
 using kvk.BuildingBlocks.Common;
+using kvk.BuildingBlocks.Constants;
 using kvk.BuildingBlocks.Services;
 using Microsoft.Extensions.Options;
 using kvk.Badminton.Domain;
@@ -35,6 +36,12 @@ public partial class MemberBadmintonBookingController(BadmintonDbContext db, IRe
     private static string Key(Guid token) => $"MEMBER:{token:N}";
     private int MaximumWeeks => Math.Clamp(configuration.GetValue("MemberBadmintonBooking:MaximumWeeks", 52), 1, 52);
 
+    private void EnsureOfferOpen()
+    {
+        if (MemberBadmintonOffer.FromConfiguration(configuration).IsExpired(DateTime.UtcNow))
+            throw new InvalidOperationException(MemberBadmintonOffer.ExpiredMessage);
+    }
+
     private int DiscountSlotLimit(int? requested) =>
         Math.Clamp(requested ?? MaximumDiscountableSlots, 0, MaximumDiscountableSlots);
 
@@ -49,6 +56,7 @@ public partial class MemberBadmintonBookingController(BadmintonDbContext db, IRe
     [HttpGet("setup")]
     public Task<IActionResult> Setup(CancellationToken ct) => Respond(async () =>
     {
+        if (User.Identity?.IsAuthenticated != true) EnsureOfferOpen();
         var court = await CourtAsync(ct);
         var slots = await db.CourtSlots.AsNoTracking().Where(s => s.CourtId == court.Id && s.IsActive)
             .OrderBy(s => s.StartTime).Select(s => new { SlotId = s.Id, s.CourtId, s.StartTime, s.EndTime, s.Price }).ToListAsync(ct);
@@ -114,6 +122,7 @@ public partial class MemberBadmintonBookingController(BadmintonDbContext db, IRe
     [HttpPost("check-availability")]
     public Task<IActionResult> CheckAvailability([FromBody] MemberScheduleRequest request, CancellationToken ct) => Respond(async () =>
     {
+        if (User.Identity?.IsAuthenticated != true) EnsureOfferOpen();
         var schedule = await ScheduleAsync(request, ct);
         var conflicts = await ConflictsAsync(schedule, ct);
         return Ok(new { IsAvailable = conflicts.Count == 0, OriginalAmount = schedule.Amount, schedule.EndDate, BookingCount = schedule.Dates.Count * schedule.Slots.Count, UnavailableSchedules = conflicts });
@@ -124,6 +133,7 @@ public partial class MemberBadmintonBookingController(BadmintonDbContext db, IRe
     [HttpPost("hold")]
     public Task<IActionResult> Hold([FromBody] MemberScheduleRequest request, CancellationToken ct) => Respond(async () =>
     {
+        if (User.Identity?.IsAuthenticated != true) EnsureOfferOpen();
         await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
         var schedule = await ScheduleAsync(request, ct);
         await LockCourtAsync(schedule.Court.Id, ct);

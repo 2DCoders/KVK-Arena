@@ -45,6 +45,7 @@ public partial class MemberBadmintonBookingController
             }
             else
             {
+                EnsureOfferOpen();
                 EnsureActive(holds);
                 if (holds.Any(h => h.PaymentId != null))
                     throw new InvalidOperationException("This reservation already has a payment in progress.");

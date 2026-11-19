@@ -29,10 +29,11 @@ public static class MessageList
             $"Thank you for registering. Once the pre-registration period ends on 20th August 2026, the KVK Arena team will contact you with the next steps. Stay tuned!";
     }
 
-    public static string GetKvkMemberCouponCodeMessage(string firstName, string couponCode)
+    public static string GetKvkMemberCouponCodeMessage(string firstName, string couponCode, MemberBadmintonOffer offer)
     {
         return $"Hi {firstName}, your KVK Arena badminton coupon is {couponCode}. Use it once only. " +
-            "Book at https://kvkarena.lk/members/badminton\n" +
+            $"Registered members only. The {offer.Days}-day offer ends on {offer.LastDay:dd MMM yyyy}. Book soon, as the link expires after that date. " +
+            "Book at https://kvk-arena-main.2dcoders.workers.dev/members/badminton\n" +
             "Choose sessions, check availability, reserve, then enter your details, apply the code and book. " +
             "If payment is due, pay and upload your slip within 24 hours using your booking link.";
     }
