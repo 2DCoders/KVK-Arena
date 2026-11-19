@@ -195,7 +195,7 @@ public class KvkMemberService(IdentityApplicationDbContext db, ISmsService smsSe
             .Select(m => new SmsService.BulkSmsItem
             {
                 PhoneNumber = m.Member.Phone!,
-                Message = MessageList.GetKvkMemberCouponCodeMessage(m.Member.FirstName, m.CouponCode!, offer)
+                Message = MessageList.GetKvkMemberCouponCodeMessage(m.CouponCode!, offer)
             })
             .ToListAsync(cancellationToken);
         
@@ -215,13 +215,12 @@ public class KvkMemberService(IdentityApplicationDbContext db, ISmsService smsSe
             .Where(m => m.IsEligible && !m.IsRedeemed && m.CouponCode != null && m.Member.Id == memberId)
             .Select(m => new
             {
-                FirstName = m.Member.FirstName,
                 PhoneNumber = m.Member.Phone!,
                 CouponCode = m.CouponCode
             })
             .FirstOrDefaultAsync(cancellationToken);
         
-        await _smsService.SendSingleMessageAsync(eligibleMemberWithCouponCodes!.PhoneNumber, MessageList.GetKvkMemberCouponCodeMessage(eligibleMemberWithCouponCodes.FirstName, eligibleMemberWithCouponCodes.CouponCode!, offer), cancellationToken);
+        await _smsService.SendSingleMessageAsync(eligibleMemberWithCouponCodes!.PhoneNumber, MessageList.GetKvkMemberCouponCodeMessage(eligibleMemberWithCouponCodes.CouponCode!, offer), cancellationToken);
         
         return Result.Success("SMS sent successfully");
     }

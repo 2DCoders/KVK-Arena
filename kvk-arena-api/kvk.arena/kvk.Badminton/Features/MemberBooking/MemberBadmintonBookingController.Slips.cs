@@ -81,17 +81,17 @@ public partial class MemberBadmintonBookingController
         if (!reservation.SmsSent && Status(reservation) is ("awaiting_payment" or "awaiting_approval"))
         {
             var link = $"{trackingUrl.TrimEnd('/')}/{reservation.Id:N}";
-            var amount = reservation.FinalAmount.ToString("0.00", CultureInfo.InvariantCulture);
+            var amount = reservation.FinalAmount.ToString("N2", CultureInfo.InvariantCulture);
             var instructions = reservation.FinalAmount == 0
                 ? "No payment is due. Your booking is awaiting admin approval."
-                : $"Amount due: LKR {amount}\nPay and upload your slip within 24 hours for approval.";
+                : $"Payment: LKR {amount}\n\nPlease complete your payment within 24 hours and upload the payment slip for admin approval.";
             var bankInstructions = bank is null ? "" :
-                $"\n\nBank transfer\nBank: {bank.BankName}\nAccount name: {bank.AccountOwnerName}\nAccount no.: {bank.AccountNumber}\nBranch: {bank.BranchName}";
-            var trackingAction = reservation.FinalAmount > 0 ? "Track booking or upload your slip" : "Track booking";
+                $"\n\nBank Details\nBank: {bank.BankName}\nAccount Name: {bank.AccountOwnerName}\nAccount No: {bank.AccountNumber}\nBranch: {bank.BranchName}";
+            var trackingAction = reservation.FinalAmount > 0 ? "Track your booking and upload your payment slip" : "Track your booking";
             try
             {
                 var result = await sms.SendSingleMessageAsync(reservation.PhoneNumber,
-                    $"KVK Badminton booking\nRef: {reservation.Id:N}\n\n{instructions}{bankInstructions}\n\n{trackingAction}:\n{link}", ct);
+                    $"KVK Badminton Booking Confirmed!\n\nReference: {reservation.Id:N}\n{instructions}{bankInstructions}\n\n{trackingAction}:\n{link}", ct);
                 if (result.Succeeded)
                 {
                     await db.MemberSlipReservations.Where(r => r.Id == reservation.Id)
@@ -283,9 +283,12 @@ public partial class MemberBadmintonBookingController
         var trackingUrl = configuration["MemberBadmintonBooking:TrackingUrl"] ?? "https://kvkarena.lk/members/badminton/track";
         var link = $"{trackingUrl.TrimEnd('/')}/{reference:N}";
         var message = reservation.Approved
-            ? $"KVK Badminton ref {reference:N}: Your booking is approved. Track it at {link}"
+            ? $"KVK Badminton Ref: {reference:N}\n\n" +
+              $"Great news! Your booking has been approved. 🎉\n\nTrack your booking here:\n{link}"
             : reservation.FinalAmount > 0
-                ? $"KVK Badminton ref {reference:N}: Your payment slip was rejected. Reason: {reservation.RejectionReason}. Upload a replacement within 24 hours at {link}"
+                ? $"KVK Badminton Ref: {reference:N}\n\n" +
+                  $"Your payment slip has been rejected.\nReason: {reservation.RejectionReason}\n\n" +
+                  $"Please upload a valid replacement payment slip within 24 hours using the link below:\n\n{link}"
                 : $"KVK Badminton ref {reference:N}: Your booking was rejected. Reason: {reservation.RejectionReason}. Track it at {link}";
         var smsSent = false;
         try

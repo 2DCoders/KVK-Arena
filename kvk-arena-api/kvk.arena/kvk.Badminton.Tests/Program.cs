@@ -129,6 +129,8 @@ var offerCutoff = new DateTime(2026, 11, 25, 18, 30, 0, DateTimeKind.Utc);
 Assert(offer.LastDay == new DateOnly(2026, 11, 25), "A seven-day offer must include its start date.");
 Assert(!offer.IsExpired(offerCutoff.AddSeconds(-1)), "The offer must be open through the end of its last day in Sri Lanka.");
 Assert(offer.IsExpired(offerCutoff), "The offer must expire at midnight in Sri Lanka.");
-Assert(MessageList.GetKvkMemberCouponCodeMessage("Member", "TEST", offer).Contains("7-day offer"),
-    "The coupon SMS must include the configured offer duration.");
+var couponSms = MessageList.GetKvkMemberCouponCodeMessage("#TEST", offer);
+Assert(couponSms.Contains("Your coupon code: #TEST\n\n") &&
+       couponSms.Contains("- Expires on 25 November 2026\n\n"),
+    "The coupon SMS must include the member's code and the configured expiry.");
 Console.WriteLine($"Passed {checks} member badminton booking checks.");
