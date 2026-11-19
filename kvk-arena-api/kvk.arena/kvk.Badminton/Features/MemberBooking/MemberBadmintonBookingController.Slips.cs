@@ -68,7 +68,7 @@ public partial class MemberBadmintonBookingController
                 foreach (var hold in holds)
                 {
                     hold.PaymentId = ManualPaymentMarker;
-                    hold.ExpiresAt = reservation.FinalAmount == 0 ? DateTime.MaxValue : Now.AddHours(24);
+                    hold.ExpiresAt = reservation.FinalAmount == 0 ? DateTime.MaxValue : HoldExpiry(reservation.PaymentDueUtc);
                 }
                 db.MemberSlipReservations.Add(reservation);
                 await db.SaveChangesAsync(ct);
@@ -271,7 +271,7 @@ public partial class MemberBadmintonBookingController
             reservation.PaymentDueUtc = DateTime.UtcNow.AddHours(24);
             foreach (var hold in holds)
             {
-                if (reservation.FinalAmount > 0) hold.ExpiresAt = Now.AddHours(24);
+                if (reservation.FinalAmount > 0) hold.ExpiresAt = HoldExpiry(reservation.PaymentDueUtc);
                 else hold.Status = BookingHoldStatus.Released;
             }
         }
@@ -310,6 +310,10 @@ public partial class MemberBadmintonBookingController
         if (holds.Any(h => MemberAvailability.Status(h.BookingDate, h.CourtSlotId, h.CourtSlot.StartTime, local, taken) != "available"))
             throw new InvalidOperationException("One or more sessions have started or are no longer available.");
     }
+
+    // Booking holds store server-local timestamps without a time zone.
+    private static DateTime HoldExpiry(DateTime paymentDueUtc) =>
+        DateTime.SpecifyKind(paymentDueUtc.ToLocalTime(), DateTimeKind.Unspecified);
 
     private static string Status(MemberSlipReservation r) =>
         SlipStatus(r.Approved, r.Rejected, r.Cancelled, r.Slip != null, r.FinalAmount, r.PaymentDueUtc);

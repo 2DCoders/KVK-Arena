@@ -1,4 +1,5 @@
 using kvk.Badminton.Domain;
+using kvk.Badminton.Enums;
 
 namespace kvk.Badminton.Features.MemberBooking;
 
@@ -9,6 +10,9 @@ public record CashierAvailabilityResponse(DateOnly StartDate, DateOnly EndDate, 
 
 public static class MemberAvailability
 {
+    public static IQueryable<BookingHold> ActiveHolds(IQueryable<BookingHold> holds, DateTime now) =>
+        holds.Where(hold => hold.Status == BookingHoldStatus.Pending && hold.ExpiresAt > now);
+
     // Legacy recurring reservations cover [start, start + weeks * 7), on their selected weekdays only.
     public static bool BlocksDate(DateOnly date, DateOnly start, int weeks, DayOfWeek weekday) =>
         weeks > 0 && date >= start && (long)date.DayNumber - start.DayNumber < (long)weeks * 7 && date.DayOfWeek == weekday;

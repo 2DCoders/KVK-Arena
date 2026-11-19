@@ -79,10 +79,10 @@ public partial class MemberBadmintonBookingController(BadmintonDbContext db, IRe
     {
         var ids = schedule.Slots.Select(s => s.Id).ToList();
         var dates = schedule.Dates;
-        var now = Now;
         var booked = await db.CourtBookings.AsNoTracking().Where(b => ids.Contains(b.CourtSlotId) && dates.Contains(b.BookingDate) && b.Status != BookingStatus.Cancelled)
             .Select(b => new { b.CourtSlotId, b.BookingDate }).ToListAsync(ct);
-        var held = await db.BookingHolds.AsNoTracking().Where(h => ids.Contains(h.CourtSlotId) && dates.Contains(h.BookingDate) && h.Status == BookingHoldStatus.Pending && h.ExpiresAt > now &&
+        var held = await MemberAvailability.ActiveHolds(db.BookingHolds.AsNoTracking(), Now)
+            .Where(h => ids.Contains(h.CourtSlotId) && dates.Contains(h.BookingDate) &&
                 (excludingHoldKey == null || h.PaymentIntentId != excludingHoldKey))
             .Select(h => new { h.CourtSlotId, h.BookingDate }).ToListAsync(ct);
         var taken = new Dictionary<(Guid SlotId, DateOnly Date), string>();

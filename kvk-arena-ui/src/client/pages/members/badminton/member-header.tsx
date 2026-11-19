@@ -6,13 +6,15 @@ export default function MemberHeader({ tracking = false }: { tracking?: boolean 
   return <>
     <header className="mb-header">
       <div className="mb-container mb-header-inner">
-        <Link to="/" className="mb-header-brand" aria-label="KVK Arena home">
+        <div className="mb-header-brand">
           <img src={logo} alt="" />
           <span><strong>KVK Arena</strong><small>Badminton Club</small></span>
-        </Link>
-        <Link className="mb-back" to={tracking ? "/members/badminton" : "/"}>
-          <ArrowLeft size={16} />{tracking ? "Back to reservations" : "Back to Arena"}
-        </Link>
+        </div>
+        {tracking && (
+          <Link className="mb-back" to="/members/badminton">
+            <ArrowLeft size={16} />Back to reservations
+          </Link>
+        )}
       </div>
     </header>
     <div className="mb-hero">

@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using kvk.Badminton.Features.MemberBooking;
 using kvk.Badminton.Features.CourtBookingTemporary;
+using kvk.Badminton.Domain;
+using kvk.Badminton.Enums;
 using kvk.BuildingBlocks.Common;
 
 var checks = 0;
@@ -93,4 +95,27 @@ Assert(MemberAvailability.Status(monday, slotB.Id, slotB.StartTime, new DateTime
 Assert(MemberAvailability.Status(monday, slotB.Id, slotB.StartTime, new DateTime(2027, 1, 4, 8, 59, 0), occupancy) == "available", "A future session today remains available.");
 Assert(MemberAvailability.Status(monday, slotB.Id, slotB.StartTime, new DateTime(2027, 1, 5), occupancy) == "past", "Past dates must not appear available.");
 Assert(MemberAvailability.Slots([], [slotA], new DateTime(2027, 1, 1), occupancy)[0].AvailableEveryWeek == false, "An empty window must never be advertised as free every week.");
+
+var paymentStarted = new DateTime(2027, 1, 1, 12, 0, 0);
+var paymentDeadline = paymentStarted.AddHours(24);
+var paymentHolds = new[]
+{
+    new BookingHold { CourtSlotId = slotA.Id, BookingDate = monday, Status = BookingHoldStatus.Pending, ExpiresAt = paymentDeadline },
+    new BookingHold { CourtSlotId = slotB.Id, BookingDate = monday, Status = BookingHoldStatus.Pending, ExpiresAt = DateTime.MaxValue },
+    new BookingHold { CourtSlotId = slotC.Id, BookingDate = monday, Status = BookingHoldStatus.Released, ExpiresAt = paymentDeadline }
+}.AsQueryable();
+foreach (var (now, expectedStatus) in new[]
+{
+    (paymentDeadline.AddSeconds(-1), "held"),
+    (paymentDeadline, "available"),
+    (paymentDeadline.AddSeconds(1), "available")
+})
+{
+    var activeHolds = MemberAvailability.ActiveHolds(paymentHolds, now)
+        .ToDictionary(hold => (hold.CourtSlotId, hold.BookingDate), _ => "held");
+    var availability = MemberAvailability.Slots([monday], [slotA, slotB, slotC], now, activeHolds);
+    Assert(availability[0].Sessions.Single().Status == expectedStatus, "An unpaid future session must reopen at the 24-hour cutoff.");
+    Assert(availability[1].Sessions.Single().Status == "held", "A session awaiting slip approval must stay held beyond the cutoff.");
+    Assert(availability[2].Sessions.Single().Status == "available", "Released holds must never block availability.");
+}
 Console.WriteLine($"Passed {checks} member badminton booking checks.");
