@@ -1,3 +1,4 @@
+using System.Text.Json;
 using kvk.BuildingBlocks.Common;
 using kvk.BuildingBlocks.Interfaces;
 using Microsoft.Extensions.Configuration;
@@ -18,11 +19,37 @@ public class SmsService : ISmsService
     public async Task<Result> SendSingleMessageAsync(string phoneNumber, string message,
         CancellationToken cancellationToken = default)
     {
+        using var response = await SendSingleRequestAsync(phoneNumber, message, cancellationToken);
+        return response.IsSuccessStatusCode ? Result.Success() : Result.Failure("Failed to send SMS");
+    }
+
+    public async Task<int?> SendSingleMessageWithPagesAsync(string phoneNumber, string message,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await SendSingleRequestAsync(phoneNumber, message, cancellationToken);
+        if ((int)response.StatusCode >= 500)
+            throw new HttpRequestException("SMSlenz returned a server error.");
+        if (!response.IsSuccessStatusCode) return null;
+
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var json = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
+        var body = json.RootElement;
+        if (body.ValueKind == JsonValueKind.Object && body.TryGetProperty("success", out var success))
+        {
+            if (success.ValueKind == JsonValueKind.False) return null;
+            if (success.ValueKind == JsonValueKind.True && body.TryGetProperty("data", out var data) &&
+                data.ValueKind == JsonValueKind.Object && data.TryGetProperty("pages", out var pages) &&
+                pages.ValueKind == JsonValueKind.Number && pages.TryGetInt32(out var count) && count > 0)
+                return count;
+        }
+        throw new JsonException("SMSlenz returned an unexpected response.");
+    }
+
+    private async Task<HttpResponseMessage> SendSingleRequestAsync(string phoneNumber, string message,
+        CancellationToken cancellationToken)
+    {
         phoneNumber = phoneNumber.StartsWith("0") ? $"+94{phoneNumber[1..]}" : phoneNumber;
-
-
-        var httpClient = new HttpClient();
-        var requestContent = new FormUrlEncodedContent(new[]
+        using var requestContent = new FormUrlEncodedContent(new[]
         {
             new KeyValuePair<string, string>("user_id", _configuration["Sms:UserId"]!),
             new KeyValuePair<string, string>("api_key", _configuration["Sms:ApiKey"]!),
@@ -31,15 +58,7 @@ public class SmsService : ISmsService
             new KeyValuePair<string, string>("message", message),
         });
 
-        var response = await httpClient.PostAsync(SmsApiUrl, requestContent, cancellationToken);
-        if (response.IsSuccessStatusCode)
-        {
-            return Result.Success();
-        }
-        else
-        {
-            return Result.Failure("Failed to send SMS");
-        }
+        return await HttpClient.PostAsync(SmsApiUrl, requestContent, cancellationToken);
     }
 
     public async Task<Result> SendBulkMessageAsync(

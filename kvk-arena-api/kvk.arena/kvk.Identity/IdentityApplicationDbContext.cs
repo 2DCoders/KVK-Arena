@@ -39,6 +39,8 @@ public class IdentityApplicationDbContext : AppDbContextBase
     
     public DbSet<CustomerFeedBack> CustomerFeedBacks => Set<CustomerFeedBack>();
     public DbSet<OfferRate> OfferRates => Set<OfferRate>();
+    public DbSet<AdminSmsBatch> AdminSmsBatches => Set<AdminSmsBatch>();
+    public DbSet<AdminSmsGroup> AdminSmsGroups => Set<AdminSmsGroup>();
     
     
     

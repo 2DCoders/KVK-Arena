@@ -7,6 +7,9 @@ public interface ISmsService
 {
     public Task<Result> SendSingleMessageAsync(string phoneNumber,string message,
         CancellationToken cancellationToken = default);
+
+    public Task<int?> SendSingleMessageWithPagesAsync(string phoneNumber, string message,
+        CancellationToken cancellationToken = default);
     
     public Task<Result> SendBulkMessageAsync(IEnumerable<SmsService.BulkSmsItem> messages,
         CancellationToken cancellationToken = default);

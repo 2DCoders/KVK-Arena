@@ -174,7 +174,9 @@ public class AuthService
             else if (request.ModuleName != null && !modules.Contains(request.ModuleName, StringComparer.Ordinal))
                 throw new UnauthorizedAccessException("You are not assigned to this module. Contact your administrator.");
             // Generate JWT token
-            var tokenPermissions = request.ModuleName == "Admin" ? permissions.Append("admin.badminton.slip-review") : permissions;
+            var tokenPermissions = request.ModuleName == "Admin"
+                ? permissions.Append("admin.badminton.slip-review").Append("admin.sms")
+                : permissions;
             var token = _jwtService.GenerateToken(staff.Id, tokenPermissions.ToArray());
 
             var response = new AuthResponse

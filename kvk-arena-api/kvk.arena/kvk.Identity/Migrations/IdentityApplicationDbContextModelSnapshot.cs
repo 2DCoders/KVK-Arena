@@ -82,6 +82,86 @@ namespace kvk.Identity.Persistence.Migrations.IdentityRbacInitial
                     b.ToTable("CalenderHolidays", "identity");
                 });
 
+            modelBuilder.Entity("kvk.Identity.Domain.AdminSmsBatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AcceptedSegments")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("Completed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("GroupName")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("MaintenanceCharge")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("MonthlyLimit")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RecipientsJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ReservedSegments")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("SegmentPrice")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("SegmentsPerRecipient")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("StaffId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("SubmittedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_AdminSmsBatch_TenantId");
+
+                    b.ToTable("AdminSmsBatches", "identity");
+                });
+
+            modelBuilder.Entity("kvk.Identity.Domain.AdminSmsGroup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid[]>("MemberIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_AdminSmsGroup_TenantId");
+
+                    b.ToTable("AdminSmsGroups", "identity");
+                });
+
             modelBuilder.Entity("kvk.Identity.Domain.ApplicationPermission", b =>
                 {
                     b.Property<Guid>("Id")
