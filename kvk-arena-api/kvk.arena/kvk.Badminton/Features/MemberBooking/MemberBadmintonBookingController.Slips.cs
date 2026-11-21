@@ -209,11 +209,16 @@ public partial class MemberBadmintonBookingController
     public async Task<IActionResult> SlipReview(CancellationToken ct)
     {
         var reservations = await db.MemberSlipReservations.AsNoTracking()
-            .Where(r => !r.Approved && !r.Rejected && !r.Cancelled && (r.Slip != null || r.FinalAmount == 0))
-            .OrderBy(r => r.CreatedAt)
-            .Select(r => new { Reference = r.Id, r.CustomerName, r.PhoneNumber, r.FinalAmount, r.SlipRevision, HasSlip = r.Slip != null })
+            .OrderByDescending(r => r.CreatedAt)
+            .ThenBy(r => r.Id)
+            .Select(r => new { Reference = r.Id, r.CustomerName, r.PhoneNumber, r.Email, r.CouponCode,
+                r.CreatedAt, r.FinalAmount, r.SlipRevision, HasSlip = r.Slip != null,
+                r.Approved, r.Rejected, r.Cancelled, r.PaymentDueUtc })
             .ToListAsync(ct);
-        return Ok(reservations);
+        return Ok(reservations.Select(r => new { r.Reference, r.CustomerName, r.PhoneNumber, r.Email, r.CouponCode,
+            CreatedAt = new DateTimeOffset(r.CreatedAt, TimeSpan.FromMinutes(330)),
+            r.FinalAmount, r.SlipRevision, r.HasSlip,
+            Status = SlipStatus(r.Approved, r.Rejected, r.Cancelled, r.HasSlip, r.FinalAmount, r.PaymentDueUtc) }));
     }
 
     [Authorize(Policy = "BadmintonSlipReview")]
