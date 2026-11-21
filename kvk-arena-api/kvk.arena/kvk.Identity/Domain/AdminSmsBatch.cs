@@ -23,3 +23,9 @@ public class AdminSmsGroup : BaseEntity
     public required string Name { get; set; }
     public Guid[] MemberIds { get; set; } = [];
 }
+
+public class AdminSmsContact : BaseEntity
+{
+    public required string Name { get; set; }
+    public required string Phone { get; set; }
+}

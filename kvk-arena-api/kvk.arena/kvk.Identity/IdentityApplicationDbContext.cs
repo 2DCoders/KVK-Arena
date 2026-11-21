@@ -41,6 +41,7 @@ public class IdentityApplicationDbContext : AppDbContextBase
     public DbSet<OfferRate> OfferRates => Set<OfferRate>();
     public DbSet<AdminSmsBatch> AdminSmsBatches => Set<AdminSmsBatch>();
     public DbSet<AdminSmsGroup> AdminSmsGroups => Set<AdminSmsGroup>();
+    public DbSet<AdminSmsContact> AdminSmsContacts => Set<AdminSmsContact>();
     
     
     
@@ -54,6 +55,7 @@ public class IdentityApplicationDbContext : AppDbContextBase
         modelBuilder.HasDefaultSchema("identity");
 
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<AdminSmsContact>().HasIndex(x => new { x.TenantId, x.Phone }).IsUnique();
 
         // Apply configurations from separate configuration classes
         modelBuilder.ApplyConfiguration(new Configuration.StaffConfiguration());

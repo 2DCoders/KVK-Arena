@@ -137,6 +137,34 @@ namespace kvk.Identity.Persistence.Migrations.IdentityRbacInitial
                     b.ToTable("AdminSmsBatches", "identity");
                 });
 
+            modelBuilder.Entity("kvk.Identity.Domain.AdminSmsContact", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_AdminSmsContact_TenantId");
+
+                    b.HasIndex("TenantId", "Phone")
+                        .IsUnique();
+
+                    b.ToTable("AdminSmsContacts", "identity");
+                });
+
             modelBuilder.Entity("kvk.Identity.Domain.AdminSmsGroup", b =>
                 {
                     b.Property<Guid>("Id")

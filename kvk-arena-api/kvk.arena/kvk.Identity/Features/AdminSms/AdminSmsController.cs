@@ -21,7 +21,8 @@ public class AdminSmsController(
     IdentityApplicationDbContext db, ISmsService sms, IConfiguration configuration,
     ILogger<AdminSmsController> logger) : ControllerBase
 {
-    public record Contact(Guid Id, string Name, string? Phone);
+    public record Contact(Guid Id, string Name, string? Phone, bool IsManual = false);
+    public record ContactInput(string Name, string Phone);
     public record Recipient(string Phone, string? Name, string Status);
     public record GroupInput(string Name, Guid[] MemberIds);
     public record Draft(string Message, Guid[] MemberIds, string[] PhoneNumbers, Guid? GroupId);
@@ -54,6 +55,68 @@ public class AdminSmsController(
             .Select(x => new { x.Id, x.Name, x.MemberIds }).ToListAsync(ct));
     }
 
+    [HttpPost("contacts")]
+    public async Task<IActionResult> AddContact(ContactInput input, CancellationToken ct)
+    {
+        if (!CanManageSms) return Forbid();
+        var name = input.Name.Trim();
+        var phone = NormalizePhone(input.Phone);
+        if (name.Length is 0 or > 100 || phone is null)
+            return BadRequest(new { message = "Enter a name of up to 100 characters and a valid mobile number." });
+
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        await db.Database.ExecuteSqlRawAsync("SELECT pg_advisory_xact_lock(73040202)", ct);
+        var existing = (await GetContacts(ct)).FirstOrDefault(x => x.Phone == phone);
+        if (existing is not null) return Ok(existing);
+
+        var contact = new AdminSmsContact { Name = name, Phone = phone };
+        db.AdminSmsContacts.Add(contact);
+        await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+        return Ok(new Contact(contact.Id, contact.Name, contact.Phone, true));
+    }
+
+    [HttpPut("contacts/{id:guid}")]
+    public async Task<IActionResult> EditContact(Guid id, ContactInput input, CancellationToken ct)
+    {
+        if (!CanManageSms) return Forbid();
+        var name = input.Name.Trim();
+        var phone = NormalizePhone(input.Phone);
+        if (name.Length is 0 or > 100 || phone is null)
+            return BadRequest(new { message = "Enter a name of up to 100 characters and a valid mobile number." });
+
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        await db.Database.ExecuteSqlRawAsync("SELECT pg_advisory_xact_lock(73040202)", ct);
+        var contact = await db.AdminSmsContacts.SingleOrDefaultAsync(x => x.Id == id, ct);
+        if (contact is null) return NotFound(new { message = "This saved contact no longer exists." });
+        if (contact.Phone != phone && (await GetContacts(ct)).Any(x => x.Id != id && x.Phone == phone))
+            return Conflict(new { message = "This mobile number already belongs to another contact." });
+
+        contact.Name = name;
+        contact.Phone = phone;
+        await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+        return Ok(new Contact(contact.Id, contact.Name, contact.Phone, true));
+    }
+
+    [HttpDelete("contacts/{id:guid}")]
+    public async Task<IActionResult> DeleteContact(Guid id, CancellationToken ct)
+    {
+        if (!CanManageSms) return Forbid();
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        await db.Database.ExecuteSqlRawAsync("SELECT pg_advisory_xact_lock(73040202)", ct);
+        var contact = await db.AdminSmsContacts.SingleOrDefaultAsync(x => x.Id == id, ct);
+        if (contact is null) return NoContent();
+
+        var groups = await db.AdminSmsGroups.Where(x => Enumerable.Contains(x.MemberIds, id)).ToListAsync(ct);
+        foreach (var group in groups)
+            group.MemberIds = group.MemberIds.Where(memberId => memberId != id).ToArray();
+        db.AdminSmsContacts.Remove(contact);
+        await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+        return NoContent();
+    }
+
     [HttpPut("groups/{id:guid}")]
     public async Task<IActionResult> SaveGroup(Guid id, GroupInput input, CancellationToken ct)
     {
@@ -62,6 +125,8 @@ public class AdminSmsController(
         if (name.Length is 0 or > 100 || id == Guid.Empty)
             return BadRequest(new { message = "Enter a group name of up to 100 characters." });
 
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        await db.Database.ExecuteSqlRawAsync("SELECT pg_advisory_xact_lock(73040202)", ct);
         var contacts = await GetContacts(ct);
         var allowedIds = contacts.Select(x => x.Id).ToHashSet();
         var group = await db.AdminSmsGroups.SingleOrDefaultAsync(x => x.Id == id, ct);
@@ -73,6 +138,7 @@ public class AdminSmsController(
         group.Name = name;
         group.MemberIds = input.MemberIds.Distinct().Where(allowedIds.Contains).ToArray();
         await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
         return Ok(new { group.Id, group.Name, group.MemberIds });
     }
 
@@ -238,10 +304,12 @@ public class AdminSmsController(
     private async Task<Contact[]> GetContacts(CancellationToken ct)
     {
         var members = await db.KvkMembers.AsNoTracking()
-            .Where(x => x.EligibleOffers.Any(o => o.IsEligible && !o.IsRedeemed && o.CouponCode != null))
-            .OrderBy(x => x.FirstName).ThenBy(x => x.LastName).ThenBy(x => x.Id)
-            .Select(x => new Contact(x.Id, x.FirstName + " " + x.LastName, x.Phone)).ToListAsync(ct);
-        return members.Select(x => x with { Phone = NormalizePhone(x.Phone) }).Where(x => x.Phone != null).ToArray();
+            .Where(x => x.Phone != null)
+            .Select(x => new Contact(x.Id, x.FirstName + " " + x.LastName, x.Phone, false)).ToListAsync(ct);
+        var manual = await db.AdminSmsContacts.AsNoTracking()
+            .Select(x => new Contact(x.Id, x.Name, x.Phone, true)).ToListAsync(ct);
+        return members.Select(x => x with { Phone = NormalizePhone(x.Phone) }).Where(x => x.Phone != null)
+            .Concat(manual).OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Id).ToArray();
     }
 
     private async Task<Quote> BuildQuote(Draft draft, DateTime now, CancellationToken ct)
