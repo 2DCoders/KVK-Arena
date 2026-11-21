@@ -222,6 +222,27 @@ public partial class MemberBadmintonBookingController
     }
 
     [Authorize(Policy = "BadmintonSlipReview")]
+    [HttpGet("slip-review/{reference:guid}/details")]
+    public async Task<IActionResult> SlipReviewBookingDetails(Guid reference, CancellationToken ct)
+    {
+        var holdToken = await db.MemberSlipReservations.AsNoTracking()
+            .Where(r => r.Id == reference)
+            .Select(r => (Guid?)r.HoldToken)
+            .SingleOrDefaultAsync(ct);
+        if (holdToken is null) return NotFound(new { Message = "Booking reference could not be found." });
+
+        var key = Key(holdToken.Value);
+        var sessions = await db.BookingHolds.AsNoTracking()
+            .Where(h => h.PaymentIntentId == key)
+            .OrderBy(h => h.BookingDate)
+            .ThenBy(h => h.CourtSlot.StartTime)
+            .Select(h => new { Date = h.BookingDate, h.CourtSlot.StartTime, h.CourtSlot.EndTime })
+            .ToListAsync(ct);
+
+        return Ok(new { StartDate = sessions.FirstOrDefault()?.Date, EndDate = sessions.LastOrDefault()?.Date, Sessions = sessions });
+    }
+
+    [Authorize(Policy = "BadmintonSlipReview")]
     [HttpGet("slip-review/{reference:guid}/slip")]
     public async Task<IActionResult> DownloadSlip(Guid reference, [FromQuery] Guid? slipRevision, CancellationToken ct)
     {
