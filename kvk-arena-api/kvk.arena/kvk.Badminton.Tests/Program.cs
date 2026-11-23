@@ -105,6 +105,28 @@ window.env = {
   API_URL: "unused"
 };
 """.Replace("COUPON_ID", configuredCouponId.ToString()));
+var cashierConfiguration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+{
+    ["MemberBadmintonBooking:CashierDiscounts:CouponCodeId"] = configuredCouponId.ToString(),
+    ["MemberBadmintonBooking:CashierDiscounts:PromotionStartDate"] = "2027-01-01",
+    ["MemberBadmintonBooking:CashierDiscounts:PromotionEndDate"] = "2027-01-03",
+    ["MemberBadmintonBooking:CashierDiscounts:PromotionPercentage"] = "20",
+    ["MemberBadmintonBooking:CashierDiscounts:PromotionMaximumSlots"] = "2"
+}).Build();
+const string cashierEnvPath = "KVK_BADMINTON_ENV_JS";
+var previousCashierEnvPath = Environment.GetEnvironmentVariable(cashierEnvPath);
+try
+{
+    Environment.SetEnvironmentVariable(cashierEnvPath, null);
+    Assert(CashierDiscountSettings.Load(cashierConfiguration) == discountSettings,
+        "API configuration must preserve cashier discounts without a frontend env.js.");
+    Assert(CashierDiscountSettings.Load(new ConfigurationBuilder().Build()).Price([100m], start).FinalAmount == 100m,
+        "A host without configured discounts must allow standard pricing.");
+}
+finally
+{
+    Environment.SetEnvironmentVariable(cashierEnvPath, previousCashierEnvPath);
+}
 Assert(discountSettings.CouponLimit.MaximumSlots(configuredCouponId, Guid.NewGuid(), 48) == 10, "The configured coupon ID is capped at ten sessions.");
 var issuedCouponId = Guid.NewGuid();
 var campaignSlotLimit = discountSettings.CouponLimit.MaximumSlots(issuedCouponId, configuredCouponId, 96);
