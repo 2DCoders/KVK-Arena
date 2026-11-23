@@ -18,6 +18,8 @@ public partial class BookingService : IBookingService
     private readonly BadmintonDbContext _db;
     private readonly ISmsService _smsService;
     private const int DefaultHoldMinutes = 7;
+    private const string BookingTrackingInstructions =
+        "\n\nTrack your bookings using your contact number:\nhttps://kvkarena.lk/badminton/track";
     private readonly IHashService _hashService;
     private readonly PayHereOptions _payHereOptions;
     private readonly ILogger<BookingService> _logger;
@@ -301,7 +303,7 @@ public partial class BookingService : IBookingService
                            hold.CourtSlot.EndTime.ToString("hh\\:mm");
             var message =
                 $"Your booking for {courtName} on {hold.BookingDate.ToShortDateString()} at {slotTime} is confirmed. Booking ID: {booking.Id}";
-            await _smsService.SendSingleMessageAsync(customerDetails.PhoneNumber, message);
+            await SendBookingSmsAsync(customerDetails.PhoneNumber, message);
 
             var response = MapToResponse(hold);
             response.BookingId = booking.Id;
@@ -419,8 +421,9 @@ public partial class BookingService : IBookingService
 
             // Send a single consolidated SMS for multiple bookings
 
-            var fullMessage = $"Your bookings are confirmed:\n" + string.Join("\n", smsMessages);
-            await _smsService.SendSingleMessageAsync(request.CustomerDetails.PhoneNumber, fullMessage, ct);
+            if (smsMessages.Count > 0)
+                await SendBookingSmsAsync(request.CustomerDetails.PhoneNumber,
+                    "Your badminton booking is confirmed:\n" + string.Join("\n", smsMessages));
 
 
             var confirmMessage = confirmedBookings.Count == 1
@@ -705,6 +708,21 @@ public partial class BookingService : IBookingService
         };
     }
     
+    private async Task SendBookingSmsAsync(string phoneNumber, string message)
+    {
+        try
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var result = await _smsService.SendSingleMessageAsync(phoneNumber, message + BookingTrackingInstructions, timeout.Token);
+            if (!result.Succeeded)
+                _logger.LogWarning("The SMS provider did not accept a badminton booking notification.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to send a badminton booking notification after saving the booking.");
+        }
+    }
+
     private string GenerateUniqueBookingNumber()
     {
         return $"BCKG-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpperInvariant()}";
