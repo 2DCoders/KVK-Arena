@@ -19,13 +19,18 @@ interface Trainer {
   approvalStatus?: number;
 }
 
-export default function Trainers() {
+export default function Trainers({ onSectionVisibilityChange }: { onSectionVisibilityChange: (visible: boolean) => void }) {
   const [isDataLoading, setIsDataLoading] = useState(true);
   const [dataError, setDataError] = useState(false);
   const [trainers, setTrainers] = useState<Trainer[]>([]);
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTrainerLibraryOpen, setIsTrainerLibraryOpen] = useState(false);
+  const showSection = isDataLoading || dataError || trainers.length > 0;
+
+  useEffect(() => {
+    onSectionVisibilityChange(showSection);
+  }, [onSectionVisibilityChange, showSection]);
 
   const openTrainerModal = (trainer: Trainer) => {
     setSelectedTrainer(trainer);
@@ -71,8 +76,10 @@ export default function Trainers() {
 
   const topTrainers = sortedTrainers.slice(0, 10);
 
+  if (!showSection) return null;
+
   return (
-    <section className="relative bg-gradient-to-b from-slate-50 via-white to-blue-50/40 overflow-hidden pt-15">
+    <section id="trainers" className="relative bg-gradient-to-b from-slate-50 via-white to-blue-50/40 overflow-hidden pt-15">
       {/* Background Blobs */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-[#296BE1]/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#296BE1]/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />

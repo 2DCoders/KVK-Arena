@@ -37,7 +37,7 @@ const easeInOut = (value: number) =>
     ? 2 * value * value
     : 1 - Math.pow(-2 * value + 2, 2) / 2;
 
-export default function GymHero() {
+export default function GymHero({ onlineSignupEnabled }: { onlineSignupEnabled: boolean }) {
   const sectionRef = useRef<HTMLElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
@@ -330,6 +330,7 @@ export default function GymHero() {
   return (
     <>
       <SignupModal
+        onlineSignupEnabled={onlineSignupEnabled}
         open={isOpenSignup}
         onClose={() => setIsOpenSignup(false)}
       />

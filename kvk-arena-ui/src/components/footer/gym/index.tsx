@@ -7,7 +7,7 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
-export default function GymFooter() {
+export default function GymFooter({ showTrainerLinks }: { showTrainerLinks: boolean }) {
   const navigate = useNavigate();
 
   return (
@@ -175,14 +175,14 @@ export default function GymFooter() {
                       </a>
                     </li>
 
-                    <li>
+                    {showTrainerLinks && <li>
                       <a
                         href="#trainers"
                         className="text-sm text-slate-500 hover:text-slate-900 transition"
                       >
                         Trainers
                       </a>
-                    </li>
+                    </li>}
 
                     <li>
                       <a

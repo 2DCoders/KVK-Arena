@@ -5,14 +5,27 @@ import { getMembershipPlans } from "@/services/memberships-api";
 import { loginMember, registerMember } from "@/services/auth-api";
 import Alert from "@/components/alert";
 import { hasPendingGymPayment, resumeGymPayment, startGymPayment } from "@/services/gym-checkout";
-import { X } from "lucide-react";
+import { Phone, X } from "lucide-react";
 
 interface SignupModalProps {
   open: boolean;
   onClose: () => void;
+  onlineSignupEnabled?: boolean;
 }
 
-export default function SignupModal({ open, onClose }: SignupModalProps) {
+function GymRegistrationNotice() {
+  return (
+    <section className="rounded-2xl border border-blue-300/40 bg-[#0d2144] p-5 text-white sm:p-6">
+      <h3 className="text-xl font-extrabold leading-tight">Online gym registration is temporarily unavailable</h3>
+      <p className="mt-3 text-sm leading-6 text-blue-100">To register for a gym membership, please call our administrator.</p>
+      <a href="tel:+94765605885" className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-200 px-4 py-2 text-sm font-extrabold text-slate-950 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
+        <Phone size={17} aria-hidden="true" /> Call +94 76 560 5885
+      </a>
+    </section>
+  );
+}
+
+export default function SignupModal({ open, onClose, onlineSignupEnabled = true }: SignupModalProps) {
   const [step, setStep] = useState(1);
   const [gender, setGender] = useState<number | null>(null);
   const [confirm, setConfirm] = useState(false);
@@ -47,8 +60,8 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
   };
 
   useEffect(() => {
-    fetchMembershipPlans();
-  }, []);
+    if (onlineSignupEnabled) fetchMembershipPlans();
+  }, [onlineSignupEnabled]);
 
   useEffect(() => {
     if (plans.length > 0 && !selectedPlan) {
@@ -243,10 +256,10 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
   };
 
   useEffect(() => {
-    if (!open || !hasPendingGymPayment()) return;
+    if (!open || !onlineSignupEnabled || !hasPendingGymPayment()) return;
     setPaymentInProgress(true);
     void resumeGymPayment(paymentCallbacks);
-  }, [open]);
+  }, [open, onlineSignupEnabled]);
 
   const handleRegister = async () => {
     if (!validate() || !selectedPlan) return null;
@@ -410,8 +423,9 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                 Sign In
               </button>
             </div>
+            {authMode === "signup" && !onlineSignupEnabled && <GymRegistrationNotice />}
             {/* HEADER */}
-            <div className="mb-6">
+            {(authMode === "signin" || onlineSignupEnabled) && <div className="mb-6">
               <span className="inline-flex rounded-full bg-[#296BE1]/10 px-3 py-1 text-xs font-semibold text-[#296BE1]">
                 JOIN NOW
               </span>
@@ -427,10 +441,10 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                   ? "Register in minutes and choose your plan."
                   : "Sign in to access your membership account."}
               </p>
-            </div>
+            </div>}
 
             {/* STEP */}
-            {authMode === "signup" && (
+            {onlineSignupEnabled && authMode === "signup" && (
               <div className="mb-8 flex items-center">
                 <div className="flex items-center gap-3">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#296BE1] text-xs font-bold text-white">
@@ -527,7 +541,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
             )}
 
             {/* STEP 1 */}
-            {authMode === "signup" && step === 1 && (
+            {onlineSignupEnabled && authMode === "signup" && step === 1 && (
               <>
                 <div className="grid gap-4 md:grid-cols-2">
                   {/* FIRST NAME */}
@@ -743,7 +757,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
             )}
 
             {/* STEP 2 */}
-            {authMode === "signup" && step === 2 && (
+            {onlineSignupEnabled && authMode === "signup" && step === 2 && (
               <>
                 {/* HEADER */}
                 <div className="mb-4">
