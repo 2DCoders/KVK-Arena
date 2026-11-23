@@ -15,9 +15,11 @@ import {
   Sparkles,
   CircleCheck,
   Info,
+  Phone,
   AlertTriangle,
 } from "lucide-react";
 import { getCourts } from "@/services/court-api";
+import { getEnv } from "@/env";
 import { bookingSlots, confirmBooking, createBadmintonMultiPayment } from "@/services/booking-api";
 import { getNextWorkingDays } from "@/services/holidays-api";
 import { getCourtSlotsAvailability } from "@/services/court-slot-api";
@@ -95,6 +97,8 @@ const formatCountdown = (totalSeconds: number) => {
 };
 
 export default function BadmintonBookings() {
+  const paymentGateway = getEnv().IS_PAYMENT_GATEWAY_ENABLED;
+  const onlineBookingEnabled = paymentGateway === true || paymentGateway === "true";
   const [courts, setCourts] = useState<CourtCard[]>([]);
   const [workingDays, setWorkingDays] = useState<BookingDay[]>([]);
   const [courtSlots, setCourtSlots] = useState<
@@ -456,6 +460,7 @@ export default function BadmintonBookings() {
   /* -------------------------------------------------------------------------- */
 
   const handleBookingMultipleSlots = async () => {
+    if (!onlineBookingEnabled) return;
     if (selectedSlotDetails.length === 0) {
       setPageAlert({
         visible: true,
@@ -544,6 +549,7 @@ export default function BadmintonBookings() {
   /* -------------------------------------------------------------------------- */
 
   const handleConfirmBooking = async () => {
+    if (!onlineBookingEnabled) return;
     if (
       !customerName.trim() ||
       !customerPhone.trim()
@@ -1235,6 +1241,19 @@ export default function BadmintonBookings() {
           </div>
         </div>
 
+        {onlineBookingEnabled && <aside aria-labelledby="recurring-bookings-title" className="mb-5 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3.5 text-sm sm:px-5">
+          <Info size={19} aria-hidden="true" className="mt-0.5 shrink-0 text-amber-700" />
+          <div>
+            <h2 id="recurring-bookings-title" className="font-bold text-amber-950">Recurring bookings</h2>
+            <p className="mt-1 leading-6 text-amber-900">
+              To book recurring court slots, such as every Monday for three months, call the KVK Arena administrator at{" "}
+              <a href="tel:+94765605885" className="whitespace-nowrap font-bold underline underline-offset-2 hover:text-amber-700">
+                +94 76 560 5885
+              </a>.
+            </p>
+          </div>
+        </aside>}
+
         {/* Date selector */}
         <div className="mb-7 overflow-hidden rounded-[1.75rem] border border-gray-200 bg-white shadow-[0_12px_45px_rgba(0,0,0,0.06)] sm:mb-8">
           <div className="flex flex-col gap-3 border-b border-gray-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
@@ -1667,7 +1686,34 @@ export default function BadmintonBookings() {
         </div>
 
         {/* Booking summary */}
-        <div className="mt-6 rounded-[1.75rem] border border-gray-200 bg-white shadow-[0_12px_45px_rgba(0,0,0,0.06)]">
+        {!onlineBookingEnabled && (
+          <aside
+            aria-labelledby="badminton-booking-unavailable"
+            className="mt-6 flex flex-col gap-5 rounded-[1.75rem] border border-amber-400/40 bg-amber-950 p-5 text-white shadow-lg shadow-amber-950/20 sm:p-7 lg:flex-row lg:items-center lg:justify-between"
+          >
+            <div className="flex items-start gap-4">
+              <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-amber-400 text-amber-950">
+                <AlertTriangle size={24} aria-hidden="true" />
+              </span>
+              <div>
+                <h2 id="badminton-booking-unavailable" className="text-xl font-black leading-tight sm:text-2xl">
+                  Online badminton bookings are temporarily unavailable
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-amber-100 sm:text-base">
+                  You can still check available court times and prices here. To make a booking, please call our administrator.
+                </p>
+              </div>
+            </div>
+            <a
+              href="tel:+94765605885"
+              className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-amber-300 px-5 py-3 font-extrabold text-amber-950 transition-colors hover:bg-amber-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-200 sm:self-start lg:self-center"
+            >
+              <Phone size={18} aria-hidden="true" /> Call +94 76 560 5885
+            </a>
+          </aside>
+        )}
+        <div aria-disabled={!onlineBookingEnabled}
+          className={`mt-6 rounded-[1.75rem] border border-gray-200 bg-white shadow-[0_12px_45px_rgba(0,0,0,0.06)] ${onlineBookingEnabled ? "" : "grayscale opacity-75"}`}>
           <div className="flex flex-col gap-4 border-b border-gray-100 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-50 text-green-600">
@@ -1680,8 +1726,7 @@ export default function BadmintonBookings() {
                 </h2>
 
                 <p className="text-xs text-gray-500 sm:text-sm">
-                  Review your selection before
-                  continuing.
+                  {onlineBookingEnabled ? "Review your selection before continuing." : "Online checkout is unavailable."}
                 </p>
               </div>
             </div>
@@ -1820,10 +1865,8 @@ export default function BadmintonBookings() {
 
               <button
                 type="button"
-                disabled={
-                  selectedSlotDetails.length ===
-                  0
-                }
+                disabled={!onlineBookingEnabled || selectedSlotDetails.length === 0}
+                aria-describedby={!onlineBookingEnabled ? "badminton-booking-unavailable" : undefined}
                 onClick={
                   handleBookingMultipleSlots
                 }
@@ -1843,7 +1886,7 @@ export default function BadmintonBookings() {
                 <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
               </button>
 
-              <div className="mt-3 flex items-start gap-2 text-[10px] leading-4 text-gray-500">
+              {onlineBookingEnabled && <div className="mt-3 flex items-start gap-2 text-[10px] leading-4 text-gray-500">
                 <ShieldCheck
                   size={14}
                   className="mt-0.5 shrink-0 text-green-600"
@@ -1854,7 +1897,7 @@ export default function BadmintonBookings() {
                   held while you complete the
                   booking.
                 </span>
-              </div>
+              </div>}
             </div>
           </div>
         </div>
@@ -1883,7 +1926,7 @@ export default function BadmintonBookings() {
       {/* CHECKOUT MODAL                                                         */}
       {/* ====================================================================== */}
 
-      {isBookingModalOpen &&
+      {onlineBookingEnabled && isBookingModalOpen &&
         createPortal(
           <div className="fixed inset-0 z-[9999999998] flex items-center justify-center bg-[#24170f]/70 px-3 py-4 backdrop-blur-md sm:px-5 sm:py-6">
             <div className="flex max-h-[94vh] w-full max-w-4xl flex-col overflow-hidden rounded-[1.75rem] border border-white/70 bg-white shadow-[0_30px_90px_rgba(54,30,15,0.3)] sm:max-h-[90vh] sm:rounded-[2rem]">
