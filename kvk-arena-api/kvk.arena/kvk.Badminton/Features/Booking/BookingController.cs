@@ -80,6 +80,22 @@ public class BookingController : ControllerBase
         return Ok(result);
     }
 
+    [Authorize(Policy = ModuleConstants.BadmintonSpecialBookingsPermission)]
+    [HttpPost("walk-ins")]
+    public async Task<IActionResult> CreateWalkIn(WalkInBookingRequest request, CancellationToken ct)
+    {
+        var result = await _service.CreateWalkInAsync(request, ct);
+        return result.Succeeded ? Ok(result) : BadRequest(result);
+    }
+
+    [Authorize(Policy = ModuleConstants.BadmintonSpecialBookingsPermission)]
+    [HttpPost("walk-ins/{walkInId:guid}/pay")]
+    public async Task<IActionResult> PayWalkIn(Guid walkInId, WalkInPaymentRequest request, CancellationToken ct)
+    {
+        var result = await _service.PayWalkInAsync(walkInId, request.PaymentType, ct);
+        return result.Succeeded ? Ok(result) : BadRequest(result);
+    }
+
     [AllowAnonymous]
     [HttpPost("create-multi")] // Initiates PayHere payment for an existing batch of holds (from multi-hold)
     public async Task<IActionResult> CreateMultiPayment([FromBody] MultiBookingPaymentRequest request, CancellationToken ct)

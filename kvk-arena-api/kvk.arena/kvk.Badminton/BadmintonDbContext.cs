@@ -20,6 +20,7 @@ public class BadmintonDbContext(
     public DbSet<CourtBooking> CourtBookings => Set<Domain.CourtBooking>();
     public DbSet<BookingHold> BookingHolds => Set<Domain.BookingHold>();
     public DbSet<MemberSlipReservation> MemberSlipReservations => Set<MemberSlipReservation>();
+    public DbSet<CashierSlipReservation> CashierSlipReservations => Set<CashierSlipReservation>();
     public DbSet<BadmintonDayEnd> BadmintonDayEnds => Set<Domain.BadmintonDayEnd>();
     
     public DbSet<CourtBookingTemporary> CourtBookingTemporaries => Set<Domain.CourtBookingTemporary>();
@@ -39,6 +40,7 @@ public class BadmintonDbContext(
 
 
         modelBuilder.Entity<MemberSlipReservation>().HasIndex(x => x.HoldToken).IsUnique();
+        modelBuilder.Entity<CashierSlipReservation>().HasIndex(x => x.HoldToken).IsUnique();
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(BadmintonDbContext).Assembly);
         
         modelBuilder.Entity<CourtBookingTemporarySchedule>()

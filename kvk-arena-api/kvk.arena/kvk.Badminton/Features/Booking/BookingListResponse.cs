@@ -19,4 +19,5 @@ public class BookingListResponse
     public DateTime CreatedAt { get; set; }
     public PaymentTypes PaymentType { get; set; }
     public string? Notes { get; set; }
+    public Guid? WalkInId { get; set; }
 }

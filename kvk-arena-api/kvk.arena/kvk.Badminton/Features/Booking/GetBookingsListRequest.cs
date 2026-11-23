@@ -7,6 +7,7 @@ public class GetBookingsListRequest
     public string? SearchTerm { get; set; }
     public Guid? CourtId { get; set; }
     public BookingStatus? Status { get; set; }
+    public bool IncludePendingWalkIns { get; set; }
     public DateOnly? FromDate { get; set; }
     public DateOnly? ToDate { get; set; }
     public int PageNumber { get; set; } = 1;

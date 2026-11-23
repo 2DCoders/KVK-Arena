@@ -38,6 +38,8 @@ public partial class MemberBadmintonBookingController
         await using (var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct))
         {
             var holds = await HoldsAsync(request.HoldToken, ct);
+            if (holds.Any(h => h.CourtId != holds[0].CourtId))
+                throw new InvalidOperationException("Complete this reservation in Special Bookings.");
             await LockCourtAsync(holds[0].CourtId, ct);
             var existing = await db.MemberSlipReservations.SingleOrDefaultAsync(r => r.HoldToken == request.HoldToken, ct);
             if (existing is not null)
@@ -136,7 +138,7 @@ public partial class MemberBadmintonBookingController
         if (reservation.Cancelled) return Ok(new { Status = "cancelled", CouponLinked = reservation.CouponCode != null });
 
         var holds = await HoldsAsync(reservation.HoldToken, ct);
-        await LockCourtAsync(holds[0].CourtId, ct);
+        await LockCourtsAsync(holds.Select(h => h.CourtId), ct);
         if (reservation.CouponCode is { } code &&
             (!reservation.Rejected || holds.Any(h => h.PaymentId == RejectedSlipCouponHeldMarker)))
             await coupons.RestoreAsync(code, transaction.GetDbTransaction(), ct);
@@ -171,7 +173,7 @@ public partial class MemberBadmintonBookingController
         if (!replacing && status is not ("awaiting_payment" or "retry_payment"))
             throw new InvalidOperationException("This booking is no longer accepting payment slips.");
         var holds = await HoldsAsync(reservation.HoldToken, ct);
-        await LockCourtAsync(holds[0].CourtId, ct);
+        await LockCourtsAsync(holds.Select(h => h.CourtId), ct);
         EnsureActive(holds);
         if (!replacing && reservation.PaymentDueUtc <= DateTime.UtcNow)
             throw new InvalidOperationException("The payment deadline has passed.");
@@ -273,7 +275,7 @@ public partial class MemberBadmintonBookingController
             return Conflict(new { Message = "The customer replaced this slip. Refresh and review the latest version." });
 
         var holds = await HoldsAsync(reservation.HoldToken, ct);
-        await LockCourtAsync(holds[0].CourtId, ct);
+        await LockCourtsAsync(holds.Select(h => h.CourtId), ct);
         EnsureActive(holds);
         if (request.Approve == true)
         {
@@ -337,10 +339,9 @@ public partial class MemberBadmintonBookingController
 
     private async Task EnsureBookableAsync(List<BookingHold> holds, CancellationToken ct)
     {
-        var court = await db.Courts.AsNoTracking().SingleAsync(c => c.Id == holds[0].CourtId, ct);
-        if (court.Status != CourtStatus.Active || holds.Any(h => !h.CourtSlot.IsActive))
+        if (holds.Any(h => !h.CourtSlot.IsActive) || await HasInactiveCourtAsync(holds, ct))
             throw new InvalidOperationException("The court or selected sessions are no longer available.");
-        var schedule = new ScheduleData(court, holds.Select(h => h.CourtSlot).DistinctBy(s => s.Id).ToList(),
+        var schedule = new ScheduleData(holds.Select(h => h.CourtSlot).DistinctBy(s => s.Id).ToList(),
             holds.Select(h => h.BookingDate).Distinct().ToList(), holds.Max(h => h.BookingDate));
         var taken = await TakenSessionsAsync(schedule, ct, holds[0].PaymentIntentId);
         var local = ColomboNow;

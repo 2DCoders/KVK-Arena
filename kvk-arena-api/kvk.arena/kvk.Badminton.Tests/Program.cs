@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using kvk.Badminton.Features.MemberBooking;
 using kvk.Badminton.Features.CourtBookingTemporary;
 using kvk.Badminton.Domain;
@@ -6,6 +7,8 @@ using kvk.Badminton.Enums;
 using kvk.BuildingBlocks.Common;
 using kvk.BuildingBlocks.Constants;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 var checks = 0;
 void Assert(bool value, string message) { if (!value) throw new Exception(message); checks++; }
@@ -63,13 +66,72 @@ foreach (var method in new[] { 0, 3, -1 }) {
 }
 cashier.PaymentType = 1;
 cashier.CouponCode = "";
-Assert(!Validator.TryValidateObject(cashier, new ValidationContext(cashier), new List<ValidationResult>(), true), "Cashier confirmation must require an unredeemed coupon.");
+Assert(Validator.TryValidateObject(cashier, new ValidationContext(cashier), new List<ValidationResult>(), true), "A promotion can be confirmed without a coupon.");
 cashier.CouponCode = "UNUSED";
 cashier.PhoneNumber = "invalid";
 Assert(!Validator.TryValidateObject(cashier, new ValidationContext(cashier), new List<ValidationResult>(), true), "Cashier confirmation must validate the customer phone.");
-foreach (var method in new[] { "CashierConfirm", "CashierAvailability" }) {
+foreach (var method in new[] { "CashierConfirm", "CashierAvailability", "CashierQuote" }) {
     Assert(typeof(MemberBadmintonBookingController).GetMethod(method)!.IsDefined(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), true), "Cashier endpoints must require authentication.");
 }
+foreach (var method in new[] { "CashierSlips", "HoldForCashierSlip", "UploadCashierSlip", "DownloadCashierSlip", "ApproveCashierSlip" })
+{
+    var authorization = typeof(MemberBadmintonBookingController).GetMethod(method)!
+        .GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), true)
+        .Cast<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>().Single();
+    Assert(authorization.Policy == ModuleConstants.BadmintonSpecialBookingsPermission, "Staff slip endpoints require the Badminton permission.");
+}
+var slipHold = new CashierCustomerRequest { ExpectedAmount = 2000 };
+Assert(!Validator.TryValidateObject(slipHold, new ValidationContext(slipHold), new List<ValidationResult>(), true), "Slip holds require customer details.");
+slipHold.CustomerName = "Test customer";
+slipHold.PhoneNumber = "0771234567";
+Assert(Validator.TryValidateObject(slipHold, new ValidationContext(slipHold), new List<ValidationResult>(), true), "A valid name and phone satisfy slip hold validation.");
+var slipHoldStart = new DateTime(2027, 1, 1, 8, 0, 0, DateTimeKind.Utc);
+var slipHoldDeadline = slipHoldStart.AddHours(12);
+var slipRevision = Guid.NewGuid();
+Assert(MemberBadmintonBookingController.CashierSlipStatus(false, null, slipHoldDeadline, slipHoldStart) == "awaiting_slip", "An unexpired hold without a slip is not ready for approval.");
+Assert(MemberBadmintonBookingController.CashierSlipStatus(false, slipRevision, slipHoldDeadline, slipHoldStart) == "ready", "An uploaded slip can be approved during the hold.");
+Assert(MemberBadmintonBookingController.CashierSlipStatus(false, slipRevision, slipHoldDeadline, slipHoldDeadline) == "expired", "A slip does not extend the twelve-hour deadline.");
+Assert(MemberBadmintonBookingController.CashierSlipStatus(true, slipRevision, slipHoldDeadline, slipHoldDeadline.AddHours(1)) == "approved", "Approved bookings remain confirmed after the original deadline.");
+var configuredCouponId = Guid.NewGuid();
+var discountSettings = CashierDiscountSettings.Parse("""
+window.env = {
+  SPECIAL_BOOKING_DISCOUNTS: {
+    "couponCodeId": "COUPON_ID",
+    "promotionStartDate": "2027-01-01",
+    "promotionEndDate": "2027-01-03",
+    "promotionPercentage": 20,
+    "promotionMaximumSlots": 2
+  },
+  API_URL: "unused"
+};
+""".Replace("COUPON_ID", configuredCouponId.ToString()));
+Assert(discountSettings.CouponLimit.MaximumSlots(configuredCouponId, Guid.NewGuid(), 48) == 10, "The configured coupon ID is capped at ten sessions.");
+var issuedCouponId = Guid.NewGuid();
+var campaignSlotLimit = discountSettings.CouponLimit.MaximumSlots(issuedCouponId, configuredCouponId, 96);
+Assert(campaignSlotLimit == 10, "Coupons issued under the configured offer rate are capped at ten sessions.");
+Assert(ReservationCouponPricing.Discount(Enumerable.Repeat(2000m, 96).ToArray(), 20, campaignSlotLimit) == 4000m,
+    "A 20 percent campaign coupon discounts only ten of 96 equally priced slots.");
+Assert(discountSettings.CouponLimit.MaximumSlots(issuedCouponId, configuredCouponId, 4) == 4, "A short campaign booking discounts only its booked slots.");
+Assert(discountSettings.CouponLimit.MaximumSlots(issuedCouponId, Guid.NewGuid(), 48) == 48, "All other cashier coupons can discount the full booking.");
+decimal[] testPrices = [100, 200, 300];
+var promotion = discountSettings.Price(testPrices, new DateOnly(2027, 1, 3));
+Assert(promotion.IsPromotion && promotion.PromotionSlotCount == 2 && promotion.PromotionDiscount == 60, "The promotion applies on its inclusive end date and respects its slot limit.");
+Assert(!discountSettings.Price(testPrices, new DateOnly(2027, 1, 4)).IsPromotion, "Promotion ends after its configured last day.");
+Assert(!discountSettings.Price(testPrices, new DateOnly(2026, 12, 31)).IsPromotion, "Promotion is inactive before its configured first day.");
+Assert((discountSettings with { PromotionMaximumSlots = -1 }).Price(testPrices, start).PromotionDiscount == 120, "An unlimited promotion discounts every slot.");
+var combined = promotion.WithCoupon(new CouponValidationResult { DiscountAmount = 40, DiscountedSlotCount = 1 });
+Assert(combined.Amounts.SequenceEqual(new decimal[] { 40, 160, 300 }) && combined.FinalAmount == 500, "A coupon stacks on the post-promotion prices, within its own slot limit.");
+var multiCourt = new MemberScheduleRequest { CourtIds = [Guid.NewGuid(), Guid.NewGuid()] };
+var httpContext = new DefaultHttpContext();
+var controller = new MemberBadmintonBookingController(null!, null!, null!, null!, null!, null!, null!)
+{
+    ControllerContext = new ControllerContext { HttpContext = httpContext }
+};
+Assert(await controller.CheckAvailability(multiCourt, default) is UnauthorizedResult, "Public callers must not check multiple courts.");
+Assert(await controller.Hold(multiCourt, default) is UnauthorizedResult, "Public callers must not hold multiple courts.");
+httpContext.User = new ClaimsPrincipal(new ClaimsIdentity([], "test-auth"));
+Assert(await controller.CheckAvailability(multiCourt, default) is ForbidResult, "Multi-court availability requires the Badminton staff permission.");
+Assert(await controller.Hold(multiCourt, default) is ForbidResult, "Multi-court holds require the Badminton staff permission.");
 var period = new CashierAvailabilityRequest { StartDate = start, Weeks = 12, DaysOfWeek = [DaysOfWeek.Monday] };
 Assert(Validator.TryValidateObject(period, new ValidationContext(period), new List<ValidationResult>(), true), "Availability browsing must not require selected slot IDs.");
 // Availability must include every requested date, even when no slots are free.
