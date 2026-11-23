@@ -1,5 +1,6 @@
 
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import courtImg from "@/assets/court.png";
 import {
   CalendarDays,
@@ -1207,6 +1208,9 @@ export default function BadmintonBookings() {
             badminton session in just a few
             steps.
           </p>
+          <Link to="/badminton/track" className="mt-4 inline-flex items-center gap-1 rounded-lg border border-amber-200 px-4 py-2 text-sm font-bold text-amber-900 hover:bg-amber-50">
+            Track your bookings <ChevronRight size={16} aria-hidden="true" />
+          </Link>
 
           <div className="mx-auto mt-7 grid max-w-3xl grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3">
             <div className="flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white/90 px-4 py-3 shadow-sm">
