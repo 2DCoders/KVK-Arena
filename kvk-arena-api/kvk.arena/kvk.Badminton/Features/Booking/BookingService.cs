@@ -13,7 +13,7 @@ using Microsoft.Extensions.Options;
 
 namespace kvk.Badminton.Features.Booking;
 
-public class BookingService : IBookingService
+public partial class BookingService : IBookingService
 {
     private readonly BadmintonDbContext _db;
     private readonly ISmsService _smsService;
@@ -605,7 +605,8 @@ public class BookingService : IBookingService
 
         if (request.Status.HasValue)
         {
-            query = query.Where(b => b.Status == request.Status.Value);
+            query = query.Where(b => b.Status == request.Status.Value ||
+                (request.IncludePendingWalkIns && b.Status == BookingStatus.WalkInPendingPayment));
         }
 
         if (request.FromDate.HasValue)
@@ -620,6 +621,7 @@ public class BookingService : IBookingService
 
         var bookings = await query
             .OrderByDescending(b => b.CreatedAt)
+            .ThenBy(b => b.Id)
             .Skip((request.PageNumber - 1) * request.PageSize)
             .Take(request.PageSize)
             .ToListAsync(ct);
@@ -640,7 +642,8 @@ public class BookingService : IBookingService
             Status = booking.Status,
             CreatedAt = booking.CreatedAt,
             PaymentType = booking.PaymentType,
-            Notes = booking.Notes
+            Notes = booking.Notes,
+            WalkInId = booking.WalkInId
         }).ToList();
     }
 

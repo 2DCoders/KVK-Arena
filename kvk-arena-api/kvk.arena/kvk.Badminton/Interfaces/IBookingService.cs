@@ -7,6 +7,8 @@ public interface IBookingService
 {
     Task<Result> CreateHoldAsync(BookingHoldRequest request, CancellationToken ct = default);
     Task<Result> CreateMultiHoldAsync(MultiBookingRequest request, CancellationToken ct = default);
+    Task<Result> CreateWalkInAsync(WalkInBookingRequest request, CancellationToken ct);
+    Task<Result> PayWalkInAsync(Guid walkInId, PaymentTypes paymentType, CancellationToken ct);
     Task<Result> CreateSingleBookingWithPaymentAsync(SingleBookingWithPaymentRequest request, CancellationToken ct = default);
     Task<Result> CreateMultiPaymentAsync(MultiBookingPaymentRequest request, CancellationToken ct = default);
     Task<Result> ProcessPaymentSuccessAsync(Guid holdId, CustomerDetails customerDetails, string paymentIntentId, CancellationToken ct = default);

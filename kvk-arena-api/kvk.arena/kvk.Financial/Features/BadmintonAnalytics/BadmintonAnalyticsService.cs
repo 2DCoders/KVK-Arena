@@ -27,11 +27,11 @@ public class BadmintonAnalyticsService
             EndDate = endDate,
             TotalTransactions = filteredBookings.Count,
             SuccessfulTransactions = filteredBookings.Count(b => b.Status == BookingStatus.Confirmed),
-            PendingTransactions = filteredBookings.Count(b => b.Status == BookingStatus.Pending),
+            PendingTransactions = filteredBookings.Count(b => b.Status is BookingStatus.Pending or BookingStatus.WalkInPendingPayment),
             CancelledTransactions = filteredBookings.Count(b => b.Status == BookingStatus.Cancelled),
 
             TotalRevenue = filteredBookings.Where(b => b.Status == BookingStatus.Confirmed).Sum(b => b.BookingAmount),
-            PendingRevenue = filteredBookings.Where(b => b.Status == BookingStatus.Pending).Sum(b => b.BookingAmount),
+            PendingRevenue = filteredBookings.Where(b => b.Status is BookingStatus.Pending or BookingStatus.WalkInPendingPayment).Sum(b => b.BookingAmount),
             CancelledRevenue = filteredBookings.Where(b => b.Status == BookingStatus.Cancelled).Sum(b => b.BookingAmount),
 
             CashRevenue = filteredBookings.Where(b => b.PaymentType == PaymentTypes.Cash && b.Status == BookingStatus.Confirmed).Sum(b => b.BookingAmount),

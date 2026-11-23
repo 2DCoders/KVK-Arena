@@ -6,13 +6,16 @@ namespace kvk.Badminton.Features.MemberBooking;
 
 public class MemberScheduleRequest
 {
+    public Guid? CourtId { get; set; }
+    [MinLength(1)] public List<Guid>? CourtIds { get; set; }
     public DateOnly StartDate { get; set; }
     [Range(1, 52)] public int Weeks { get; set; }
     [MinLength(1), MaxLength(7)] public List<DaysOfWeek> DaysOfWeek { get; set; } = [];
-    [MinLength(1), MaxLength(48)] public List<Guid> SlotIds { get; set; } = [];
+    [MinLength(1)] public List<Guid> SlotIds { get; set; } = [];
 }
 public class CashierAvailabilityRequest
 {
+    public Guid? CourtId { get; set; }
     public DateOnly StartDate { get; set; }
     [Range(1, 52)] public int Weeks { get; set; }
     [MinLength(1), MaxLength(7)] public List<DaysOfWeek> DaysOfWeek { get; set; } = [];
@@ -35,10 +38,19 @@ public class MemberConfirmRequest : MemberCouponRequest
     [Required, RegularExpression(@"^\+?[0-9]{9,15}$")] public string PhoneNumber { get; set; } = "";
     [Required, EmailAddress, MaxLength(254)] public string Email { get; set; } = "";
 }
-public class CashierMemberConfirmRequest : MemberCouponRequest
+public class CashierPriceRequest
+{
+    public Guid HoldToken { get; set; }
+    [MaxLength(100)] public string? CouponCode { get; set; }
+}
+public class CashierCustomerRequest : CashierPriceRequest
 {
     [Required, MaxLength(100)] public string CustomerName { get; set; } = "";
     [Required, RegularExpression(@"^\+?[0-9]{9,15}$")] public string PhoneNumber { get; set; } = "";
+    public decimal? ExpectedAmount { get; set; }
+}
+public class CashierMemberConfirmRequest : CashierCustomerRequest
+{
     [Range(1, 2)] public int PaymentType { get; set; }
 }
 public static class MemberSchedule

@@ -13,14 +13,14 @@ namespace kvk.Identity.Services;
 public class ReservationCouponService(IdentityApplicationDbContext db, IConfiguration configuration,
     ITenantService tenant, ILogger<AppDbContextBase> logger, IHttpContextAccessor accessor) : IReservationCouponService
 {
-    public Task<CouponValidationResult> QuoteAsync(string couponCode, IReadOnlyList<decimal> slotPrices, CancellationToken ct)
-        => CalculateAsync(db, couponCode, slotPrices, false, ct);
+    public Task<CouponValidationResult> QuoteAsync(string couponCode, IReadOnlyList<decimal> slotPrices, CancellationToken ct, CashierCouponLimit? cashierLimit = null)
+        => CalculateAsync(db, couponCode, slotPrices, false, ct, cashierLimit);
 
     public async Task<CouponValidationResult> RedeemAsync(string couponCode, IReadOnlyList<decimal> slotPrices,
-        DbTransaction transaction, CancellationToken ct)
+        DbTransaction transaction, CancellationToken ct, CashierCouponLimit? cashierLimit = null)
     {
         await using var enlisted = await EnlistAsync(transaction, ct);
-        return await CalculateAsync(enlisted, couponCode, slotPrices, true, ct);
+        return await CalculateAsync(enlisted, couponCode, slotPrices, true, ct, cashierLimit);
     }
 
     public async Task RestoreAsync(string couponCode, DbTransaction transaction, CancellationToken ct)
@@ -53,7 +53,7 @@ public class ReservationCouponService(IdentityApplicationDbContext db, IConfigur
     }
 
     private async Task<CouponValidationResult> CalculateAsync(IdentityApplicationDbContext context, string code,
-        IReadOnlyList<decimal> prices, bool redeem, CancellationToken ct)
+        IReadOnlyList<decimal> prices, bool redeem, CancellationToken ct, CashierCouponLimit? cashierLimit)
     {
         if (string.IsNullOrWhiteSpace(code)) return Invalid("A coupon code is required.");
         code = code.Trim().ToUpperInvariant();
@@ -63,8 +63,9 @@ public class ReservationCouponService(IdentityApplicationDbContext db, IConfigur
             return Invalid("This coupon is invalid or no longer eligible.");
         if (coupon.IsRedeemed) return Invalid("This coupon has already been redeemed.");
         var rate = Math.Clamp(coupon.OfferRate.RateBadminton ?? 0, 0, 100);
-        var discount = ReservationCouponPricing.Discount(prices, rate,
-            configuration.GetValue<int>("BadmintonMaxDiscountSlotLimit"));
+        var limit = cashierLimit?.MaximumSlots(coupon.Id, coupon.OfferRateId, prices.Count) ??
+            Math.Clamp(configuration.GetValue<int>("BadmintonMaxDiscountSlotLimit"), 0, prices.Count);
+        var discount = ReservationCouponPricing.Discount(prices, rate, limit);
         if (redeem)
         {
             var now = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
@@ -72,7 +73,7 @@ public class ReservationCouponService(IdentityApplicationDbContext db, IConfigur
                 .ExecuteUpdateAsync(setters => setters.SetProperty(x => x.IsRedeemed, true).SetProperty(x => x.RedeemedDate, now), ct);
             if (updated != 1) return Invalid("This coupon is no longer available. Please use another unredeemed code.");
         }
-        return new CouponValidationResult { IsValid = true, DiscountAmount = discount, DiscountRate = rate };
+        return new CouponValidationResult { IsValid = true, DiscountAmount = discount, DiscountRate = rate, DiscountedSlotCount = limit };
     }
 
     private static CouponValidationResult Invalid(string message) => new() { IsValid = false, ErrorMessage = message };

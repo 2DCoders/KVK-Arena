@@ -129,6 +129,96 @@ namespace kvk.Badminton.Migrations
                     b.ToTable("BookingHolds", "badminton");
                 });
 
+            modelBuilder.Entity("kvk.Badminton.Domain.CashierSlipReservation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Approved")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal[]>("CouponBasePrices")
+                        .HasColumnType("numeric[]");
+
+                    b.Property<string>("CouponCode")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("CouponDiscount")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("FinalAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal[]>("FinalSlotAmounts")
+                        .IsRequired()
+                        .HasColumnType("numeric[]");
+
+                    b.Property<Guid>("HoldToken")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsPromotion")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastModifiedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("LimitedCouponId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("PaymentDueUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<byte[]>("Slip")
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("SlipContentType")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("SlipRevision")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid[]>("SlotHoldIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]");
+
+                    b.Property<bool>("SmsSent")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HoldToken")
+                        .IsUnique();
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_CashierSlipReservation_TenantId");
+
+                    b.HasIndex("TenantId", "CreatedAt")
+                        .HasDatabaseName("IX_CashierSlipReservation_TenantId_CreatedAt");
+
+                    b.ToTable("CashierSlipReservations", "badminton");
+                });
+
             modelBuilder.Entity("kvk.Badminton.Domain.Court", b =>
                 {
                     b.Property<Guid>("Id")
@@ -227,6 +317,9 @@ namespace kvk.Badminton.Migrations
                         .HasColumnType("integer");
 
                     b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("WalkInId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");

@@ -177,6 +177,8 @@ public class AuthService
             var tokenPermissions = request.ModuleName == "Admin"
                 ? permissions.Append("admin.badminton.slip-review").Append("admin.sms")
                 : permissions;
+            if (modules.Contains(ModuleConstants.BadmintonCourt, StringComparer.Ordinal))
+                tokenPermissions = tokenPermissions.Append(ModuleConstants.BadmintonSpecialBookingsPermission);
             var token = _jwtService.GenerateToken(staff.Id, tokenPermissions.ToArray());
 
             var response = new AuthResponse

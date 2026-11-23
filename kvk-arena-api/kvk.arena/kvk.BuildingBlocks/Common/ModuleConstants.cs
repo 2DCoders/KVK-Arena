@@ -8,6 +8,7 @@ public static class ModuleConstants
     public const string Gym = "Gym";
     public const string CarWash = "CarWash";
     public const string BadmintonCourt = "BadmintonCourt";
+    public const string BadmintonSpecialBookingsPermission = "badminton.special-bookings";
     public const string GamingCenter = "GamingCenter";
     public const string Salon = "Salon";
     public const string Cafe = "Cafe";
