@@ -61,7 +61,7 @@ public partial class MemberBadmintonBookingController
         await EnsureBookableAsync(holds, ct);
 
         var code = request.CouponCode?.Trim().ToUpperInvariant() ?? "";
-        var settings = CashierDiscountSettings.Load();
+        var settings = CashierDiscountSettings.Load(configuration);
         var promotion = settings.Price(holds.Select(h => h.Amount).ToArray(), DateOnly.FromDateTime(ColomboNow));
         if (code.Length == 0 && !promotion.IsPromotion)
             throw new InvalidOperationException("Apply an unredeemed coupon before holding the slots.");

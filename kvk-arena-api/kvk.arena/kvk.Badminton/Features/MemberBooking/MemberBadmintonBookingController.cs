@@ -178,7 +178,7 @@ public partial class MemberBadmintonBookingController(BadmintonDbContext db, IRe
         var schedule = await ScheduleAsync(request, ct);
         var conflicts = await ConflictsAsync(schedule, ct);
         var pricing = SelectsCourts(request) && conflicts.Count == 0
-            ? CashierDiscountSettings.Load().Price(schedule.Prices, DateOnly.FromDateTime(ColomboNow)).Summary : null;
+            ? CashierDiscountSettings.Load(configuration).Price(schedule.Prices, DateOnly.FromDateTime(ColomboNow)).Summary : null;
         return Ok(new { IsAvailable = conflicts.Count == 0, OriginalAmount = schedule.Amount, schedule.EndDate,
             BookingCount = schedule.Dates.Count * schedule.Slots.Count, UnavailableSchedules = conflicts, Pricing = pricing });
     });
@@ -211,7 +211,7 @@ public partial class MemberBadmintonBookingController(BadmintonDbContext db, IRe
         await LockCourtsAsync(schedule.Slots.Select(slot => slot.CourtId), ct);
         if ((await ConflictsAsync(schedule, ct)).Count > 0) throw new InvalidOperationException("Some sessions are no longer available. Please check your schedule again.");
         var pricing = SelectsCourts(request)
-            ? CashierDiscountSettings.Load().Price(schedule.Prices, DateOnly.FromDateTime(ColomboNow)).Summary : null;
+            ? CashierDiscountSettings.Load(configuration).Price(schedule.Prices, DateOnly.FromDateTime(ColomboNow)).Summary : null;
         var token = Guid.NewGuid();
         var expiry = Now.Add(HoldTime);
         foreach (var date in schedule.Dates)
@@ -333,7 +333,7 @@ public partial class MemberBadmintonBookingController(BadmintonDbContext db, IRe
     private async Task<CashierPricing> CashierPriceAsync(List<BookingHold> holds, string couponCode, CancellationToken ct,
         DbTransaction? transaction = null)
     {
-        var settings = CashierDiscountSettings.Load();
+        var settings = CashierDiscountSettings.Load(configuration);
         var pricing = settings.Price(holds.Select(h => h.Amount).ToList(), DateOnly.FromDateTime(ColomboNow));
         return await ApplyCashierCouponAsync(pricing, couponCode, settings.CouponLimit, ct, transaction);
     }
