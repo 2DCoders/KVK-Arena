@@ -12,6 +12,7 @@ public static class ModuleConstants
     public const string BadmintonCourt = "BadmintonCourt";
     public const string BadmintonSpecialBookingsPermission = "badminton.special-bookings";
     public const string GamingCenter = "GamingCenter";
+    public const string GamingCashierSlipsPermission = "gaming.cashier-slips";
     public const string Salon = "Salon";
     public const string Cafe = "Cafe";
 

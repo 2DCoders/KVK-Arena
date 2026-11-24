@@ -69,6 +69,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 var policyPermissions = new Dictionary<string, string>
 {
     [ModuleConstants.GymStaffPolicy] = ModuleConstants.GymStaffPermission,
+    [ModuleConstants.GamingCashierSlipsPermission] = ModuleConstants.GamingCashierSlipsPermission,
     ["BadmintonSlipReview"] = "admin.badminton.slip-review",
     [ModuleConstants.BadmintonSpecialBookingsPermission] = ModuleConstants.BadmintonSpecialBookingsPermission,
 };

@@ -24,6 +24,7 @@ public class GamingDbContext(
     public DbSet<GamingSlot> GamingSlots { get; set; } = null!;
     public DbSet<GamingBooking> GamingBookings { get; set; } = null!;
     public DbSet<GamingBookingHold> GamingBookingHolds { get; set; } = null!; // Added GamingBookingHold DbSet
+    public DbSet<GamingCashierSlip> GamingCashierSlips => Set<GamingCashierSlip>();
     public DbSet<GamingBookingAdditionalPurchase> GamingBookingAdditionalPurchases { get; set; } = null!;
     public DbSet<GamingBookingHoldAdditionalPurchase> GamingBookingHoldAdditionalPurchases { get; set; } = null!;
     public DbSet<Domain.GamingDayEnd> GamingDayEnds => Set<Domain.GamingDayEnd>();

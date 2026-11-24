@@ -449,6 +449,8 @@ public partial class GamingBookingService : IGamingBookingService
 
             if (hold == null)
                 return Result.Failure("Gaming booking hold not found.");
+            if (hold.PaymentIntentId?.StartsWith(GamingCashierSlipsController.PaymentPrefix, StringComparison.Ordinal) == true)
+                return Result.Failure("Approve this booking from Payment Slip Holds.");
 
             if (hold.Status == GamingBookingHoldStatus.Confirmed)
                 return Result.Success("Gaming booking already confirmed.");
@@ -550,6 +552,9 @@ public partial class GamingBookingService : IGamingBookingService
                     await transaction.RollbackAsync(cancellationToken);
                     return Result.Failure($"Gaming booking hold with ID {holdId} not found.");
                 }
+
+                if (hold.PaymentIntentId?.StartsWith(GamingCashierSlipsController.PaymentPrefix, StringComparison.Ordinal) == true)
+                    return Result.Failure("Approve this booking from Payment Slip Holds.");
 
                 if (hold.Status == GamingBookingHoldStatus.Confirmed)
                 {
@@ -677,7 +682,8 @@ public partial class GamingBookingService : IGamingBookingService
         if (holds.Count != request.HoldIds.Count)
             return Result.Failure("One or more holds were not found.");
 
-        if (holds.Any(h => h.Status != GamingBookingHoldStatus.Pending || h.ExpiresAt < DateTime.Now))
+        if (holds.Any(h => h.Status != GamingBookingHoldStatus.Pending || h.ExpiresAt < DateTime.Now ||
+            h.PaymentIntentId?.StartsWith(GamingCashierSlipsController.PaymentPrefix, StringComparison.Ordinal) == true))
             return Result.Failure("One or more holds have expired. Please select the slots again.");
 
         var orderId = $"GAM-MPAY-{DateTime.Now:yyyyMMddHHmmss}-{Guid.NewGuid().ToString("N")[..6].ToUpper()}";
@@ -767,6 +773,8 @@ public partial class GamingBookingService : IGamingBookingService
     public async Task<Result> DeletePendingPayment(GamingPendingPaymentDeleteRequest request,
         CancellationToken cancellationToken = default)
     {
+        if (request.OrderId?.StartsWith(GamingCashierSlipsController.PaymentPrefix, StringComparison.Ordinal) == true)
+            return Result.Failure("This hold is managed through Payment Slip Holds.");
         var holds = await _db.GamingBookingHolds
             .Where(h => h.PaymentIntentId == request.OrderId && h.Status == GamingBookingHoldStatus.Pending)
             .ToListAsync(cancellationToken);
