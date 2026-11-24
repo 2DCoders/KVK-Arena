@@ -126,13 +126,16 @@ public partial class GamingBookingService
             }
         }
 
-        var total = bookings.Sum(b => b.Amount).ToString("N2", CultureInfo.InvariantCulture);
-        var method = paymentType == PaymentTypes.Cash ? "Cash" : "Card";
+        var amount = bookings.Sum(b => b.Amount);
+        var total = amount.ToString(amount == decimal.Truncate(amount) ? "N0" : "N2", CultureInfo.InvariantCulture);
+        var method = paymentType == PaymentTypes.Cash ? "cash" : "card";
+        var receipt = $"Thanks for playing at KVK Arena Gaming! We received your {method} payment of LKR {total}.";
+        const string closing = " See you for another round soon!";
         try
         {
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
             var result = await _smsService.SendSingleMessageAsync(bookings[0].CustomerPhone!,
-                $"KVK Arena Gaming: Walk-in payment received.\nAmount paid: LKR {total}\nPayment method: {method}\nThank you for playing!",
+                receipt.Length + closing.Length <= 150 ? receipt + closing : receipt,
                 timeout.Token);
             if (!result.Succeeded) _logger.LogWarning("SMS failed for Gaming walk-in {WalkInId}", walkInId);
         }

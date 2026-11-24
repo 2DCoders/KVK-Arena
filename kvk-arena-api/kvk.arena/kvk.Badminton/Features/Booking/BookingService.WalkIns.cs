@@ -115,10 +115,12 @@ public partial class BookingService
             return Result.Failure("The payment status changed. Refresh before retrying.");
         }
 
-        var total = bookings.Sum(booking => booking.BookingAmount).ToString("N2", CultureInfo.InvariantCulture);
-        var method = paymentType == PaymentTypes.Cash ? "Cash" : "Card";
-        await SendBookingSmsAsync(bookings[0].PhoneNumber,
-            $"KVK Arena Badminton: Walk-in payment received.\nAmount paid: LKR {total}\nPayment method: {method}\nThank you for playing!");
+        var amount = bookings.Sum(booking => booking.BookingAmount);
+        var total = amount.ToString(amount == decimal.Truncate(amount) ? "N0" : "N2", CultureInfo.InvariantCulture);
+        var method = paymentType == PaymentTypes.Cash ? "cash" : "card";
+        var receipt = $"Thanks for playing at KVK Arena Badminton! We received your {method} payment of LKR {total}.";
+        const string closing = " See you on the court again soon!";
+        await SendBookingSmsAsync(bookings[0].PhoneNumber, receipt.Length + closing.Length <= 150 ? receipt + closing : receipt);
         return Result.Success("Walk-in payment recorded.");
     }
 
