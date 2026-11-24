@@ -10,6 +10,20 @@ namespace kvk.Gaming.Features.GamingBooking;
 [Route("api/gaming-m/gaming-bookings")]
 public class GamingBookingController : ControllerBase
 {
+    [HttpPost("walk-ins")]
+    public async Task<IActionResult> CreateWalkIn(GamingWalkInRequest request, CancellationToken ct)
+    {
+        var result = await _service.CreateWalkInAsync(request, ct);
+        return result.Succeeded ? Ok(result) : BadRequest(result);
+    }
+
+    [HttpPost("walk-ins/{walkInId:guid}/pay")]
+    public async Task<IActionResult> PayWalkIn(Guid walkInId, GamingWalkInPaymentRequest request, CancellationToken ct)
+    {
+        var result = await _service.PayWalkInAsync(walkInId, request.PaymentType, ct);
+        return result.Succeeded ? Ok(result) : BadRequest(result);
+    }
+
     private readonly IGamingBookingService _service;
 
     public GamingBookingController(IGamingBookingService service)

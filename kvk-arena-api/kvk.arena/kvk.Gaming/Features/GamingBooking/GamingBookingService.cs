@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 namespace kvk.Gaming.Features.GamingBooking;
 
-public class GamingBookingService : IGamingBookingService
+public partial class GamingBookingService : IGamingBookingService
 {
     private readonly GamingDbContext _db;
     private readonly IHashService _hashService;
@@ -867,7 +867,8 @@ public class GamingBookingService : IGamingBookingService
 
         if (request.Status.HasValue)
         {
-            query = query.Where(b => b.Status == request.Status.Value);
+            query = query.Where(b => b.Status == request.Status.Value ||
+                (request.IncludePendingWalkIns && b.Status == GamingBookingStatus.WalkInPendingPayment));
         }
 
         if (request.FromDate.HasValue)
@@ -882,12 +883,14 @@ public class GamingBookingService : IGamingBookingService
 
         var bookings = await query
             .OrderByDescending(b => b.CreatedAt)
+            .ThenByDescending(b => b.Id)
             .Skip((request.PageNumber - 1) * request.PageSize)
             .Take(request.PageSize)
             .ToListAsync(cancellationToken);
 
         var responses = bookings.Select(booking => new GamingBookingResponse
         {
+            WalkInId = ParseWalkInId(booking.PaymentIntentId),
             Id = booking.Id,
             BookingNumber = booking.BookingNumber,
             GamingCategoryId = booking.GamingCategoryId,

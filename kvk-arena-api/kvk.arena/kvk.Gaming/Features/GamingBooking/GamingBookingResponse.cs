@@ -5,6 +5,7 @@ namespace kvk.Gaming.Features.GamingBooking;
 
 public class GamingBookingResponse
 {
+    public Guid? WalkInId { get; set; }
     public Guid Id { get; set; }
     public required string BookingNumber { get; set; }
     public Guid GamingCategoryId { get; set; }
