@@ -179,6 +179,8 @@ public class AuthService
                 : permissions;
             if (modules.Contains(ModuleConstants.BadmintonCourt, StringComparer.Ordinal))
                 tokenPermissions = tokenPermissions.Append(ModuleConstants.BadmintonSpecialBookingsPermission);
+            if (modules.Contains(ModuleConstants.Gym, StringComparer.Ordinal))
+                tokenPermissions = tokenPermissions.Append(ModuleConstants.GymStaffPermission);
             var token = _jwtService.GenerateToken(staff.Id, tokenPermissions.ToArray());
 
             var response = new AuthResponse

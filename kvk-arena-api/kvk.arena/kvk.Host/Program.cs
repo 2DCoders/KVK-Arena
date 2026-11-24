@@ -112,6 +112,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("BadmintonSlipReview", policy => policy.RequireClaim("permission", "admin.badminton.slip-review"));
+    options.AddPolicy(ModuleConstants.GymStaffPolicy,
+        policy => policy.RequireClaim("permission", ModuleConstants.GymStaffPermission));
     options.AddPolicy(ModuleConstants.BadmintonSpecialBookingsPermission,
         policy => policy.RequireClaim("permission", ModuleConstants.BadmintonSpecialBookingsPermission));
 });

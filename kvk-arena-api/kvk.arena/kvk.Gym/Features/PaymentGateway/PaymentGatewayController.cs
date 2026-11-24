@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Gym.Features.PaymentGateway;
 
-[AllowAnonymous]
+[Authorize]
 [ApiController]
 [Route("api/payments")]
 public class PaymentGatewayController : ControllerBase
@@ -20,6 +20,7 @@ public class PaymentGatewayController : ControllerBase
     [HttpPost("create")]
     public async Task<IActionResult> CreatePayment([FromBody] PaymentGatewayRequest request)
     {
+        if (!User.CanAccessMember(request.MemberId)) return Forbid();
         try
         {
             return Ok(await _paymentGatewayService.ProcessPayment(request));
@@ -33,6 +34,7 @@ public class PaymentGatewayController : ControllerBase
     [HttpGet("status/{orderId}")]
     public async Task<IActionResult> PaymentStatus(string orderId, [FromQuery] Guid memberId, CancellationToken cancellationToken)
     {
+        if (!User.CanAccessMember(memberId)) return Forbid();
         var response = await _paymentGatewayService.GetPaymentStatus(orderId, memberId, cancellationToken);
         return response == null ? NotFound(Result.Failure("Payment order not found")) : Ok(response);
     }
@@ -40,10 +42,12 @@ public class PaymentGatewayController : ControllerBase
     [HttpPost("reverse")]
     public async Task<IActionResult> DeletePendingPayment([FromBody]PendingPaymentDeleteRequest request)
     {
+        if (!User.CanAccessMember(request.MemberId)) return Forbid();
         var response = await _paymentGatewayService.DeletePendingPayment(request);
         return response.Succeeded ? Ok(response) : BadRequest(response);
     }
 
+    [AllowAnonymous]
     [HttpPost("notify")]
     public async Task<IActionResult> PaymentNotification([FromForm] PaymentNotificationRequest request)
     {

@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.RegularExpressions;
 using kvk.BuildingBlocks.Auth;
+using kvk.BuildingBlocks.Common;
 using kvk.BuildingBlocks.Interfaces;
 using kvk.BuildingBlocks.Services;
 using kvk.Host.Middlewares;
@@ -13,6 +14,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -30,7 +33,7 @@ var publicRoutes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     "POST api/identity/members/register",
     "POST api/gym/members", "POST api/gym/members/login", "GET api/gym/members/trainers",
     "GET api/gym/membership-plans",
-    "POST api/payments/create", "POST api/payments/reverse", "POST api/payments/notify",
+    "POST api/payments/notify",
     "GET api/badminton/courts",
     "GET api/badminton/court-slot-configurations/availability-by-court",
     "POST api/badminton/bookings/multi-hold", "POST api/badminton/bookings/confirm-multi",
@@ -51,12 +54,29 @@ var publicRoutes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     "GET api/saloon/bookings/day-availability"
 };
 
+var gymOnly = args.Contains("--gym");
+bool IsGymRoute(string route) => route.StartsWith("api/gym/", StringComparison.OrdinalIgnoreCase) ||
+    route.StartsWith("api/payments/", StringComparison.OrdinalIgnoreCase) && !route.StartsWith("api/payments/cafe/", StringComparison.OrdinalIgnoreCase) ||
+    route.Equals("api/financial/gym-analytics", StringComparison.OrdinalIgnoreCase) ||
+    route.Equals("scan", StringComparison.OrdinalIgnoreCase);
+if (gymOnly) publicRoutes.RemoveWhere(key => !IsGymRoute(key[(key.IndexOf(' ') + 1)..]));
+
 var builder = WebApplication.CreateBuilder();
 builder.Logging.ClearProviders();
 builder.WebHost.UseUrls("http://127.0.0.1:0");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => options.TokenValidationParameters = JwtService.CreateTokenValidationParameters());
-builder.Services.AddAuthorization();
+var policyPermissions = new Dictionary<string, string>
+{
+    [ModuleConstants.GymStaffPolicy] = ModuleConstants.GymStaffPermission,
+    ["BadmintonSlipReview"] = "admin.badminton.slip-review",
+    [ModuleConstants.BadmintonSpecialBookingsPermission] = ModuleConstants.BadmintonSpecialBookingsPermission,
+};
+builder.Services.AddAuthorization(options =>
+{
+    foreach (var (policy, permission) in policyPermissions)
+        options.AddPolicy(policy, rule => rule.RequireClaim("permission", permission));
+});
 builder.Services.AddScoped<ITenantService, TenantService>();
 var mvc = builder.Services.AddControllers();
 foreach (var assembly in new[]
@@ -79,7 +99,7 @@ app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
-var cases = new List<(string Method, string Route, bool Public)>();
+var cases = new List<(string Method, string Route, bool Public, bool RequiresPermission)>();
 var seenPublic = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 var descriptors = app.Services.GetRequiredService<IActionDescriptorCollectionProvider>()
     .ActionDescriptors.Items.OfType<ControllerActionDescriptor>();
@@ -87,7 +107,7 @@ foreach (var action in descriptors)
 {
     if (action.ControllerTypeInfo.Name is "RoleController" or "SampleFeatureController") continue;
     var route = action.AttributeRouteInfo?.Template?.TrimStart('~', '/');
-    if (route == null) continue;
+    if (route == null || gymOnly && !IsGymRoute(route)) continue;
     var metadata = action.ControllerTypeInfo.GetCustomAttributes(true)
         .Concat(action.MethodInfo.GetCustomAttributes(true)).ToArray();
     var anonymous = metadata.OfType<IAllowAnonymous>().Any();
@@ -101,7 +121,7 @@ foreach (var action in descriptors)
             throw new Exception($"Incorrect authorization metadata: {key}");
         app.MapMethods(route, new[] { method }, () => "action reached").WithMetadata(metadata);
         var url = Regex.Replace(route, @"\{[^}]+\}", "11111111-1111-1111-1111-111111111111");
-        cases.Add((method, url, isPublic));
+        cases.Add((method, url, isPublic, !isPublic && metadata.OfType<IAuthorizeData>().Any(data => data.Policy != null)));
     }
 }
 if (!publicRoutes.SetEquals(seenPublic))
@@ -110,6 +130,7 @@ if (!publicRoutes.SetEquals(seenPublic))
 await app.StartAsync();
 using var client = new HttpClient { BaseAddress = new Uri(app.Urls.Single()) };
 var validToken = new JwtService().GenerateToken(Guid.NewGuid(), Array.Empty<string>());
+var staffToken = new JwtService().GenerateToken(Guid.NewGuid(), policyPermissions.Values);
 var parameters = JwtService.CreateTokenValidationParameters();
 string MakeToken(DateTime expires, string issuer = "kvk", string audience = "kvk", bool wrongKey = false)
 {
@@ -138,10 +159,38 @@ async Task Check(string method, string route, string? token, HttpStatusCode expe
 foreach (var test in cases)
 {
     await Check(test.Method, test.Route, null, test.Public ? HttpStatusCode.OK : HttpStatusCode.Unauthorized);
-    await Check(test.Method, test.Route, validToken, HttpStatusCode.OK);
+    await Check(test.Method, test.Route, validToken, test.RequiresPermission ? HttpStatusCode.Forbidden : HttpStatusCode.OK);
+    if (test.RequiresPermission) await Check(test.Method, test.Route, staffToken, HttpStatusCode.OK);
     if (!test.Public)
         foreach (var token in invalidTokens)
             await Check(test.Method, test.Route, token, HttpStatusCode.Unauthorized);
 }
 await app.StopAsync();
-Console.WriteLine($"Passed {checks} HTTP authorization checks across {cases.Count} actions ({cases.Count(c => c.Public)} public). Valid JWTs with no permissions are accepted; missing, malformed, expired, wrong-signature, wrong-issuer, and wrong-audience JWTs are rejected on protected routes.");
+Console.WriteLine($"Passed {checks} HTTP authorization checks across {cases.Count} actions ({cases.Count(c => c.Public)} public).");
+
+var memberId = Guid.NewGuid();
+var profile = new kvk.Gym.Features.Memberships.MembershipsController(
+    DispatchProxy.Create<kvk.Gym.Interfaces.IMembershipService, ProfileServiceStub>())
+{
+    ControllerContext = new ControllerContext
+    {
+        HttpContext = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, memberId.ToString()) }, "test"))
+        }
+    }
+};
+if (await profile.GetById(memberId) is not OkObjectResult || await profile.GetById(Guid.NewGuid()) is not ForbidResult)
+    throw new Exception("Gym member profile ownership checks failed.");
+profile.User.AddIdentity(new ClaimsIdentity(new[] { new Claim("permission", ModuleConstants.GymStaffPermission) }, "test"));
+if (await profile.GetById(Guid.NewGuid()) is not OkObjectResult)
+    throw new Exception("Gym staff could not view the member profile.");
+Console.WriteLine("Passed Gym profile ownership checks for members and staff.");
+
+public class ProfileServiceStub : DispatchProxy
+{
+    protected override object? Invoke(MethodInfo? targetMethod, object?[]? args) =>
+        targetMethod?.Name == nameof(kvk.Gym.Interfaces.IMembershipService.GetMemberAsync)
+            ? Task.FromResult<kvk.Gym.Features.Memberships.MembershipResponse>(null!)
+            : throw new NotSupportedException();
+}

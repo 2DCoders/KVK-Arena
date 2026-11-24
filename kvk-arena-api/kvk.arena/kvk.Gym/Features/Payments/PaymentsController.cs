@@ -6,7 +6,7 @@ using kvk.Gym.Features.Payments;
 
 namespace kvk.Gym.Features.Payments;
 
-[Authorize]
+[Authorize(Policy = kvk.BuildingBlocks.Common.ModuleConstants.GymStaffPolicy)]
 [ApiController]
 [Route("api/gym/members/{memberId:guid}/payments")]
 public class PaymentsController : ControllerBase

@@ -5,24 +5,14 @@ import { getMembershipPlans } from "@/services/memberships-api";
 import { loginMember, registerMember } from "@/services/auth-api";
 import Alert from "@/components/alert";
 import { hasPendingGymPayment, resumeGymPayment, startGymPayment } from "@/services/gym-checkout";
-import { Phone, X } from "lucide-react";
+import { rememberGymCheckoutLogin } from "@/services/pay-api";
+import { X } from "lucide-react";
+import GymPaymentNotice from "@/components/gym-payment-notice";
 
 interface SignupModalProps {
   open: boolean;
   onClose: () => void;
   onlineSignupEnabled?: boolean;
-}
-
-function GymRegistrationNotice() {
-  return (
-    <section className="rounded-2xl border border-blue-300/40 bg-[#0d2144] p-5 text-white sm:p-6">
-      <h3 className="text-xl font-extrabold leading-tight">Online gym registration is temporarily unavailable</h3>
-      <p className="mt-3 text-sm leading-6 text-blue-100">To register for a gym membership, please call our administrator.</p>
-      <a href="tel:+94765605885" className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-200 px-4 py-2 text-sm font-extrabold text-slate-950 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
-        <Phone size={17} aria-hidden="true" /> Call +94 76 560 5885
-      </a>
-    </section>
-  );
 }
 
 export default function SignupModal({ open, onClose, onlineSignupEnabled = true }: SignupModalProps) {
@@ -319,6 +309,10 @@ export default function SignupModal({ open, onClose, onlineSignupEnabled = true 
         setPaymentInProgress(false);
         return;
       }
+      const account = await loginMember({ username: form.email.trim(), password: form.password.trim() });
+      if (!account?.token || account.memberId !== memberId)
+        throw new Error("Unable to verify the new Gym account. Sign in to continue.");
+      rememberGymCheckoutLogin(memberId, account.token);
       await startGymPayment({
         amount: Number(plans.find((p) => p.id === selectedPlan)?.price ?? 0),
         memberId,
@@ -423,7 +417,10 @@ export default function SignupModal({ open, onClose, onlineSignupEnabled = true 
                 Sign In
               </button>
             </div>
-            {authMode === "signup" && !onlineSignupEnabled && <GymRegistrationNotice />}
+            {authMode === "signup" && !onlineSignupEnabled && <GymPaymentNotice
+              title="Online gym registration is temporarily unavailable"
+              description="To register for a gym membership, please call our administrator."
+            />}
             {/* HEADER */}
             {(authMode === "signin" || onlineSignupEnabled) && <div className="mb-6">
               <span className="inline-flex rounded-full bg-[#296BE1]/10 px-3 py-1 text-xs font-semibold text-[#296BE1]">

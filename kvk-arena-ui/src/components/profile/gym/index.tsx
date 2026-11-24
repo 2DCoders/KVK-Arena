@@ -1,4 +1,6 @@
 import GymDataState from "@/components/gym-data-state";
+import GymPaymentNotice from "@/components/gym-payment-notice";
+import { getEnv } from "@/env";
 import Alert from "@/components/alert";
 import { changePassword, getMember, updateMember } from "@/services/auth-api";
 import { getMembershipPlans } from "@/services/memberships-api";
@@ -34,6 +36,8 @@ export default function UserProfileModal({
   open,
   onClose,
 }: UserProfileModalProps) {
+  const paymentGateway = getEnv().IS_PAYMENT_GATEWAY_ENABLED;
+  const onlineUpgradeEnabled = paymentGateway === true || paymentGateway === "true";
 
   const [memberData, setMemberData] = useState<any>(null);
   const assignedTrainerName =
@@ -314,7 +318,7 @@ export default function UserProfileModal({
   }, [open]);
 
   const handleInitPayment = async () => {
-    if (paymentInProgress || !selectedPlan) return;
+    if (!onlineUpgradeEnabled || paymentInProgress || !selectedPlan) return;
     setPaymentInProgress(true);
     try {
       await startGymPayment({
@@ -507,7 +511,7 @@ export default function UserProfileModal({
 
             {/* Content */}
             <div className="p-6 overflow-y-auto h-[calc(80vh-80px)]">
-              <div className="w-full flex justify-between items-center rounded-2xl border border-blue-500/20 bg-white-900/60 backdrop-blur-md px-6 py-5 mb-6">
+              {onlineUpgradeEnabled ? <div className="w-full flex justify-between items-center rounded-2xl border border-blue-500/20 bg-white-900/60 backdrop-blur-md px-6 py-5 mb-6">
                 <div>
                   <p className="text-slate-600">
                     Choose a new membership plan below.
@@ -541,7 +545,7 @@ export default function UserProfileModal({
                 <div>
                   <button
                     onClick={handleInitPayment} // This button should trigger payment
-                    disabled={selectedPlan === null}
+                    disabled={selectedPlan === null || paymentInProgress}
                     className={`group relative cursor-pointer w-full text-left rounded-2xl p-4 transition-all duration-300
                                                                 ${
                                                                   selectedPlan ===
@@ -561,7 +565,10 @@ export default function UserProfileModal({
                     </div>
                   </button>
                 </div>
-              </div>
+              </div> : <GymPaymentNotice
+                title="Online gym plan upgrades are temporarily unavailable"
+                description="You can still view membership plans and prices below. To upgrade your plan, please call our administrator."
+              />}
 
               {(isDataLoading || dataError || plans.length === 0) && (
                 <GymDataState loading={isDataLoading} error={dataError} label="membership plans" onRetry={() => void fetchMembershipPlans()} />
@@ -570,11 +577,12 @@ export default function UserProfileModal({
                 {plans
                   .filter((p) => p.isActive === 1)
                   .map((plan) => {
-                    const isSelected = selectedPlan === plan.id;
+                    const isSelected = onlineUpgradeEnabled && selectedPlan === plan.id;
 
                     return (
                       <button
                         key={plan.id}
+                        disabled={!onlineUpgradeEnabled}
                         onClick={() => {
                           setSelectedPlan(plan.id);
 
@@ -593,7 +601,7 @@ export default function UserProfileModal({
 
                           setCalculatedEndDate(newEnd.toISOString());
                         }}
-                        className={`text-left cursor-pointer rounded-2xl border p-4 transition-all duration-200 hover:shadow-md ${
+                        className={`text-left rounded-2xl border p-4 transition-all duration-200 enabled:cursor-pointer enabled:hover:shadow-md ${
                           isSelected
                             ? "border-[#296BE1] bg-[#296BE1]/5 shadow-lg"
                             : "border-slate-200 bg-white"

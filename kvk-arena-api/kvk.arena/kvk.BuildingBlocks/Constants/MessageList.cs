@@ -6,7 +6,11 @@ public static class MessageList
 {
     public static string GetWelcomeMessage(string firstName, string membershipNumber)
     {
-        return $"Welcome to KVK Arena. {firstName}, your member ID {membershipNumber} has been registered.";
+        const int maxLength = 150;
+        var message = $"Welcome to KVK Arena. {firstName}, your member ID {membershipNumber} has been registered.";
+        return message.Length <= maxLength
+            ? message
+            : $"Welcome to KVK Arena! Your member ID is {membershipNumber}.";
     }
 
     public static string PaymentReceivedMessage(string firstName, decimal amount)

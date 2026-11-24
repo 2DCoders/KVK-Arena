@@ -5,7 +5,7 @@ using kvk.Gym.Services;
 
 namespace kvk.Gym.Features.DayEnd;
 
-[Authorize]
+[Authorize(Policy = kvk.BuildingBlocks.Common.ModuleConstants.GymStaffPolicy)]
 [ApiController]
 [Route("api/gym/dayend")]
 public class DayEndController : ControllerBase

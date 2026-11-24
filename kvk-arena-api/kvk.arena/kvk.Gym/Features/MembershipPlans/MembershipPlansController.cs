@@ -5,7 +5,7 @@ using kvk.Gym.Services;
 
 namespace kvk.Gym.Features.MembershipPlans;
 
-[Authorize]
+[Authorize(Policy = kvk.BuildingBlocks.Common.ModuleConstants.GymStaffPolicy)]
 [ApiController]
 [Route("api/gym/membership-plans")]
 public class MembershipPlansController : ControllerBase

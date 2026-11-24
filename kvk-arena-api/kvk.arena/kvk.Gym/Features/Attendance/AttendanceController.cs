@@ -6,7 +6,7 @@ using kvk.Gym.Features.Attendance;
 
 namespace kvk.Gym.Features.Attendance;
 
-[Authorize]
+[Authorize(Policy = kvk.BuildingBlocks.Common.ModuleConstants.GymStaffPolicy)]
 [ApiController]
 [Route("api/gym/attendance")]
 public class AttendanceController : ControllerBase

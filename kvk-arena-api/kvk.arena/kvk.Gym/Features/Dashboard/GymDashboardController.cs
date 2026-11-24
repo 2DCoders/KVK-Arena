@@ -4,7 +4,7 @@ using kvk.Gym.Interfaces;
 
 namespace kvk.Gym.Features.Dashboard;
 
-[Authorize]
+[Authorize(Policy = kvk.BuildingBlocks.Common.ModuleConstants.GymStaffPolicy)]
 [ApiController]
 [Route("api/gym/dashboard")]
 public class GymDashboardController : ControllerBase
