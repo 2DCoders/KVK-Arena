@@ -337,7 +337,7 @@ public partial class MemberBadmintonBookingController
         return Ok(new { Status = Status(reservation), SmsSent = smsSent });
     });
 
-    private async Task EnsureBookableAsync(List<BookingHold> holds, CancellationToken ct)
+    private async Task EnsureBookableAsync(List<BookingHold> holds, CancellationToken ct, bool allowInProgress = false)
     {
         if (holds.Any(h => !h.CourtSlot.IsActive) || await HasInactiveCourtAsync(holds, ct))
             throw new InvalidOperationException("The court or selected sessions are no longer available.");
@@ -345,8 +345,13 @@ public partial class MemberBadmintonBookingController
             holds.Select(h => h.BookingDate).Distinct().ToList(), holds.Max(h => h.BookingDate));
         var taken = await TakenSessionsAsync(schedule, ct, holds[0].PaymentIntentId);
         var local = ColomboNow;
-        if (holds.Any(h => MemberAvailability.Status(h.BookingDate, h.CourtSlotId, h.CourtSlot.StartTime, local, taken) != "available"))
-            throw new InvalidOperationException("One or more sessions have started or are no longer available.");
+        var utc = DateTime.UtcNow;
+        if (holds.Any(h => allowInProgress
+            ? CashierSlotEndsUtc(h) <= utc || taken.ContainsKey((h.CourtSlotId, h.BookingDate))
+            : MemberAvailability.Status(h.BookingDate, h.CourtSlotId, h.CourtSlot.StartTime, local, taken) != "available"))
+            throw new InvalidOperationException(allowInProgress
+                ? "One or more sessions have ended or are no longer available."
+                : "One or more sessions have started or are no longer available.");
     }
 
     private async Task<IActionResult> CouponFailureAsync(string couponCode, string? phone, string? error, CancellationToken ct)

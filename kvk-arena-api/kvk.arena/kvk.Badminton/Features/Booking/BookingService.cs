@@ -250,6 +250,9 @@ public partial class BookingService : IBookingService
             if (hold == null)
                 return Result.Failure("Hold not found.");
 
+            if (hold.PaymentId == MemberBooking.MemberBadmintonBookingController.CashierSlipMarker)
+                return Result.Failure("Approve this booking from Payment Slip Holds.");
+
             // Idempotency: If already confirmed, return success without duplicate work
             if (hold.Status == BookingHoldStatus.Confirmed)
                 return Result.Success("Booking already confirmed.");
@@ -346,6 +349,9 @@ public partial class BookingService : IBookingService
                     await transaction.RollbackAsync(ct);
                     return Result.Failure($"Hold with ID {holdId} not found.");
                 }
+
+                if (hold.PaymentId == MemberBooking.MemberBadmintonBookingController.CashierSlipMarker)
+                    return Result.Failure("Approve this booking from Payment Slip Holds.");
 
                 if (hold.Status == BookingHoldStatus.Confirmed)
                 {
@@ -456,7 +462,8 @@ public partial class BookingService : IBookingService
         if (holds.Count != request.HoldIds.Count)
             return Result.Failure("One or more holds were not found.");
 
-        if (holds.Any(h => h.Status != BookingHoldStatus.Pending || h.ExpiresAt < DateTime.Now))
+        if (holds.Any(h => h.Status != BookingHoldStatus.Pending || h.ExpiresAt < DateTime.Now ||
+            h.PaymentId == MemberBooking.MemberBadmintonBookingController.CashierSlipMarker))
             return Result.Failure("One or more holds have expired. Please select the slots again.");
 
         var orderId = $"BDM-MPAY-{DateTime.Now:yyyyMMddHHmmss}-{Guid.NewGuid().ToString("N")[..6].ToUpper()}";
@@ -544,7 +551,8 @@ public partial class BookingService : IBookingService
     public async Task<Result> DeletePendingPayment(BadmintonPendingPaymentDeleteRequest request, CancellationToken ct = default)
     {
         var holds = await _db.BookingHolds
-            .Where(h => h.PaymentIntentId == request.OrderId && h.Status == BookingHoldStatus.Pending)
+            .Where(h => h.PaymentIntentId == request.OrderId && h.Status == BookingHoldStatus.Pending &&
+                h.PaymentId != MemberBooking.MemberBadmintonBookingController.CashierSlipMarker)
             .ToListAsync(ct);
 
         if (holds.Count == 0)

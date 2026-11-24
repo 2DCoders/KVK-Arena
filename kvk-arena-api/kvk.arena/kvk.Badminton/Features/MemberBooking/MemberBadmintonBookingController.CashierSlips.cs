@@ -15,7 +15,77 @@ namespace kvk.Badminton.Features.MemberBooking;
 
 public partial class MemberBadmintonBookingController
 {
-    private const string CashierSlipMarker = "CASHIER-PAYMENT-SLIP";
+    internal const string CashierSlipMarker = "CASHIER-PAYMENT-SLIP";
+
+    public record RegularCashierSlipRequest(List<Guid> HoldIds, string CustomerName, string PhoneNumber, decimal ExpectedAmount);
+
+    [Authorize(Policy = ModuleConstants.BadmintonSpecialBookingsPermission)]
+    [HttpPost("cashier-slips/regular")]
+    public Task<IActionResult> HoldRegularCashierSlip([FromBody] RegularCashierSlipRequest request, CancellationToken ct) => Respond(async () =>
+    {
+        var phone = request.PhoneNumber?.Trim() ?? "";
+        if (request.HoldIds is not { Count: > 0 } || request.HoldIds.Distinct().Count() != request.HoldIds.Count ||
+            string.IsNullOrWhiteSpace(request.CustomerName) || !System.Text.RegularExpressions.Regex.IsMatch(phone, @"\A07[0-9]{8}\z"))
+            throw new InvalidOperationException("Select held slots and enter a customer name and valid mobile number.");
+
+        var token = request.HoldIds.Min();
+        var key = Key(token);
+        await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
+        var holds = await db.BookingHolds.Include(h => h.CourtSlot)
+            .Where(h => request.HoldIds.Contains(h.Id)).OrderBy(h => h.Id).ToListAsync(ct);
+        if (holds.Count != request.HoldIds.Count)
+            throw new InvalidOperationException("One or more held slots could not be found.");
+        await LockCourtsAsync(holds.Select(h => h.CourtId), ct);
+        var existing = await db.CashierSlipReservations.AsNoTracking().SingleOrDefaultAsync(r => r.HoldToken == token, ct);
+        if (existing is not null)
+        {
+            if (!existing.SlotHoldIds.Order().SequenceEqual(request.HoldIds.Order()))
+                throw new InvalidOperationException("This hold already belongs to a different reservation.");
+            return Ok(CashierSlipSummary(existing));
+        }
+
+        EnsureActive(holds);
+        if (holds.Any(h => !string.IsNullOrEmpty(h.PaymentId) || !string.IsNullOrEmpty(h.PaymentIntentId)) ||
+            holds.Select(h => (h.CourtSlotId, h.BookingDate)).Distinct().Count() != holds.Count)
+            throw new InvalidOperationException("One or more slots are already being processed.");
+        foreach (var hold in holds) hold.PaymentIntentId = key;
+
+        // Persist the grouping inside the transaction before checking conflicts so
+        // the availability query excludes exactly these holds.
+        await db.SaveChangesAsync(ct);
+        await EnsureBookableAsync(holds, ct, allowInProgress: true);
+        var amounts = holds.Select(h => h.CourtSlot.Price).ToArray();
+        if (request.ExpectedAmount != amounts.Sum())
+            throw new InvalidOperationException("The booking price changed. Select the slots again.");
+
+        var due = DateTime.UtcNow.AddHours(12);
+        var firstEnd = holds.Min(CashierSlotEndsUtc);
+        if (firstEnd < due) due = firstEnd;
+        var reservation = new CashierSlipReservation
+        {
+            Id = Guid.NewGuid(), HoldToken = token, CustomerName = request.CustomerName.Trim(),
+            PhoneNumber = phone, PaymentDueUtc = due,
+            FinalAmount = amounts.Sum(), SlotHoldIds = holds.Select(h => h.Id).ToArray(), FinalSlotAmounts = amounts
+        };
+        foreach (var hold in holds)
+        {
+            hold.PaymentId = CashierSlipMarker;
+            hold.ExpiresAt = HoldExpiry(due);
+            hold.CustomerName = reservation.CustomerName;
+            hold.PhoneNumber = phone;
+        }
+        db.CashierSlipReservations.Add(reservation);
+        await db.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
+        return Ok(CashierSlipSummary(reservation));
+    });
+
+    private static DateTime CashierSlotEndsUtc(BookingHold hold)
+    {
+        var date = hold.CourtSlot.EndTime <= hold.CourtSlot.StartTime ? hold.BookingDate.AddDays(1) : hold.BookingDate;
+        return TimeZoneInfo.ConvertTimeToUtc(date.ToDateTime(hold.CourtSlot.EndTime),
+            TimeZoneInfo.FindSystemTimeZoneById("Asia/Colombo"));
+    }
 
     internal static string CashierSlipStatus(bool approved, Guid? slipRevision, DateTime due, DateTime now) =>
         approved ? "approved" : due <= now ? "expired" : slipRevision.HasValue ? "ready" : "awaiting_slip";
@@ -151,9 +221,10 @@ public partial class MemberBadmintonBookingController
             var holds = await HoldsAsync(reservation.HoldToken, ct);
             await LockCourtsAsync(holds.Select(h => h.CourtId), ct);
             if (reservation.PaymentDueUtc <= DateTime.UtcNow)
-                throw new InvalidOperationException("The 12-hour hold has expired.");
+                throw new InvalidOperationException("The payment slip hold has expired.");
             EnsureActive(holds);
-            await EnsureBookableAsync(holds, ct);
+            // Special slip holds always have either a promotion or a coupon.
+            await EnsureBookableAsync(holds, ct, allowInProgress: !reservation.IsPromotion && reservation.CouponCode is null);
             var pricesByHold = reservation.SlotHoldIds.Zip(reservation.FinalSlotAmounts).ToDictionary(pair => pair.First, pair => pair.Second);
             if (pricesByHold.Count != holds.Count || holds.Any(hold => !pricesByHold.ContainsKey(hold.Id)))
                 throw new InvalidOperationException("The reserved slots no longer match the reviewed amount.");
