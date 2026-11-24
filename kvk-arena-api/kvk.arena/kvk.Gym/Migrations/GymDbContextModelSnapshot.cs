@@ -129,6 +129,58 @@ namespace kvk.Gym.Migrations
                     b.ToTable("DayPassMembers", "gym");
                 });
 
+            modelBuilder.Entity("kvk.Gym.Domain.GymPaymentReceipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("DayPassMemberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("Document")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<DateTime>("LastModifiedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("PaymentRecordId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DayPassMemberId")
+                        .IsUnique();
+
+                    b.HasIndex("PaymentRecordId")
+                        .IsUnique();
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_GymPaymentReceipt_TenantId");
+
+                    b.HasIndex("TenantId", "CreatedAt")
+                        .HasDatabaseName("IX_GymPaymentReceipt_TenantId_CreatedAt");
+
+                    b.ToTable("PaymentReceipts", "gym");
+                });
+
             modelBuilder.Entity("kvk.Gym.Domain.MemberAttendance", b =>
                 {
                     b.Property<Guid>("Id")
@@ -751,6 +803,19 @@ namespace kvk.Gym.Migrations
                         .IsRequired();
 
                     b.Navigation("MembershipPlan");
+                });
+
+            modelBuilder.Entity("kvk.Gym.Domain.GymPaymentReceipt", b =>
+                {
+                    b.HasOne("kvk.Gym.Domain.DayPassMember", null)
+                        .WithOne()
+                        .HasForeignKey("kvk.Gym.Domain.GymPaymentReceipt", "DayPassMemberId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("kvk.Gym.Domain.PaymentRecord", null)
+                        .WithOne()
+                        .HasForeignKey("kvk.Gym.Domain.GymPaymentReceipt", "PaymentRecordId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("kvk.Gym.Domain.MemberAttendance", b =>

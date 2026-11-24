@@ -1,5 +1,6 @@
 using kvk.BuildingBlocks.Common;
 using kvk.BuildingBlocks.Constants;
+using kvk.BuildingBlocks.Enums;
 using kvk.BuildingBlocks.Interfaces;
 using kvk.BuildingBlocks.PaymentGateway;
 using kvk.Gym.Domain;
@@ -30,6 +31,13 @@ public class PaymentService : IPaymentService
         if (memberId == Guid.Empty)
             return Result.Failure("Member id cannot be empty");
 
+        if (request.PaymentType == PaymentType.ReceiptUpload && request.Receipt is null)
+            return Result.Failure("Upload a receipt for this payment method.");
+        var receiptType = request.Receipt is { } document ? GymPaymentReceipt.DetectContentType(document) : null;
+        if (request.Receipt != null && receiptType is null) return Result.Failure(GymPaymentReceipt.InvalidFileMessage);
+        if (request.Receipt != null && request.PaymentStatus != PaymentStatus.Paid)
+            return Result.Failure("A receipt can only be attached to a paid transaction.");
+
         try
         {
             await using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
@@ -45,9 +53,18 @@ public class PaymentService : IPaymentService
                 var recorded = await _db.PaymentRecords.AsNoTracking().FirstOrDefaultAsync(
                     p => p.MembershipId == memberId && p.TransactionReference == reference, cancellationToken);
                 if (recorded != null)
-                    return recorded.Amount == request.Amount && recorded.PaymentType == request.PaymentType
-                        ? Result.Success("Payment recorded").WithData("alreadyRecorded", true)
-                        : Result.Failure("This payment reference was already used with different payment details.");
+                {
+                    if (recorded.Amount != request.Amount || recorded.PaymentType != request.PaymentType)
+                        return Result.Failure("This payment reference was already used with different payment details.");
+                    if (receiptType != null && recorded.PaymentStatus == PaymentStatus.Paid &&
+                        !await _db.PaymentReceipts.AnyAsync(x => x.PaymentRecordId == recorded.Id, cancellationToken))
+                    {
+                        _db.PaymentReceipts.Add(new GymPaymentReceipt { PaymentRecordId = recorded.Id, Document = request.Receipt!, ContentType = receiptType });
+                        await _db.SaveChangesAsync(cancellationToken);
+                        await transaction.CommitAsync(cancellationToken);
+                    }
+                    return Result.Success("Payment recorded").WithData("alreadyRecorded", true);
+                }
             }
 
             var member = await _db.Memberships.SingleOrDefaultAsync(m => m.Id == memberId, cancellationToken);
@@ -105,6 +122,7 @@ public class PaymentService : IPaymentService
                 .ThenByDescending(p => p.Id)
                 .FirstOrDefaultAsync(cancellationToken);
 
+            PaymentRecord record;
             if (memberPayment == null)
             {
                 var payment = new MemberPayment
@@ -122,7 +140,7 @@ public class PaymentService : IPaymentService
 
                 _db.MemberPayments.Add(payment);
 
-                var record = new PaymentRecord
+                record = new PaymentRecord
                 {
                     MembershipId = member.Id,
                     MemberPaymentId = null,
@@ -137,7 +155,6 @@ public class PaymentService : IPaymentService
                     MembershipPlanTitle = member.MembershipPlan?.Title
                 };
 
-                _db.PaymentRecords.Add(record);
             }
             else
             {
@@ -172,7 +189,7 @@ public class PaymentService : IPaymentService
                 }
 
                 // record the payment action in the immutable PaymentRecords table
-                var record = new PaymentRecord
+                record = new PaymentRecord
                 {
                     MembershipId = member.Id,
                     MemberPaymentId = memberPayment.Id,
@@ -188,8 +205,10 @@ public class PaymentService : IPaymentService
                     MembershipPlanTitle = member.MembershipPlan?.Title
                 };
 
-                _db.PaymentRecords.Add(record);
             }
+            _db.PaymentRecords.Add(record);
+            if (receiptType != null)
+                _db.PaymentReceipts.Add(new GymPaymentReceipt { PaymentRecordId = record.Id, Document = request.Receipt!, ContentType = receiptType });
             
             await _db.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
@@ -251,6 +270,7 @@ public class PaymentService : IPaymentService
                 {
                     Id = p.Id,
                     MembershipId = p.MembershipId,
+                    HasReceipt = _db.PaymentReceipts.Any(r => r.PaymentRecordId == p.Id),
                     Amount = p.Amount,
                     PaymentType = p.PaymentType,
                     PaymentStatus = p.PaymentStatus,
@@ -291,6 +311,8 @@ public class PaymentService : IPaymentService
                 {
                     Id = p.Id,
                     MembershipId = null,
+                    IsDayPass = true,
+                    HasReceipt = _db.PaymentReceipts.Any(r => r.DayPassMemberId == p.Id),
                     Amount = p.Amount,
                     PaymentType = p.PaymentType,
                     PaymentStatus = p.PaymentStatus,
@@ -315,6 +337,7 @@ public class PaymentService : IPaymentService
                 {
                     Id = p.Id,
                     MembershipId = p.MembershipId,
+                    HasReceipt = _db.PaymentReceipts.Any(r => r.PaymentRecordId == p.Id),
                     Amount = p.Amount,
                     PaymentType = p.PaymentType,
                     PaymentStatus = p.PaymentStatus,

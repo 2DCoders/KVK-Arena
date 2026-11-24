@@ -681,6 +681,11 @@ public class MembershipService : IMembershipService
         if (request == null || request.MembershipPlanId == Guid.Empty)
             return Result.Failure("MembershipPlanId is required");
 
+        if (request.PaymentType == PaymentType.ReceiptUpload && request.Receipt is null)
+            return Result.Failure("Upload a receipt for this payment method.");
+        var receiptType = request.Receipt is { } document ? GymPaymentReceipt.DetectContentType(document) : null;
+        if (request.Receipt != null && receiptType is null) return Result.Failure(GymPaymentReceipt.InvalidFileMessage);
+
         try
         {
             var member = await _db.Memberships
@@ -728,7 +733,7 @@ public class MembershipService : IMembershipService
             if (member.MembershipStatus == MembershipStatus.Blocked || previousEnd <= now)
                 member.MembershipStatus = hasFingerprints ? MembershipStatus.Active : MembershipStatus.Inactive;
 
-            _db.PaymentRecords.Add(new PaymentRecord
+            var record = new PaymentRecord
             {
                 MembershipId = member.Id,
                 MemberPaymentId = payment.Id,
@@ -741,7 +746,10 @@ public class MembershipService : IMembershipService
                 MembershipNumber = member.MembershipNumber,
                 MembershipPlanId = plan.Id,
                 MembershipPlanTitle = plan.Title
-            });
+            };
+            _db.PaymentRecords.Add(record);
+            if (receiptType != null)
+                _db.PaymentReceipts.Add(new GymPaymentReceipt { PaymentRecordId = record.Id, Document = request.Receipt!, ContentType = receiptType });
             await _db.SaveChangesAsync(cancellationToken);
 
             if (!string.IsNullOrWhiteSpace(member.Phone))

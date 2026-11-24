@@ -1,6 +1,7 @@
 using kvk.BuildingBlocks.Common;
 using Microsoft.EntityFrameworkCore;
 using kvk.Gym.Domain;
+using kvk.Gym.Enums;
 using kvk.Gym.Features.DayPassMembers;
 using kvk.Gym.Interfaces;
 
@@ -29,6 +30,12 @@ public class DayPassMemberService : IDayPassMemberService
 
         if (request.MembershipPlanId == Guid.Empty)
             return Result.Failure("Membership plan is required");
+        if (request.PaymentType == kvk.BuildingBlocks.Enums.PaymentType.ReceiptUpload && request.Receipt is null)
+            return Result.Failure("Upload a receipt for this payment method.");
+        var receiptType = request.Receipt is { } document ? GymPaymentReceipt.DetectContentType(document) : null;
+        if (request.Receipt != null && receiptType is null) return Result.Failure(GymPaymentReceipt.InvalidFileMessage);
+        if (request.Receipt != null && request.PaymentStatus != PaymentStatus.Paid)
+            return Result.Failure("A receipt can only be attached to a paid day pass.");
 
         try
         {
@@ -81,6 +88,8 @@ public class DayPassMemberService : IDayPassMemberService
 
 
             _db.DayPassMembers.Add(dayPass);
+            if (receiptType != null)
+                _db.PaymentReceipts.Add(new GymPaymentReceipt { DayPassMemberId = dayPass.Id, Document = request.Receipt!, ContentType = receiptType });
             await _db.SaveChangesAsync(cancellationToken);
 
             var response = MapToResponse(dayPass, plan.Title);
