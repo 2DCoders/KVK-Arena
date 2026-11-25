@@ -1,4 +1,4 @@
-import saunaImage from "@/assets/sauna.png";
+import gymImage from "@/assets/gallery/gym-g.jpg";
 
 export default function SaunaPage() {
     return (
@@ -19,7 +19,6 @@ export default function SaunaPage() {
                                 "Spacious Training Environment",
                                 "Certified Personal Trainers",
                                 "Freelance Trainer Friendly",
-                                "Sauna & Recovery Facilities",
                                 "Modern Changing Rooms",
                                 "Community-Focused Atmosphere",
                             ].map((item, i) => (
@@ -34,8 +33,8 @@ export default function SaunaPage() {
                     {/* Right Image */}
                     <div className="relative" data-aos="fade-right" data-aos-delay="200">
                         <img
-                            src={saunaImage}
-                            alt="Gym Sauna Facility"
+                            src={gymImage}
+                            alt="KVK Arena gym"
                             className="w-full h-[250px] sm:h-[350px] lg:h-[450px] object-cover rounded-2xl shadow-lg"
 
                         />
@@ -58,17 +57,15 @@ export default function SaunaPage() {
                         <div className="relative max-w-3xl">
 
                             <span className="inline-flex items-center rounded-full border border-white/20 bg-white/5 px-4 py-1 text-xs tracking-widest text-gray-300">
-                                PREMIUM WELLNESS FEATURE
+                                GYM FACILITIES
                             </span>
 
                             <h3 className="mt-4 text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight">
-                                Included Sauna Access
+                                Modern Changing Rooms
                             </h3>
 
                             <p className="mt-4 text-sm sm:text-base lg:text-lg text-gray-300 leading-relaxed">
-                                Recover faster, relieve muscle tension, and enjoy a premium wellness experience
-                                after every workout. Our sauna facilities are designed to support both physical
-                                recovery and mental relaxation.
+                                Get ready for your workout and change comfortably afterward in our dedicated gym changing rooms.
                             </p>
                         </div>
                     </div>

@@ -110,24 +110,25 @@ export default function CarwashAdd2() {
               <span className="h-px w-10 bg-gradient-to-r from-blue-400 to-transparent" />
 
               <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-blue-300 sm:text-xs">
-                Next Generation Car Care
+                A Preview of What’s Next
               </span>
             </div>
 
             {/* Heading */}
             <h2 className="max-w-xl text-3xl font-bold leading-[1.06] tracking-[-0.045em] text-white sm:text-4xl lg:text-5xl xl:text-[3.5rem]">
-              Advanced automatic
+              Automated
               <span className="mt-2 block bg-gradient-to-r from-[#74b7ff] via-[#1473ff] to-[#8fdcff] bg-clip-text text-transparent">
-                car washing.
+                car washing
               </span>
             </h2>
 
             {/* Description */}
             <p className="mt-6 max-w-xl text-sm leading-7 text-gray-400 sm:text-base sm:leading-8">
-              Experience a faster and more consistent clean with our modern
-              automatic car wash system. Precision water jets and advanced
-              brushes remove dirt safely while protecting your vehicle&apos;s
-              finish.
+              <strong className="font-semibold text-blue-200">
+                We’re planning to introduce automated car washing at KVK Arena in the near future.
+              </strong>{" "}
+              The system is designed to use precision water jets and soft brushes
+              for a quicker, more consistent clean that’s gentle on your vehicle’s finish.
             </p>
 
             {/* Features grid */}

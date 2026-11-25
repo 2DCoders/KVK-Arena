@@ -91,7 +91,7 @@ export default function Games() {
             swiperRef.current = swiper;
           }}
         >
-          {games.map((game) => (
+          {games.filter((game) => game.genre === "PS5 Game").map((game) => (
             <SwiperSlide key={game.id}>
               <div className="relative min-h-[620px] overflow-hidden rounded-[24px] sm:min-h-[700px] sm:rounded-[40px] lg:min-h-[750px]">
                 {/* Game Background */}

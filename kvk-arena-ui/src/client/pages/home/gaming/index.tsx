@@ -11,7 +11,9 @@ import Movies from "../../movies";
 import MoviesList from "../../movies/list";
 import Pool from "../../pool";
 import BookingGaming from "../../bookings/gaming";
+import GamingBookingsComingSoon from "../../bookings/gaming/coming-soon";
 import GamingFooter from "@/components/footer/gaming";
+import { getEnv } from "@/env";
 
 export default function GamingHome() {
   useLayoutEffect(() => {
@@ -69,7 +71,7 @@ export default function GamingHome() {
       <Pool />
 
       <section id="bookings" className="relative isolate overflow-hidden">
-        <BookingGaming />
+        {getEnv().GAMING_BOOKINGS_COMING_SOON ? <GamingBookingsComingSoon /> : <BookingGaming />}
       </section>
       <GamingFooter />
 

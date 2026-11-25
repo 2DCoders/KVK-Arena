@@ -17,6 +17,7 @@ window.env = {
   GYM_COMING_SOON: false,
   BADMINTON_COMING_SOON: false,
   GAMING_COMING_SOON: false,
+  GAMING_BOOKINGS_COMING_SOON: true, // Set to false to show gaming availability and bookings.
   CARWASH_COMING_SOON: false,
   CAFE_COMING_SOON: true,
   SALON_COMING_SOON: true,
@@ -36,8 +37,6 @@ window.env = {
       description: "Enjoy a flexible one-month membership with exclusive member benefits. Ideal for customers who want to experience our services without a long-term commitment.",
       features: [
         "30-day membership access",
-        "Exclusive member benefits",
-        "Access to member-only offers",
         "Flexible monthly renewal",
         "No long-term commitment",
       ],
@@ -52,9 +51,7 @@ window.env = {
       description: "Enjoy six months of membership benefits at a reduced overall cost. Perfect for regular customers looking for greater value and long-term convenience.",
       features: [
         "6 months membership access",
-        "Exclusive member benefits",
-        "Access to member-only offers",
-        "Save Rs. 9,950 compared to monthly membership",
+        "Save Rs. 1,950 compared to 6 months at the monthly promo rate",
         "Convenient six-month renewal",
       ],
     },
@@ -68,9 +65,7 @@ window.env = {
       description: "Unlock a full year of membership benefits with our best-value membership package. Designed for loyal customers who want maximum savings and year-round convenience.",
       features: [
         "365-day membership access",
-        "Exclusive member benefits",
-        "Access to member-only offers",
-        "Save Rs. 29,890 compared to monthly membership",
+        "Save Rs. 13,890 compared to 12 months at the monthly promo rate",
         "Convenient annual renewal",
       ],
     },

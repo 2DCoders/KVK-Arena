@@ -85,6 +85,19 @@ const formatSlotLabel = (startTime: string, endTime: string) => {
 const toDateOnlyString = (date: Date) =>
   date.toISOString().split("T")[0];
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+const formatBookingDay = (fullDate: string, today: string): BookingDay => {
+  const date = new Date(fullDate);
+  return {
+    fullDate,
+    day: date.toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" }),
+    date: date.getUTCDate(),
+    month: date.toLocaleDateString("en-US", { month: "short", timeZone: "UTC" }),
+    isToday: fullDate === today,
+  };
+};
+
 const HOLD_DURATION_SECONDS = 7 * 60;
 
 const formatCountdown = (totalSeconds: number) => {
@@ -98,7 +111,7 @@ const formatCountdown = (totalSeconds: number) => {
 };
 
 export default function BadmintonBookings() {
-  const paymentGateway = getEnv().IS_PAYMENT_GATEWAY_ENABLED;
+  const { IS_PAYMENT_GATEWAY_ENABLED: paymentGateway, BADMINTON_BOOKING_START_DATE } = getEnv();
   const onlineBookingEnabled = paymentGateway === true || paymentGateway === "true";
   const [courts, setCourts] = useState<CourtCard[]>([]);
   const [workingDays, setWorkingDays] = useState<BookingDay[]>([]);
@@ -132,34 +145,20 @@ export default function BadmintonBookings() {
     visible: false,
   });
 
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
+  const today = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Colombo" });
+  const firstBookingDate =
+    /^\d{4}-\d{2}-\d{2}$/.test(BADMINTON_BOOKING_START_DATE) && BADMINTON_BOOKING_START_DATE > today
+      ? BADMINTON_BOOKING_START_DATE
+      : today;
 
-  const startDate = yesterday.toISOString().split("T")[0];
+  const startDate = toDateOnlyString(new Date(Date.parse(firstBookingDate) - DAY_MS));
 
-  const fallbackDays = useMemo<BookingDay[]>(() => {
-    return Array.from({ length: 7 }, (_, index) => {
-      const date = new Date();
-
-      date.setDate(date.getDate() + index);
-
-      return {
-        fullDate: toDateOnlyString(date),
-        day: date
-          .toLocaleDateString("en-US", {
-            weekday: "short",
-          })
-          .toUpperCase(),
-        date: date.getDate(),
-        month: date
-          .toLocaleDateString("en-US", {
-            month: "short",
-          })
-          .toUpperCase(),
-        isToday: index === 0,
-      };
-    });
-  }, []);
+  const fallbackDays = useMemo<BookingDay[]>(() =>
+    Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(Date.parse(firstBookingDate) + index * DAY_MS);
+      return formatBookingDay(toDateOnlyString(date), today);
+    }),
+  [firstBookingDate, today]);
 
   const displayedDays =
     workingDays.length > 0 ? workingDays : fallbackDays;
@@ -173,23 +172,10 @@ export default function BadmintonBookings() {
       try {
         const res = await getNextWorkingDays(startDate, 7);
 
-        const formattedDates = res.map((dateStr: string) => {
-          const date = new Date(dateStr);
-          const today = new Date();
-
-          return {
-            fullDate: dateStr,
-            day: date.toLocaleDateString("en-US", {
-              weekday: "short",
-            }),
-            date: date.getDate(),
-            month: date.toLocaleDateString("en-US", {
-              month: "short",
-            }),
-            isToday:
-              date.toDateString() === today.toDateString(),
-          };
-        });
+        const formattedDates = res
+          .map((value: string) => value.slice(0, 10))
+          .filter((date: string) => date >= firstBookingDate)
+          .map((date: string) => formatBookingDay(date, today));
 
         setWorkingDays(formattedDates);
       } catch (error) {
@@ -198,7 +184,7 @@ export default function BadmintonBookings() {
     };
 
     fetchWorkingDays();
-  }, []);
+  }, [firstBookingDate, startDate, today]);
 
   /* -------------------------------------------------------------------------- */
   /* Courts                                                                     */

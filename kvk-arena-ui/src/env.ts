@@ -24,6 +24,7 @@ export const getEnv = () => {
     GYM_COMING_SOON: comingSoonEnabled(env?.GYM_COMING_SOON),
     BADMINTON_COMING_SOON: comingSoonEnabled(env?.BADMINTON_COMING_SOON),
     GAMING_COMING_SOON: comingSoonEnabled(env?.GAMING_COMING_SOON),
+    GAMING_BOOKINGS_COMING_SOON: comingSoonEnabled(env?.GAMING_BOOKINGS_COMING_SOON),
     CARWASH_COMING_SOON: comingSoonEnabled(env?.CARWASH_COMING_SOON),
     CAFE_COMING_SOON: comingSoonEnabled(env?.CAFE_COMING_SOON),
     SALON_COMING_SOON: comingSoonEnabled(env?.SALON_COMING_SOON),

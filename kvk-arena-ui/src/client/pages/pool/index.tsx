@@ -7,9 +7,15 @@ export default function Pool() {
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
         {/* Left Content */}
         <div>
-          <span className="inline-block px-4 py-1 rounded-full bg-red-500/10 text-red-500 text-sm font-semibold border border-red-500/20" data-aos="fade-up">
-            POOL
-          </span>
+          <div className="flex flex-wrap items-center gap-2" data-aos="fade-up">
+            <span className="rounded-full border border-red-500/20 bg-red-500/10 px-4 py-1 text-sm font-semibold text-red-500">
+              POOL
+            </span>
+            <span className="inline-flex items-center gap-2 rounded-full bg-red-700 px-4 py-2 text-sm font-bold tracking-wide text-white shadow-[0_0_20px_rgba(239,68,68,0.25)]">
+              <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-white" />
+              Coming Soon
+            </span>
+          </div>
 
           <h2 className="mt-6 text-4xl md:text-5xl font-bold text-white leading-tight" data-aos="fade-up" data-aos-delay="100">
             Experience Premium

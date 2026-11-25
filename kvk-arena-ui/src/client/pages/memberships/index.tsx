@@ -145,9 +145,11 @@ export default function Memberships({ onlineSignupEnabled }: { onlineSignupEnabl
                             ? "1 M"
                             : plan.durationInDays === 90
                               ? "3 M"
-                              : plan.durationInDays === 365
-                                ? "1 Y"
-                                : `${plan.durationInDays} days`}
+                              : plan.durationInDays === 180
+                                ? "6M"
+                                : plan.durationInDays === 365
+                                  ? "1 Y"
+                                  : `${plan.durationInDays} days`}
                       </span>
                     </div>
 
