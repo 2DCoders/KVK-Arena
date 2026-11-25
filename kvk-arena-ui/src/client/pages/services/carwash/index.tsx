@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowUpRight,
   Check,
+  Clock3,
+  X,
 } from "lucide-react";
 
 import cutImg from "@/assets/cut.png";
@@ -32,6 +34,7 @@ const services = [
     id: "03",
     shortId: "03",
     title: "Car Detailing",
+    comingSoon: true,
     label: "Complete Care",
     description:
       "Professional interior and exterior detailing designed to improve your vehicle’s appearance and preserve its condition.",
@@ -41,6 +44,7 @@ const services = [
     id: "04",
     shortId: "04",
     title: "Cut & Polish",
+    comingSoon: true,
     label: "Paint Correction",
     description:
       "Advanced paint correction and polishing that reduces minor scratches, swirl marks and restores a glossy finish.",
@@ -48,11 +52,62 @@ const services = [
   },
 ];
 
+function ComingSoonBadge() {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1.5 text-xs font-bold leading-none text-amber-950">
+      <Clock3 aria-hidden="true" className="size-3.5" />
+      Coming soon
+    </span>
+  );
+}
+
 export default function CarwashServices() {
   const [activeService, setActiveService] = useState(0);
+  const [previewService, setPreviewService] = useState<(typeof services)[number] | null>(null);
+  const previewDialog = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    const dialog = previewDialog.current;
+    if (previewService && dialog && !dialog.open) dialog.showModal();
+  }, [previewService]);
 
   return (
     <section className="relative overflow-hidden bg-[#f7f7f5]">
+      <dialog
+        ref={previewDialog}
+        aria-labelledby="carwash-service-preview-title"
+        aria-describedby="carwash-service-preview-description"
+        className="fixed inset-0 m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg overflow-auto rounded-3xl border border-white/10 bg-zinc-950 p-0 text-white shadow-2xl backdrop:bg-black/70"
+        onClose={() => setPreviewService(null)}
+        onClick={(event) => {
+          if (event.target === event.currentTarget) previewDialog.current?.close();
+        }}
+      >
+        <div className="relative">
+          {previewService && (
+            <>
+              <img src={previewService.image} alt="" className="aspect-[16/9] max-h-56 w-full object-cover" />
+              <div className="space-y-3 p-5 sm:p-8">
+                {previewService.comingSoon && <ComingSoonBadge />}
+                <h2 id="carwash-service-preview-title" className="text-2xl font-bold sm:text-3xl">
+                  {previewService.title}
+                </h2>
+                <p id="carwash-service-preview-description" className="text-sm leading-relaxed text-zinc-300 sm:text-base">
+                  {previewService.description}
+                </p>
+              </div>
+            </>
+          )}
+          <button
+            type="button"
+            aria-label="Close service details"
+            onClick={() => previewDialog.current?.close()}
+            className="absolute right-3 top-3 grid size-11 cursor-pointer place-items-center rounded-full bg-zinc-950/85 text-white hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          >
+            <X aria-hidden="true" className="size-5" />
+          </button>
+        </div>
+      </dialog>
       {/* Background decoration */}
       <div className="pointer-events-none absolute -left-40 top-32 h-[340px] w-[340px] rounded-full bg-blue-500/[0.06] blur-[110px]" />
 
@@ -123,7 +178,7 @@ export default function CarwashServices() {
           {/* Mobile active card */}
           <div
             key={services[activeService].id}
-            className="animate-[serviceReveal_500ms_ease-out] overflow-hidden rounded-[30px] bg-zinc-950 shadow-[0_28px_70px_rgba(0,0,0,0.22)]"
+            className="relative animate-[serviceReveal_500ms_ease-out] overflow-hidden rounded-[30px] bg-zinc-950 shadow-[0_28px_70px_rgba(0,0,0,0.22)]"
           >
             {/* Image */}
             <div className="relative h-[300px] overflow-hidden min-[390px]:h-[340px]">
@@ -209,19 +264,34 @@ export default function CarwashServices() {
                 ))}
               </div>
 
-              <button
-                type="button"
-                className="group mt-5 flex h-13 w-full cursor-pointer items-center justify-between rounded-full bg-white px-5 text-left text-xs font-bold uppercase tracking-[0.1em] text-zinc-950 transition active:scale-[0.98]"
-              >
-                <span>Explore Service</span>
-
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-zinc-950 text-white">
-                  <ArrowUpRight
-                    size={17}
-                    className="transition-transform duration-300 group-hover:rotate-45"
+              {services[activeService].comingSoon ? (
+                <div className="mt-5">
+                  <ComingSoonBadge />
+                  <button
+                    type="button"
+                    aria-haspopup="dialog"
+                    aria-label={`View ${services[activeService].title} details`}
+                    onClick={() => setPreviewService(services[activeService])}
+                    className="absolute inset-0 z-10 cursor-pointer rounded-[30px] focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-amber-300"
                   />
-                </span>
-              </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  aria-haspopup="dialog"
+                  onClick={() => setPreviewService(services[activeService])}
+                  className="group mt-5 flex h-13 w-full cursor-pointer items-center justify-between rounded-full bg-white px-5 text-left text-xs font-bold uppercase tracking-[0.1em] text-zinc-950 after:absolute after:inset-0 after:z-10"
+                >
+                  <span>Explore Service</span>
+
+                  <span className="grid h-9 w-9 place-items-center rounded-full bg-zinc-950 text-white">
+                    <ArrowUpRight
+                      size={17}
+                      className="transition-transform duration-300 group-hover:rotate-45"
+                    />
+                  </span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -301,9 +371,11 @@ export default function CarwashServices() {
                 onFocus={() =>
                   setActiveService(index)
                 }
-                onClick={() =>
-                  setActiveService(index)
-                }
+                aria-haspopup="dialog"
+                onClick={() => {
+                  setActiveService(index);
+                  setPreviewService(service);
+                }}
                 className={`group relative grid w-full cursor-pointer items-center gap-5 border-b text-left transition-all duration-500 first:border-t ${
                   isActive
                     ? "z-20 min-h-[190px] rounded-[24px] border-transparent bg-black px-6 py-8 shadow-[0_28px_80px_rgba(0,0,0,0.18)] sm:px-8 lg:min-h-[160px] lg:px-10"
@@ -322,15 +394,18 @@ export default function CarwashServices() {
                 </span>
 
                 {/* Title */}
-                <h3
-                  className={`self-center text-xl font-semibold uppercase tracking-tight transition-colors duration-300 sm:text-2xl lg:text-[27px] ${
-                    isActive
-                      ? "text-white"
-                      : "text-zinc-950"
-                  }`}
-                >
-                  {service.title}
-                </h3>
+                <div className="self-center">
+                  <h3
+                    className={`text-xl font-semibold uppercase tracking-tight transition-colors duration-300 sm:text-2xl lg:text-[27px] ${
+                      isActive
+                        ? "text-white"
+                        : "text-zinc-950"
+                    }`}
+                  >
+                    {service.title}
+                  </h3>
+                  {service.comingSoon && <div className="mt-2"><ComingSoonBadge /></div>}
+                </div>
 
                 {/* Description */}
                 <p
