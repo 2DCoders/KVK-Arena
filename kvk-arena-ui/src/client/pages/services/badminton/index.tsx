@@ -40,9 +40,9 @@ const features: Feature[] = [
       "absolute right-0 top-32",
   },
   {
-    title: "Professional Coaching",
+    title: "Freelance Coaches Welcome",
     description:
-      "Train with experienced coaches and structured programs.",
+      "Independent badminton coaches can book a court and train their own clients at KVK Arena.",
     icon: Users,
     position:
       "absolute left-[8%] bottom-20",

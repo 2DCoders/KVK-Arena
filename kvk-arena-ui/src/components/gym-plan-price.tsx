@@ -22,13 +22,13 @@ export default function GymPlanPrice({ price, discountedPrice }: {
   if (discountedPrice == null) return <>{formatPrice(price)}</>;
 
   return (
-    <span className="inline-flex flex-col">
-      <span className="text-sm font-medium opacity-80">
-        <span className="sr-only">Original price </span>
-        <del>{formatPrice(price)}</del>
+    <span className="inline-flex flex-col gap-2.5">
+      <span className="flex flex-col gap-1 font-medium opacity-80">
+        <span className="text-xs leading-tight tracking-normal">Original price</span>
+        <del className="text-sm leading-tight tracking-normal">{formatPrice(price)}</del>
       </span>
-      <span>
-        <span className="sr-only">Discounted price </span>
+      <span className="flex flex-col gap-1">
+        <span className="text-xs font-medium leading-tight tracking-normal opacity-80">Discounted price</span>
         {formatPrice(discountedPrice)}
       </span>
     </span>
