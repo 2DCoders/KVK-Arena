@@ -26,7 +26,7 @@ internal static class TrainerAssignmentChecks
             var secondMembership = TrainerMembership(second);
             db.AddRange(firstMembership, secondMembership);
             await db.SaveChangesAsync();
-            var service = new MembershipService(db, null!, null!, null!);
+            var service = new MembershipService(db, null!, null!, null!, Microsoft.Extensions.Logging.Abstractions.NullLogger<MembershipService>.Instance);
 
             Assert((await service.AssignTrainerAsync(member.Id, first.Id)).Succeeded, "Assign a trainer using the existing service");
             db.ChangeTracker.Clear();

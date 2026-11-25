@@ -1,10 +1,13 @@
 using kvk.BuildingBlocks.Common;
+using kvk.Badminton.Features.Booking;
 using kvk.Gaming.Features.GamingBooking;
 
 namespace kvk.Gaming.Interfaces;
 
 public interface IGamingBookingService
 {
+    Task<Result> CreateWalkInAsync(GamingWalkInRequest request, CancellationToken ct);
+    Task<Result> PayWalkInAsync(Guid walkInId, PaymentTypes paymentType, CancellationToken ct);
     Task<Result> CreateGamingBookingAsync(CreateGamingBookingRequest request, CancellationToken cancellationToken = default);
     Task<Result> CancelGamingBookingAsync(CancelGamingBookingRequest request, CancellationToken cancellationToken = default);
     Task<GamingBookingResponse?> GetGamingBookingByIdAsync(Guid id, CancellationToken cancellationToken = default);

@@ -1,5 +1,5 @@
 import { getEnv } from "@/env";
-import { createPayment, getPaymentStatus, reversePayment } from "./pay-api";
+import { createPayment, forgetGymCheckoutLogin, getPaymentStatus, reversePayment } from "./pay-api";
 import { waitForGymPayment } from "./gym-payment-status";
 
 type PendingPayment = { memberId: string; membershipPlanId: string; orderId: string };
@@ -21,9 +21,11 @@ async function confirmPayment(payment: PendingPayment, callbacks: Callbacks) {
     const status = await waitForGymPayment(() => getPaymentStatus(payment.orderId, payment.memberId));
     if (status.paymentStatus === 2) {
       clearPending(payment.orderId);
+      forgetGymCheckoutLogin(payment.memberId);
       callbacks.onPaid();
     } else if (status.paymentStatus === 5) {
       clearPending(payment.orderId);
+      forgetGymCheckoutLogin(payment.memberId);
       callbacks.onCancelled();
     } else callbacks.onPending();
   } catch (error) { callbacks.onError(error); }
@@ -77,6 +79,7 @@ export async function startGymPayment(
     try {
       await reversePayment(pending);
       clearPending(pending.orderId);
+      forgetGymCheckoutLogin(pending.memberId);
     } catch { /* Keep the stored order if the server cannot be reached. */ }
     callbacks.onError(error);
   };

@@ -5,14 +5,17 @@ import { getMembershipPlans } from "@/services/memberships-api";
 import { loginMember, registerMember } from "@/services/auth-api";
 import Alert from "@/components/alert";
 import { hasPendingGymPayment, resumeGymPayment, startGymPayment } from "@/services/gym-checkout";
+import { rememberGymCheckoutLogin } from "@/services/pay-api";
 import { X } from "lucide-react";
+import GymPaymentNotice from "@/components/gym-payment-notice";
 
 interface SignupModalProps {
   open: boolean;
   onClose: () => void;
+  onlineSignupEnabled?: boolean;
 }
 
-export default function SignupModal({ open, onClose }: SignupModalProps) {
+export default function SignupModal({ open, onClose, onlineSignupEnabled = true }: SignupModalProps) {
   const [step, setStep] = useState(1);
   const [gender, setGender] = useState<number | null>(null);
   const [confirm, setConfirm] = useState(false);
@@ -47,8 +50,8 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
   };
 
   useEffect(() => {
-    fetchMembershipPlans();
-  }, []);
+    if (onlineSignupEnabled) fetchMembershipPlans();
+  }, [onlineSignupEnabled]);
 
   useEffect(() => {
     if (plans.length > 0 && !selectedPlan) {
@@ -243,10 +246,10 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
   };
 
   useEffect(() => {
-    if (!open || !hasPendingGymPayment()) return;
+    if (!open || !onlineSignupEnabled || !hasPendingGymPayment()) return;
     setPaymentInProgress(true);
     void resumeGymPayment(paymentCallbacks);
-  }, [open]);
+  }, [open, onlineSignupEnabled]);
 
   const handleRegister = async () => {
     if (!validate() || !selectedPlan) return null;
@@ -306,6 +309,10 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
         setPaymentInProgress(false);
         return;
       }
+      const account = await loginMember({ username: form.email.trim(), password: form.password.trim() });
+      if (!account?.token || account.memberId !== memberId)
+        throw new Error("Unable to verify the new Gym account. Sign in to continue.");
+      rememberGymCheckoutLogin(memberId, account.token);
       await startGymPayment({
         amount: Number(plans.find((p) => p.id === selectedPlan)?.price ?? 0),
         memberId,
@@ -410,8 +417,12 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                 Sign In
               </button>
             </div>
+            {authMode === "signup" && !onlineSignupEnabled && <GymPaymentNotice
+              title="Online gym registration is temporarily unavailable"
+              description="To register for a gym membership, please call our administrator."
+            />}
             {/* HEADER */}
-            <div className="mb-6">
+            {(authMode === "signin" || onlineSignupEnabled) && <div className="mb-6">
               <span className="inline-flex rounded-full bg-[#296BE1]/10 px-3 py-1 text-xs font-semibold text-[#296BE1]">
                 JOIN NOW
               </span>
@@ -427,10 +438,10 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                   ? "Register in minutes and choose your plan."
                   : "Sign in to access your membership account."}
               </p>
-            </div>
+            </div>}
 
             {/* STEP */}
-            {authMode === "signup" && (
+            {onlineSignupEnabled && authMode === "signup" && (
               <div className="mb-8 flex items-center">
                 <div className="flex items-center gap-3">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#296BE1] text-xs font-bold text-white">
@@ -527,7 +538,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
             )}
 
             {/* STEP 1 */}
-            {authMode === "signup" && step === 1 && (
+            {onlineSignupEnabled && authMode === "signup" && step === 1 && (
               <>
                 <div className="grid gap-4 md:grid-cols-2">
                   {/* FIRST NAME */}
@@ -743,7 +754,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
             )}
 
             {/* STEP 2 */}
-            {authMode === "signup" && step === 2 && (
+            {onlineSignupEnabled && authMode === "signup" && step === 2 && (
               <>
                 {/* HEADER */}
                 <div className="mb-4">

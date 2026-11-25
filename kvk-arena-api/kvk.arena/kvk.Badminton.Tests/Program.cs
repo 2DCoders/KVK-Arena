@@ -73,7 +73,7 @@ Assert(!Validator.TryValidateObject(cashier, new ValidationContext(cashier), new
 foreach (var method in new[] { "CashierConfirm", "CashierAvailability", "CashierQuote" }) {
     Assert(typeof(MemberBadmintonBookingController).GetMethod(method)!.IsDefined(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), true), "Cashier endpoints must require authentication.");
 }
-foreach (var method in new[] { "CashierSlips", "HoldForCashierSlip", "UploadCashierSlip", "DownloadCashierSlip", "ApproveCashierSlip" })
+foreach (var method in new[] { "CashierSlips", "HoldForCashierSlip", "HoldRegularCashierSlip", "UploadCashierSlip", "DownloadCashierSlip", "ApproveCashierSlip" })
 {
     var authorization = typeof(MemberBadmintonBookingController).GetMethod(method)!
         .GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), true)

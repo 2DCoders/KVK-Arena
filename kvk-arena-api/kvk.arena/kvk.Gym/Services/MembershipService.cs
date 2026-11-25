@@ -1,6 +1,7 @@
 using kvk.BuildingBlocks.Common;
 using kvk.Gym.Domain;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using kvk.Gym.Features.Memberships;
 using kvk.Gym.Interfaces;
 using System.Security.Cryptography;
@@ -18,14 +19,16 @@ public class MembershipService : IMembershipService
     private readonly ISmsService _smsService;
     private readonly IJwtService _jwtService;
     private readonly IPermissionAuthorizationService _permissionService;
+    private readonly ILogger<MembershipService> _logger;
 
     public MembershipService(GymDbContext db, ISmsService smsService, IJwtService jwtService,
-        IPermissionAuthorizationService permissionService)
+        IPermissionAuthorizationService permissionService, ILogger<MembershipService> logger)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
         _smsService = smsService;
         _jwtService = jwtService;
         _permissionService = permissionService;
+        _logger = logger;
     }
 
     public async Task<Result> CreateMemberAsync(CreateMembershipRequest request,
@@ -103,12 +106,9 @@ public class MembershipService : IMembershipService
                 member.MembershipStatus = kvk.Gym.Enums.MembershipStatus.Active;
 
             _db.Memberships.Add(member);
-            await _db.SaveChangesAsync(cancellationToken);
 
             if (member.MemberType != kvk.Gym.Enums.MemberType.Staff && plan != null)
             {
-                var startDate = DateTime.UtcNow;
-
                 var payment = new MemberPayment
                 {
                     MembershipId = member.Id,
@@ -136,11 +136,6 @@ public class MembershipService : IMembershipService
                 };
 
                 _db.PaymentRecords.Add(record);
-
-                await _db.SaveChangesAsync(cancellationToken);
-
-                await _smsService.SendSingleMessageAsync(member.Phone!, MessageList
-                    .GetWelcomeMessage(member.FirstName, member.MembershipNumber), cancellationToken);
             }
 
             if (member.MemberType == kvk.Gym.Enums.MemberType.Trainer)
@@ -158,7 +153,24 @@ public class MembershipService : IMembershipService
                 };
 
                 _db.Trainers.Add(trainer);
-                await _db.SaveChangesAsync(cancellationToken);
+            }
+
+            await _db.SaveChangesAsync(cancellationToken);
+
+            if (member.MemberType != kvk.Gym.Enums.MemberType.Staff && plan != null && !string.IsNullOrWhiteSpace(member.Phone))
+            {
+                try
+                {
+                    using var smsTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+                    var sms = await _smsService.SendSingleMessageAsync(member.Phone,
+                        MessageList.GetWelcomeMessage(member.FirstName, member.MembershipNumber), smsTimeout.Token);
+                    if (!sms.Succeeded)
+                        _logger.LogWarning("Welcome SMS was rejected for Gym member {MemberId}", member.Id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning("Welcome SMS failed for Gym member {MemberId}: {ErrorType}", member.Id, ex.GetType().Name);
+                }
             }
 
             var response = new MembershipResponse
@@ -669,6 +681,11 @@ public class MembershipService : IMembershipService
         if (request == null || request.MembershipPlanId == Guid.Empty)
             return Result.Failure("MembershipPlanId is required");
 
+        if (request.PaymentType == PaymentType.ReceiptUpload && request.Receipt is null)
+            return Result.Failure("Upload a receipt for this payment method.");
+        var receiptType = request.Receipt is { } document ? GymPaymentReceipt.DetectContentType(document) : null;
+        if (request.Receipt != null && receiptType is null) return Result.Failure(GymPaymentReceipt.InvalidFileMessage);
+
         try
         {
             var member = await _db.Memberships
@@ -685,124 +702,71 @@ public class MembershipService : IMembershipService
             if (plan.IsActive != kvk.Gym.Enums.ActiveStatus.Active)
                 return Result.Failure("Membership plan is inactive");
 
-            // Captured before any status change below, so a payment against a Blocked (expired)
-            // member re-activates them instead of leaving them stuck as Blocked.
-            var wasBlocked = member.MembershipStatus == kvk.Gym.Enums.MembershipStatus.Blocked;
-
-            // Update membership plan on the member
-            member.MembershipPlanId = plan.Id;
-
-            // Determine start/end/renewal dates for the new plan
-            var startDate = DateTime.UtcNow;
-            var renewalDate = DateTime.UtcNow;
+            var now = DateTime.UtcNow;
+            var previousEnd = await _db.MemberPayments
+                .Where(p => p.MembershipId == member.Id && p.PaymentStatus == PaymentStatus.Paid)
+                .MaxAsync(p => p.MemberShipEndDate, cancellationToken);
+            var startDate = previousEnd is DateTime futureEnd && futureEnd > now ? futureEnd : now;
             var endDate = startDate.AddDays(plan.DurationInDays);
 
-            // Try to update the latest payment if it's pending — keep history otherwise by creating a new payment
-            var latestPayment = await _db.MemberPayments
-                .Where(p => p.MembershipId == member.Id)
+            var payment = await _db.MemberPayments.Where(p => p.MembershipId == member.Id)
                 .OrderByDescending(p => p.CreatedAt)
+                .ThenByDescending(p => p.Id)
                 .FirstOrDefaultAsync(cancellationToken);
-
-            MemberPayment payment;
-            if (latestPayment != null && latestPayment.MemberShipEndDate > DateTime.Now)
+            if (payment == null)
             {
-                // update existing pending payment to reflect new plan amount and dates
-                latestPayment.Amount = plan.Price;
-                latestPayment.PaymentType = request.PaymentType;
-                latestPayment.MemberShipStartDate = startDate;
-                latestPayment.MemberShipRenewalDate = renewalDate;
-                latestPayment.MemberShipEndDate = endDate;
-                latestPayment.PaymentStatus = kvk.Gym.Enums.PaymentStatus.Paid;
-
-                payment = latestPayment;
-            }
-            else if (latestPayment != null && latestPayment.MemberShipEndDate < DateTime.Now)
-            {
-                latestPayment.Amount = plan.Price;
-                latestPayment.PaymentType = request.PaymentType;
-
-                // The old period already lapsed, so the new one starts today rather than
-                // continuing from the stale end date (which could already be in the past).
-                var newStartDate = startDate;
-
-                latestPayment.MemberShipStartDate = newStartDate;
-                latestPayment.MemberShipRenewalDate = renewalDate;
-                latestPayment.MemberShipEndDate = newStartDate.AddDays(plan.DurationInDays);
-                latestPayment.PaymentStatus = kvk.Gym.Enums.PaymentStatus.Paid;
-            } else if (latestPayment != null && latestPayment.MemberShipEndDate == null)
-            {
-                latestPayment.Amount = plan.Price;
-                latestPayment.PaymentType = request.PaymentType;
-
-                var newStartDate = DateTime.UtcNow;
-
-                latestPayment.MemberShipStartDate = newStartDate;
-                latestPayment.MemberShipRenewalDate = renewalDate;
-                latestPayment.MemberShipEndDate = newStartDate.AddDays(plan.DurationInDays);
-                latestPayment.PaymentStatus = kvk.Gym.Enums.PaymentStatus.Paid;
-            }
-            else
-            {
-                // create a new payment record for the upgraded plan
-                payment = new MemberPayment
-                {
-                    MembershipId = member.Id,
-                    Amount = plan.Price,
-                    PaymentType = request.PaymentType,
-                    MemberShipStartDate = startDate,
-                    MemberShipRenewalDate = renewalDate,
-                    MemberShipEndDate = endDate,
-                    PaymentStatus = kvk.Gym.Enums.PaymentStatus.Paid
-                };
+                payment = new MemberPayment { MembershipId = member.Id };
                 _db.MemberPayments.Add(payment);
             }
 
-            // Paying for a previously Blocked (expired) member re-activates them: Active if they
-            // already have fingerprints saved, otherwise Inactive (pending), matching the same
-            // rule CreateMemberAsync/UpdateFingerprintsAsync use for first-time activation.
-            if (wasBlocked)
-            {
-                var hasFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
-                                       !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2);
-                member.MembershipStatus = hasFingerprints
-                    ? kvk.Gym.Enums.MembershipStatus.Active
-                    : kvk.Gym.Enums.MembershipStatus.Inactive;
-            }
+            payment.Amount = plan.Price;
+            payment.PaymentType = request.PaymentType;
+            payment.PaymentStatus = PaymentStatus.Paid;
+            payment.MemberShipStartDate = startDate;
+            payment.MemberShipRenewalDate = now;
+            payment.MemberShipEndDate = endDate;
+            payment.TransactionReference = null;
+            member.MembershipPlanId = plan.Id;
 
+            var hasFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
+                                  !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2);
+            if (member.MembershipStatus == MembershipStatus.Blocked || previousEnd <= now)
+                member.MembershipStatus = hasFingerprints ? MembershipStatus.Active : MembershipStatus.Inactive;
+
+            var record = new PaymentRecord
+            {
+                MembershipId = member.Id,
+                MemberPaymentId = payment.Id,
+                Amount = payment.Amount,
+                PaymentType = payment.PaymentType,
+                PaymentStatus = payment.PaymentStatus,
+                MemberShipStartDate = startDate,
+                MemberShipEndDate = endDate,
+                MemberShipRenewalDate = now,
+                MembershipNumber = member.MembershipNumber,
+                MembershipPlanId = plan.Id,
+                MembershipPlanTitle = plan.Title
+            };
+            _db.PaymentRecords.Add(record);
+            if (receiptType != null)
+                _db.PaymentReceipts.Add(new GymPaymentReceipt { PaymentRecordId = record.Id, Document = request.Receipt!, ContentType = receiptType });
             await _db.SaveChangesAsync(cancellationToken);
 
-            // Record the payment action in the immutable PaymentRecords table
-            try
+            if (!string.IsNullOrWhiteSpace(member.Phone))
             {
-                var record = new PaymentRecord
+                try
                 {
-                    MembershipId = member.Id,
-                    MemberPaymentId = latestPayment.Id,
-                    Amount = latestPayment.Amount,
-                    PaymentType = latestPayment.PaymentType,
-                    PaymentStatus = latestPayment.PaymentStatus,
-                    MemberShipStartDate = latestPayment.MemberShipStartDate,
-                    MemberShipEndDate = latestPayment.MemberShipEndDate,
-                    MemberShipRenewalDate = latestPayment.MemberShipRenewalDate,
-                    TransactionReference = latestPayment.TransactionReference,
-                    MembershipNumber = member.MembershipNumber,
-                    MembershipPlanId = member.MembershipPlanId,
-                    MembershipPlanTitle = plan.Title
-                };
-
-                _db.PaymentRecords.Add(record);
-                await _db.SaveChangesAsync(cancellationToken);
+                    using var smsTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+                    var sms = await _smsService.SendSingleMessageAsync(member.Phone,
+                        MessageList.GetPlanUpgradedMessage(member.FirstName, plan.Title, startDate, endDate), smsTimeout.Token);
+                    if (!sms.Succeeded)
+                        _logger.LogWarning("Gym upgrade SMS was rejected for member {MemberId}", member.Id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning("Gym upgrade SMS failed for member {MemberId}: {ErrorType}", member.Id, ex.GetType().Name);
+                }
             }
-            catch
-            {
-                // Non-fatal: if recording fails, do not block the upgrade flow
-            }
-
-            var message = MessageList.GetPlanUpgradedMessage(member.FirstName, plan.Title,
-                latestPayment.MemberShipStartDate,
-                latestPayment.MemberShipEndDate);
-            await _smsService.SendSingleMessageAsync(member.Phone!, message, cancellationToken);
-
 
             // prepare response including the new payment dates
             var response = new MembershipResponse
@@ -819,9 +783,9 @@ public class MembershipService : IMembershipService
                 MembershipPlanId = member.MembershipPlanId,
                 MembershipPlanTitle = plan.Title,
                 MembershipPlanPrice = plan.Price,
-                MembershipStartDate = latestPayment.MemberShipStartDate,
-                MembershipEndDate = latestPayment.MemberShipEndDate,
-                PaymentStatus = latestPayment.PaymentStatus,
+                MembershipStartDate = startDate,
+                MembershipEndDate = endDate,
+                PaymentStatus = payment.PaymentStatus,
                 MembershipPlanDurationInDays = plan.DurationInDays,
                 IdentityUserId = member.IdentityUserId,
                 IsSavedFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||

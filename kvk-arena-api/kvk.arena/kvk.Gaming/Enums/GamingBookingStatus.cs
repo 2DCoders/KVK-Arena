@@ -6,5 +6,6 @@ public enum GamingBookingStatus
     Confirmed = 2,
     CheckedIn = 3,
     Completed = 4,
-    Cancelled = 5
+    Cancelled = 5,
+    WalkInPendingPayment = 6
 }

@@ -8,6 +8,7 @@ public class GetGamingBookingsListRequest // Removed PagedRequest inheritance
     public Guid? GamingStationId { get; set; }
     public Guid? GamingCategoryId { get; set; }
     public GamingBookingStatus? Status { get; set; }
+    public bool IncludePendingWalkIns { get; set; }
     public DateOnly? FromDate { get; set; }
     public DateOnly? ToDate { get; set; }
     // Added properties for pagination since PagedRequest is removed

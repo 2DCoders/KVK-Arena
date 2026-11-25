@@ -5,6 +5,7 @@ namespace kvk.Gym.Features.DayPassMembers;
 
 public class DayPassMemberCreateRequest
 {
+    public byte[]? Receipt { get; set; }
 	public string Name { get; set; } = string.Empty;
 	public string MobileNumber { get; set; } = string.Empty;
 	public DateTime Date { get; set; }

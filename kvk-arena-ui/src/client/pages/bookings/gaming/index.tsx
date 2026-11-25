@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Info,
   AlertTriangle,
+  Phone,
 } from "lucide-react";
 import { getNextWorkingDays } from "@/services/holidays-api";
 import { getGamingCategories } from "@/services/gaming-category-api";
@@ -23,6 +24,7 @@ import { getAdditionalPurchasesByCategory } from "@/services/additional-purchase
 import { holdGamingBookingSlots, confirmGamingBooking, createGamingMultiPayment } from "@/services/gaming-booking-api";
 import { startPayHereCheckout } from "@/services/payhere";
 import Alert from "@/components/alert";
+import { getEnv } from "@/env";
 
 type GamingCategory = {
   id: string;
@@ -107,6 +109,8 @@ const formatCountdown = (totalSeconds: number) => {
 };
 
 export default function BookingGaming() {
+  const paymentGateway = getEnv().IS_PAYMENT_GATEWAY_ENABLED;
+  const onlineBookingEnabled = paymentGateway === true || paymentGateway === "true";
   const [categories, setCategories] = useState<GamingCategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<GamingCategory | null>(null);
 
@@ -227,7 +231,7 @@ export default function BookingGaming() {
       try {
         const [stationsResponse, purchasesResponse] = await Promise.all([
           getGamingStationsByCategory(selectedCategory.id),
-          getAdditionalPurchasesByCategory(selectedCategory.id),
+          onlineBookingEnabled ? getAdditionalPurchasesByCategory(selectedCategory.id) : [],
         ]);
 
         const mappedStations = (Array.isArray(stationsResponse) ? stationsResponse : []).map(
@@ -262,7 +266,7 @@ export default function BookingGaming() {
     };
 
     fetchCategoryData();
-  }, [selectedCategory]);
+  }, [selectedCategory, onlineBookingEnabled]);
 
   /* -------------------------------------------------------------------------- */
   /* Slot availability per station for the selected date                       */
@@ -354,7 +358,9 @@ export default function BookingGaming() {
     const max = sorted[sorted.length - 1];
 
     if (selectedSlots.includes(index)) {
-      setSelectedSlots(selectedSlots.filter((i) => i !== index));
+      if (onlineBookingEnabled || index === min || index === max) {
+        setSelectedSlots(selectedSlots.filter((i) => i !== index));
+      }
       return;
     }
 
@@ -478,6 +484,16 @@ export default function BookingGaming() {
   }, [selectedSlots, additionalPurchases, purchaseQuantities]);
 
   const total = bookingAmount + consoleAmount;
+  const previewStations = onlineBookingEnabled || selectedSlots.length === 0 ? []
+    : getSlotAvailability(selectedSlots[0]).availableStations.filter((station) =>
+      selectedSlots.every((index) => getSlotAvailability(index).availableStations.some((item) => item.id === station.id)));
+  const previewPrices = [...new Set(previewStations.map((station) =>
+    selectedSlots.reduce((sum, index) => sum + ((stationSlots[station.id] ?? [])
+      .find((slot) => slot.startTime === masterSlots[index]?.startTime)?.price ?? selectedCategory?.price ?? 0), 0)
+  ))].sort((a, b) => a - b);
+  const previewPrice = previewPrices.length > 1 ? `Rs. ${previewPrices[0]}–${previewPrices.at(-1)}`
+    : previewPrices.length === 1 ? `Rs. ${previewPrices[0]}`
+      : selectedCategory && !selectedSlots.length ? `Rs. ${selectedCategory.price}` : "—";
 
   /* -------------------------------------------------------------------------- */
   /* Hold countdown                                                             */
@@ -513,6 +529,7 @@ export default function BookingGaming() {
 
   const handleStartBooking = async () => {
     if (
+      !onlineBookingEnabled ||
       !selectedCategory ||
       selectedDate === null ||
       !selectedDateString ||
@@ -657,6 +674,7 @@ export default function BookingGaming() {
   /* -------------------------------------------------------------------------- */
 
   const handleConfirmBooking = async () => {
+    if (!onlineBookingEnabled) return;
     if (!customerName.trim() || !customerPhone.trim()) {
       if (!customerName.trim()) {
         setCustomerNameError("Please enter the customer name.");
@@ -858,19 +876,43 @@ export default function BookingGaming() {
         {/* Header */}
         <div className="text-center mb-10">
           <span className="inline-block px-4 py-2 rounded-full bg-red-100 text-red-600 font-medium text-sm">
-            Reservation
+            {onlineBookingEnabled ? "Reservation" : "Availability"}
           </span>
 
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mt-4">
-            Book Your Experience
+            {onlineBookingEnabled ? "Book Your Experience" : "Check Gaming Availability"}
           </h2>
 
           <p className="text-gray-500 mt-3 max-w-xl mx-auto text-sm">
-            Select your service, date and time slot to complete booking.
+            {onlineBookingEnabled
+              ? "Select your service, date and time slot to complete booking."
+              : "Select a service, date and one or more adjacent time slots to see available stations."}
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_340px] gap-6">
+        {!onlineBookingEnabled && (
+          <aside aria-labelledby="gaming-booking-unavailable"
+            className="mb-6 flex flex-col gap-4 rounded-2xl border border-red-200 bg-red-50 p-5 text-gray-900 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-start gap-4">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-700">
+                <AlertTriangle size={20} aria-hidden="true" />
+              </span>
+              <div>
+                <h3 id="gaming-booking-unavailable" className="text-lg font-bold leading-tight">
+                  Online gaming bookings are temporarily unavailable
+                </h3>
+                <p className="mt-1 text-sm leading-6 text-gray-600">
+                  You can still check available times and stations here. To make a booking, call our administrator.
+                </p>
+              </div>
+            </div>
+            <a href="tel:+94765605885"
+              className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-600 sm:self-start lg:self-center">
+              <Phone size={18} aria-hidden="true" /> Call +94 76 560 5885
+            </a>
+          </aside>
+        )}
+        <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
           {/* LEFT */}
           <div className="space-y-6">
             {/* Categories */}
@@ -980,6 +1022,7 @@ export default function BookingGaming() {
                       <button
                         key={slot.startTime}
                         disabled={disabled}
+                        aria-pressed={selected}
                         onClick={() => {
                           toggleSlot(index);
                           setSelectedStations([]);
@@ -1008,7 +1051,7 @@ export default function BookingGaming() {
 
             {selectedCategory && selectedSlots.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold mb-3">Select Station</h3>
+                <h3 className="text-lg font-semibold mb-3">{onlineBookingEnabled ? "Select Station" : "Station availability"}</h3>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {stations.filter((station) => station.isActive).map((station) => {
@@ -1019,6 +1062,17 @@ export default function BookingGaming() {
                     });
 
                     const selected = selectedStations.includes(station.id);
+
+                    if (!onlineBookingEnabled) {
+                      return (
+                        <div key={station.id} className="rounded-xl border border-gray-200 bg-white px-3 py-2">
+                          <div className="text-sm font-semibold text-gray-900">{station.name}</div>
+                          <div className={`text-xs font-medium ${allSelectedSlotsAvailable ? "text-green-700" : "text-gray-500"}`}>
+                            {allSelectedSlotsAvailable ? "Available" : "Unavailable"}
+                          </div>
+                        </div>
+                      );
+                    }
 
                     return (
                       <button
@@ -1051,7 +1105,7 @@ export default function BookingGaming() {
             )}
 
             {/* Additional purchases */}
-            {selectedCategory && additionalPurchases.length > 0 && (
+            {onlineBookingEnabled && selectedCategory && additionalPurchases.length > 0 && (
               <div
                 className={`space-y-3 transition-all ${
                   selectedSlots.length === 0 ? "opacity-40 pointer-events-none" : ""
@@ -1115,8 +1169,10 @@ export default function BookingGaming() {
 
           {/* SUMMARY */}
           <div>
-            <div className="lg:sticky lg:top-24 bg-white rounded-2xl border border-gray-200 p-5 sm:p-6 shadow-sm mt-6 lg:mt-10">
+            <div aria-disabled={!onlineBookingEnabled}
+              className={`lg:sticky lg:top-24 rounded-2xl border border-gray-200 p-5 sm:p-6 shadow-sm mt-6 lg:mt-10 ${onlineBookingEnabled ? "bg-white" : "bg-gray-50"}`}>
               <h3 className="text-xl font-bold mb-5">Booking Summary</h3>
+              {!onlineBookingEnabled && <p className="mb-4 text-sm text-gray-600">For reference only. Online checkout is unavailable.</p>}
 
               <div className="space-y-4">
                 <div>
@@ -1125,10 +1181,11 @@ export default function BookingGaming() {
                 </div>
 
                 <div>
-                  <p className="text-xs text-gray-500">Selected Stations</p>
+                  <p className="text-xs text-gray-500">{onlineBookingEnabled ? "Selected Stations" : "Available Stations"}</p>
 
                   <p className="font-semibold">
-                    {selectedStationNames.length > 0 ? selectedStationNames.join(", ") : "-"}
+                    {(onlineBookingEnabled ? selectedStationNames : previewStations.map((station) => station.name)).join(", ")
+                      || (!onlineBookingEnabled && selectedSlots.length ? "None for the full selection" : "-")}
                   </p>
                 </div>
 
@@ -1162,7 +1219,7 @@ export default function BookingGaming() {
                     </div>
                   ))}
 
-                <div className="border-t pt-4 space-y-2">
+                {onlineBookingEnabled ? <div className="border-t pt-4 space-y-2">
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-gray-500">Booking Amount</span>
                     <span className="font-semibold text-gray-900">Rs. {bookingAmount}</span>
@@ -1180,10 +1237,14 @@ export default function BookingGaming() {
 
                     <span className="text-xl font-bold text-red-600">Rs. {total}</span>
                   </div>
-                </div>
+                </div> : <div className="flex items-center justify-between gap-3 border-t border-gray-200 pt-4 text-sm">
+                  <span className="text-gray-600">{selectedSlots.length > 1 ? "Price per station for selected slots" : "Price per station per slot"}</span>
+                  <span className="font-semibold text-gray-900">{previewPrice}</span>
+                </div>}
 
                 <button
                   disabled={
+                    !onlineBookingEnabled ||
                     !selectedCategory ||
                     selectedDate === null ||
                     selectedSlots.length === 0 ||
@@ -1196,7 +1257,7 @@ export default function BookingGaming() {
                   {isHolding && (
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
                   )}
-                  {isHolding ? "Holding Slots..." : "Confirm Booking"}
+                  {!onlineBookingEnabled ? "Online booking unavailable" : isHolding ? "Holding Slots..." : "Confirm Booking"}
                 </button>
               </div>
             </div>
@@ -1208,7 +1269,7 @@ export default function BookingGaming() {
       {/* CHECKOUT MODAL                                                         */}
       {/* ====================================================================== */}
 
-      {isBookingModalOpen &&
+      {onlineBookingEnabled && isBookingModalOpen &&
         createPortal(
           <div className="fixed inset-0 z-[9999999998] flex items-center justify-center bg-black/70 px-3 py-4 backdrop-blur-md sm:px-5 sm:py-6">
             <div className="flex max-h-[94vh] w-full max-w-2xl flex-col overflow-hidden rounded-[1.75rem] border border-white/70 bg-white shadow-[0_30px_90px_rgba(0,0,0,0.3)] sm:max-h-[90vh] sm:rounded-[2rem]">

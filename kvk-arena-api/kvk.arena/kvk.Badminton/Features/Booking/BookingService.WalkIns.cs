@@ -1,4 +1,5 @@
 using System.Data;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using kvk.Badminton.Domain;
 using kvk.Badminton.Enums;
@@ -86,10 +87,11 @@ public partial class BookingService
         if (paymentType is not (PaymentTypes.Cash or PaymentTypes.Card))
             return Result.Failure("Select cash or card.");
 
+        List<CourtBooking> bookings;
         await using var transaction = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
         try
         {
-            var bookings = await _db.CourtBookings.Where(b => b.WalkInId == walkInId).ToListAsync(ct);
+            bookings = await _db.CourtBookings.Where(b => b.WalkInId == walkInId).ToListAsync(ct);
             if (bookings.Count == 0)
                 return Result.Failure("Walk-in booking could not be found.");
 
@@ -107,12 +109,19 @@ public partial class BookingService
 
             await _db.SaveChangesAsync(ct);
             await transaction.CommitAsync(ct);
-            return Result.Success("Walk-in payment recorded.");
         }
         catch (Exception ex) when (IsWalkInWriteConflict(ex))
         {
             return Result.Failure("The payment status changed. Refresh before retrying.");
         }
+
+        var amount = bookings.Sum(booking => booking.BookingAmount);
+        var total = amount.ToString(amount == decimal.Truncate(amount) ? "N0" : "N2", CultureInfo.InvariantCulture);
+        var method = paymentType == PaymentTypes.Cash ? "cash" : "card";
+        var receipt = $"Thanks for playing at KVK Arena Badminton! We received your {method} payment of LKR {total}.";
+        const string closing = " See you on the court again soon!";
+        await SendBookingSmsAsync(bookings[0].PhoneNumber, receipt.Length + closing.Length <= 150 ? receipt + closing : receipt);
+        return Result.Success("Walk-in payment recorded.");
     }
 
     private static bool IsWalkInWriteConflict(Exception exception) =>

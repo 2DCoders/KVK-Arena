@@ -22,6 +22,7 @@ public class GymDbContext : AppDbContextBase
     public DbSet<MemberAttendance> MemberAttendances { get; set; } = null!;
     public DbSet<MemberPayment> MemberPayments { get; set; } = null!;
     public DbSet<PaymentRecord> PaymentRecords { get; set; } = null!;
+    public DbSet<GymPaymentReceipt> PaymentReceipts => Set<GymPaymentReceipt>();
     public DbSet<MembershipPlan> MembershipPlans { get; set; } = null!;
     public DbSet<DayPassMember> DayPassMembers { get; set; } = null!;
     public DbSet<DayEndRecord> DayEnds { get; set; } = null!;
@@ -36,6 +37,11 @@ public class GymDbContext : AppDbContextBase
         modelBuilder.HasDefaultSchema("gym");
 
         base.OnModelCreating(modelBuilder);
+        var receipts = modelBuilder.Entity<GymPaymentReceipt>();
+        receipts.HasOne<PaymentRecord>().WithOne().HasForeignKey<GymPaymentReceipt>(x => x.PaymentRecordId)
+            .OnDelete(DeleteBehavior.Cascade);
+        receipts.HasOne<DayPassMember>().WithOne().HasForeignKey<GymPaymentReceipt>(x => x.DayPassMemberId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(GymDbContext).Assembly);
     }

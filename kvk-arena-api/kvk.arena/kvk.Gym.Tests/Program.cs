@@ -72,10 +72,10 @@ try
     Assert(record.PaymentStatus == PaymentStatus.Paid && record.MemberPaymentId == payment.Id
         && record.MembershipPlanTitle == plan.Title && record.MemberShipEndDate == payment.MemberShipEndDate,
         "Admin payment record contains paid status, purchased plan, member number, and matching dates");
-    var adminPayments = await new PaymentService(db, null!).GetPaymentsByMembershipIdAsync(member.Id);
+    var adminPayments = await new PaymentService(db, null!, NullLogger<PaymentService>.Instance).GetPaymentsByMembershipIdAsync(member.Id);
     Assert(adminPayments.Any(p => p.Id == record.Id && p.PaymentStatus == PaymentStatus.Paid && p.MembershipPlanTitle == plan.Title),
         "Admin payment query returns the verified online payment");
-    var adminMember = await new MembershipService(db, null!, null!, null!).GetMemberAsync(member.Id);
+    var adminMember = await new MembershipService(db, null!, null!, null!, NullLogger<MembershipService>.Instance).GetMemberAsync(member.Id);
     Assert(adminMember.PaymentStatus == PaymentStatus.Paid && adminMember.MembershipEndDate == payment.MemberShipEndDate,
         "Admin member query reflects the online payment");
 

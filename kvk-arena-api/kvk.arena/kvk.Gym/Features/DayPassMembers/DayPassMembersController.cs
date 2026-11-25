@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Gym.Features.DayPassMembers;
 
-[Authorize]
+[Authorize(Policy = kvk.BuildingBlocks.Common.ModuleConstants.GymStaffPolicy)]
 [ApiController]
 [Route("api/gym/day-pass-members")]
 public class DayPassMembersController : ControllerBase

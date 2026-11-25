@@ -6,5 +6,6 @@ public enum PaymentType
     CreditCard = 2,
     DebitCard = 3,
     PayPal = 4,
-    OnlinePayment = 5
+    OnlinePayment = 5,
+    ReceiptUpload = 6
 }

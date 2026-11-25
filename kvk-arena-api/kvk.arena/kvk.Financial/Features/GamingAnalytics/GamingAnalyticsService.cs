@@ -27,11 +27,11 @@ public class GamingAnalyticsService
             EndDate = endDate,
             TotalTransactions = filteredBookings.Count,
             SuccessfulTransactions = filteredBookings.Count(b => b.Status == GamingBookingStatus.Confirmed),
-            PendingTransactions = filteredBookings.Count(b => b.Status == GamingBookingStatus.Pending),
+            PendingTransactions = filteredBookings.Count(b => b.Status is GamingBookingStatus.Pending or GamingBookingStatus.WalkInPendingPayment),
             CancelledTransactions = filteredBookings.Count(b => b.Status == GamingBookingStatus.Cancelled),
 
             TotalRevenue = filteredBookings.Where(b => b.Status == GamingBookingStatus.Confirmed).Sum(b => b.Amount),
-            PendingRevenue = filteredBookings.Where(b => b.Status == GamingBookingStatus.Pending).Sum(b => b.Amount),
+            PendingRevenue = filteredBookings.Where(b => b.Status is GamingBookingStatus.Pending or GamingBookingStatus.WalkInPendingPayment).Sum(b => b.Amount),
             CancelledRevenue = filteredBookings.Where(b => b.Status == GamingBookingStatus.Cancelled).Sum(b => b.Amount),
 
             CashRevenue = filteredBookings.Where(b => b.PaymentType == PaymentTypes.Cash && b.Status == GamingBookingStatus.Confirmed).Sum(b => b.Amount),

@@ -361,6 +361,72 @@ namespace kvk.Gaming.Migrations
                     b.ToTable("GamingBookingHoldAdditionalPurchases", "game");
                 });
 
+            modelBuilder.Entity("kvk.Gaming.Domain.GamingCashierSlip", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal[]>("Amounts")
+                        .IsRequired()
+                        .HasColumnType("numeric[]");
+
+                    b.Property<bool>("Approved")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ContentType")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<byte[]>("Document")
+                        .HasColumnType("bytea");
+
+                    b.Property<Guid[]>("HoldIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]");
+
+                    b.Property<DateTime>("LastModifiedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("PaymentDueUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("Revision")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("SmsSent")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_GamingCashierSlip_TenantId");
+
+                    b.HasIndex("TenantId", "CreatedAt")
+                        .HasDatabaseName("IX_GamingCashierSlip_TenantId_CreatedAt");
+
+                    b.ToTable("GamingCashierSlips", "game");
+                });
+
             modelBuilder.Entity("kvk.Gaming.Domain.GamingCategory", b =>
                 {
                     b.Property<Guid>("Id")

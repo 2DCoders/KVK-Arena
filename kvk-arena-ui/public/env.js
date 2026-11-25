@@ -1,7 +1,7 @@
 window.env = {
   // API_URL: "https://api-kvkarena.premiumasp.net/api/",
-  API_URL: "https://klc.runasp.net/api/",
-  // API_URL: "https://localhost:7007/api/",
+  // API_URL: "https://klc.runasp.net/api/",
+  API_URL: "https://localhost:7007/api/",
   BASE_URL: "https://kvkarena.lk/",
   OFFER_END_DATE: "2026-08-23",
   MEMBERSHIP_PRICE: "100,000",
@@ -27,4 +27,6 @@ window.env = {
   CARWASH_COMING_SOON: false,
   CAFE_COMING_SOON: false,
   SALON_COMING_SOON: false,
+
+  IS_PAYMENT_GATEWAY_ENABLED: false, // true = payment gateway enabled; false = disabled. Refresh after changing.
 };

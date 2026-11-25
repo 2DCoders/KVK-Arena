@@ -18,6 +18,8 @@ public partial class BookingService : IBookingService
     private readonly BadmintonDbContext _db;
     private readonly ISmsService _smsService;
     private const int DefaultHoldMinutes = 7;
+    private const string BookingTrackingInstructions =
+        "\n\nTrack your bookings using your contact number:\nhttps://kvkarena.lk/badminton/track";
     private readonly IHashService _hashService;
     private readonly PayHereOptions _payHereOptions;
     private readonly ILogger<BookingService> _logger;
@@ -248,6 +250,9 @@ public partial class BookingService : IBookingService
             if (hold == null)
                 return Result.Failure("Hold not found.");
 
+            if (hold.PaymentId == MemberBooking.MemberBadmintonBookingController.CashierSlipMarker)
+                return Result.Failure("Approve this booking from Payment Slip Holds.");
+
             // Idempotency: If already confirmed, return success without duplicate work
             if (hold.Status == BookingHoldStatus.Confirmed)
                 return Result.Success("Booking already confirmed.");
@@ -301,7 +306,7 @@ public partial class BookingService : IBookingService
                            hold.CourtSlot.EndTime.ToString("hh\\:mm");
             var message =
                 $"Your booking for {courtName} on {hold.BookingDate.ToShortDateString()} at {slotTime} is confirmed. Booking ID: {booking.Id}";
-            await _smsService.SendSingleMessageAsync(customerDetails.PhoneNumber, message);
+            await SendBookingSmsAsync(customerDetails.PhoneNumber, message);
 
             var response = MapToResponse(hold);
             response.BookingId = booking.Id;
@@ -344,6 +349,9 @@ public partial class BookingService : IBookingService
                     await transaction.RollbackAsync(ct);
                     return Result.Failure($"Hold with ID {holdId} not found.");
                 }
+
+                if (hold.PaymentId == MemberBooking.MemberBadmintonBookingController.CashierSlipMarker)
+                    return Result.Failure("Approve this booking from Payment Slip Holds.");
 
                 if (hold.Status == BookingHoldStatus.Confirmed)
                 {
@@ -419,8 +427,9 @@ public partial class BookingService : IBookingService
 
             // Send a single consolidated SMS for multiple bookings
 
-            var fullMessage = $"Your bookings are confirmed:\n" + string.Join("\n", smsMessages);
-            await _smsService.SendSingleMessageAsync(request.CustomerDetails.PhoneNumber, fullMessage, ct);
+            if (smsMessages.Count > 0)
+                await SendBookingSmsAsync(request.CustomerDetails.PhoneNumber,
+                    "Your badminton booking is confirmed:\n" + string.Join("\n", smsMessages));
 
 
             var confirmMessage = confirmedBookings.Count == 1
@@ -453,7 +462,8 @@ public partial class BookingService : IBookingService
         if (holds.Count != request.HoldIds.Count)
             return Result.Failure("One or more holds were not found.");
 
-        if (holds.Any(h => h.Status != BookingHoldStatus.Pending || h.ExpiresAt < DateTime.Now))
+        if (holds.Any(h => h.Status != BookingHoldStatus.Pending || h.ExpiresAt < DateTime.Now ||
+            h.PaymentId == MemberBooking.MemberBadmintonBookingController.CashierSlipMarker))
             return Result.Failure("One or more holds have expired. Please select the slots again.");
 
         var orderId = $"BDM-MPAY-{DateTime.Now:yyyyMMddHHmmss}-{Guid.NewGuid().ToString("N")[..6].ToUpper()}";
@@ -541,7 +551,8 @@ public partial class BookingService : IBookingService
     public async Task<Result> DeletePendingPayment(BadmintonPendingPaymentDeleteRequest request, CancellationToken ct = default)
     {
         var holds = await _db.BookingHolds
-            .Where(h => h.PaymentIntentId == request.OrderId && h.Status == BookingHoldStatus.Pending)
+            .Where(h => h.PaymentIntentId == request.OrderId && h.Status == BookingHoldStatus.Pending &&
+                h.PaymentId != MemberBooking.MemberBadmintonBookingController.CashierSlipMarker)
             .ToListAsync(ct);
 
         if (holds.Count == 0)
@@ -705,6 +716,21 @@ public partial class BookingService : IBookingService
         };
     }
     
+    private async Task SendBookingSmsAsync(string phoneNumber, string message)
+    {
+        try
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var result = await _smsService.SendSingleMessageAsync(phoneNumber, message + BookingTrackingInstructions, timeout.Token);
+            if (!result.Succeeded)
+                _logger.LogWarning("The SMS provider did not accept a badminton booking notification.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to send a badminton booking notification after saving the booking.");
+        }
+    }
+
     private string GenerateUniqueBookingNumber()
     {
         return $"BCKG-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpperInvariant()}";

@@ -1,23 +1,28 @@
 using kvk.BuildingBlocks.Common;
 using kvk.BuildingBlocks.Constants;
+using kvk.BuildingBlocks.Enums;
 using kvk.BuildingBlocks.Interfaces;
 using kvk.BuildingBlocks.PaymentGateway;
 using kvk.Gym.Domain;
 using kvk.Gym.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using kvk.Gym.Features.Payments;
 
 namespace kvk.Gym.Services;
 
 public class PaymentService : IPaymentService
 {
+    private const string CashierReferencePrefix = "GYM-CASHIER-";
     private readonly GymDbContext _db;
     private readonly ISmsService _smsService;
+    private readonly ILogger<PaymentService> _logger;
 
-    public PaymentService(GymDbContext db, ISmsService smsService)
+    public PaymentService(GymDbContext db, ISmsService smsService, ILogger<PaymentService> logger)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
         _smsService = smsService;
+        _logger = logger;
     }
 
     public async Task<Result> CreatePaymentAsync(Guid memberId, CreatePaymentRequest request,
@@ -26,8 +31,42 @@ public class PaymentService : IPaymentService
         if (memberId == Guid.Empty)
             return Result.Failure("Member id cannot be empty");
 
+        if (request.PaymentType == PaymentType.ReceiptUpload && request.Receipt is null)
+            return Result.Failure("Upload a receipt for this payment method.");
+        var receiptType = request.Receipt is { } document ? GymPaymentReceipt.DetectContentType(document) : null;
+        if (request.Receipt != null && receiptType is null) return Result.Failure(GymPaymentReceipt.InvalidFileMessage);
+        if (request.Receipt != null && request.PaymentStatus != PaymentStatus.Paid)
+            return Result.Failure("A receipt can only be attached to a paid transaction.");
+
         try
         {
+            await using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
+            // Serialize cashier payments for the same member across API instances.
+            await _db.Database.ExecuteSqlInterpolatedAsync(
+                $"SELECT pg_advisory_xact_lock(73040301, hashtext({memberId.ToString()}))", cancellationToken);
+            var reference = request.TransactionReference;
+            if (reference?.StartsWith(CashierReferencePrefix, StringComparison.Ordinal) == true)
+            {
+                if (!Guid.TryParseExact(reference[CashierReferencePrefix.Length..], "D", out _))
+                    return Result.Failure("Invalid cashier payment reference.");
+
+                var recorded = await _db.PaymentRecords.AsNoTracking().FirstOrDefaultAsync(
+                    p => p.MembershipId == memberId && p.TransactionReference == reference, cancellationToken);
+                if (recorded != null)
+                {
+                    if (recorded.Amount != request.Amount || recorded.PaymentType != request.PaymentType)
+                        return Result.Failure("This payment reference was already used with different payment details.");
+                    if (receiptType != null && recorded.PaymentStatus == PaymentStatus.Paid &&
+                        !await _db.PaymentReceipts.AnyAsync(x => x.PaymentRecordId == recorded.Id, cancellationToken))
+                    {
+                        _db.PaymentReceipts.Add(new GymPaymentReceipt { PaymentRecordId = recorded.Id, Document = request.Receipt!, ContentType = receiptType });
+                        await _db.SaveChangesAsync(cancellationToken);
+                        await transaction.CommitAsync(cancellationToken);
+                    }
+                    return Result.Success("Payment recorded").WithData("alreadyRecorded", true);
+                }
+            }
+
             var member = await _db.Memberships.SingleOrDefaultAsync(m => m.Id == memberId, cancellationToken);
             if (member == null)
                 return Result.Failure("Member not found");
@@ -79,8 +118,11 @@ public class PaymentService : IPaymentService
 
             var memberPayment = await _db.MemberPayments
                 .Where(p => p.MembershipId == memberId)
+                .OrderByDescending(p => p.CreatedAt)
+                .ThenByDescending(p => p.Id)
                 .FirstOrDefaultAsync(cancellationToken);
 
+            PaymentRecord record;
             if (memberPayment == null)
             {
                 var payment = new MemberPayment
@@ -98,7 +140,7 @@ public class PaymentService : IPaymentService
 
                 _db.MemberPayments.Add(payment);
 
-                var record = new PaymentRecord
+                record = new PaymentRecord
                 {
                     MembershipId = member.Id,
                     MemberPaymentId = null,
@@ -113,7 +155,6 @@ public class PaymentService : IPaymentService
                     MembershipPlanTitle = member.MembershipPlan?.Title
                 };
 
-                _db.PaymentRecords.Add(record);
             }
             else
             {
@@ -121,13 +162,16 @@ public class PaymentService : IPaymentService
                     await _db.MembershipPlans.FirstOrDefaultAsync(mp => mp.Id == member.MembershipPlanId,
                         cancellationToken);
 
-                // If the old period already lapsed (member was Blocked), the new one starts today
-                // rather than continuing from the stale end date.
-                memberPayment.MemberShipStartDate = wasBlocked
-                    ? DateTime.UtcNow
-                    : memberPayment.MemberShipEndDate ?? DateTime.UtcNow;
+                var now = DateTime.UtcNow;
+                var previousEnd = await _db.MemberPayments
+                    .Where(p => p.MembershipId == memberId && p.PaymentStatus == PaymentStatus.Paid)
+                    .MaxAsync(p => p.MemberShipEndDate, cancellationToken);
+                var expired = previousEnd is DateTime end && end <= now;
+                memberPayment.MemberShipStartDate = previousEnd is DateTime futureEnd && futureEnd > now
+                    ? futureEnd
+                    : now;
                 memberPayment.MemberShipEndDate = memberPayment.MemberShipStartDate?.AddDays(membershipPlan?.DurationInDays ?? 30);
-                memberPayment.MemberShipRenewalDate = DateTime.UtcNow;
+                memberPayment.MemberShipRenewalDate = now;
 
                 memberPayment.PaymentType = request.PaymentType;
                 memberPayment.PaymentStatus = PaymentStatus.Paid;
@@ -135,10 +179,7 @@ public class PaymentService : IPaymentService
 
                 _db.MemberPayments.Update(memberPayment);
 
-                // Paying for a previously Blocked (expired) member re-activates them: Active if
-                // they already have fingerprints saved, otherwise Inactive (pending) — matching
-                // the same activation rule used at registration and fingerprint enrollment.
-                if (wasBlocked)
+                if (expired || wasBlocked)
                 {
                     var hasFingerprints = !string.IsNullOrWhiteSpace(member.DeviceFingerprintId1) ||
                                            !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2);
@@ -148,7 +189,7 @@ public class PaymentService : IPaymentService
                 }
 
                 // record the payment action in the immutable PaymentRecords table
-                var record = new PaymentRecord
+                record = new PaymentRecord
                 {
                     MembershipId = member.Id,
                     MemberPaymentId = memberPayment.Id,
@@ -164,10 +205,15 @@ public class PaymentService : IPaymentService
                     MembershipPlanTitle = member.MembershipPlan?.Title
                 };
 
-                _db.PaymentRecords.Add(record);
             }
+            _db.PaymentRecords.Add(record);
+            if (receiptType != null)
+                _db.PaymentReceipts.Add(new GymPaymentReceipt { PaymentRecordId = record.Id, Document = request.Receipt!, ContentType = receiptType });
             
-            // Optionally refresh analytics materialized view (keep existing approach if needed in DB environment)
+            await _db.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+
+            // Refresh analytics after saving so it can see the new payment.
             try
             {
                 var conn = _db.Database.GetDbConnection();
@@ -183,12 +229,22 @@ public class PaymentService : IPaymentService
                 // Non-fatal: not all DB providers support materialized view refresh via this connection.
             }
 
-            
-            
-
-            await _smsService.SendSingleMessageAsync(member.Phone!
-                , MessageList.PaymentReceivedMessage(member.FirstName, request.Amount), cancellationToken);
-            await _db.SaveChangesAsync(cancellationToken);
+            if (!string.IsNullOrWhiteSpace(member.Phone))
+            {
+                try
+                {
+                    using var smsTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+                    var sms = await _smsService.SendSingleMessageAsync(member.Phone,
+                        MessageList.PaymentReceivedMessage(member.FirstName, request.Amount), smsTimeout.Token);
+                    if (!sms.Succeeded)
+                        _logger.LogWarning("Payment receipt SMS was rejected for Gym member {MemberId}", member.Id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning("Payment receipt SMS failed for Gym member {MemberId}: {ErrorType}",
+                        member.Id, ex.GetType().Name);
+                }
+            }
 
             return Result.Success("Payment recorded");
         }
@@ -214,6 +270,7 @@ public class PaymentService : IPaymentService
                 {
                     Id = p.Id,
                     MembershipId = p.MembershipId,
+                    HasReceipt = _db.PaymentReceipts.Any(r => r.PaymentRecordId == p.Id),
                     Amount = p.Amount,
                     PaymentType = p.PaymentType,
                     PaymentStatus = p.PaymentStatus,
@@ -254,6 +311,8 @@ public class PaymentService : IPaymentService
                 {
                     Id = p.Id,
                     MembershipId = null,
+                    IsDayPass = true,
+                    HasReceipt = _db.PaymentReceipts.Any(r => r.DayPassMemberId == p.Id),
                     Amount = p.Amount,
                     PaymentType = p.PaymentType,
                     PaymentStatus = p.PaymentStatus,
@@ -278,6 +337,7 @@ public class PaymentService : IPaymentService
                 {
                     Id = p.Id,
                     MembershipId = p.MembershipId,
+                    HasReceipt = _db.PaymentReceipts.Any(r => r.PaymentRecordId == p.Id),
                     Amount = p.Amount,
                     PaymentType = p.PaymentType,
                     PaymentStatus = p.PaymentStatus,

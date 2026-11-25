@@ -9,7 +9,7 @@ import {
 } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function GymHeader() {
+export default function GymHeader({ onlineSignupEnabled, showTrainerLinks }: { onlineSignupEnabled: boolean; showTrainerLinks: boolean }) {
   const [mobileMenuOpen, setMobileMenuOpen] =
     useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -230,7 +230,7 @@ useEffect(() => {
               Main Arena
             </a>
 
-            <a
+            {showTrainerLinks && <a
               href="#trainers"
               onClick={(event) =>
                 handleSectionClick(
@@ -246,7 +246,7 @@ useEffect(() => {
               "
             >
               Trainers
-            </a>
+            </a>}
 
             <a
               href="#memberships"
@@ -366,6 +366,7 @@ useEffect(() => {
       </header>
 
       <SignupModal
+        onlineSignupEnabled={onlineSignupEnabled}
         open={isOpenSignup}
         onClose={() =>
           setIsOpenSignup(false)
@@ -478,7 +479,7 @@ useEffect(() => {
               Main Arena
             </a>
 
-            <a
+            {showTrainerLinks && <a
               href="#trainers"
               onClick={(event) =>
                 handleSectionClick(
@@ -496,7 +497,7 @@ useEffect(() => {
               "
             >
               Trainers
-            </a>
+            </a>}
 
             <a
               href="#memberships"

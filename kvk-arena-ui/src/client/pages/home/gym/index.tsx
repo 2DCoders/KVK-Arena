@@ -12,9 +12,12 @@ import GymFeatures from "../../features/gym";
 import GymFooter from "@/components/footer/gym";
 import SaunaPage from "../../sauna";
 import GymScrollServices from "@/client/GymScrollServices";
+import { getEnv } from "@/env";
 
 
 export default function GymHome() {
+    const gateway = getEnv().IS_PAYMENT_GATEWAY_ENABLED;
+    const onlineSignupEnabled = gateway === true || gateway === "true";
 
     useLayoutEffect(() => {
         document.documentElement.scrollTop = 0
@@ -23,6 +26,7 @@ export default function GymHome() {
 
     const [scrollPercent, setScrollPercent] = useState(0)
     const [showScrollButton, setShowScrollButton] = useState(false)
+    const [showTrainerLinks, setShowTrainerLinks] = useState(true);
 
     useEffect(() => {
         const updateScrollState = () => {
@@ -46,26 +50,24 @@ export default function GymHome() {
 
     return (
         <>
-            <GymHeader />
-            <GymHero />
+            <GymHeader onlineSignupEnabled={onlineSignupEnabled} showTrainerLinks={showTrainerLinks} />
+            <GymHero onlineSignupEnabled={onlineSignupEnabled} />
             <GymStats />
             
             <SaunaPage />
 
             <section id="memberships" className="relative overflow-hidden">
-                <Memberships />
+                <Memberships onlineSignupEnabled={onlineSignupEnabled} />
             </section>
             <GymStepper />
 
             <GymScrollServices />
             
-            <section id="trainers" className="relative overflow-hidden">
-                <Trainers />
-            </section>
+            <Trainers onSectionVisibilityChange={setShowTrainerLinks} />
             <FAQ />
             <GymFeatures />
             {/* <LineBanner /> */}
-            <GymFooter />
+            <GymFooter showTrainerLinks={showTrainerLinks} />
             {/* <Circle /> */}
             <div className="fixed bottom-6 right-4 z-50 flex items-end gap-3 sm:bottom-8 sm:right-6">
                 <div className="flex min-w-18 flex-col items-center rounded-full border border-white/30 bg-slate-950/85 px-3 py-2 text-white shadow-[0_18px_45px_rgba(15,23,42,0.32)] backdrop-blur-md">

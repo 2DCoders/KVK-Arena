@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace kvk.Financial.Features.GymAnalytics;
 
-[Authorize]
+[Authorize(Policy = kvk.BuildingBlocks.Common.ModuleConstants.GymStaffPolicy)]
 [ApiController]
 [Route("api/financial/gym-analytics")]
 public class GymAnalyticsController : ControllerBase

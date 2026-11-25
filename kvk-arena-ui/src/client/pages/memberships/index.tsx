@@ -4,7 +4,7 @@ import { getMembershipPlans } from "@/services/memberships-api";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-export default function Memberships() {
+export default function Memberships({ onlineSignupEnabled }: { onlineSignupEnabled: boolean }) {
   const [isDataLoading, setIsDataLoading] = useState(true);
   const [dataError, setDataError] = useState(false);
   const [plans, setPlans] = useState<any[]>([]);
@@ -45,7 +45,7 @@ export default function Memberships() {
 
   return (
     <section className="relative overflow-hidden bg-linear-to-b from-slate-950 to-slate-900 pt-15 md:pt-25 pb-10">
-      <SignupModal open={isOpenSignup} onClose={() => setIsOpenSignup(false)} />
+      <SignupModal onlineSignupEnabled={onlineSignupEnabled} open={isOpenSignup} onClose={() => setIsOpenSignup(false)} />
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center pb-10 md:pb-0">
           <h2
