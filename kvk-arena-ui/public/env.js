@@ -25,8 +25,11 @@ window.env = {
   BADMINTON_COMING_SOON: false,
   GAMING_COMING_SOON: false,
   CARWASH_COMING_SOON: false,
-  CAFE_COMING_SOON: false,
-  SALON_COMING_SOON: false,
+  CAFE_COMING_SOON: true,
+  SALON_COMING_SOON: true,
 
+
+
+  IS_CARWASH_PACKAGES_ENABLED: false, // true = carwash packages enabled; false = disabled. Refresh after changing.
   IS_PAYMENT_GATEWAY_ENABLED: false, // true = payment gateway enabled; false = disabled. Refresh after changing.
 };
