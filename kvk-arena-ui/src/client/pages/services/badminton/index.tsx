@@ -1,7 +1,7 @@
 import {
   Trophy,
   Lightbulb,
-  Building2,
+  CalendarDays,
   Users,
   Medal,
 } from "lucide-react";
@@ -48,10 +48,10 @@ const features: Feature[] = [
       "absolute left-[8%] bottom-20",
   },
   {
-    title: "Modern Changing Rooms",
+    title: "Live Court Availability",
     description:
-      "Premium locker rooms with modern facilities and comfort.",
-    icon: Building2,
+      "See open court times online and find a slot that fits your schedule.",
+    icon: CalendarDays,
     position:
       "absolute right-[8%] bottom-20",
   },
