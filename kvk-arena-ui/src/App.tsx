@@ -7,7 +7,6 @@ import BadmintonComingSoon from "./client/pages/coming-soon/badminton";
 import GamingComingSoon from "./client/pages/coming-soon/gaming";
 import CarwashComingSoon from "./client/pages/coming-soon/carwash";
 import CafeComingSoon from "./client/pages/coming-soon/cafe";
-import Sample from "./client/sample";
 import SalonComingSoon from "./client/pages/coming-soon/salon";
 import GymHome from "./client/pages/home/gym";
 import BadmintonHome from "./client/pages/home/badminton";
@@ -17,8 +16,6 @@ import CarwashHome from "./client/pages/home/carwash";
 import CafeHome from "./client/pages/home/cafe";
 import SalonHome from "./client/pages/home/salon";
 import { getEnv } from "./env";
-import MemberBadmintonTracking from "./client/pages/members/badminton/tracking";
-import MemberBadmintonBooking from "./client/pages/members/badminton";
 
 import PolicyPage from "./client/pages/policies";
 
@@ -35,12 +32,11 @@ function App() {
       <Route path="/carwash" element={env.CARWASH_COMING_SOON ? <CarwashComingSoon /> : <CarwashHome />} />
       <Route path="/badminton" element={env.BADMINTON_COMING_SOON ? <BadmintonComingSoon /> : <BadmintonHome />} />
       <Route path="/badminton/track" element={<BadmintonBookingLookup />} />
-      <Route path="/members/badminton" element={<MemberBadmintonBooking />} />
-      <Route path="/members/badminton/track/:reference?" element={<MemberBadmintonTracking />} />
+      {/* <Route path="/members/badminton" element={<MemberBadmintonBooking />} />
+      <Route path="/members/badminton/track/:reference?" element={<MemberBadmintonTracking />} /> */}
       <Route path="/gaming" element={env.GAMING_COMING_SOON ? <GamingComingSoon /> : <GamingHome />} />
       <Route path="/cafe" element={env.CAFE_COMING_SOON ? <CafeComingSoon /> : <CafeHome />} />
       <Route path="/salon" element={env.SALON_COMING_SOON ? <SalonComingSoon /> : <SalonHome />} />
-      <Route path="/sample" element={<Sample />} />
     </Routes>
   )
 }

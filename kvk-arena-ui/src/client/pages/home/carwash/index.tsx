@@ -9,8 +9,12 @@ import CarwashPricing from "../../pricing/carwash";
 import CarwashAdd2 from "../../features/carwash/adds";
 import CarwashFooter from "@/components/footer/carwash";
 import CarwashPackages from "../../packages/carwash";
+import CarwashPackagesPreview from "../../packages/carwash/preview";
+import { getEnv } from "@/env";
 
 export default function CarwashHome() {
+  const { IS_CARWASH_PACKAGES_ENABLED } = getEnv();
+
   useLayoutEffect(() => {
     document.documentElement.scrollTop = 0;
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -57,9 +61,7 @@ export default function CarwashHome() {
 
       <CarwashAdd2 />
 
-      <section id="packages">
-        <CarwashPackages />
-      </section>
+      {IS_CARWASH_PACKAGES_ENABLED ? <CarwashPackages /> : <CarwashPackagesPreview />}
 
       <CarwashFooter />
 

@@ -1,15 +1,10 @@
 import { useEffect, useState } from "react";
 import Main from "@/client/layouts/main";
 import Hero from "../hero";
-import PromoCountdownModal, {
-  PROMO_COUNTDOWN_STORAGE_KEY,
-} from "@/components/promo-countdown-modal";
 import BrandsSlider from "../brands-slider";
 import Services from "../services";
 import AboutUs from "../about-us";
 import ContactUs from "../contact-us";
-import ArenaMembership from "../arena-membership";
-import { getEnv } from "@/env";
 import WorkFlow from "../work-flow";
 
 function WhatsappIcon() {
@@ -67,14 +62,6 @@ function InstagramIcon() {
 export default function Home() {
   const [scrollPercent, setScrollPercent] = useState(0);
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const [promoCountdownOpen, setPromoCountdownOpen] = useState(() => {
-    if (typeof window === "undefined") return false;
-
-    return window.localStorage.getItem(PROMO_COUNTDOWN_STORAGE_KEY) !== "true";
-  });
-  const OFFER_END_DATE = getEnv().OFFER_END_DATE;
-    const isOfferActive = new Date().getTime() < new Date(OFFER_END_DATE).getTime();
-
   useEffect(() => {
     const updateScrollState = () => {
       const scrollTop = window.scrollY || document.documentElement.scrollTop;
@@ -98,20 +85,8 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const openPromoCountdown = () => {
-    setPromoCountdownOpen(true);
-  };
-
-  const closePromoCountdown = () => {
-    setPromoCountdownOpen(false);
-  };
-
   return (
     <Main>
-      <PromoCountdownModal
-        isOpen={promoCountdownOpen}
-        onClose={closePromoCountdown}
-      />
       <div className="fixed right-0 top-1/2 z-50 flex -translate-y-1/2 flex-col gap-2 pr-0">
         <a
           href="https://wa.me/+94765605885"
@@ -184,7 +159,7 @@ export default function Home() {
         )}
       </div>
 
-      <Hero onOpenPromoCountdown={openPromoCountdown} />
+      <Hero />
       <BrandsSlider />
 
       <section
@@ -194,13 +169,7 @@ export default function Home() {
         <Services />
       </section>
 
-      {!isOfferActive && (
-        <WorkFlow />
-      )}     
-
-      <section id="add" className="relative overflow-hidden">
-        <ArenaMembership />
-      </section>
+      <WorkFlow />
 
       {/* <Feedbacks /> */}
 
