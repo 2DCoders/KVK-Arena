@@ -1,7 +1,8 @@
+import GymPlanPrice, { OpeningPromotionNotice } from "@/components/gym-plan-price";
 import GymDataState from "@/components/gym-data-state";
 import { useState, useEffect } from "react";
 import gymImage from "@/assets/gym-signup.jpg";
-import { getMembershipPlans } from "@/services/memberships-api";
+import { getMembershipFeatures, getMembershipPlans } from "@/services/memberships-api";
 import { loginMember, registerMember } from "@/services/auth-api";
 import Alert from "@/components/alert";
 import { hasPendingGymPayment, resumeGymPayment, startGymPayment } from "@/services/gym-checkout";
@@ -23,6 +24,7 @@ export default function SignupModal({ open, onClose, onlineSignupEnabled = true 
   const [dataError, setDataError] = useState(false);
   const [plans, setPlans] = useState<any[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const selectedPlanDetails = plans.find((plan) => plan.id === selectedPlan);
   const [registeredMemberId, setRegisteredMemberId] = useState<string | null>(null);
   const [pageAlert, setPageAlert] = useState<{
     visible: boolean;
@@ -807,11 +809,7 @@ export default function SignupModal({ open, onClose, onlineSignupEnabled = true 
                             </div>
 
                             <div className="text-[#296BE1] font-black text-lg">
-                              LKR{" "}
-                              {Number(plan.price).toLocaleString("en-LK", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
+                              <GymPlanPrice price={plan.price} discountedPrice={plan.discountedPrice} />
                             </div>
                           </div>
 
@@ -821,9 +819,9 @@ export default function SignupModal({ open, onClose, onlineSignupEnabled = true 
                           </p>
 
                           {/* FEATURES PREVIEW */}
+                          {plan.discountedPrice != null && <OpeningPromotionNotice />}
                           <div className="mt-3 flex flex-wrap gap-1">
-                            {plan.features
-                              .split(",")
+                            {getMembershipFeatures(plan.features)
                               .slice(0, 3)
                               .map((f: string) => (
                                 <span
@@ -839,6 +837,11 @@ export default function SignupModal({ open, onClose, onlineSignupEnabled = true 
                     })}
                 </div>
 
+                {selectedPlanDetails?.discountedPrice != null && (
+                  <p className="mt-4 text-sm text-slate-600">
+                    Online checkout total: LKR {Number(selectedPlanDetails.price).toLocaleString("en-LK")}
+                  </p>
+                )}
                 {/* ACTIONS */}
                 <div className="mt-6 flex gap-3">
                   {!registeredMemberId && <button

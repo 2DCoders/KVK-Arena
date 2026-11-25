@@ -1,6 +1,7 @@
+import GymPlanPrice, { OpeningPromotionNotice } from "@/components/gym-plan-price";
 import GymDataState from "@/components/gym-data-state";
 import SignupModal from "@/components/signup/gym";
-import { getMembershipPlans } from "@/services/memberships-api";
+import { getMembershipFeatures, getMembershipPlans } from "@/services/memberships-api";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -10,6 +11,7 @@ export default function Memberships({ onlineSignupEnabled }: { onlineSignupEnabl
   const [plans, setPlans] = useState<any[]>([]);
   const railRef = useRef<HTMLDivElement | null>(null);
   const [isOpenSignup, setIsOpenSignup] = useState(false);
+  const annualPlanId = plans.find((plan) => Number(plan.durationInDays) === 365)?.id;
 
   const fetchMembershipPlans = async () => {
     setIsDataLoading(true);
@@ -118,26 +120,22 @@ export default function Memberships({ onlineSignupEnabled }: { onlineSignupEnabl
                 .map((plan) => (
                   <article
                     key={plan.id}
-                    className={`group relative snap-center min-w-[280px] basis-[280px] sm:min-w-[320px] sm:basis-[320px] lg:min-w-[360px] lg:basis-[360px]  overflow-hidden rounded-2xl border p-6 shadow-[0_18px_50px_rgba(0,0,0,0.2)] transform-gpu transition duration-300 ease-out hover:z-20 hover:[transform:perspective(1200px)_translateY(-12px)_rotateX(7deg)_rotateY(-7deg)_scale(1.03)] hover:shadow-[0_28px_70px_rgba(0,0,0,0.35)] sm:min-w-[360px] sm:basis-[360px] ${plan.title === "Monthly Plan"
+                    className={`group relative snap-center min-w-[280px] basis-[280px] sm:min-w-[320px] sm:basis-[320px] lg:min-w-[360px] lg:basis-[360px]  overflow-hidden rounded-2xl border p-6 shadow-[0_18px_50px_rgba(0,0,0,0.2)] transform-gpu transition duration-300 ease-out hover:z-20 hover:[transform:perspective(1200px)_translateY(-12px)_rotateX(7deg)_rotateY(-7deg)_scale(1.03)] hover:shadow-[0_28px_70px_rgba(0,0,0,0.35)] sm:min-w-[360px] sm:basis-[360px] ${plan.id === annualPlanId
                         ? "border-[#296BE1] bg-[#000000] ring-1 ring-[#e6a79e]/30"
                         : "border-white/6 bg-white/6"
                       }`}
                   >
                     <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-white/15 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-                    {plan.title === "Monthly Plan" && (
-                      <div className="absolute right-3 top-3 rounded-full border border-[#296BE1]/40 bg-[#e6a79e]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#296BE1]">
+                    {plan.id === annualPlanId && (
+                      <div className="absolute right-3 top-3 rounded-full border border-sky-400/40 bg-sky-400/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-sky-200">
                         Recommended
                       </div>
                     )}
 
                     <div className="mt-4 flex items-end gap-2">
                       <span className="text-2xl font-extrabold tracking-tight text-white sm:text-2xl">
-                        LKR{" "}
-                        {Number(plan.price).toLocaleString("en-LK", {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
+                        <GymPlanPrice price={plan.price} discountedPrice={plan.discountedPrice} />
                       </span>
                       <span className="pb-1 text-xs text-slate-400">
                         /
@@ -157,13 +155,15 @@ export default function Memberships({ onlineSignupEnabled }: { onlineSignupEnabl
                       {plan.title}
                     </h3>
 
+                    {plan.discountedPrice != null && <OpeningPromotionNotice />}
+
                     <p className="mt-4 text-sm leading-6 text-slate-300 sm:text-base">
                       {plan.description}
                     </p>
 
                     <button
                       type="button"
-                      className={`mt-6 inline-flex cursor-pointer w-full items-center justify-center rounded-md px-5 py-3 text-sm font-semibold transition ${plan.featured
+                      className={`mt-6 inline-flex cursor-pointer w-full items-center justify-center rounded-md px-5 py-3 text-sm font-semibold transition ${plan.id === annualPlanId
                           ? "bg-white text-slate-950 hover:bg-slate-100"
                           : "bg-white/20 text-white hover:bg-white/30"
                         }`}
@@ -178,7 +178,7 @@ export default function Memberships({ onlineSignupEnabled }: { onlineSignupEnabl
                       </p>
 
                       <ul className="mt-4 space-y-3">
-                        {plan.features.split(",").map((feature: string) => (
+                        {getMembershipFeatures(plan.features).map((feature: string) => (
                           <li
                             key={feature.trim()}
                             className="flex items-start gap-3 text-sm text-slate-200"

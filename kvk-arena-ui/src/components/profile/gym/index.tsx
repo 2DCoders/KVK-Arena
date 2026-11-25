@@ -1,9 +1,10 @@
+import GymPlanPrice, { OpeningPromotionNotice } from "@/components/gym-plan-price";
 import GymDataState from "@/components/gym-data-state";
 import GymPaymentNotice from "@/components/gym-payment-notice";
 import { getEnv } from "@/env";
 import Alert from "@/components/alert";
 import { changePassword, getMember, updateMember } from "@/services/auth-api";
-import { getMembershipPlans } from "@/services/memberships-api";
+import { getMembershipFeatures, getMembershipPlans } from "@/services/memberships-api";
 import { hasPendingGymPayment, resumeGymPayment, startGymPayment } from "@/services/gym-checkout";
 import {
   createRequest,
@@ -62,7 +63,14 @@ export default function UserProfileModal({
   const [isDataLoading, setIsDataLoading] = useState(true);
   const [dataError, setDataError] = useState(false);
   const [plans, setPlans] = useState<any[]>([]);
+  const currentPromotionPlan = getEnv().IS_PROMOTION
+    ? plans.find((plan) => plan.id === memberData?.membershipPlanId)
+    : undefined;
+  const currentPlanTitle = currentPromotionPlan?.title ?? memberData?.membershipPlanTitle;
+  const currentPlanPrice = currentPromotionPlan?.price ?? memberData?.membershipPlanPrice;
+  const currentPlanDuration = currentPromotionPlan?.durationInDays ?? memberData?.membershipPlanDurationInDays;
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const selectedPlanDetails = plans.find((plan) => plan.id === selectedPlan);
   const [isPlanEnd, setIsPlanEnd] = useState(false);
   const [calculatedEndDate, setCalculatedEndDate] = useState<string | null>(
     null,
@@ -518,6 +526,9 @@ export default function UserProfileModal({
                   </p>
                   {selectedPlan && (
                     <div className="text-slate-600 text-sm mt-2">
+                      {selectedPlanDetails?.discountedPrice != null && (
+                        <p>Online checkout total: LKR {Number(selectedPlanDetails.price).toLocaleString("en-LK")}</p>
+                      )}
                       <p>
                         Start Date:{" "}
                         <span className="font-semibold">
@@ -628,11 +639,7 @@ export default function UserProfileModal({
                           </div>
 
                           <div className="text-[#296BE1] font-black text-lg">
-                            LKR{" "}
-                            {Number(plan.price).toLocaleString("en-LK", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
+                            <GymPlanPrice price={plan.price} discountedPrice={plan.discountedPrice} />
                           </div>
                         </div>
 
@@ -642,9 +649,9 @@ export default function UserProfileModal({
                         </p>
 
                         {/* FEATURES PREVIEW */}
+                        {plan.discountedPrice != null && <OpeningPromotionNotice />}
                         <div className="mt-3 flex flex-wrap gap-1">
-                          {plan.features
-                            .split(",")
+                          {getMembershipFeatures(plan.features)
                             .slice(0, 3)
                             .map((f: string) => (
                               <span
@@ -690,7 +697,7 @@ export default function UserProfileModal({
                     <div className="flex items-center gap-2 text-blue-300 rounded-full border border-blue-400/20 bg-blue-500/10 px-4 py-2">
                       <Crown size={16} className="text-blue-300" />
                       <span className="text-sm font-medium text-blue-200">
-                        {memberData?.membershipPlanTitle || "N/A"}
+                        {currentPlanTitle || "N/A"}
                       </span>
                     </div>
                     <div
@@ -757,7 +764,7 @@ export default function UserProfileModal({
                         <Crown size={22} className="text-yellow-400" />
 
                         <span className="text-2xl font-bold text-white">
-                          {memberData?.membershipPlanTitle || "N/A"}
+                          {currentPlanTitle || "N/A"}
                         </span>
                       </div>
 
@@ -1045,8 +1052,7 @@ export default function UserProfileModal({
                       Membership Benefits
                     </h3>
 
-                    {memberData?.membershipPlan?.features
-                      ?.split(",")
+                    {getMembershipFeatures(currentPromotionPlan?.features ?? memberData?.membershipPlan?.features)
                       .map((b: any) => (
                         <div
                           key={b}
@@ -1685,7 +1691,7 @@ export default function UserProfileModal({
                           </span>
 
                           <h2 className="mt-4 text-3xl font-black text-slate-900">
-                            {memberData?.membershipPlanTitle}
+                            {currentPlanTitle}
                           </h2>
 
                           <p className="mt-1 text-slate-500">
@@ -1721,11 +1727,15 @@ export default function UserProfileModal({
           p-5
         "
                         >
-                          <p className="text-sm text-slate-500">Monthly Fee</p>
+                          <p className="text-sm text-slate-500">Plan price</p>
+                          {currentPromotionPlan?.discountedPrice != null && (
+                            <OpeningPromotionNotice />
+                          )}
 
                           <h3 className="mt-2 text-3xl font-black text-amber-600">
-                            Rs.{" "}
-                            {memberData?.membershipPlanPrice?.toLocaleString()}
+                            {currentPlanPrice == null ? "-" : (
+                              <GymPlanPrice price={currentPlanPrice} discountedPrice={currentPromotionPlan?.discountedPrice} />
+                            )}
                           </h3>
                         </div>
 
@@ -1740,7 +1750,7 @@ export default function UserProfileModal({
                           <p className="text-sm text-slate-500">Duration</p>
 
                           <h3 className="mt-2 text-2xl font-bold text-slate-900">
-                            {memberData?.membershipPlanDurationInDays} Days
+                            {currentPlanDuration} Days
                           </h3>
                         </div>
 
