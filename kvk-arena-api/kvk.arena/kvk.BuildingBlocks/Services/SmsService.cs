@@ -2,113 +2,122 @@ using System.Text.Json;
 using kvk.BuildingBlocks.Common;
 using kvk.BuildingBlocks.Interfaces;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace kvk.BuildingBlocks.Services;
 
-public class SmsService : ISmsService
+public class SmsService(IConfiguration configuration, ISmsAttemptStore attempts, ILogger<SmsService> logger) : ISmsService
 {
     private static readonly HttpClient HttpClient = new();
-    private readonly IConfiguration _configuration;
-    const string SmsApiUrl = "https://smslenz.lk/api/send-sms";
-
-    public SmsService(IConfiguration configuration)
-    {
-        _configuration = configuration;
-    }
+    private const string SmsApiUrl = "https://smslenz.lk/api/send-sms";
 
     public async Task<Result> SendSingleMessageAsync(string phoneNumber, string message,
         CancellationToken cancellationToken = default)
     {
-        using var response = await SendSingleRequestAsync(phoneNumber, message, cancellationToken);
-        return response.IsSuccessStatusCode ? Result.Success() : Result.Failure("Failed to send SMS");
+        // Existing callers use the HTTP result. Usage requires a positive page count from SMSlenz.
+        var (_, httpSuccess) = await SendTrackedAsync(phoneNumber, message, false, cancellationToken);
+        return httpSuccess ? Result.Success() : Result.Failure("Failed to send SMS");
     }
 
     public async Task<int?> SendSingleMessageWithPagesAsync(string phoneNumber, string message,
         CancellationToken cancellationToken = default)
     {
-        using var response = await SendSingleRequestAsync(phoneNumber, message, cancellationToken);
-        if ((int)response.StatusCode >= 500)
-            throw new HttpRequestException("SMSlenz returned a server error.");
-        if (!response.IsSuccessStatusCode) return null;
-
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
-        using var json = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
-        var body = json.RootElement;
-        if (body.ValueKind == JsonValueKind.Object && body.TryGetProperty("success", out var success))
-        {
-            if (success.ValueKind == JsonValueKind.False) return null;
-            if (success.ValueKind == JsonValueKind.True && body.TryGetProperty("data", out var data) &&
-                data.ValueKind == JsonValueKind.Object && data.TryGetProperty("pages", out var pages) &&
-                pages.ValueKind == JsonValueKind.Number && pages.TryGetInt32(out var count) && count > 0)
-                return count;
-        }
-        throw new JsonException("SMSlenz returned an unexpected response.");
+        var (pages, _) = await SendTrackedAsync(phoneNumber, message, true, cancellationToken);
+        return pages;
     }
 
-    private async Task<HttpResponseMessage> SendSingleRequestAsync(string phoneNumber, string message,
-        CancellationToken cancellationToken)
+    private async Task<(int? Pages, bool HttpSuccess)> SendTrackedAsync(
+        string phoneNumber, string message, bool adminBatch, CancellationToken cancellationToken)
     {
         phoneNumber = phoneNumber.StartsWith("0") ? $"+94{phoneNumber[1..]}" : phoneNumber;
         using var requestContent = new FormUrlEncodedContent(new[]
         {
-            new KeyValuePair<string, string>("user_id", _configuration["Sms:UserId"]!),
-            new KeyValuePair<string, string>("api_key", _configuration["Sms:ApiKey"]!),
-            new KeyValuePair<string, string>("sender_id", _configuration["Sms:SenderId"]!),
+            new KeyValuePair<string, string>("user_id", configuration["Sms:UserId"]!),
+            new KeyValuePair<string, string>("api_key", configuration["Sms:ApiKey"]!),
+            new KeyValuePair<string, string>("sender_id", configuration["Sms:SenderId"]!),
             new KeyValuePair<string, string>("contact", phoneNumber),
             new KeyValuePair<string, string>("message", message),
         });
 
-        return await HttpClient.PostAsync(SmsApiUrl, requestContent, cancellationToken);
+        Guid id;
+        try
+        {
+            id = await attempts.StartAsync(phoneNumber, adminBatch, cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogError("Could not record SMS attempt before sending ({ErrorType})", ex.GetType().Name);
+            return (null, false);
+        }
+
+        var status = SmsAttemptStatus.Unknown;
+        int? pages = null;
+        try
+        {
+            using var response = await HttpClient.PostAsync(SmsApiUrl, requestContent, cancellationToken);
+            if ((int)response.StatusCode >= 500)
+            {
+                if (adminBatch) throw new HttpRequestException("SMSlenz returned a server error.");
+                return (null, false);
+            }
+            if (!response.IsSuccessStatusCode)
+            {
+                status = SmsAttemptStatus.Failed;
+                return (null, false);
+            }
+
+            try
+            {
+                await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+                using var json = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
+                var body = json.RootElement;
+                if (body.ValueKind == JsonValueKind.Object && body.TryGetProperty("success", out var success))
+                {
+                    if (success.ValueKind == JsonValueKind.False)
+                    {
+                        status = SmsAttemptStatus.Failed;
+                        return (null, true);
+                    }
+                    if (success.ValueKind == JsonValueKind.True && body.TryGetProperty("data", out var data) &&
+                        data.ValueKind == JsonValueKind.Object && data.TryGetProperty("pages", out var pageCount) &&
+                        pageCount.ValueKind == JsonValueKind.Number && pageCount.TryGetInt32(out var count) && count > 0)
+                    {
+                        pages = count;
+                        status = SmsAttemptStatus.Accepted;
+                        return (pages, true);
+                    }
+                }
+                throw new JsonException("SMSlenz returned an unexpected response.");
+            }
+            catch (JsonException) when (!adminBatch)
+            {
+                return (null, true);
+            }
+        }
+        finally
+        {
+            try
+            {
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                await attempts.CompleteAsync(id, status, pages, timeout.Token);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Could not record SMS outcome for attempt {AttemptId} ({ErrorType})", id, ex.GetType().Name);
+            }
+        }
     }
 
     public async Task<Result> SendBulkMessageAsync(
-        IEnumerable<BulkSmsItem> messages,
-        CancellationToken cancellationToken = default)
+        IEnumerable<BulkSmsItem> messages, CancellationToken cancellationToken = default)
     {
-        var tasks = messages.Select(async item =>
-        {
-            var phoneNumber = item.PhoneNumber.StartsWith("0")
-                ? $"+94{item.PhoneNumber[1..]}"
-                : item.PhoneNumber;
+        var results = await Task.WhenAll(messages.Select(item =>
+            SendSingleMessageAsync(item.PhoneNumber, item.Message, cancellationToken)));
 
-            var requestContent = new FormUrlEncodedContent(new[]
-            {
-                new KeyValuePair<string, string>(
-                    "user_id",
-                    _configuration["Sms:UserId"]!),
-
-                new KeyValuePair<string, string>(
-                    "api_key",
-                    _configuration["Sms:ApiKey"]!),
-
-                new KeyValuePair<string, string>(
-                    "sender_id",
-                    _configuration["Sms:SenderId"]!),
-
-                new KeyValuePair<string, string>(
-                    "contact",
-                    phoneNumber),
-
-                new KeyValuePair<string, string>(
-                    "message",
-                    item.Message)
-            });
-
-            var response = await HttpClient.PostAsync(
-                SmsApiUrl,
-                requestContent,
-                cancellationToken);
-
-            return response.IsSuccessStatusCode;
-        });
-
-        var results = await Task.WhenAll(tasks);
-
-        return results.All(x => x)
+        return results.All(x => x.Succeeded)
             ? Result.Success()
             : Result.Failure("Some SMS messages failed to send.");
     }
-
 
     public class BulkSmsItem
     {

@@ -155,11 +155,12 @@ public class AdminSmsController(
         var staffNames = await StaffNames(db.Staffs.Where(x => Enumerable.Contains(staffIds, x.Id)))
             .ToDictionaryAsync(x => x.Id, x => x.Name, ct);
         var settings = GetSettings();
-        var month = CurrentMonth(DateTime.UtcNow);
-        var monthly = MonthlyBatches(month);
-        var accepted = await monthly.SumAsync(x => x.AcceptedSegments, ct);
-        var reserved = await monthly.SumAsync(x => x.ReservedSegments, ct);
-        var charge = await monthly.SumAsync(x => x.MaintenanceCharge, ct);
+        var month = SmsUsage.CurrentMonth(DateTime.UtcNow);
+        var monthly = SmsUsage.Batches(db, month);
+        var system = await GetSystemUsage(month, ct);
+        var accepted = await monthly.SumAsync(x => x.AcceptedSegments, ct) + system.AcceptedSegments;
+        var reserved = await monthly.SumAsync(x => x.ReservedSegments, ct) + system.AcceptedSegments;
+        var charge = await monthly.SumAsync(x => x.MaintenanceCharge, ct) + system.MaintenanceCharge;
         return Ok(new
         {
             settings, month = month.AddMinutes(330).ToString("yyyy-MM"), accepted, reserved,
@@ -189,10 +190,10 @@ public class AdminSmsController(
             return BadRequest(new { message = "Select a valid report year and month." });
 
         var start = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc).AddMinutes(-330);
-        if (start > CurrentMonth(DateTime.UtcNow))
+        if (start > SmsUsage.CurrentMonth(DateTime.UtcNow))
             return BadRequest(new { message = "The report month must be current or past." });
 
-        var batches = await MonthlyBatches(start).AsNoTracking().OrderBy(x => x.SubmittedUtc).ThenBy(x => x.Id)
+        var batches = await SmsUsage.Batches(db, start).AsNoTracking().OrderBy(x => x.SubmittedUtc).ThenBy(x => x.Id)
             .Select(x => new { x.Id, x.SubmittedUtc, x.GroupName, x.RecipientsJson, x.AcceptedSegments, x.MaintenanceCharge })
             .ToListAsync(ct);
         var rows = batches.Select(batch =>
@@ -210,10 +211,11 @@ public class AdminSmsController(
                 pending = counts.GetValueOrDefault("Pending")
             };
         }).ToArray();
+        var system = await GetSystemUsage(start, ct);
         return Ok(new
         {
-            year, month, maintenanceOverage = rows.Sum(x => x.MaintenanceCharge),
-            acceptedSegments = rows.Sum(x => x.AcceptedSegments), rows
+            year, month, maintenanceOverage = rows.Sum(x => x.MaintenanceCharge) + system.MaintenanceCharge,
+            acceptedSegments = rows.Sum(x => x.AcceptedSegments) + system.AcceptedSegments, system, rows
         });
     }
 
@@ -230,7 +232,7 @@ public class AdminSmsController(
         await using (var tx = await db.Database.BeginTransactionAsync(ct))
         {
             // Serialize quota reservations and confirmation ID checks across API instances.
-            await db.Database.ExecuteSqlRawAsync("SELECT pg_advisory_xact_lock(73040201)", ct);
+            await db.Database.ExecuteSqlRawAsync(SmsUsage.LockSql, ct);
             var existing = await db.AdminSmsBatches.AsNoTracking().SingleOrDefaultAsync(x => x.Id == input.Id, ct);
             if (existing is not null)
                 return existing.StaffId == StaffId ? Ok(await SummaryForSender(existing)) : Forbid();
@@ -275,13 +277,13 @@ public class AdminSmsController(
             quote.Recipients[index] = recipient with { Status = status };
 
             await using var tx = await db.Database.BeginTransactionAsync();
-            await db.Database.ExecuteSqlRawAsync("SELECT pg_advisory_xact_lock(73040201)");
+            await db.Database.ExecuteSqlRawAsync(SmsUsage.LockSql);
             if (acceptedPages is int pages)
             {
-                var previous = await MonthlyBatches(CurrentMonth(batch.SubmittedUtc)).SumAsync(x => x.AcceptedSegments);
+                var previous = await SmsUsage.AcceptedSegments(db, SmsUsage.CurrentMonth(batch.SubmittedUtc), CancellationToken.None);
                 batch.AcceptedSegments += pages;
                 batch.ReservedSegments += pages - quote.Segments;
-                batch.MaintenanceCharge += Excess(previous, pages, batch.MonthlyLimit) * batch.SegmentPrice;
+                batch.MaintenanceCharge += SmsUsage.Excess(previous, pages, batch.MonthlyLimit) * batch.SegmentPrice;
             }
             if (status == "Failed") batch.ReservedSegments -= quote.Segments;
             batch.RecipientsJson = JsonSerializer.Serialize(quote.Recipients);
@@ -292,13 +294,24 @@ public class AdminSmsController(
         return Ok(await SummaryForSender(batch));
     }
 
-    private IQueryable<AdminSmsBatch> MonthlyBatches(DateTime month) =>
-        db.AdminSmsBatches.Where(x => x.SubmittedUtc >= month && x.SubmittedUtc < month.AddMinutes(330).AddMonths(1).AddMinutes(-330));
+    private record SystemUsage(int Accepted, int Failed, int Pending, int Unknown, int AcceptedSegments,
+        decimal MaintenanceCharge);
 
-    private static DateTime CurrentMonth(DateTime now)
+    private async Task<SystemUsage> GetSystemUsage(DateTime month, CancellationToken ct)
     {
-        var local = now.AddMinutes(330);
-        return new DateTime(local.Year, local.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMinutes(-330);
+        var rows = await SmsUsage.SystemAttempts(db, month).GroupBy(x => x.Status)
+            .Select(g => new
+            {
+                Status = g.Key, Count = g.Count(), Segments = g.Sum(x => x.Segments ?? 0),
+                Charge = g.Sum(x => x.MaintenanceCharge)
+            }).ToDictionaryAsync(x => x.Status, ct);
+
+        return new SystemUsage(
+            rows.GetValueOrDefault(SmsAttemptStatus.Accepted)?.Count ?? 0,
+            rows.GetValueOrDefault(SmsAttemptStatus.Failed)?.Count ?? 0,
+            rows.GetValueOrDefault(SmsAttemptStatus.Pending)?.Count ?? 0,
+            rows.GetValueOrDefault(SmsAttemptStatus.Unknown)?.Count ?? 0,
+            rows.Values.Sum(x => x.Segments), rows.Values.Sum(x => x.Charge));
     }
 
     private async Task<Contact[]> GetContacts(CancellationToken ct)
@@ -343,16 +356,14 @@ public class AdminSmsController(
         var count = unique.Count(x => x.Status == "Pending");
         if (count == 0) throw new ArgumentException("Select at least one eligible recipient.");
 
-        var month = CurrentMonth(now);
-        var used = await MonthlyBatches(month).SumAsync(x => x.ReservedSegments, ct);
+        var month = SmsUsage.CurrentMonth(now);
+        var used = await SmsUsage.Batches(db, month).SumAsync(x => x.ReservedSegments, ct)
+            + await SmsUsage.SystemAttempts(db, month).SumAsync(x => x.Segments ?? 0, ct);
         var total = count * segments;
-        var excess = Excess(used, total, settings.MonthlyLimit);
+        var excess = SmsUsage.Excess(used, total, settings.MonthlyLimit);
         return new Quote(message, unique, group?.Name, segments, used, total, excess,
             excess * settings.Price, settings, month.AddMinutes(330).ToString("yyyy-MM"));
     }
-
-    private static int Excess(int used, int total, int limit) =>
-        Math.Max(0, used + total - limit) - Math.Max(0, used - limit);
 
     private static string QuoteToken(Quote quote) =>
         Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(quote)));

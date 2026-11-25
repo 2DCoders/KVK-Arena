@@ -8,6 +8,7 @@ using kvk.BuildingBlocks.Interfaces;
 using kvk.BuildingBlocks.Services;
 using kvk.Host.Middlewares;
 using kvk.Identity;
+using kvk.Identity.Persistence;
 using kvk.Gym;
 using kvk.Financial;
 using kvk.Badminton;
@@ -55,6 +56,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 // Add core infrastructure services
 builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<ISmsService, SmsService>();
+builder.Services.AddSingleton<ISmsAttemptStore, SmsAttemptStore>();
 builder.Services.AddHttpContextAccessor();
 // Register IHttpClientFactory for remote ICS imports
 builder.Services.AddHttpClient();

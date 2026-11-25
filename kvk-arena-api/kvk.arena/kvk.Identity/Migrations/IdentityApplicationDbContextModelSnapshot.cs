@@ -594,6 +594,44 @@ namespace kvk.Identity.Persistence.Migrations.IdentityRbacInitial
                     b.ToTable("RolePermissions", "identity");
                 });
 
+            modelBuilder.Entity("kvk.Identity.Domain.SmsAttempt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("AdminBatch")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("MaintenanceCharge")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("Segments")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("SubmittedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_SmsAttempt_TenantId");
+
+                    b.HasIndex("TenantId", "AdminBatch", "SubmittedUtc");
+
+                    b.ToTable("SmsAttempts", "identity");
+                });
+
             modelBuilder.Entity("kvk.Identity.Domain.Staff", b =>
                 {
                     b.Property<Guid>("Id")
