@@ -258,7 +258,7 @@ public partial class MemberBadmintonBookingController
 
         try
         {
-            var message = $"Hi {reservation.CustomerName}, your KVK Badminton booking has been confirmed. Reference: {reference:N}.";
+            var message = $"Hi {reservation.CustomerName}, your KVK Badminton booking has been confirmed. Track your booking at https://kvkarena.lk/badminton/track";
             reservation.SmsSent = (await sms.SendSingleMessageAsync(reservation.PhoneNumber, message, CancellationToken.None)).Succeeded;
             if (reservation.SmsSent)
                 await db.CashierSlipReservations.Where(r => r.Id == reference)
