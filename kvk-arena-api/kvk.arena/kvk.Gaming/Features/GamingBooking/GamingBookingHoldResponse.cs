@@ -1,3 +1,4 @@
+using kvk.Badminton.Features.Booking;
 using kvk.Gaming.Enums;
 
 namespace kvk.Gaming.Features.GamingBooking;
@@ -6,6 +7,9 @@ public class GamingBookingHoldResponse
 {
     public Guid HoldId { get; set; }
     public Guid? BookingId { get; set; } // Will be populated after confirmation
+    public string? BookingNumber { get; set; }
+    public decimal? BookingAmount { get; set; }
+    public PaymentTypes? PaymentType { get; set; }
     public Guid GamingCategoryId { get; set; }
     public Guid GamingStationId { get; set; }
     public Guid GamingSlotId { get; set; }

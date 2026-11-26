@@ -566,6 +566,9 @@ public partial class GamingBookingService : IGamingBookingService
                     {
                         var existingResponse = MapToResponse(hold);
                         existingResponse.BookingId = existingBooking.Id;
+                        existingResponse.BookingNumber = existingBooking.BookingNumber;
+                        existingResponse.BookingAmount = existingBooking.Amount;
+                        existingResponse.PaymentType = existingBooking.PaymentType;
                         confirmedBookings.Add(existingResponse);
                         continue;
                     }
@@ -629,6 +632,9 @@ public partial class GamingBookingService : IGamingBookingService
 
                 var response = MapToResponse(hold);
                 response.BookingId = booking.Id;
+                response.BookingNumber = booking.BookingNumber;
+                response.BookingAmount = booking.Amount;
+                response.PaymentType = booking.PaymentType;
                 confirmedBookings.Add(response);
 
                 smsMessages.Add($"Station: {gamingSlot.GamingStation?.Name}, Date: {hold.BookingDate:dd/MM/yyyy}, Time: {gamingSlot.StartTime:hh\\:mm} - {gamingSlot.EndTime:hh\\:mm}");
