@@ -103,7 +103,7 @@ public class CarWashOrderService(CarServiceDbContext db, ISmsService smsService,
         if (newOrder.IsPaid)
             await SendPaymentReceivedSmsAsync(newOrder.CustomerPhone, newOrder.CustomerName, newOrder.DiscountedTotalAmount, cancellationToken);
 
-        return Result.Success("Order wash order created.");
+        return Result.Success("Order wash order created.").WithData("orderId", newOrder.Id);
     }
 
     public async Task<Result> UpdateCarWashOrderAsync(CarWashOrderUpdateRequest request,

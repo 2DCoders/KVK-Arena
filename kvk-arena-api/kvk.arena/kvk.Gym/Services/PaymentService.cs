@@ -50,7 +50,7 @@ public class PaymentService : IPaymentService
                 if (!Guid.TryParseExact(reference[CashierReferencePrefix.Length..], "D", out _))
                     return Result.Failure("Invalid cashier payment reference.");
 
-                var recorded = await _db.PaymentRecords.AsNoTracking().FirstOrDefaultAsync(
+                var recorded = await _db.PaymentRecords.AsNoTracking().Include(p => p.Membership).FirstOrDefaultAsync(
                     p => p.MembershipId == memberId && p.TransactionReference == reference, cancellationToken);
                 if (recorded != null)
                 {
@@ -63,11 +63,13 @@ public class PaymentService : IPaymentService
                         await _db.SaveChangesAsync(cancellationToken);
                         await transaction.CommitAsync(cancellationToken);
                     }
-                    return Result.Success("Payment recorded").WithData("alreadyRecorded", true);
+                    return Result.Success("Payment recorded").WithData("alreadyRecorded", true)
+                        .WithData("payment", PaymentResponse.FromRecord(recorded, recorded.Membership));
                 }
             }
 
-            var member = await _db.Memberships.SingleOrDefaultAsync(m => m.Id == memberId, cancellationToken);
+            var member = await _db.Memberships.Include(m => m.MembershipPlan)
+                .SingleOrDefaultAsync(m => m.Id == memberId, cancellationToken);
             if (member == null)
                 return Result.Failure("Member not found");
 
@@ -158,9 +160,7 @@ public class PaymentService : IPaymentService
             }
             else
             {
-                var membershipPlan =
-                    await _db.MembershipPlans.FirstOrDefaultAsync(mp => mp.Id == member.MembershipPlanId,
-                        cancellationToken);
+                var membershipPlan = member.MembershipPlan;
 
                 var now = DateTime.UtcNow;
                 var previousEnd = await _db.MemberPayments
@@ -246,7 +246,7 @@ public class PaymentService : IPaymentService
                 }
             }
 
-            return Result.Success("Payment recorded");
+            return Result.Success("Payment recorded").WithData("payment", PaymentResponse.FromRecord(record, member));
         }
         catch (Exception ex)
         {

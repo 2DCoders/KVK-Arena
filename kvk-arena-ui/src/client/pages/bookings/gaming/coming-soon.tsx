@@ -1,8 +1,7 @@
-import { CircleDot, Film, Gamepad2, Monitor } from "lucide-react";
+import { CircleDot, Film, Gamepad2 } from "lucide-react";
 import gamingPhoto from "@/assets/gaming-mobile.png";
 
 const experiences = [
-  { name: "PC Gaming", icon: Monitor },
   { name: "PS5", icon: Gamepad2 },
   { name: "Pool Tables", icon: CircleDot },
   { name: "Private Movie Rooms", icon: Film },
@@ -29,7 +28,7 @@ export default function GamingBookingsComingSoon() {
             Soon you’ll be able to book your next game, pool session, or private movie night online at KVK Arena.
           </p>
 
-          <ul className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 lg:mt-12">
+          <ul className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:mt-12">
             {experiences.map(({ name, icon: Icon }) => (
               <li
                 key={name}

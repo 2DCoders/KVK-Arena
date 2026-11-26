@@ -363,6 +363,9 @@ public partial class BookingService : IBookingService
                     {
                         var existingResponse = MapToResponse(hold);
                         existingResponse.BookingId = existingBooking.Id;
+                        existingResponse.BookingNumber = existingBooking.BookingNumber;
+                        existingResponse.BookingAmount = existingBooking.BookingAmount;
+                        existingResponse.PaymentType = existingBooking.PaymentType;
                         confirmedBookings.Add(existingResponse);
                         continue;
                     }
@@ -414,6 +417,9 @@ public partial class BookingService : IBookingService
 
                 var response = MapToResponse(hold);
                 response.BookingId = booking.Id;
+                response.BookingNumber = booking.BookingNumber;
+                response.BookingAmount = booking.BookingAmount;
+                response.PaymentType = booking.PaymentType;
                 confirmedBookings.Add(response);
 
                 var courtName = hold.CourtSlot.Court.Name;

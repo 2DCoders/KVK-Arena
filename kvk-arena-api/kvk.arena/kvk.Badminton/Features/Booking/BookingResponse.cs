@@ -4,6 +4,9 @@ public class BookingResponse
 {
     public Guid HoldId { get; set; }
     public Guid? BookingId { get; set; }
+    public string? BookingNumber { get; set; }
+    public decimal? BookingAmount { get; set; }
+    public PaymentTypes? PaymentType { get; set; }
     public Guid CourtId { get; set; }
     public Guid CourtSlotId { get; set; }
     public DateOnly BookingDate { get; set; }
