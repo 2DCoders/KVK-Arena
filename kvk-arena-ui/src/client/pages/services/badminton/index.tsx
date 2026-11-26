@@ -1,7 +1,7 @@
 import {
   Trophy,
   Lightbulb,
-  Building2,
+  CalendarDays,
   Users,
   Medal,
 } from "lucide-react";
@@ -40,18 +40,18 @@ const features: Feature[] = [
       "absolute right-0 top-32",
   },
   {
-    title: "Professional Coaching",
+    title: "Freelance Coaches Welcome",
     description:
-      "Train with experienced coaches and structured programs.",
+      "Independent badminton coaches can book a court and train their own clients at KVK Arena.",
     icon: Users,
     position:
       "absolute left-[8%] bottom-20",
   },
   {
-    title: "Modern Changing Rooms",
+    title: "Live Court Availability",
     description:
-      "Premium locker rooms with modern facilities and comfort.",
-    icon: Building2,
+      "See open court times online and find a slot that fits your schedule.",
+    icon: CalendarDays,
     position:
       "absolute right-[8%] bottom-20",
   },

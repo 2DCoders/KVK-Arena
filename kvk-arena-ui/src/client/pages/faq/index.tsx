@@ -43,9 +43,9 @@ const faqItems: FaqItem[] = [
             "Bring sneakers, comfortable clothing, and a towel.",
     },
     {
-        question: "Do you have online coaching options?",
+        question: "What equipment is available at KVK Arena Gym?",
         answer:
-            "Yes. Our online coaching includes a custom training plan tailored to your needs, nutrition guidelines, and full accountability support.",
+            "KVK Arena Gym features a modern training space with free weights and workout machines, providing facilities for strength training, cardio and a variety of fitness routines.",
     },
 ]
 

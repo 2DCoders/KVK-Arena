@@ -144,7 +144,8 @@ export default function CarwashPricing() {
             "Professional vehicle care service.",
           price: Number(item.price) || 0,
           image: getImageSource(item.image),
-        }));
+        }))
+        .sort((a, b) => a.price - b.price);
 
       setServices(mappedServices);
     } catch (error) {
@@ -389,12 +390,8 @@ export default function CarwashPricing() {
                       <div className="relative p-5 sm:p-6">
                         <div className="flex items-start justify-between gap-4">
                           <div className="min-w-0">
-                            <h3 className="text-xl font-semibold tracking-[-0.02em] text-slate-950">
-                              {item.title.length > 20
-                                ? `${item.title.slice(
-                                    0, 15
-                                  )}...`
-                                : item.title}
+                            <h3 className="wrap-anywhere text-xl font-semibold tracking-[-0.02em] text-slate-950">
+                              {item.title}
                             </h3>
 
                             <p className="mt-2 text-[10px] font-medium uppercase tracking-[0.15em] text-slate-400 sm:text-[11px] sm:tracking-[0.18em]">
@@ -540,13 +537,9 @@ export default function CarwashPricing() {
 
                 <h3
                   id="pricing-modal-title"
-                  className="pr-10 text-2xl font-bold tracking-[-0.04em] text-slate-950 sm:text-4xl"
+                  className="wrap-anywhere pr-10 text-2xl font-bold tracking-[-0.04em] text-slate-950 sm:text-4xl"
                 >
-                  {selectedItem.title.length > 25
-                    ? `${selectedItem.title.slice(
-                        0, 25
-                      )}...`
-                    : selectedItem.title}
+                  {selectedItem.title}
                 </h3>
 
                 <p className="mt-4 text-sm leading-7 text-slate-600 sm:mt-5 sm:text-base">
