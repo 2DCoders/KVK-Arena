@@ -1,4 +1,5 @@
 using kvk.BuildingBlocks.Enums;
+using kvk.Gym.Domain;
 
 namespace kvk.Gym.Features.Payments;
 
@@ -21,5 +22,22 @@ public class PaymentResponse
     public string MemberLastName { get; set; } = string.Empty;
     public string MembershipNumber { get; set; } = string.Empty;
     public string? MembershipPlanTitle { get; set; }
+
+    internal static PaymentResponse FromRecord(PaymentRecord record, Membership? member) => new()
+    {
+        Id = record.Id,
+        MembershipId = record.MembershipId,
+        Amount = record.Amount,
+        PaymentType = record.PaymentType,
+        PaymentStatus = record.PaymentStatus,
+        StartDate = record.MemberShipStartDate,
+        EndDate = record.MemberShipEndDate,
+        TransactionReference = record.TransactionReference,
+        CreatedAt = record.CreatedAt,
+        MemberFirstName = member?.FirstName ?? string.Empty,
+        MemberLastName = member?.LastName ?? string.Empty,
+        MembershipNumber = record.MembershipNumber ?? string.Empty,
+        MembershipPlanTitle = record.MembershipPlanTitle
+    };
 }
 

@@ -792,7 +792,8 @@ public class MembershipService : IMembershipService
                                       !string.IsNullOrWhiteSpace(member.DeviceFingerprintId2)
             };
 
-            return Result.Success("Membership plan upgraded").WithData("response", response);
+            return Result.Success("Membership plan upgraded").WithData("response", response)
+                .WithData("payment", kvk.Gym.Features.Payments.PaymentResponse.FromRecord(record, member));
         }
         catch (Exception ex)
         {
