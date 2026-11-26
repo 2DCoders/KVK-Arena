@@ -1,110 +1,69 @@
-import {
-  Monitor,
-  Gamepad2,
-  Trophy,
-  Clapperboard,
-  ArrowRight,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import ps5Image from "@/assets/gaming/ps5-lounge.png";
+import movieRoomImage from "@/assets/gaming/private-cinema.png";
+import poolImage from "@/assets/gaming/pool-tables.png";
 
-const services = [
+const secondaryServices = [
   {
-    title: "PC Games",
-    description:
-      "Experience high-end gaming PCs with the latest AAA titles, esports games, and ultra-smooth performance.",
-    icon: Monitor,
-    color: "bg-green-500",
-  },
-  {
-    title: "PS5 Games",
-    description:
-      "Enjoy next-generation console gaming with PlayStation 5, premium controllers, and exclusive titles.",
-    icon: Gamepad2,
-    color: "bg-red-500",
-  },
-  {
-    title: "Pool",
-    description:
-      "Challenge your friends on professional pool tables in a stylish and competitive environment.",
-    icon: Trophy,
-    color: "bg-blue-500",
+    title: "Pool Tables",
+    description: "Rack up, break, and enjoy some friendly competition.",
+    image: poolImage,
+    comingSoon: true,
   },
   {
     title: "Private Movie Rooms",
-    description:
-      "Relax in premium private cinema rooms with immersive sound, comfortable seating, and big screens.",
-    icon: Clapperboard,
-    color: "bg-purple-500",
+    description: "Enjoy a big-screen experience in a room just for your group.",
+    image: movieRoomImage,
+    href: "#movies",
   },
 ];
 
 export default function GamingServices() {
   return (
-    <section className="py-14 bg-[#f8f8f8]">
-      <div className="container mx-auto px-6">
-        {/* Heading */}
-        <div className="text-center max-w-2xl mx-auto mb-16" data-aos="fade-up">
-          <span className="inline-flex rounded-full border border-red-500/20 bg-red-500/5 px-4 py-2 text-sm font-medium text-red-500">
-            Our Services
-          </span>
-          <h2 className="mt-5 bg-gradient-to-r from-black via-red-500 to-red-400 bg-clip-text text-5xl font-black text-transparent">
+    <section aria-labelledby="gaming-services-heading" className="bg-[#faf8f6] px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-8 text-center sm:mb-12" data-aos="fade-up">
+          <h2 id="gaming-services-heading" className="text-3xl font-black tracking-tight text-slate-950 sm:text-5xl">
             What We Offer
           </h2>
-
-          <p className="mt-5 text-gray-500 leading-relaxed">
-            Discover premium entertainment experiences designed for gamers,
-            movie lovers, and friends seeking unforgettable moments.
-          </p>
+          <div aria-hidden="true" className="mx-auto mt-4 h-1 w-12 rounded-full bg-red-700" />
         </div>
 
-        {/* Cards */}
-        <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-4">
-          {services.map((service, index) => {
-            const Icon = service.icon;
+        <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr] lg:gap-5" data-aos="fade-up">
+          <article className="relative isolate flex min-h-80 flex-col justify-end overflow-hidden rounded-3xl bg-[#251719] shadow-sm sm:min-h-100 lg:row-span-2">
+            <img src={ps5Image} alt="" loading="lazy" className="absolute inset-0 -z-20 size-full object-cover object-right" />
+            <div aria-hidden="true" className="absolute inset-0 -z-10 bg-linear-to-t from-black via-black/45 to-black/5" />
+            <div className="p-6 text-white sm:p-8 lg:p-10">
+              <h3 className="text-3xl font-black tracking-tight sm:text-4xl">PS5 Gaming</h3>
+              <p className="mt-2 max-w-xs text-sm leading-relaxed text-white/90 sm:text-base">
+                Play your favorite titles on PlayStation 5.
+              </p>
+              <a href="#games" className="mt-5 inline-flex min-h-11 items-center gap-3 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-slate-950 transition-colors hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
+                Explore PS5 <ArrowRight size={16} aria-hidden="true" />
+              </a>
+            </div>
+          </article>
 
-            return (
-              <div
-                data-aos="fade-up"
-                data-aos-delay={index * 100}
-                key={index}
-                className="
-                group
-                relative
-                bg-white
-                rounded-[28px]
-                p-8
-                shadow-md
-                transition-all
-                duration-700
-                ease-[cubic-bezier(0.16,1,0.3,1)]
-                hover:-translate-y-1.5
-                hover:scale-[1.02]
-                hover:shadow-2xl
-              "
-              >
-                {/* Icon */}
-                <div
-                  className={`w-16 h-16 rounded-full ${service.color} flex items-center justify-center mb-8`}
-                >
-                  <Icon className="w-7 h-7 text-white" />
-                </div>
-
-                {/* Content */}
-                <h3 className="text-3xl font-semibold text-gray-900 mb-4">
-                  {service.title}
-                </h3>
-
-                <p className="text-gray-500 leading-relaxed mb-15">
-                  {service.description}
-                </p>
-
-                {/* Button */}
-                <button className="group/btn absolute bottom-8 left-1/3 transform -translate-x-1/2 cursor-pointer inline-flex items-center gap-2 border border-gray-300 rounded-full px-5 py-2.5 text-sm font-semibold text-gray-800 hover:bg-black hover:text-white hover:border-black transition-all">
-                  View More
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
-                </button>
+          {secondaryServices.map(({ title, description, image, comingSoon, href }) => (
+            <article key={title} className="grid min-w-0 overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-sm sm:grid-cols-[1fr_0.9fr]">
+              <div className="flex flex-col items-start justify-center p-5 sm:p-6">
+                <span aria-hidden="true" className="mb-3 h-1 w-6 rounded-full bg-red-700" />
+                <h3 className="text-xl font-extrabold leading-tight tracking-tight text-slate-950 sm:text-2xl">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">{description}</p>
+                {comingSoon && (
+                  <span className="mt-3 rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-800">Coming Soon</span>
+                )}
+                {href && (
+                  <a href={href} className="mt-2 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-red-800 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700">
+                    Explore movies <ArrowRight size={15} aria-hidden="true" />
+                  </a>
+                )}
               </div>
-            );
-          })}
+              <div className="relative min-h-36 overflow-hidden bg-stone-900 sm:min-h-48">
+                <img src={image} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" />
+              </div>
+            </article>
+          ))}
         </div>
       </div>
     </section>

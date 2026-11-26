@@ -1,14 +1,11 @@
-import brand1 from "@/assets/gaming/g1.png";
 import brand2 from "@/assets/gaming/g2.png";
 import brand3 from "@/assets/gaming/g3.png";
 import brand4 from "@/assets/gaming/g4.png";
 
 const brands = [
-  brand1,
   brand2,
   brand3,
   brand4,
-  brand1,
   brand2,
   brand3,
   brand4,
