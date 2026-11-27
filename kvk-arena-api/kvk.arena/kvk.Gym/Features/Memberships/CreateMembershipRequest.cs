@@ -14,6 +14,7 @@ public class CreateMembershipRequest
     public DateTime DateOfBirth { get; set; }
     public kvk.Gym.Enums.MemberType MemberType { get; set; }
     public Gender Gender { get; set; }
+    public bool IsFreelance { get; set; }
     public Guid? MembershipPlanId { get; set; }
     public string? DeviceFingerprintId1 { get; set; }
     public string? DeviceFingerprintId2 { get; set; }

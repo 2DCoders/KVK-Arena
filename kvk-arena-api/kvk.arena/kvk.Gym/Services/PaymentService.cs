@@ -73,6 +73,9 @@ public class PaymentService : IPaymentService
             if (member == null)
                 return Result.Failure("Member not found");
 
+            if (member.MemberType == MemberType.Trainer && member.MembershipPlan == null)
+                return Result.Failure("Select a membership plan before recording trainer payments.");
+
             // Captured before any status change below, so a payment against a Blocked (expired)
             // member re-activates them instead of leaving them stuck as Blocked.
             var wasBlocked = member.MembershipStatus == MembershipStatus.Blocked;
@@ -124,6 +127,15 @@ public class PaymentService : IPaymentService
                 .ThenByDescending(p => p.Id)
                 .FirstOrDefaultAsync(cancellationToken);
 
+            if (request.TrainerRegistrationDiscount.HasValue && memberPayment?.PaymentStatus != PaymentStatus.Pending)
+                return Result.Failure("The registration discount applies only to the initial membership payment.");
+
+            if ((request.TrainerDiscount ?? request.TrainerRegistrationDiscount) is decimal discount &&
+                (member.MembershipPlan == null || request.PaymentStatus != PaymentStatus.Paid ||
+                 !TrainerPaymentDiscount.TryApply(member.MemberType, member.MembershipPlan.Price, discount, out var total) ||
+                 request.Amount != total))
+                return Result.Failure("Invalid trainer discount or final amount.");
+
             PaymentRecord record;
             if (memberPayment == null)
             {
@@ -172,6 +184,9 @@ public class PaymentService : IPaymentService
                     : now;
                 memberPayment.MemberShipEndDate = memberPayment.MemberShipStartDate?.AddDays(membershipPlan?.DurationInDays ?? 30);
                 memberPayment.MemberShipRenewalDate = now;
+
+                if (member.MemberType == MemberType.Trainer)
+                    memberPayment.Amount = request.Amount;
 
                 memberPayment.PaymentType = request.PaymentType;
                 memberPayment.PaymentStatus = PaymentStatus.Paid;

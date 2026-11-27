@@ -4,6 +4,7 @@ using kvk.BuildingBlocks.Common;
 using kvk.BuildingBlocks.Services;
 using kvk.Gym.Domain;
 using kvk.Gym.Enums;
+using kvk.Gym.Features.Memberships;
 using kvk.Gym.Features.PaymentGateway;
 using kvk.Gym.Persistence.DesignTime;
 using kvk.Gym.Services;
@@ -39,6 +40,52 @@ try
     db.MemberPayments.Add(new MemberPayment { MembershipId = member.Id, PaymentStatus = PaymentStatus.Pending, Amount = plan.Price });
     await db.SaveChangesAsync();
     var initialPayments = await db.MemberPayments.CountAsync(p => p.MembershipId == member.Id);
+
+    var memberships = new MembershipService(db, null!, null!, null!, NullLogger<MembershipService>.Instance);
+    var trainerRequest = new CreateMembershipRequest
+    {
+        FirstName = "Registration", LastName = "Test", Password = "test-only",
+        Email = $"trainer-{suffix}@x.test", DateOfBirth = member.DateOfBirth,
+        Gender = kvk.BuildingBlocks.Common.Gender.Male, MemberType = MemberType.Trainer, IsFreelance = true
+    };
+    Assert(!(await memberships.CreateMemberAsync(trainerRequest)).Succeeded,
+        "Freelancer registration requires a membership plan");
+    trainerRequest.MembershipPlanId = plan.Id;
+    var freelancerResult = await memberships.CreateMemberAsync(trainerRequest);
+    Assert(freelancerResult.Succeeded, $"Freelancer can register with a plan ({freelancerResult.Message})");
+    var freelancer = await db.Trainers.SingleAsync(t => t.Email == trainerRequest.Email);
+    Assert(freelancer.IsFreelance, "Cashier registration saves the freelancer designation");
+
+    trainerRequest.Email = $"free-{suffix}@x.test";
+    trainerRequest.MembershipPlanId = null;
+    trainerRequest.IsFreelance = false;
+    Assert((await memberships.CreateMemberAsync(trainerRequest)).Succeeded, "Gym trainer can register without a plan");
+    var freeTrainer = await db.Memberships.SingleAsync(m => m.Email == trainerRequest.Email);
+    Assert(freeTrainer.MembershipPlanId == null &&
+           !await db.MemberPayments.AnyAsync(p => p.MembershipId == freeTrainer.Id) &&
+           !await db.PaymentRecords.AnyAsync(p => p.MembershipId == freeTrainer.Id),
+        "Free trainer registration creates no payment or payment record");
+    Assert((await memberships.UpdateFingerprintsAsync(freeTrainer.Id,
+               new UpdateFingerprintsRequest { DeviceFingerprintId1 = "test-only" })).Succeeded &&
+           freeTrainer.MembershipStatus == MembershipStatus.Active,
+        "Free trainer activates after fingerprint enrollment");
+
+    Assert(!(await memberships.EditMemberAsync(freeTrainer.Id, new EditMembershipRequest { IsFreelance = true })).Succeeded,
+        "A free gym trainer needs a plan before switching to Freelancer");
+    Assert((await memberships.EditMemberAsync(freelancer.Id, new EditMembershipRequest { IsFreelance = false })).Succeeded &&
+           !freelancer.IsFreelance,
+        "Editing a Freelancer to Gym Trainer saves the new type");
+    Assert((await memberships.EditMemberAsync(freelancer.Id, new EditMembershipRequest { IsFreelance = true })).Succeeded &&
+           freelancer.IsFreelance,
+        "Editing a Gym Trainer with a plan to Freelancer saves the new type");
+
+    var discountedUpgrade = new UpgradeMembershipPlanRequest { MembershipPlanId = otherPlan.Id, TrainerDiscount = 125.50m };
+    Assert(!(await memberships.UpgradeMembershipPlanAsync(member.Id, discountedUpgrade)).Succeeded,
+        "Regular members cannot use a trainer discount");
+    Assert((await memberships.UpgradeMembershipPlanAsync(freeTrainer.Id, discountedUpgrade)).Succeeded &&
+           await db.PaymentRecords.AnyAsync(p => p.MembershipId == freeTrainer.Id &&
+               p.MembershipPlanId == otherPlan.Id && p.Amount == 1874.50m && p.PaymentStatus == PaymentStatus.Paid),
+        "Trainer plan changes record the discounted total");
 
     var order = await Create(plan);
     Assert(order.Sandbox == false && order.Amount == "1500.00", "Checkout mode comes from server configuration");

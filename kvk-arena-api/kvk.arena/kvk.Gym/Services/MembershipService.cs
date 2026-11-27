@@ -3,6 +3,7 @@ using kvk.Gym.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using kvk.Gym.Features.Memberships;
+using kvk.Gym.Features.Payments;
 using kvk.Gym.Interfaces;
 using System.Security.Cryptography;
 using kvk.BuildingBlocks.Auth;
@@ -46,6 +47,11 @@ public class MembershipService : IMembershipService
 
             if (string.IsNullOrWhiteSpace(request.Password))
                 return Result.Failure("Password is required");
+
+            if (request.IsFreelance &&
+                (request.MemberType != MemberType.Trainer ||
+                 !request.MembershipPlanId.HasValue || request.MembershipPlanId == Guid.Empty))
+                return Result.Failure("Freelance trainers must have a membership plan");
 
             MembershipPlan? plan = null;
 
@@ -149,7 +155,8 @@ public class MembershipService : IMembershipService
                     Email = member.Email,
                     Status = "Active",
                     PasswordHash = member.PasswordHash,
-                    Phone = member.Phone
+                    Phone = member.Phone,
+                    IsFreelance = request.IsFreelance
                 };
 
                 _db.Trainers.Add(trainer);
@@ -620,6 +627,16 @@ public class MembershipService : IMembershipService
             if (member.MemberType == kvk.Gym.Enums.MemberType.Trainer)
             {
                 var trainer = await _db.Trainers.SingleOrDefaultAsync(t => t.Id == memberId, cancellationToken);
+                if (request.IsFreelance.HasValue)
+                {
+                    if (trainer == null)
+                        return Result.Failure("Trainer profile not found");
+                    if (request.IsFreelance.Value && !trainer.IsFreelance && !member.MembershipPlanId.HasValue)
+                        return Result.Failure("Assign a membership plan before changing this trainer to Freelancer.");
+
+                    trainer.IsFreelance = request.IsFreelance.Value;
+                }
+
                 if (trainer != null)
                 {
                     if (request.YearsOfExperience.HasValue)
@@ -702,6 +719,11 @@ public class MembershipService : IMembershipService
             if (plan.IsActive != kvk.Gym.Enums.ActiveStatus.Active)
                 return Result.Failure("Membership plan is inactive");
 
+            var amount = plan.Price;
+            if (request.TrainerDiscount is decimal discount &&
+                !TrainerPaymentDiscount.TryApply(member.MemberType, plan.Price, discount, out amount))
+                return Result.Failure("Invalid trainer discount.");
+
             var now = DateTime.UtcNow;
             var previousEnd = await _db.MemberPayments
                 .Where(p => p.MembershipId == member.Id && p.PaymentStatus == PaymentStatus.Paid)
@@ -719,7 +741,7 @@ public class MembershipService : IMembershipService
                 _db.MemberPayments.Add(payment);
             }
 
-            payment.Amount = plan.Price;
+            payment.Amount = amount;
             payment.PaymentType = request.PaymentType;
             payment.PaymentStatus = PaymentStatus.Paid;
             payment.MemberShipStartDate = startDate;
