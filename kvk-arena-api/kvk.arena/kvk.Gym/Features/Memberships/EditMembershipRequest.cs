@@ -12,6 +12,7 @@ public class EditMembershipRequest
     public Gender? Gender { get; set; }
     
     public string? Specialization { get; set; }
+    public bool? IsFreelance { get; set; }
     public int? YearsOfExperience { get; set; }
 }
 

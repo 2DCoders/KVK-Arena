@@ -7,6 +7,8 @@ public class CreatePaymentRequest
 {
     public byte[]? Receipt { get; set; }
     public decimal Amount { get; set; }
+    public decimal? TrainerDiscount { get; set; }
+    public decimal? TrainerRegistrationDiscount { get; set; }
     public PaymentType PaymentType { get; set; }
     public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Paid;
     public DateTime? StartDate { get; set; }
