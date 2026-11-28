@@ -14,9 +14,9 @@ window.env = {
   BOOKING_DURATION: "12", //weeks
   COUPON_CODE_ID: "b025087f-c79b-4eea-8945-566226168557",
   // true = coming-soon page; false = full module page. Refresh after changing.
-  GYM_COMING_SOON: false,
-  BADMINTON_COMING_SOON: false,
-  GAMING_COMING_SOON: false,
+  GYM_COMING_SOON: true,
+  BADMINTON_COMING_SOON: true,
+  GAMING_COMING_SOON: true,
   GAMING_BOOKINGS_COMING_SOON: true, // Set to false to show gaming availability and bookings.
   CARWASH_COMING_SOON: false,
   CAFE_COMING_SOON: true,

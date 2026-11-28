@@ -9,7 +9,8 @@ import gaming from "@/assets/billiard.jpg";
 import cafe from "@/assets/coffee.jpg";
 import salon from "@/assets/salon.png";
 import AOS from "aos";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { getEnv } from "@/env";
 // import ConstructionModal from "@/components/404";
 
 const services = [
@@ -82,10 +83,17 @@ const tabs = [
 export default function Services() {
   const [activeTab, setActiveTab] = useState("all");
   const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const env = getEnv();
+  const comingSoon: Record<string, boolean> = {
+    gym: env.GYM_COMING_SOON,
+    carwash: env.CARWASH_COMING_SOON,
+    badminton: env.BADMINTON_COMING_SOON,
+    gaming: env.GAMING_COMING_SOON,
+    cafe: env.CAFE_COMING_SOON,
+    salon: env.SALON_COMING_SOON,
+  };
   // const [open404, setOpen404] = useState(false);
   // const [pageName, setPageName] = useState("Services Section");
-
-  const navigate = useNavigate();
 
   const scrollServices = (direction: "left" | "right") => {
     const container = scrollerRef.current;
@@ -189,12 +197,13 @@ export default function Services() {
                   key={service.id}
                   data-aos="fade-up"
                   data-aos-delay={`${idx * 400}`}
-                  className="group relative min-w-70 snap-start overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-[0_18px_45px_rgba(0,0,0,0.15)] transition duration-300 hover:-translate-y-1 hover:border-white/20 sm:min-w-80 lg:min-w-75"
+                  className={`relative min-w-70 snap-start overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-[0_18px_45px_rgba(0,0,0,0.15)] sm:min-w-80 lg:min-w-75 ${comingSoon[service.category] ? "" : "group transition duration-300 hover:-translate-y-1 hover:border-white/20"}`}
                 >
                   <div className="relative aspect-2/3 w-full">
                     <img
                       src={service.img}
-                      alt={service.title}
+                      alt=""
+                      draggable={false}
                       className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-black/45" />
@@ -213,21 +222,24 @@ export default function Services() {
                         </p>
                       </div>
 
-                      <div className="flex items-center justify-between pt-6">
+                      <div className="flex min-h-[4.25rem] items-center justify-between pt-6">
                         <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#CFEFFF]">
                           {service.category}
                         </span>
-                        <button
-                          onClick={() => {
-                            navigate(service.navigateTo)
-                          }}
-                          type="button"
-                          className="inline-flex cursor-pointer h-11 w-11 items-center justify-center rounded-full bg-white text-[#296BE1] shadow-[0_10px_25px_rgba(255,255,255,0.18)] transition hover:scale-105"
-                        >
-                          <ArrowRight size={18} className="text-[#296BE1]" />
-                        </button>
+                        {!comingSoon[service.category] && (
+                          <span aria-hidden="true" className="inline-flex size-11 items-center justify-center rounded-full bg-white text-[#296BE1] shadow-[0_10px_25px_rgba(255,255,255,0.18)]">
+                            <ArrowRight size={18} />
+                          </span>
+                        )}
                       </div>
                     </div>
+                    {!comingSoon[service.category] && (
+                      <Link
+                        to={service.navigateTo}
+                        aria-label={service.title}
+                        className="absolute inset-0 z-20 focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-sky-300"
+                      />
+                    )}
                   </div>
                 </article>
               ))}
