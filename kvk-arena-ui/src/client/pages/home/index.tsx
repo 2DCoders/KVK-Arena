@@ -6,6 +6,7 @@ import Services from "../services";
 import AboutUs from "../about-us";
 import ContactUs from "../contact-us";
 import WorkFlow from "../work-flow";
+import ComingSoonNotice from "./coming-soon-notice";
 
 function WhatsappIcon() {
   return (
@@ -161,6 +162,8 @@ export default function Home() {
 
       <Hero />
       <BrandsSlider />
+
+      <ComingSoonNotice />
 
       <section
         id="services"
